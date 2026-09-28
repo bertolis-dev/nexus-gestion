@@ -28,7 +28,7 @@ import { computeTotals, checkInvoice, InvoiceError, isValidSiren, isVatExempt, l
 import { parseBankCsv, parseOfx, reconciliationStatement } from '../core/bank.js';
 import { trialBalance, generalLedger, exportFEC, checkFEC, journalReport } from '../core/reports.js';
 import { JOURNALS, Ledger } from '../core/ledger.js';
-import { declarationPeriods, urssafDeclaration, thresholdStatus, receiptsBook, ACTIVITY_TYPES } from '../core/micro.js';
+import { thresholdStatus, receiptsBook } from '../core/micro.js';
 import { buildCii, checkEn16931, ciiFileName } from '../core/einvoice.js';
 import { trialBalanceCsv, generalLedgerCsv, journalsCsv } from '../core/exports.js';
 import { fixedAssets } from '../core/assets.js';
@@ -957,7 +957,7 @@ function viewHome() {
   const d = ws.dashboard(t);
   const todo = ws.todo(t);
   const kpi = (iconName, value, label, href, hero) => html`<a class="kpi-card${hero ? ' kpi-card-hero' : ''}" href="${href}" style="text-decoration:none;color:inherit"><div class="kpi-icon">${raw(ICONS[iconName])}</div><div class="kpi-value">${eur(value)}</div><div class="kpi-label">${label}</div></a>`;
-  const todoIcon = { bank: 'card', late: 'bell', draft: 'pencil', receipt: 'paperclip', vat: 'percent' };
+  const todoIcon = { bank: 'card', late: 'bell', draft: 'pencil', receipt: 'paperclip', vat: 'percent', urssaf: 'scale' };
   return html`
     <div class="dashboard-hero">
       <div class="dashboard-hero-text"><h1>Accueil</h1><p>Voici ce qui demande votre attention aujourd'hui.</p></div>
@@ -1555,14 +1555,60 @@ function viewCa3(months) {
 
 // ------------------------------------------------------------------ micro-entrepreneur
 
-function microReceipts() {
-  const out = [];
-  for (const inv of ws.book.invoices) {
-    for (const p of ws.book.payments[inv.id] || []) {
-      out.push({ date: p.date, invoiceNumber: inv.number, clientName: inv.client.name, amount: p.amount, method: 'Virement', activity: ws.company.microActivity || 'bnc' });
-    }
-  }
-  return out;
+const microReceipts = () => ws.microReceipts();
+
+const URSSAF_SITE = 'https://www.autoentrepreneur.urssaf.fr/portail/accueil.html';
+const URSSAF_STATUS = {
+  'en-cours': ['Période en cours', 'muted'],
+  'a-declarer': ['À déclarer', 'warning'],
+  'en-retard': ['En retard', 'warning'],
+  declaree: ['Déclarée, à payer', 'info'],
+  'rien-a-payer': ['Déclarée, rien à payer', 'success'],
+  payee: ['Payée', 'success'],
+};
+
+/** Déclarations URSSAF de l'année : montant, échéance, état, et parcours « Déclarer ». */
+function urssafCard(year) {
+  const periods = ws.urssafPeriods(year, today());
+  const open = periods.find((p) => p.from === ui.urssafDeclare);
+  const freq = ws.company.urssafFrequency || 'trimestrielle';
+  return html`<div class="card table-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:16px 16px 0">
+      <h2>Déclarations URSSAF ${year}</h2>
+      <label style="display:flex;gap:8px;align-items:center;font-size:14px">Je déclare
+        <select class="input" data-urssaf-frequency style="width:auto">${opt('trimestrielle', 'chaque trimestre', freq === 'trimestrielle')}${opt('mensuelle', 'chaque mois', freq === 'mensuelle')}</select></label>
+    </div>
+    <div class="table-scroll"><table class="table"><thead><tr><th>Période</th><th class="num">Chiffre d'affaires encaissé</th><th>Échéance</th><th>État</th><th class="num">Cotisations</th><th></th></tr></thead><tbody>
+      ${periods.map((p) => html`<tr>
+        <td>${p.label}</td>
+        <td class="num"><strong>${eur(p.turnover)}</strong></td>
+        <td>${frDate(p.deadline)}</td>
+        <td>${badge(...URSSAF_STATUS[p.status])}${p.record?.paidAt ? html` <span class="text-muted" style="font-size:12px">le ${frDate(p.record.paidAt)}</span>` : ''}</td>
+        <td class="num">${p.record ? eur(p.record.contributions) : ''}</td>
+        <td class="num">${p.status === 'a-declarer' || p.status === 'en-retard' ? html`<button class="btn btn-primary btn-sm" data-action="urssaf-declare-open" data-from="${p.from}">Déclarer</button>` : ''}</td>
+      </tr>`)}
+    </tbody></table></div>
+    ${open ? urssafDeclarePanel(open) : ''}
+  </div>`;
+}
+
+function urssafDeclarePanel(p) {
+  return html`<div style="padding:16px;border-top:1px solid var(--color-border);display:flex;flex-direction:column;gap:14px">
+    <h3 style="margin:0">Déclarer ${p.label}</h3>
+    <ol class="landing-steps" style="margin:0">
+      <li><span class="landing-step-num">1</span><span class="landing-step-text">Chiffre d'affaires à déclarer : <strong>${eur(p.turnover)}</strong> (encaissé du ${frDate(p.from)} au ${frDate(p.to)}).
+        <button class="btn btn-secondary btn-sm" data-action="urssaf-copy" data-amount="${(p.turnover / 100).toFixed(2).replace('.', ',')}" style="margin-left:6px">Copier le montant</button></span></li>
+      <li><span class="landing-step-num">2</span><span class="landing-step-text">Déclarez-le sur votre espace URSSAF et validez le paiement par prélèvement.
+        <a class="btn btn-gold btn-sm" href="${URSSAF_SITE}" target="_blank" rel="noopener" style="margin-left:6px">Ouvrir mon espace URSSAF</a></span></li>
+      <li><span class="landing-step-num">3</span><span class="landing-step-text">Reportez ici le montant des cotisations calculé par l'URSSAF :</span></li>
+    </ol>
+    <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+      ${field('Cotisations calculées par l’URSSAF', html`<input class="input" data-urssaf-contributions inputmode="decimal" placeholder="0,00" style="max-width:200px">`)}
+      <button class="btn btn-primary" data-action="urssaf-declare" data-from="${p.from}" style="margin-bottom:2px">Enregistrer la déclaration</button>
+      <button class="btn btn-secondary" data-action="urssaf-declare-cancel" style="margin-bottom:2px">Annuler</button>
+    </div>
+    <p class="form-hint" style="margin:0">Quand le prélèvement apparaît sur votre relevé, classez-le en « Cotisations URSSAF » dans l'écran Banque : la déclaration passe automatiquement à « Payée ».</p>
+  </div>`;
 }
 
 function thresholdCard(s) {
@@ -1577,8 +1623,12 @@ function viewUrssaf() {
   const book = receiptsBook(receipts, { from: `${year}-01-01`, to: `${year}-12-31` });
   return html`
     ${viewHeader('URSSAF et seuils', 'Le montant à déclarer est votre chiffre d’affaires encaissé sur la période.')}
-    <div class="card table-card"><h2 style="padding:16px 16px 0">À déclarer par trimestre</h2><table class="table"><thead><tr><th>Période</th><th>Activité</th><th class="num">Montant à déclarer</th></tr></thead><tbody>
-      ${declarationPeriods(year).map((p) => html`<tr><td>${p.label}</td><td>${ACTIVITY_TYPES[ws.company.microActivity]?.label}</td><td class="num"><strong>${eur(urssafDeclaration(receipts, p).total)}</strong></td></tr>`)}</tbody></table></div>
+    ${urssafCard(year)}
+    <div class="card notice-gold" style="display:flex;gap:14px;align-items:flex-start">
+      <span style="color:var(--landing-gold-500)">${icon('link', 22)}</span>
+      <div><h3 style="margin:0 0 4px">Relier mon compte URSSAF : bientôt disponible</h3>
+      <p style="margin:0;font-size:14px;line-height:1.6">Nexus Gestion prépare son raccordement au service officiel de <strong>tierce déclaration</strong> de l'URSSAF. Vous pourrez alors autoriser Nexus en un clic, puis déclarer et payer vos cotisations sans quitter l'application. Vos identifiants URSSAF ne nous seront jamais communiqués, et vous pourrez retirer l'autorisation à tout moment.</p></div>
+    </div>
     <div class="card">${thresholdCard(thresholdStatus(receipts, year))}</div>
     <div class="card table-card">
       <div class="view-header-row" style="display:flex;justify-content:space-between;align-items:center;padding:16px 16px 0"><h2>Livre des recettes ${year}</h2><button class="btn btn-secondary btn-sm" data-action="export-receipts">Exporter (Excel)</button></div>
@@ -2010,6 +2060,12 @@ document.addEventListener('input', (e) => {
 document.addEventListener('change', async (e) => {
   const el = e.target;
   if (el.dataset.statement !== undefined) return render();
+  if (el.dataset.urssafFrequency !== undefined) {
+    ws.company.urssafFrequency = el.value;
+    ui.urssafDeclare = null;
+    save();
+    return render();
+  }
   if (el.dataset.action === 'settings-fec-file' && el.files[0]) {
     try {
       ui.pendingOpening = { opening: await readOpeningFile(el.files[0]), fileName: el.files[0].name };
@@ -2488,6 +2544,34 @@ document.addEventListener('click', async (e) => {
         toast(err.message, true);
       }
       return;
+    case 'urssaf-declare-open':
+      ui.urssafDeclare = el.dataset.from;
+      return render();
+    case 'urssaf-declare-cancel':
+      ui.urssafDeclare = null;
+      return render();
+    case 'urssaf-copy':
+      try {
+        await navigator.clipboard.writeText(el.dataset.amount);
+        toast(`Montant copié : ${el.dataset.amount} €`);
+      } catch {
+        toast(`Montant à déclarer : ${el.dataset.amount} €`);
+      }
+      return;
+    case 'urssaf-declare': {
+      const p = ws.urssafPeriods(Number(el.dataset.from.slice(0, 4)), today()).find((x) => x.from === el.dataset.from);
+      const raw = document.querySelector('[data-urssaf-contributions]').value.trim();
+      if (!raw) return toast('Indiquez le montant des cotisations calculé par l’URSSAF (0 si aucun chiffre d’affaires).', true);
+      try {
+        ws.recordUrssafDeclaration({ from: p.from, to: p.to, turnover: p.turnover, contributions: parseEuros(raw), date: today() });
+      } catch (err) {
+        return toast(err.message.startsWith('Montant invalide') ? 'Le montant des cotisations n’est pas valide.' : err.message, true);
+      }
+      ui.urssafDeclare = null;
+      save();
+      render();
+      return toast(`Déclaration ${p.label} enregistrée.`);
+    }
     case 'archive-open':
       return openArchive(el.dataset.key).catch((err) => toast(cloud.friendly(err), true));
     case 'archive-fec':

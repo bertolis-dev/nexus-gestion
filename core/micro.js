@@ -52,6 +52,15 @@ export function declarationPeriods(year, frequency = 'trimestrielle') {
   return [1, 2, 3, 4].map((q) => ({ label: `T${q} ${year}`, from: `${year}-${pad(q * 3 - 2)}-01`, to: `${year}-${pad(q * 3)}-${lastDay(q * 3)}` }));
 }
 
+/**
+ * Date limite de déclaration et de paiement URSSAF d'une période : dernier jour du mois qui suit
+ * la fin du trimestre (30 avril, 31 juillet, 31 octobre, 31 janvier) ou du mois déclaré.
+ */
+export function urssafDeadline(period) {
+  const [y, m] = period.to.split('-').map(Number);
+  return new Date(Date.UTC(y, m + 1, 0)).toISOString().slice(0, 10);
+}
+
 /** Montants à déclarer à l'URSSAF par type d'activité sur une période (chiffre d'affaires encaissé). */
 export function urssafDeclaration(receipts, period) {
   const inPeriod = receipts.filter((r) => r.date >= period.from && r.date <= period.to);

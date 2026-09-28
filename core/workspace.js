@@ -13,6 +13,7 @@ import { divRound, splitTtc, sum } from './money.js';
 import { openingEntry } from './fecimport.js';
 import { prepareCa3, prepareCa12, ca12Advances, liquidationEntry } from './vatreturn.js';
 import { LIFECYCLE } from './lifecycle.js';
+import { declarationPeriods, urssafDeclaration, urssafDeadline } from './micro.js';
 import { inventoryEntry, depreciationEntry, incomeStatement, corporateTax, corporateTaxEntry, resultEntry, nextYearOpening, allocationEntry } from './closing.js';
 import { validateTemplate, dueOccurrences, periodLabel } from './recurring.js';
 
@@ -31,6 +32,7 @@ export const OUTFLOW_CATEGORIES = [
   { id: 'paiement-tva', label: 'Paiement de la TVA', account: '445510' },
   { id: 'acompte-tva', label: 'Acompte de TVA (régime simplifié, juillet ou décembre)', account: '445810' },
   { id: 'acompte-is', label: 'Acompte ou solde d’impôt sur les sociétés', account: '444000' },
+  { id: 'cotisations-urssaf', label: 'Cotisations URSSAF', account: '646000' },
   { id: 'remboursement-emprunt', label: "Remboursement d'emprunt (capital)", account: '164000' },
   { id: 'prelevement-personnel', label: 'Prélèvement personnel du dirigeant', account: '108000' },
   { id: 'remboursement-associe', label: 'Remboursement du compte courant d’associé', account: '455000' },
@@ -408,6 +410,7 @@ export class Workspace {
       const e = this.ledger.addDraft(directEntry(tx, { account: income.account, missingReceipt: false }));
       tx.status = 'matched';
       tx.entryId = e.id;
+      if (categoryId === 'cotisations-urssaf') this.#markUrssafPaid(tx);
       return e;
     }
     const cat = categoryById(categoryId);
@@ -456,6 +459,66 @@ export class Workspace {
   }
 
   /** Liste « À faire » classée par urgence (§5). */
+  // ---------------------------------------------------------------- URSSAF (micro-entrepreneur)
+
+  /** Encaissements de l'année (base du chiffre d'affaires à déclarer en micro-entreprise). */
+  microReceipts() {
+    const out = [];
+    for (const inv of this.book.invoices) {
+      for (const p of this.book.payments[inv.id] || []) {
+        out.push({ date: p.date, invoiceNumber: inv.number, clientName: inv.client.name, amount: p.amount, method: 'Virement', activity: this.company.microActivity || 'bnc' });
+      }
+    }
+    return out;
+  }
+
+  get urssafDeclarations() {
+    return this.company.urssafDeclarations || [];
+  }
+
+  /** Périodes de l'année avec leur montant, leur échéance et leur état (à déclarer, déclarée, payée). */
+  urssafPeriods(year, today) {
+    const receipts = this.microReceipts();
+    // Rien avant le premier exercice tenu dans Nexus (les périodes antérieures ont été déclarées ailleurs).
+    const since = this.archives?.[0]?.fiscalYear.start || this.company.fiscalYear.start;
+    return declarationPeriods(year, this.company.urssafFrequency || 'trimestrielle').filter((p) => p.to >= since).map((p) => {
+      const record = this.urssafDeclarations.find((r) => r.from === p.from);
+      const deadline = urssafDeadline(p);
+      const status = record && !record.contributions ? 'rien-a-payer' : record?.paidAt ? 'payee' : record ? 'declaree' : p.to >= today ? 'en-cours' : deadline < today ? 'en-retard' : 'a-declarer';
+      return { ...p, turnover: urssafDeclaration(receipts, p).total, deadline, record, status };
+    });
+  }
+
+  /** Enregistre la déclaration faite sur autoentrepreneur.urssaf.fr (chiffre d'affaires et cotisations calculées par l'URSSAF). */
+  recordUrssafDeclaration({ from, to, turnover, contributions, date }) {
+    if (this.urssafDeclarations.some((r) => r.from === from)) throw new Error('Cette période a déjà été déclarée.');
+    if (!Number.isSafeInteger(contributions) || contributions < 0) throw new Error('Le montant des cotisations est invalide.');
+    const record = { from, to, turnover, contributions, declaredAt: date, paidAt: null, txId: null };
+    this.company.urssafDeclarations = [...this.urssafDeclarations, record];
+    return record;
+  }
+
+  /** Un prélèvement « Cotisations URSSAF » solde la plus ancienne déclaration non payée du même montant. */
+  #markUrssafPaid(tx) {
+    const record = [...this.urssafDeclarations]
+      .sort((a, b) => a.from.localeCompare(b.from))
+      .find((r) => !r.paidAt && r.contributions === Math.abs(tx.amount));
+    if (!record) return;
+    this.company.urssafDeclarations = this.urssafDeclarations.map((r) => (r === record ? { ...r, paidAt: tx.date, txId: tx.id } : r));
+  }
+
+  #urssafTodo(today) {
+    if (!this.company.taxRegime?.startsWith('micro')) return [];
+    const year = Number(today.slice(0, 4));
+    const periods = [...this.urssafPeriods(year - 1, today), ...this.urssafPeriods(year, today)];
+    const pending = periods.find((p) => p.status === 'en-retard' || p.status === 'a-declarer');
+    if (!pending) return [];
+    const fr = (d) => d.split('-').reverse().join('/');
+    return [{ urgency: pending.status === 'en-retard' ? 3 : 2, kind: 'urssaf', view: 'urssaf', text: pending.status === 'en-retard'
+      ? `Déclaration URSSAF ${pending.label} en retard (échéance du ${fr(pending.deadline)})`
+      : `Déclarer votre chiffre d'affaires ${pending.label} à l'URSSAF avant le ${fr(pending.deadline)}` }];
+  }
+
   todo(today) {
     const items = [];
     const open = this.transactions.filter((t) => t.status === 'open');
@@ -469,6 +532,7 @@ export class Workspace {
     const noReceipt = this.transactions.filter((t) => t.missingReceipt);
     if (noReceipt.length) items.push({ urgency: 1, kind: 'receipt', view: 'banque', text: `${noReceipt.length} dépense${noReceipt.length > 1 ? 's' : ''} sans justificatif` });
     items.push(...this.#vatTodo(today));
+    items.push(...this.#urssafTodo(today));
     return items.sort((a, b) => b.urgency - a.urgency);
   }
 

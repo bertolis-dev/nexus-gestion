@@ -197,13 +197,15 @@ export const FEATURE_PAGES = [
     slug: 'micro',
     icon: 'scale',
     title: 'Micro-entrepreneur',
-    text: 'Livre des recettes, montant à déclarer à l’URSSAF chaque trimestre et alerte avant de dépasser les seuils de TVA.',
+    text: 'Livre des recettes, déclaration URSSAF guidée et suivie jusqu’au paiement, alerte avant de dépasser les seuils de TVA.',
     lead: 'La micro-entreprise a ses propres règles : pas de comptabilité complète, mais un livre des recettes, une déclaration à l’URSSAF et des seuils à surveiller. Nexus s’adapte et vous montre uniquement ce qui vous concerne.',
     images: [
-      { src: 'features/micro.webp', alt: 'Écran URSSAF et seuils : montants à déclarer par trimestre, suivi du seuil de TVA et livre des recettes', caption: 'Tout sur un seul écran : le montant à déclarer à l’URSSAF pour chaque trimestre, votre position par rapport au seuil de franchise de TVA et votre livre des recettes.' },
+      { src: 'features/micro.webp', alt: 'Écran URSSAF et seuils : montants à déclarer par trimestre, suivi du seuil de TVA et livre des recettes', caption: 'Chaque période avec son chiffre d’affaires encaissé, son échéance et son état (à déclarer, en retard, déclarée, payée). Le bouton « Déclarer » ouvre le parcours guidé.' },
     ],
     benefits: [
-      { title: 'Le montant URSSAF prêt chaque trimestre', text: 'Le montant à déclarer est votre chiffre d’affaires réellement encaissé sur la période, et non facturé. Nexus le calcule à partir des paiements reçus, trimestre par trimestre.' },
+      { title: 'Le montant URSSAF prêt chaque trimestre ou chaque mois', text: 'Le montant à déclarer est votre chiffre d’affaires réellement encaissé sur la période, et non facturé. Nexus le calcule à partir des paiements reçus, selon votre rythme de déclaration (trimestriel ou mensuel).' },
+      { title: 'Déclaration guidée, suivie jusqu’au paiement', text: 'Un bouton « Déclarer » copie le montant, ouvre votre espace URSSAF et vous invite à reporter les cotisations calculées. Chaque période affiche son échéance et son état : à déclarer, en retard, déclarée, payée. Le prélèvement de l’URSSAF, classé en « Cotisations URSSAF » dans Banque, solde automatiquement la déclaration.' },
+      { title: 'Rappel avant chaque échéance', text: 'La prochaine déclaration apparaît dans votre liste « À faire » avec sa date limite (30 avril, 31 juillet, 31 octobre, 31 janvier au trimestre). Passé ce délai, l’alerte passe en tête de liste.' },
       { title: 'Livre des recettes tenu automatiquement', text: 'Chaque encaissement est inscrit avec sa date, la facture, le client et le mode de paiement. Le livre est exportable en Excel à tout moment, comme l’exige la loi.' },
       { title: 'Surveillance des seuils de TVA', text: 'Nexus suit votre chiffre d’affaires encaissé de l’année et vous alerte à 80 % du seuil de franchise, puis en cas de dépassement du seuil de base ou du seuil majoré, avec ce que cela implique pour votre TVA.' },
       { title: 'Activité mixte prise en compte', text: 'Vous vendez des biens et des services ? Les deux seuils sont suivis séparément, comme le prévoit la règle.' },
@@ -213,8 +215,8 @@ export const FEATURE_PAGES = [
     steps: [
       'À l’inscription, indiquez que vous êtes micro-entrepreneur : Nexus adapte les écrans et les factures.',
       'Émettez vos factures et importez votre relevé bancaire pour enregistrer les encaissements.',
-      'À la fin du trimestre, ouvrez « URSSAF et seuils » : le montant à déclarer est affiché.',
-      'Recopiez-le sur autoentrepreneur.urssaf.fr et exportez votre livre des recettes si besoin.',
+      'À la fin du trimestre, Nexus vous le rappelle : ouvrez « URSSAF et seuils » et cliquez sur « Déclarer ».',
+      'Copiez le montant, déclarez-le sur votre espace URSSAF, puis reportez les cotisations dans Nexus : la période passe « Déclarée », puis « Payée » au prélèvement.',
     ],
     audience: [
       { role: 'Freelances et indépendants', text: 'Des factures professionnelles et une déclaration URSSAF sans calcul.' },
@@ -223,7 +225,7 @@ export const FEATURE_PAGES = [
     ],
     faq: [
       { q: 'Pourquoi le montant URSSAF est-il différent de ce que j’ai facturé ?', a: 'En micro-entreprise, on déclare ce qui a été encaissé, pas ce qui a été facturé. Une facture émise en mars mais payée en avril compte pour le deuxième trimestre.' },
-      { q: 'Nexus déclare-t-il à ma place ?', a: 'Non : vous recopiez le montant sur le site de l’URSSAF, cela prend une minute. Nexus vous évite le calcul et les erreurs.' },
+      { q: 'Puis-je déclarer et payer directement depuis Nexus ?', a: 'Aujourd’hui, Nexus prépare tout et vous guide : le montant se copie en un clic et votre espace URSSAF s’ouvre directement. La déclaration et le paiement sans quitter Nexus arriveront avec son raccordement au service officiel de tierce déclaration de l’URSSAF : vous autoriserez alors Nexus en un clic, sans jamais nous confier vos identifiants.' },
       { q: 'Que se passe-t-il si je dépasse le seuil de TVA ?', a: 'Nexus vous prévient dès 80 % du seuil. En cas de dépassement, il vous indique si la franchise est perdue immédiatement ou l’année suivante, pour que vous puissiez en parler à votre expert-comptable.' },
     ],
     related: ['factures', 'banque', 'relances'],
