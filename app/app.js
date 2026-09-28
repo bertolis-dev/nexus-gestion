@@ -707,22 +707,10 @@ function viewOnboarding() {
     body = html`<h1>Facturation électronique</h1>
       <p class="text-muted">Depuis le 1er septembre 2026, toute entreprise doit pouvoir <strong>recevoir</strong> ses factures électroniques via une plateforme agréée. L'émission devient obligatoire pour les TPE le 1er septembre 2027.</p>
       <div class="notice-gold">Nexus Gestion sera raccordé à une plateforme agréée partenaire. Vous pourrez alors vous inscrire à l'annuaire en un clic. Rien à faire aujourd'hui : vos factures sont déjà conformes.</div>
-      ${nav()}`;
-  } else {
-    const fec = data.start === 'fec';
-    body = html`<h1>Reprise de votre historique</h1>
-      <div class="choice-cards">
-        <label class="choice-card"><input type="radio" name="start" data-ob="start" value="zero" ${fec ? '' : raw('checked')}>Je démarre à zéro</label>
-        <label class="choice-card"><input type="radio" name="start" data-ob="start" value="fec" ${fec ? raw('checked') : ''}>Reprendre le FEC de l'an dernier</label>
-      </div>
-      ${fec
-        ? html`${field('Fichier des écritures comptables (FEC)', html`<input class="input" id="ob-fec" type="file" accept=".txt,.csv" data-action="ob-fec-file">`, { id: 'ob-fec', hint: 'Demandez-le à votre expert-comptable ou exportez-le de votre ancien logiciel.' })}
-          ${data.opening ? openingPreview(data.opening, data.fecFileName) : ''}`
-        : field('Solde actuel de votre compte bancaire', html`<input class="input" id="ob-cash" data-ob="openingCash" inputmode="decimal" placeholder="0,00" value="${data.openingCash || ''}" style="max-width:220px">`, { id: 'ob-cash', hint: "Repris comme solde d'ouverture, modifiable ensuite par votre expert-comptable." })}
       ${errBox}${nav('Terminer et ouvrir mon espace')}`;
   }
   return html`<div class="login-card onboarding-card"><div class="login-logo">${brand}</div>
-    <div class="onboarding-steps" aria-label="Étape ${step} sur 5">${[1, 2, 3, 4, 5].map((i) => html`<span class="${i <= step ? 'done' : ''}"></span>`)}</div>
+    <div class="onboarding-steps" aria-label="Étape ${step} sur 4">${[1, 2, 3, 4].map((i) => html`<span class="${i <= step ? 'done' : ''}"></span>`)}</div>
     ${body}<button type="button" class="btn-link" data-action="sign-out">Se déconnecter</button></div>`;
 }
 
@@ -812,14 +800,6 @@ async function finishOnboarding() {
   }
   ui.ob.loading = false;
   ws = new Workspace({ company, newId });
-  const opening = d.start !== 'fec' && d.openingCash ? parseEuros(d.openingCash) : 0;
-  if (d.start === 'fec' && d.opening) ws.importOpening(d.opening);
-  if (opening > 0) {
-    ws.ledger.addDraft({ journal: 'AN', date: company.fiscalYear.start > today() ? company.fiscalYear.start : today(), label: "Solde bancaire à l'ouverture", lines: [
-      { account: '512000', debit: opening },
-      { account: company.legalForm === 'EI' ? '108000' : '455000', credit: opening },
-    ] });
-  }
   if (d.bankTx?.length) ws.importTransactions(d.bankTx);
   save();
   location.hash = '#/accueil';
@@ -858,19 +838,7 @@ async function onboardingAction(action) {
       else if (!ob.data.name?.trim() || !ob.data.address?.trim()) ob.error = "Le nom et l'adresse de l'entreprise sont obligatoires.";
       if (ob.error) return render();
     }
-    if (ob.step === 5) {
-      if (ob.data.start === 'fec' && !ob.data.opening) {
-        ob.error = 'Choisissez le fichier FEC à reprendre, ou démarrez à zéro.';
-        return render();
-      }
-      try {
-        if (ob.data.openingCash) parseEuros(ob.data.openingCash);
-      } catch {
-        ob.error = 'Le solde saisi n’est pas un montant valide (exemple : 1 250,00).';
-        return render();
-      }
-      return finishOnboarding();
-    }
+    if (ob.step === 4) return finishOnboarding();
     ob.step++;
     return render();
   }
@@ -2042,16 +2010,6 @@ document.addEventListener('input', (e) => {
 document.addEventListener('change', async (e) => {
   const el = e.target;
   if (el.dataset.statement !== undefined) return render();
-  if (el.dataset.action === 'ob-fec-file' && el.files[0]) {
-    try {
-      Object.assign(ui.ob.data, { opening: await readOpeningFile(el.files[0]), fecFileName: el.files[0].name });
-      ui.ob.error = '';
-    } catch (err) {
-      Object.assign(ui.ob.data, { opening: null });
-      ui.ob.error = err.message;
-    }
-    return render();
-  }
   if (el.dataset.action === 'settings-fec-file' && el.files[0]) {
     try {
       ui.pendingOpening = { opening: await readOpeningFile(el.files[0]), fileName: el.files[0].name };
