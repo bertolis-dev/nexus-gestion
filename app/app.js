@@ -41,6 +41,7 @@ import { ledgerStateFromRows } from '../core/sync.js';
 import { toCsv } from '../core/exports.js';
 import { ICONS } from './icons.js';
 import * as cloud from './cloud.js';
+import { FEATURE_PAGES, featureBySlug } from './features.js';
 
 const DEMO_KEY = 'nexus_gestion_demo_v1';
 const PREFS_KEY = 'nexus_gestion_prefs';
@@ -287,21 +288,15 @@ function render() {
     return;
   }
   show('landing-root');
-  $('landing-root').innerHTML = viewLanding().s;
+  const slug = featureSlug();
+  document.title = slug ? `${featureBySlug(slug).title} · Nexus Gestion` : LANDING_TITLE;
+  $('landing-root').innerHTML = (slug ? viewFeature(slug) : viewLanding()).s;
 }
+const LANDING_TITLE = document.title;
 
 // ------------------------------------------------------------------ site public (même gabarit que Nexus RH)
 
-const LANDING_FEATURES = [
-  { icon: 'receipt', title: 'Factures conformes 2026-2027', text: 'SIREN du client, nature des opérations, mentions obligatoires : la facture est bloquée tant qu’elle n’est pas conforme, avec la liste de ce qu’il manque.' },
-  { icon: 'card', title: 'Banque rapprochée automatiquement', text: 'Importez votre relevé : chaque virement est associé à sa facture (montant, numéro, nom du client), les paiements groupés et partiels compris.' },
-  { icon: 'paperclip', title: 'Dépenses en une catégorie', text: '« Carburant », « Loyer », « Logiciel » : vous choisissez la catégorie, Nexus applique les bonnes règles de TVA et repère les doublons.' },
-  { icon: 'percent', title: 'TVA préparée pour vous', text: 'Collectée, déductible, à payer : chaque mois, le montant est prêt et justifié facture par facture, TVA sur encaissements comprise.' },
-  { icon: 'scale', title: 'Micro-entrepreneur', text: 'Livre des recettes, montant à déclarer à l’URSSAF chaque trimestre et alerte avant de dépasser les seuils de TVA.' },
-  { icon: 'bell', title: 'Relances clients', text: 'Les factures en retard remontent dans votre liste « À faire » avec un e-mail de relance déjà rédigé.' },
-  { icon: 'chart', title: 'Comptabilité complète et FEC', text: 'Balance, grand livre, journaux et fichier FEC pour votre expert-comptable, sans ressaisie. La partie double tourne en arrière-plan.' },
-  { icon: 'shield', title: 'Sécurité bancaire', text: 'Double authentification obligatoire, données hébergées à Paris, écritures validées infalsifiables et journal d’audit.' },
-];
+const LANDING_FEATURES = FEATURE_PAGES;
 
 /** Installeur Windows : toujours la dernière version publiée (voir desktop/ et scripts/deploy.mjs). */
 const DESKTOP_APP_DOWNLOAD_URL = 'https://github.com/bertolis-dev/nexus-gestion/releases/latest/download/Nexus-Gestion-Setup.exe';
@@ -395,7 +390,7 @@ function viewLanding() {
           <p>Pensé pour les dirigeants qui ne sont pas comptables : chaque écran parle votre langue, pas celle du plan comptable.</p>
         </div>
         <div class="landing-features-grid">
-          ${LANDING_FEATURES.map((f) => html`<div class="card landing-feature-card"><div class="landing-feature-icon">${raw(ICONS[f.icon])}</div><h3>${f.title}</h3><p>${f.text}</p></div>`)}
+          ${LANDING_FEATURES.map((f) => html`<a class="card landing-feature-card" href="#fonctionnalite/${f.slug}" style="display:block;color:inherit;text-decoration:none" aria-label="En savoir plus sur ${f.title}"><div class="landing-feature-icon">${raw(ICONS[f.icon])}</div><h3>${f.title}</h3><p>${f.text}</p><span class="landing-feature-more">En savoir plus →</span></a>`)}
         </div>
       </section>
 
@@ -432,7 +427,7 @@ function viewLanding() {
         <div class="landing-section-head"><h2>Questions fréquentes</h2></div>
         <div class="landing-faq-list">
           ${LANDING_FAQ.map((item, i) => html`
-            <div class="landing-faq-item ${ui.faqOpen === i ? 'landing-faq-item-open' : ''}">
+            <div class="landing-faq-item ${ui.faqOpen === String(i) ? 'landing-faq-item-open' : ''}">
               <button type="button" class="landing-faq-question" data-action="faq" data-index="${i}"><span>${item.q}</span><span class="landing-faq-chevron">⌄</span></button>
               <div class="landing-faq-answer"><p>${item.a}</p></div>
             </div>`)}
@@ -477,6 +472,135 @@ function viewLanding() {
         <p class="landing-footer-bottom">© ${new Date().getFullYear()} BERTOLIS · Nexus Gestion · <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a></p>
       </footer>
     </div>`;
+}
+
+/** Slug de la page « Fonctionnalité » demandée dans l'adresse (#fonctionnalite/banque), sinon null. */
+function featureSlug() {
+  const m = /^#fonctionnalite\/([a-z-]+)$/.exec(location.hash);
+  return m && featureBySlug(m[1]) ? m[1] : null;
+}
+
+/** Vraie page par fonctionnalité (adresse partageable, retour du navigateur), même gabarit que Nexus RH,
+ * illustrée par de vraies captures de l'application (scripts/screenshots.mjs). */
+function viewFeature(slug) {
+  const f = featureBySlug(slug);
+  const [hero, ...more] = f.images;
+  const shot = (img, cls = 'feature-shot') => html`<img class="${cls} landing-hero-screenshot-zoomable" src="${img.src}" alt="${img.alt}" width="1440" height="900" loading="lazy" data-action="lightbox" data-src="${img.src}">`;
+  return html`
+    <div class="landing-page feature-detail-page">
+      <header class="landing-topbar">
+        <div class="landing-topbar-left">
+          <div class="landing-brand">${brand}</div>
+          <button type="button" class="btn btn-secondary btn-sm feature-page-back-btn" data-action="feature-back" aria-label="Retour à toutes les fonctionnalités">
+            <span class="feature-page-back-full">← Toutes les fonctionnalités</span><span class="feature-page-back-short" aria-hidden="true">←</span>
+          </button>
+        </div>
+        <nav class="landing-topbar-nav">
+          <button type="button" class="btn btn-secondary" data-action="goto-login">Se connecter</button>
+          <button type="button" class="btn btn-gold landing-topbar-cta btn-arrow-cta" data-action="goto-signup"><span class="landing-topbar-cta-full">Créer mon entreprise</span><span class="landing-topbar-cta-short">S'inscrire</span> <span class="btn-arrow">→</span></button>
+        </nav>
+      </header>
+
+      <section class="feature-page-hero">
+        <div class="landing-hero-inner">
+          <div class="landing-hero-text">
+            <span class="feature-page-eyebrow">Fonctionnalité</span>
+            <div class="feature-page-icon-badge">${raw(ICONS[f.icon])}</div>
+            <h1>${f.title}</h1>
+            <p>${f.lead}</p>
+            <div class="landing-hero-cta">
+              <button type="button" class="btn btn-gold btn-arrow-cta" data-action="goto-signup">Créer mon entreprise <span class="btn-arrow">→</span></button>
+              <button type="button" class="btn btn-secondary" data-action="demo">Voir la démonstration</button>
+            </div>
+          </div>
+          <div class="landing-hero-mock">${shot(hero, 'landing-hero-screenshot')}</div>
+        </div>
+      </section>
+
+      <section class="landing-section">
+        <div class="landing-section-head"><h2>Ce que vous obtenez</h2></div>
+        <div class="feature-benefits-grid">
+          ${f.benefits.map((b) => html`<div class="card feature-benefit-card"><h3>${icon('checkCircle', 16)} ${b.title}</h3><p>${b.text}</p></div>`)}
+        </div>
+      </section>
+
+      <section class="landing-section landing-section-alt">
+        <div class="landing-section-head"><h2>À l'écran</h2><p>Captures de l'application, prises sur l'entreprise de démonstration. Cliquez sur une image pour l'agrandir.</p></div>
+        <div class="feature-gallery">
+          ${f.images.map((img) => html`<figure class="feature-figure">${shot(img)}<figcaption>${img.caption}</figcaption></figure>`)}
+        </div>
+      </section>
+
+      <section class="landing-section">
+        <div class="landing-section-head"><h2>Comment ça fonctionne</h2></div>
+        <div class="landing-steps-grid">
+          ${f.steps.map((s, i) => html`<div class="landing-step-card"><div class="landing-step-badge">${i + 1}</div><p class="text-muted">${s}</p></div>`)}
+        </div>
+      </section>
+
+      <section class="landing-section landing-section-alt">
+        <div class="landing-section-head"><h2>Pour qui ?</h2></div>
+        <div class="feature-audience-grid">
+          ${f.audience.map((a) => html`<div class="card feature-audience-card"><h3>${a.role}</h3><p class="text-muted">${a.text}</p></div>`)}
+        </div>
+      </section>
+
+      <section class="landing-section">
+        <div class="landing-section-head"><h2>Questions fréquentes</h2></div>
+        <div class="landing-faq-list">
+          ${f.faq.map((item, i) => html`
+            <div class="landing-faq-item ${ui.faqOpen === `${slug}-${i}` ? 'landing-faq-item-open' : ''}">
+              <button type="button" class="landing-faq-question" data-action="faq" data-index="${slug}-${i}"><span>${item.q}</span><span class="landing-faq-chevron">⌄</span></button>
+              <div class="landing-faq-answer"><p>${item.a}</p></div>
+            </div>`)}
+        </div>
+      </section>
+
+      <section class="landing-section landing-section-alt">
+        <div class="landing-section-head"><h2>Fonctionnalités liées</h2></div>
+        <div class="feature-related-grid">
+          ${f.related.map((s) => featureBySlug(s)).map((r) => html`<a class="card feature-related-card" href="#fonctionnalite/${r.slug}" style="display:block;color:inherit;text-decoration:none"><div class="landing-feature-icon">${raw(ICONS[r.icon])}</div><h3>${r.title}</h3><p class="text-muted">${r.text}</p></a>`)}
+        </div>
+      </section>
+
+      <section class="landing-cta-banner">
+        <h2>Prêt à ne plus vous soucier de votre comptabilité ?</h2>
+        <p>Créez votre entreprise en quelques minutes, aucune carte bancaire requise.</p>
+        <div class="landing-cta-banner-actions">
+          <button type="button" class="btn btn-gold btn-arrow-cta" data-action="goto-signup">Créer mon entreprise <span class="btn-arrow">→</span></button>
+          <button type="button" class="btn btn-ghost-light" data-action="demo">Voir la démonstration</button>
+        </div>
+      </section>
+
+      <footer class="landing-footer">
+        <div class="landing-footer-top">
+          <div class="landing-brand">${brand}</div>
+          <nav class="landing-footer-links">
+            <button type="button" class="btn-link" data-action="feature-back">Toutes les fonctionnalités</button>
+            <button type="button" class="btn-link" data-action="goto-login">Se connecter</button>
+            <button type="button" class="btn-link" data-action="goto-signup">Créer mon entreprise</button>
+          </nav>
+        </div>
+        <p class="landing-footer-bottom">© ${new Date().getFullYear()} BERTOLIS · Nexus Gestion · <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a></p>
+      </footer>
+    </div>`;
+}
+
+/** Agrandissement d'une capture au clic (même comportement que Nexus RH). */
+function openLightbox(src, alt) {
+  let root = $('modal-root');
+  if (!root) {
+    root = Object.assign(document.createElement('div'), { id: 'modal-root' });
+    document.body.append(root);
+  }
+  root.innerHTML = html`<div class="modal modal-image-lightbox" role="dialog" aria-modal="true" aria-label="${alt}">
+    <button type="button" class="btn-icon lightbox-close-btn" data-action="lightbox-close" aria-label="Fermer">${raw(ICONS.close)}</button>
+    <img class="lightbox-image" src="${src}" alt="${alt}"></div>`.s;
+  root.classList.add('open');
+  root.querySelector('.lightbox-close-btn').focus();
+}
+function closeLightbox() {
+  $('modal-root')?.classList.remove('open');
 }
 
 // ------------------------------------------------------------------ connexion (même carte que Nexus RH)
@@ -1849,6 +1973,13 @@ function seedDemo() {
     const [best] = ws.suggestionsFor(t.id);
     if (best) ws.matchTransaction(t.id, best.docs.map((doc, i) => ({ doc, amount: best.amounts[i] })));
   }
+  // Un devis envoyé et un abonnement mensuel, pour que les onglets Devis et Récurrentes ne soient pas vides.
+  const quote = ws.book.createDraft({ type: 'quote', client: martin, issueDate: back(0, 1), dueDate: back(-1, 1), lines: [
+    { label: 'Refonte du parcours client', qty: 3, unitPrice: 85000, vatRateBp: 2000, nature: 'services' },
+    { label: 'Formation des équipes (demi-journée)', qty: 2, unitPrice: 45000, vatRateBp: 2000, nature: 'services' },
+  ] });
+  ws.issueInvoice(quote.id);
+  ws.saveRecurring({ client: bio, frequency: 'monthly', anchorDate: back(-1, 1), paymentDays: 30, lines: [{ label: 'Maintenance mensuelle', qty: 1, unitPrice: 35000, vatRateBp: 2000, nature: 'services' }] });
   save();
   location.hash = '#/accueil';
   render();
@@ -1990,6 +2121,7 @@ document.addEventListener('change', async (e) => {
 });
 
 document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && $('modal-root')?.classList.contains('open')) return closeLightbox();
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k' && $('global-search-input')?.offsetParent) {
     e.preventDefault();
     $('global-search-input').focus();
@@ -2121,6 +2253,7 @@ document.addEventListener('click', async (e) => {
   if (!e.target.closest('.topbar-search')) $('global-search-results')?.classList.remove('open');
   if (!e.target.closest('.landing-nav-menu')) $('landing-nav-links')?.classList.remove('open');
 
+  if (e.target.id === 'modal-root') return closeLightbox();
   const nav = e.target.closest('[data-href]');
   if (nav) {
     location.hash = nav.dataset.href;
@@ -2144,6 +2277,15 @@ document.addEventListener('click', async (e) => {
       ui.auth = { ...ui.auth, view: action === 'goto-signup' ? 'signup' : 'login', error: '', info: '' };
       window.scrollTo(0, 0);
       return render();
+    case 'feature-back':
+      ui.backToFeatures = true;
+      if (location.hash) location.hash = '';
+      else document.getElementById('landing-fonctionnalites')?.scrollIntoView({ block: 'start' });
+      return;
+    case 'lightbox':
+      return openLightbox(el.dataset.src, el.getAttribute('alt') || '');
+    case 'lightbox-close':
+      return closeLightbox();
     case 'goto-landing':
       ui.screen = 'landing';
       return render();
@@ -2158,7 +2300,7 @@ document.addEventListener('click', async (e) => {
     case 'landing-menu':
       return $('landing-nav-links').classList.toggle('open');
     case 'faq':
-      ui.faqOpen = ui.faqOpen === Number(index) ? null : Number(index);
+      ui.faqOpen = ui.faqOpen === index ? null : index;
       return el.closest('.landing-faq-item').classList.toggle('landing-faq-item-open');
     case 'install':
       if (installPrompt) {
@@ -2544,6 +2686,15 @@ document.addEventListener('click', async (e) => {
 });
 
 window.addEventListener('hashchange', () => {
+  if (ui.screen === 'landing' && !cloudState.session) {
+    closeLightbox();
+    render();
+    // Retour à la liste : on revient sur la section Fonctionnalités, sinon en haut de la nouvelle page.
+    if (!featureSlug() && ui.backToFeatures) document.getElementById('landing-fonctionnalites')?.scrollIntoView({ block: 'start' });
+    else window.scrollTo(0, 0);
+    ui.backToFeatures = false;
+    return;
+  }
   if (ui.screen !== 'app') return;
   render();
   window.scrollTo(0, 0);
@@ -2562,6 +2713,8 @@ async function boot() {
     } else if (params.has('demo')) {
       ui.booting = false;
       return seedDemo();
+    } else if (featureSlug()) {
+      ui.screen = 'landing';
     } else if (loadDemo()) {
       ui.screen = 'app';
     } else if (URL_AUTH_ERROR || params.has('desktop')) {

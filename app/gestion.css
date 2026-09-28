@@ -69,3 +69,33 @@
   #view-root { padding: 0 !important; }
   .invoice-sheet { border: 0; box-shadow: none; padding: 0; max-width: none; }
 }
+
+/* ---------------------------------------------------------------- pages « Fonctionnalités » (site public)
+   Même gabarit que Nexus RH, illustré par de vraies captures de l'application. Palette bleu marine + or. */
+.feature-benefits-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; max-width: 1100px; margin: 0 auto; }
+.feature-benefit-card { text-align: left; border-top: 3px solid var(--landing-gold-500); }
+.feature-benefit-card h3 { display: flex; gap: 8px; align-items: flex-start; margin: 0 0 8px; font-size: 16px; line-height: 1.35; }
+.feature-benefit-card h3 .icon-inline { color: var(--landing-gold-500); flex-shrink: 0; margin-top: 2px; }
+.feature-benefit-card p { margin: 0; font-size: 14px; line-height: 1.65; color: var(--color-text-muted); }
+.feature-gallery { display: grid; gap: 40px; max-width: 1100px; margin: 0 auto; }
+.feature-figure { margin: 0; }
+.feature-shot { width: 100%; height: auto; display: block; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: 0 18px 48px rgba(28, 43, 74, 0.18); }
+.feature-figure figcaption { margin: 14px auto 0; max-width: 820px; text-align: center; font-size: 14.5px; line-height: 1.6; color: var(--color-text-muted); }
+.feature-page-hero .landing-hero-screenshot { max-width: 620px; }
+@media (max-width: 720px) {
+  .feature-benefits-grid { grid-template-columns: 1fr; }
+  .feature-gallery { gap: 28px; }
+}
+.feature-detail-page .landing-steps-grid { grid-template-columns: repeat(4, 1fr); max-width: 1100px; margin: 0 auto; }
+.feature-detail-page .feature-related-grid { grid-template-columns: repeat(3, 1fr); max-width: 1100px; margin: 0 auto; }
+@media (max-width: 960px) {
+  .feature-detail-page .landing-steps-grid { grid-template-columns: repeat(2, 1fr); }
+  .feature-detail-page .feature-related-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .feature-detail-page .landing-steps-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .feature-detail-page .landing-topbar-nav .btn-secondary { display: none; }
+  .feature-detail-page .landing-topbar-left { flex-wrap: nowrap; }
+}
