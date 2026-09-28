@@ -38,26 +38,55 @@ export function closingChecklist(ws, { today }) {
   const add = (id, label, ok, detail, view) => items.push({ id, label, ok, detail, view });
 
   const openTx = ws.transactions.filter((t) => t.status === 'open' && inYear(t.date));
-  add('bank', 'Toutes les opérations bancaires de l’exercice sont justifiées', !openTx.length, openTx.length ? `${openTx.length} opération(s) à justifier` : 'Aucune opération en attente', 'banque');
+  add(
+    'bank',
+    'Toutes les opérations bancaires de l’exercice sont justifiées',
+    !openTx.length,
+    openTx.length ? `${openTx.length} opération(s) à justifier` : 'Aucune opération en attente',
+    'banque',
+  );
 
   const noReceipt = ws.transactions.filter((t) => t.missingReceipt && inYear(t.date)).length;
-  add('receipts', 'Chaque dépense a son justificatif', !noReceipt, noReceipt ? `${noReceipt} dépense(s) sans justificatif` : 'Tous les justificatifs sont joints', 'banque');
+  add(
+    'receipts',
+    'Chaque dépense a son justificatif',
+    !noReceipt,
+    noReceipt ? `${noReceipt} dépense(s) sans justificatif` : 'Tous les justificatifs sont joints',
+    'banque',
+  );
 
   const drafts = ws.book.invoices.filter((i) => i.status === 'draft' && i.type !== 'quote' && inYear(i.issueDate || '')).length;
-  add('drafts', 'Aucune facture de l’exercice ne reste en brouillon', !drafts, drafts ? `${drafts} brouillon(s) à émettre ou supprimer` : 'Aucun brouillon', 'ventes');
+  add(
+    'drafts',
+    'Aucune facture de l’exercice ne reste en brouillon',
+    !drafts,
+    drafts ? `${drafts} brouillon(s) à émettre ou supprimer` : 'Aucun brouillon',
+    'ventes',
+  );
 
   const old = ws.receivables(fy.end).filter((r) => r.outstanding > 0 && r.lateDays > 90);
-  add('doubtful', 'Créances de plus de 90 jours examinées (provision éventuelle)', !old.length, old.length ? `${old.length} facture(s) impayée(s) depuis plus de 90 jours à la clôture` : 'Aucune créance ancienne');
+  add(
+    'doubtful',
+    'Créances de plus de 90 jours examinées (provision éventuelle)',
+    !old.length,
+    old.length ? `${old.length} facture(s) impayée(s) depuis plus de 90 jours à la clôture` : 'Aucune créance ancienne',
+  );
 
   if (ws.company.vatRegime === 'reel-normal') {
     const months = [];
-    for (let d = fy.start; d <= fy.end; ) {
+    for (let d = fy.start; d <= fy.end;) {
       months.push(d);
       const [y, m] = d.split('-').map(Number);
       d = new Date(Date.UTC(y, m, 1)).toISOString().slice(0, 10);
     }
     const missing = months.filter((m) => !ws.vatReturns.some((r) => r.from === m));
-    add('vat', 'Toutes les déclarations de TVA de l’exercice sont validées', !missing.length, missing.length ? `${missing.length} mois non déclaré(s)` : 'TVA déclarée pour chaque mois', 'tva');
+    add(
+      'vat',
+      'Toutes les déclarations de TVA de l’exercice sont validées',
+      !missing.length,
+      missing.length ? `${missing.length} mois non déclaré(s)` : 'TVA déclarée pour chaque mois',
+      'tva',
+    );
   } else if (ws.company.vatRegime === 'reel-simplifie') {
     const done = ws.vatReturns.some((r) => r.kind === 'CA12' && r.from === fy.start);
     add('vat', 'La déclaration annuelle de TVA (CA12) est validée', done, done ? 'CA12 validée' : 'CA12 à valider (page TVA)', 'tva');
@@ -65,9 +94,19 @@ export function closingChecklist(ws, { today }) {
 
   const assets = fixedAssets(ws.purchases, ws.company, fy).filter((a) => a.dotationThisYear);
   const booked = ws.ledger.entries.some((e) => e.source?.kind === 'inventory' && e.source.type === 'depreciation');
-  add('depreciation', 'Dotations aux amortissements passées', !assets.length || booked, assets.length ? (booked ? 'Dotations passées' : `${assets.length} bien(s) à amortir`) : 'Aucune immobilisation à amortir');
+  add(
+    'depreciation',
+    'Dotations aux amortissements passées',
+    !assets.length || booked,
+    assets.length ? (booked ? 'Dotations passées' : `${assets.length} bien(s) à amortir`) : 'Aucune immobilisation à amortir',
+  );
 
-  add('period', 'L’exercice est terminé', today > fy.end, today > fy.end ? `Terminé le ${fy.end.split('-').reverse().join('/')}` : `Se termine le ${fy.end.split('-').reverse().join('/')}`);
+  add(
+    'period',
+    'L’exercice est terminé',
+    today > fy.end,
+    today > fy.end ? `Terminé le ${fy.end.split('-').reverse().join('/')}` : `Se termine le ${fy.end.split('-').reverse().join('/')}`,
+  );
   return items;
 }
 
@@ -94,11 +133,26 @@ export function inventoryEntry(item, fy) {
   if (!Number.isSafeInteger(amount) || amount <= 0) throw new Error('Le montant doit être positif.');
   const label = item.label || INVENTORY[type].label;
   const pairs = {
-    prepaid: [['486000', amount, 0], [account, 0, amount]],
-    deferred: [[account, amount, 0], ['487000', 0, amount]],
-    accrued: [[account, amount, 0], ['408000', 0, amount]],
-    receivable: [['418000', amount, 0], [account, 0, amount]],
-    doubtful: [['681740', amount, 0], ['491000', 0, amount]],
+    prepaid: [
+      ['486000', amount, 0],
+      [account, 0, amount],
+    ],
+    deferred: [
+      [account, amount, 0],
+      ['487000', 0, amount],
+    ],
+    accrued: [
+      [account, amount, 0],
+      ['408000', 0, amount],
+    ],
+    receivable: [
+      ['418000', amount, 0],
+      [account, 0, amount],
+    ],
+    doubtful: [
+      ['681740', amount, 0],
+      ['491000', 0, amount],
+    ],
   };
   return {
     journal: 'OD',
@@ -179,7 +233,22 @@ export function incomeStatement(ledger) {
   const resultBeforeTax = currentResult + exceptionalIncome - exceptionalCharges;
   const netResult = resultBeforeTax - incomeTax;
   const revenue = operatingIncome['Ventes de marchandises'] + operatingIncome['Production vendue (biens)'] + operatingIncome['Production vendue (services)'];
-  return { operatingIncome, operatingCharges, opIncome, opCharges, operatingResult, financialIncome, financialCharges, currentResult, exceptionalIncome, exceptionalCharges, resultBeforeTax, incomeTax, netResult, revenue };
+  return {
+    operatingIncome,
+    operatingCharges,
+    opIncome,
+    opCharges,
+    operatingResult,
+    financialIncome,
+    financialCharges,
+    currentResult,
+    exceptionalIncome,
+    exceptionalCharges,
+    resultBeforeTax,
+    incomeTax,
+    netResult,
+    revenue,
+  };
 }
 
 /**
@@ -205,11 +274,39 @@ const BALANCE_RULES = [
   [['487'], 'Produits constatés d’avance', 'Produits constatés d’avance'],
   [['51', '53', '58'], 'Disponibilités', 'Emprunts et dettes financières'],
 ];
-const ASSET_ORDER = ['Immobilisations incorporelles', 'Immobilisations corporelles', 'Créances clients', 'Autres créances', 'Disponibilités', 'Charges constatées d’avance'];
-const LIABILITY_ORDER = ['Capital', 'Réserves', 'Report à nouveau', 'Résultat antérieur en attente d’affectation', 'Résultat de l’exercice', 'Emprunts et dettes financières', 'Dettes fournisseurs', 'Dettes fiscales et sociales', 'Autres dettes', 'Produits constatés d’avance'];
+const ASSET_ORDER = [
+  'Immobilisations incorporelles',
+  'Immobilisations corporelles',
+  'Créances clients',
+  'Autres créances',
+  'Disponibilités',
+  'Charges constatées d’avance',
+];
+const LIABILITY_ORDER = [
+  'Capital',
+  'Réserves',
+  'Report à nouveau',
+  'Résultat antérieur en attente d’affectation',
+  'Résultat de l’exercice',
+  'Emprunts et dettes financières',
+  'Dettes fournisseurs',
+  'Dettes fiscales et sociales',
+  'Autres dettes',
+  'Produits constatés d’avance',
+];
 // Rubriques de capitaux et d'immobilisations : toujours du même côté, quel que soit le sens (un
 // amortissement créditeur vient en déduction de l'actif, un capital débiteur en déduction du passif).
-const FIXED_SIDE = { Capital: 'liability', Réserves: 'liability', 'Report à nouveau': 'liability', 'Résultat antérieur en attente d’affectation': 'liability', 'Immobilisations incorporelles': 'asset', 'Immobilisations corporelles': 'asset', 'Créances clients': null, 'Charges constatées d’avance': 'asset', 'Produits constatés d’avance': 'liability' };
+const FIXED_SIDE = {
+  Capital: 'liability',
+  Réserves: 'liability',
+  'Report à nouveau': 'liability',
+  'Résultat antérieur en attente d’affectation': 'liability',
+  'Immobilisations incorporelles': 'asset',
+  'Immobilisations corporelles': 'asset',
+  'Créances clients': null,
+  'Charges constatées d’avance': 'asset',
+  'Produits constatés d’avance': 'liability',
+};
 
 /** Bilan simplifié (rubriques 2033-A), montants nets. */
 export function balanceSheet(ledger) {
@@ -294,8 +391,20 @@ export function resultEntry(ledger, fy) {
     result -= v;
   }
   if (!lines.length) return null;
-  lines.push(result >= 0 ? { account: '120000', debit: 0, credit: result, label: 'Bénéfice de l’exercice' } : { account: '129000', debit: -result, credit: 0, label: 'Perte de l’exercice' });
-  return { journal: 'OD', date: fy.end, label: `Détermination du résultat ${fiscalYearLabel(fy)}`, pieceRef: 'CLOTURE', pieceDate: fy.end, source: { kind: 'closing-result' }, lines };
+  lines.push(
+    result >= 0
+      ? { account: '120000', debit: 0, credit: result, label: 'Bénéfice de l’exercice' }
+      : { account: '129000', debit: -result, credit: 0, label: 'Perte de l’exercice' },
+  );
+  return {
+    journal: 'OD',
+    date: fy.end,
+    label: `Détermination du résultat ${fiscalYearLabel(fy)}`,
+    pieceRef: 'CLOTURE',
+    pieceDate: fy.end,
+    source: { kind: 'closing-result' },
+    lines,
+  };
 }
 
 /**
@@ -312,11 +421,36 @@ export function nextYearOpening(ledger, nextStart) {
     row.balance += l.debit - l.credit;
     byKey.set(key, row);
   }
-  const lines = [...byKey.values()].filter((r) => r.balance).map((r) => ({ account: r.account, aux: r.aux, auxLabel: r.auxLabel, label: 'Report à nouveau des soldes', debit: r.balance > 0 ? r.balance : 0, credit: r.balance < 0 ? -r.balance : 0 }));
-  const opening = { journal: 'AN', date: nextStart, label: 'Bilan d’ouverture', pieceRef: 'OUVERTURE', pieceDate: nextStart, source: { kind: 'opening' }, lines };
+  const lines = [...byKey.values()]
+    .filter((r) => r.balance)
+    .map((r) => ({
+      account: r.account,
+      aux: r.aux,
+      auxLabel: r.auxLabel,
+      label: 'Report à nouveau des soldes',
+      debit: r.balance > 0 ? r.balance : 0,
+      credit: r.balance < 0 ? -r.balance : 0,
+    }));
+  const opening = {
+    journal: 'AN',
+    date: nextStart,
+    label: 'Bilan d’ouverture',
+    pieceRef: 'OUVERTURE',
+    pieceDate: nextStart,
+    source: { kind: 'opening' },
+    lines,
+  };
   const reversals = ledger.entries
     .filter((e) => e.source?.kind === 'inventory' && e.source.reverse)
-    .map((e) => ({ journal: 'OD', date: nextStart, label: `Extourne : ${e.label}`, pieceRef: 'EXTOURNE', pieceDate: nextStart, source: { kind: 'reversal', of: e.id }, lines: e.lines.map((l) => ({ ...l, debit: l.credit, credit: l.debit, letter: '', letterDate: '' })) }));
+    .map((e) => ({
+      journal: 'OD',
+      date: nextStart,
+      label: `Extourne : ${e.label}`,
+      pieceRef: 'EXTOURNE',
+      pieceDate: nextStart,
+      source: { kind: 'reversal', of: e.id },
+      lines: e.lines.map((l) => ({ ...l, debit: l.credit, credit: l.debit, letter: '', letterDate: '' })),
+    }));
   return { opening, reversals };
 }
 
@@ -324,7 +458,10 @@ export function nextYearOpening(ledger, nextStart) {
 
 /** Montant du capital social saisi en texte libre (« 5 000 € ») → centimes. */
 export function capitalCents(text) {
-  const digits = String(text || '').replace(/[^\d,.]/g, '').replace(/[.\s](?=\d{3}\b)/g, '').replace(',', '.');
+  const digits = String(text || '')
+    .replace(/[^\d,.]/g, '')
+    .replace(/[.\s](?=\d{3}\b)/g, '')
+    .replace(',', '.');
   const n = Number(digits);
   return Number.isFinite(n) ? Math.round(n * 100) : 0;
 }
@@ -362,8 +499,10 @@ export function allocationEntry(ledger, company, { legalReserve = 0, otherReserv
   const parts = [legalReserve, otherReserves, dividends, retained, owner];
   if (parts.some((p) => !Number.isSafeInteger(p))) throw new Error('Montants invalides.');
   if (parts.reduce((s, p) => s + p, 0) !== result) throw new Error('La répartition doit être égale au résultat à affecter.');
-  if (result > 0 && legalReserve < legalReserveMin) throw new Error(`La réserve légale doit recevoir au moins ${(legalReserveMin / 100).toFixed(2).replace('.', ',')} €.`);
-  if (result < 0 && (legalReserve || otherReserves || dividends)) throw new Error('Une perte ne se distribue pas : elle va en report à nouveau (ou sur le compte de l’exploitant).');
+  if (result > 0 && legalReserve < legalReserveMin)
+    throw new Error(`La réserve légale doit recevoir au moins ${(legalReserveMin / 100).toFixed(2).replace('.', ',')} €.`);
+  if (result < 0 && (legalReserve || otherReserves || dividends))
+    throw new Error('Une perte ne se distribue pas : elle va en report à nouveau (ou sur le compte de l’exploitant).');
   const label = 'Affectation du résultat';
   const lines = [];
   if (result > 0) {

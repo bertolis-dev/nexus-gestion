@@ -6,6 +6,7 @@
 
 import { formatDecimalComma, sum } from './money.js';
 import { JOURNALS } from './ledger.js';
+import { parisDateOf } from './dates.js';
 
 /** Balance générale : totaux débit/crédit et solde par compte, triés par numéro. */
 export function trialBalance(ledger, opts = {}) {
@@ -48,9 +49,7 @@ export function auxiliaryBalance(ledger, collective, opts = {}) {
     row.credit += l.credit;
     byAux.set(l.aux, row);
   }
-  return [...byAux.values()]
-    .map((r) => ({ ...r, solde: r.debit - r.credit }))
-    .sort((a, b) => a.aux.localeCompare(b.aux));
+  return [...byAux.values()].map((r) => ({ ...r, solde: r.debit - r.credit })).sort((a, b) => a.aux.localeCompare(b.aux));
 }
 
 /** Grand livre : lignes par compte avec solde progressif. */
@@ -94,14 +93,32 @@ export function journalReport(ledger, journal, opts = {}) {
 // ------------------------------------------------------------------ FEC
 
 export const FEC_COLUMNS = [
-  'JournalCode', 'JournalLib', 'EcritureNum', 'EcritureDate', 'CompteNum', 'CompteLib',
-  'CompAuxNum', 'CompAuxLib', 'PieceRef', 'PieceDate', 'EcritureLib', 'Debit', 'Credit',
-  'EcritureLet', 'DateLet', 'ValidDate', 'Montantdevise', 'Idevise',
+  'JournalCode',
+  'JournalLib',
+  'EcritureNum',
+  'EcritureDate',
+  'CompteNum',
+  'CompteLib',
+  'CompAuxNum',
+  'CompAuxLib',
+  'PieceRef',
+  'PieceDate',
+  'EcritureLib',
+  'Debit',
+  'Credit',
+  'EcritureLet',
+  'DateLet',
+  'ValidDate',
+  'Montantdevise',
+  'Idevise',
 ];
 
 const fecDate = (iso) => (iso ? iso.slice(0, 10).replaceAll('-', '') : '');
 /** Le séparateur (tabulation) et les retours à la ligne sont interdits dans les zones texte. */
-const fecText = (s) => String(s ?? '').replace(/[\t\r\n|]+/g, ' ').trim();
+const fecText = (s) =>
+  String(s ?? '')
+    .replace(/[\t\r\n|]+/g, ' ')
+    .trim();
 
 /**
  * Fichier des écritures comptables : écritures validées uniquement, triées par numéro,
@@ -118,26 +135,28 @@ export function exportFEC(ledger, { siren, closingDate }) {
   for (const e of entries) {
     for (const l of e.lines) {
       const acc = ledger.chart.get(l.account);
-      rows.push([
-        e.journal,
-        JOURNALS[e.journal],
-        String(e.number),
-        fecDate(e.date),
-        l.account,
-        fecText(acc.label),
-        l.aux,
-        fecText(l.aux ? l.auxLabel : ''),
-        fecText(e.pieceRef || String(e.number)),
-        fecDate(e.pieceDate || e.date),
-        fecText(l.label),
-        formatDecimalComma(l.debit),
-        formatDecimalComma(l.credit),
-        l.letter,
-        fecDate(l.letterDate),
-        fecDate(e.validatedAt),
-        '',
-        '',
-      ].join('\t'));
+      rows.push(
+        [
+          e.journal,
+          JOURNALS[e.journal],
+          String(e.number),
+          fecDate(e.date),
+          l.account,
+          fecText(acc.label),
+          l.aux,
+          fecText(l.aux ? l.auxLabel : ''),
+          fecText(e.pieceRef || String(e.number)),
+          fecDate(e.pieceDate || e.date),
+          fecText(l.label),
+          formatDecimalComma(l.debit),
+          formatDecimalComma(l.credit),
+          l.letter,
+          fecDate(l.letterDate),
+          fecDate(parisDateOf(e.validatedAt)), // horodatage UTC → date civile à Paris
+          '',
+          '',
+        ].join('\t'),
+      );
     }
   }
   return {
@@ -153,7 +172,7 @@ export function exportFEC(ledger, { siren, closingDate }) {
 export function checkFEC(content) {
   const errors = [];
   const lines = content.replace(/\r\n$/, '').split('\r\n');
-  if (lines[0] !== FEC_COLUMNS.join('\t')) errors.push("En-tête non conforme");
+  if (lines[0] !== FEC_COLUMNS.join('\t')) errors.push('En-tête non conforme');
   const byNum = new Map();
   let prevDate = '';
   lines.slice(1).forEach((line, i) => {

@@ -53,9 +53,7 @@ export function computeTotals(invoice, { franchise = false } = {}) {
     row.base += ht;
     byRate.set(rate, row);
   }
-  const vatBreakdown = [...byRate.values()]
-    .map((r) => ({ ...r, vat: vatFromHt(r.base, r.rateBp) }))
-    .sort((a, b) => b.rateBp - a.rateBp);
+  const vatBreakdown = [...byRate.values()].map((r) => ({ ...r, vat: vatFromHt(r.base, r.rateBp) })).sort((a, b) => b.rateBp - a.rateBp);
   const totalHt = sum(vatBreakdown.map((r) => r.base));
   const totalVat = sum(vatBreakdown.map((r) => r.vat));
   const depositsDeducted = sum((invoice.deposits || []).map((d) => d.amountTtc));
@@ -105,7 +103,11 @@ export function checkInvoice(invoice, company) {
     need(company.capital, 'Le capital social de votre société doit figurer sur la facture (Paramètres).', 'company.capital');
   }
   if (company.vatRegime !== 'franchise') {
-    need(/^FR[0-9A-Z]{2}\d{9}$/.test(company.vatNumber || ''), 'Votre numéro de TVA intracommunautaire est manquant ou invalide (Paramètres).', 'company.vatNumber');
+    need(
+      /^FR[0-9A-Z]{2}\d{9}$/.test(company.vatNumber || ''),
+      'Votre numéro de TVA intracommunautaire est manquant ou invalide (Paramètres).',
+      'company.vatNumber',
+    );
   }
 
   need(c.name, 'Le nom du client est manquant.', 'client.name');
@@ -145,9 +147,14 @@ export function legalMentions(invoice, company) {
   if (company.vatOnDebits) m.push('Option pour le paiement de la TVA d’après les débits');
   const c = invoice.client || {};
   if (c.type !== 'B2C' && (c.country || 'FR') !== 'FR' && company.vatRegime !== 'franchise') {
-    m.push(operationNature(invoice.lines) === 'services' ? 'Autoliquidation — art. 283-2 du CGI / art. 196 de la directive 2006/112/CE' : 'Exonération de TVA, art. 262 ter I du CGI (livraison intracommunautaire)');
+    m.push(
+      operationNature(invoice.lines) === 'services'
+        ? 'Autoliquidation — art. 283-2 du CGI / art. 196 de la directive 2006/112/CE'
+        : 'Exonération de TVA, art. 262 ter I du CGI (livraison intracommunautaire)',
+    );
   }
-  if (invoice.type === 'quote') m.push(`Devis valable jusqu'au ${invoice.dueDate.split('-').reverse().join('/')}. Bon pour accord : date et signature du client.`);
+  if (invoice.type === 'quote')
+    m.push(`Devis valable jusqu'au ${invoice.dueDate.split('-').reverse().join('/')}. Bon pour accord : date et signature du client.`);
   else if (c.type !== 'B2C') m.push(LATE_PAYMENT_MENTION);
   if (invoice.quoteRef) m.push(`Selon devis ${invoice.quoteRef}`);
   return m;
@@ -234,7 +241,9 @@ export class InvoiceBook {
       .filter((x) => x.status === 'issued' && x.series === draft.series)
       .reduce((max, x) => (x.issueDate > max ? x.issueDate : max), '');
     if (lastIssued && draft.issueDate < lastIssued) {
-      throw new InvoiceError(`La date d'émission ne peut pas être antérieure à la dernière facture émise (${lastIssued}) : la numérotation doit rester chronologique.`);
+      throw new InvoiceError(
+        `La date d'émission ne peut pas être antérieure à la dernière facture émise (${lastIssued}) : la numérotation doit rester chronologique.`,
+      );
     }
     const key = `${draft.series}${year}`;
     const n = (this.counters[key] || 0) + 1;
@@ -260,7 +269,14 @@ export class InvoiceBook {
     const used = new Set(this.invoices.filter((i) => i.id !== exceptId).flatMap((i) => (i.deposits || []).map((d) => d.id)));
     return this.invoices
       .filter((i) => i.type === 'deposit' && i.status === 'issued' && i.client.code === clientCode && !used.has(i.id))
-      .map((i) => ({ id: i.id, number: i.number, amountHt: i.totals.totalHt, amountVat: i.totals.totalVat, amountTtc: i.totals.totalTtc, vatAccount: saleVatAccount(i, i.issuer) }));
+      .map((i) => ({
+        id: i.id,
+        number: i.number,
+        amountHt: i.totals.totalHt,
+        amountVat: i.totals.totalVat,
+        amountTtc: i.totals.totalTtc,
+        vatAccount: saleVatAccount(i, i.issuer),
+      }));
   }
 
   #checkDeposits(inv) {
@@ -268,7 +284,8 @@ export class InvoiceBook {
     const available = new Map(this.availableDeposits(inv.client.code, { exceptId: inv.id }).map((d) => [d.id, d]));
     for (const d of inv.deposits) {
       const ref = available.get(d.id);
-      if (!ref || ref.amountTtc !== d.amountTtc) throw new InvoiceError(`L'acompte ${d.number || d.id} n'est pas déductible sur cette facture (autre client ou déjà déduit).`);
+      if (!ref || ref.amountTtc !== d.amountTtc)
+        throw new InvoiceError(`L'acompte ${d.number || d.id} n'est pas déductible sur cette facture (autre client ou déjà déduit).`);
     }
     if (inv.totals.netToPay < 0) throw new InvoiceError('Les acomptes déduits dépassent le montant de la facture.');
   }
@@ -277,13 +294,22 @@ export class InvoiceBook {
   convertQuote(quoteId, { issueDate, dueDate }) {
     const q = this.get(quoteId);
     if (q.type !== 'quote' || q.status !== 'issued') throw new InvoiceError('Seul un devis envoyé se transforme en facture.');
-    return this.createDraft({ type: 'invoice', series: 'F', client: structuredClone(q.client), lines: structuredClone(q.lines), issueDate, dueDate, quoteRef: q.number });
+    return this.createDraft({
+      type: 'invoice',
+      series: 'F',
+      client: structuredClone(q.client),
+      lines: structuredClone(q.lines),
+      issueDate,
+      dueDate,
+      quoteRef: q.number,
+    });
   }
 
   /** Avoir total ou partiel lié à une facture émise. */
   createCreditNote(invoiceId, { issueDate, lines, reason = '' }) {
     const original = this.get(invoiceId);
-    if (original.status !== 'issued' || original.type === 'credit' || original.type === 'quote') throw new InvoiceError('Un avoir se rattache à une facture émise.');
+    if (original.status !== 'issued' || original.type === 'credit' || original.type === 'quote')
+      throw new InvoiceError('Un avoir se rattache à une facture émise.');
     return this.createDraft({
       type: 'credit',
       series: original.series,

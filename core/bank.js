@@ -54,7 +54,10 @@ const norm = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().tri
  * (date, libellé, montant — ou débit/crédit séparés).
  */
 export function parseBankCsv(text, { accountId = 'default' } = {}) {
-  const rows = text.replace(/^﻿/, '').split(/\r?\n/).filter((l) => l.trim());
+  const rows = text
+    .replace(/^\uFEFF/, '')
+    .split(/\r?\n/)
+    .filter((l) => l.trim());
   if (rows.length < 2) return [];
   const sep = (rows[0].match(/;/g) || []).length >= (rows[0].match(/,/g) || []).length ? ';' : ',';
   const header = splitCsvLine(rows[0], sep).map(norm);
@@ -108,7 +111,10 @@ export function mergeTransactions(existing, incoming) {
 
 // ------------------------------------------------------------------ propositions
 
-const tokens = (s) => norm(s).split(/[^a-z0-9]+/).filter((t) => t.length >= 3);
+const tokens = (s) =>
+  norm(s)
+    .split(/[^a-z0-9]+/)
+    .filter((t) => t.length >= 3);
 
 function daysBetween(a, b) {
   return Math.abs((Date.parse(a) - Date.parse(b)) / 86400000);
@@ -205,11 +211,23 @@ export function settlementEntry(tx, allocations, { writeOffThreshold = 100 } = {
     if (Math.abs(gap) <= writeOffThreshold) {
       // Écart de centimes : produit (758) si on a reçu plus, charge (658) si on a reçu moins.
       const toRevenue = incoming ? gap > 0 : gap < 0;
-      lines.push({ account: toRevenue ? '758000' : '658000', label: 'Écart de règlement', debit: toRevenue ? 0 : Math.abs(gap), credit: toRevenue ? Math.abs(gap) : 0 });
+      lines.push({
+        account: toRevenue ? '758000' : '658000',
+        label: 'Écart de règlement',
+        debit: toRevenue ? 0 : Math.abs(gap),
+        credit: toRevenue ? Math.abs(gap) : 0,
+      });
     } else {
       // Trop-perçu significatif : reste sur le compte du tiers (avance), à traiter par l'utilisateur.
       const d = allocations[0].doc;
-      lines.push({ account: d.thirdPartyAccount, aux: d.aux, auxLabel: d.partyName, label: 'Trop-perçu', debit: incoming ? 0 : gap, credit: incoming ? gap : 0 });
+      lines.push({
+        account: d.thirdPartyAccount,
+        aux: d.aux,
+        auxLabel: d.partyName,
+        label: 'Trop-perçu',
+        debit: incoming ? 0 : gap,
+        credit: incoming ? gap : 0,
+      });
     }
   }
   return { journal: 'BQ', date: tx.date, label: tx.label, pieceRef: tx.id, pieceDate: tx.date, source: { kind: 'bank', id: tx.id }, lines };

@@ -272,7 +272,11 @@ export class Ledger {
 
   /** Solde (débit − crédit) d'un compte ou d'un préfixe de comptes. */
   balanceOf(prefix, opts) {
-    return sum(this.lines(opts).filter((l) => l.account.startsWith(prefix)).map((l) => l.debit - l.credit));
+    return sum(
+      this.lines(opts)
+        .filter((l) => l.account.startsWith(prefix))
+        .map((l) => l.debit - l.credit),
+    );
   }
 
   /** Lignes ouvertes (non lettrées) d'un compte de tiers — base du rapprochement. */

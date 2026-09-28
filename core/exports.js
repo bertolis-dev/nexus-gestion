@@ -17,7 +17,7 @@ const money = (cents) => (cents ? formatDecimalComma(cents) : '');
 const frDate = (iso) => (iso ? iso.split('-').reverse().join('/') : '');
 
 export function toCsv(header, rows) {
-  return `﻿${[header, ...rows].map((r) => r.map(cell).join(';')).join('\r\n')}\r\n`;
+  return `\uFEFF${[header, ...rows].map((r) => r.map(cell).join(';')).join('\r\n')}\r\n`;
 }
 
 export function trialBalanceCsv(ledger, opts) {
@@ -31,7 +31,20 @@ export function generalLedgerCsv(ledger, opts) {
   const rows = [];
   for (const block of generalLedger(ledger, opts)) {
     for (const l of block.lines) {
-      rows.push([block.account, block.label, frDate(l.date), l.journal, l.number ?? '', l.pieceRef, l.label, l.aux, money(l.debit), money(l.credit), formatDecimalComma(l.runningBalance), l.letter]);
+      rows.push([
+        block.account,
+        block.label,
+        frDate(l.date),
+        l.journal,
+        l.number ?? '',
+        l.pieceRef,
+        l.label,
+        l.aux,
+        money(l.debit),
+        money(l.credit),
+        formatDecimalComma(l.runningBalance),
+        l.letter,
+      ]);
     }
   }
   return toCsv(['Compte', 'Libellé du compte', 'Date', 'Journal', 'N° écriture', 'Pièce', 'Libellé', 'Tiers', 'Débit', 'Crédit', 'Solde', 'Lettrage'], rows);
@@ -41,7 +54,8 @@ export function journalsCsv(ledger, opts) {
   const rows = [];
   for (const code of Object.keys(JOURNALS)) {
     for (const e of journalReport(ledger, code, opts)) {
-      for (const l of e.lines) rows.push([code, JOURNALS[code], e.number ?? 'brouillon', frDate(e.date), e.pieceRef, l.account, l.aux, l.label, money(l.debit), money(l.credit)]);
+      for (const l of e.lines)
+        rows.push([code, JOURNALS[code], e.number ?? 'brouillon', frDate(e.date), e.pieceRef, l.account, l.aux, l.label, money(l.debit), money(l.credit)]);
     }
   }
   return toCsv(['Journal', 'Libellé du journal', 'N° écriture', 'Date', 'Pièce', 'Compte', 'Tiers', 'Libellé', 'Débit', 'Crédit'], rows);

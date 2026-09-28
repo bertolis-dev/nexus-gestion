@@ -98,8 +98,15 @@ export async function createStructure(company) {
   const { name, siren, legalForm, taxRegime, vatRegime, fiscalYear, ...settings } = company;
   return check(
     await supabase.rpc('create_structure', {
-      p_siren: siren, p_name: name, p_legal_form: legalForm, p_tax_regime: taxRegime, p_vat_regime: vatRegime,
-      p_fy_start: fiscalYear.start, p_fy_end: fiscalYear.end, p_accounts: ACCOUNTS, p_settings: settings,
+      p_siren: siren,
+      p_name: name,
+      p_legal_form: legalForm,
+      p_tax_regime: taxRegime,
+      p_vat_regime: vatRegime,
+      p_fy_start: fiscalYear.start,
+      p_fy_end: fiscalYear.end,
+      p_accounts: ACCOUNTS,
+      p_settings: settings,
     }),
   );
 }
@@ -115,9 +122,14 @@ async function all(query) {
 }
 
 export async function loadStructure(structureId) {
-  const eq = (table, cols = '*') => () => supabase.from(table).select(cols).eq('structure_id', structureId);
+  const eq =
+    (table, cols = '*') =>
+    () =>
+      supabase.from(table).select(cols).eq('structure_id', structureId);
   // Exercice ouvert d'abord : seules ses écritures sont chargées (les exercices clos restent en base).
-  const fiscalYears = check(await supabase.from('fiscal_years').select('*').eq('structure_id', structureId).is('closed_at', null).order('start_date', { ascending: false }));
+  const fiscalYears = check(
+    await supabase.from('fiscal_years').select('*').eq('structure_id', structureId).is('closed_at', null).order('start_date', { ascending: false }),
+  );
   const fiscalYear = fiscalYears[0];
   if (!fiscalYear) throw new Error('Aucun exercice ouvert pour cette entreprise.');
   const [structure, banks, entries, invoices, counters, settlements, clients, purchases, transactions, recurring, documents, events] = await Promise.all([
@@ -143,7 +155,9 @@ export async function loadStructure(structureId) {
 
 /** Exercices clos de la structure, du plus récent au plus ancien. */
 export async function closedFiscalYears(structureId) {
-  return check(await supabase.from('fiscal_years').select('*').eq('structure_id', structureId).not('closed_at', 'is', null).order('start_date', { ascending: false }));
+  return check(
+    await supabase.from('fiscal_years').select('*').eq('structure_id', structureId).not('closed_at', 'is', null).order('start_date', { ascending: false }),
+  );
 }
 
 /** Écritures d'un exercice (lecture seule, pagination PostgREST). */
@@ -181,14 +195,26 @@ async function sha256Hex(file) {
  */
 export async function uploadReceipt(structureId, file, { entity, id }) {
   const sha = await sha256Hex(file);
-  const ext = (file.name.split('.').pop() || 'bin').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 5) || 'bin';
+  const ext =
+    (file.name.split('.').pop() || 'bin')
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '')
+      .slice(0, 5) || 'bin';
   const path = `${structureId}/${sha}.${ext}`;
   const { error } = await supabase.storage.from('justificatifs').upload(path, file, { contentType: file.type || 'application/octet-stream', upsert: false });
   if (error && !/exists|duplicate/i.test(error.message)) throw error;
   return check(
     await supabase
       .from('documents')
-      .insert({ structure_id: structureId, storage_path: path, sha256: sha, mime_type: file.type || 'application/octet-stream', original_name: file.name, linked_entity: entity, linked_id: id })
+      .insert({
+        structure_id: structureId,
+        storage_path: path,
+        sha256: sha,
+        mime_type: file.type || 'application/octet-stream',
+        original_name: file.name,
+        linked_entity: entity,
+        linked_id: id,
+      })
       .select()
       .single(),
   );

@@ -58,7 +58,15 @@ export function prepareCa3(ws, period, { previousCredit = 0 } = {}) {
         const foreignGoods = (inv.client.country || 'FR') !== 'FR' && inv.operationNature !== 'services';
         if (foreignGoods) exemptIntraGoods += ht;
         else otherExempt += ht;
-        justification.push({ line: foreignGoods ? 'F2' : 'E2', number: inv.number, client: inv.client.name, date: part.date, reason: part.reason, base: ht, vat: 0 });
+        justification.push({
+          line: foreignGoods ? 'F2' : 'E2',
+          number: inv.number,
+          client: inv.client.name,
+          date: part.date,
+          reason: part.reason,
+          base: ht,
+          vat: 0,
+        });
         continue;
       }
       // Déduction des acomptes déjà déclarés : la facture finale ne porte que le solde.
@@ -73,7 +81,15 @@ export function prepareCa3(ws, period, { previousCredit = 0 } = {}) {
         row.base += base;
         row.vat += vat;
         byRate.set(v.rateBp, row);
-        justification.push({ line: RATE_LINES[v.rateBp] || '08', number: inv.number, client: inv.client.name, date: part.date, reason: part.reason, base, vat });
+        justification.push({
+          line: RATE_LINES[v.rateBp] || '08',
+          number: inv.number,
+          client: inv.client.name,
+          date: part.date,
+          reason: part.reason,
+          base,
+          vat,
+        });
       }
     }
   }
@@ -87,7 +103,9 @@ export function prepareCa3(ws, period, { previousCredit = 0 } = {}) {
   const reverseCharge = net('445200');
   const deductibleAssets = debitNet('445620');
   const deductibleOther = debitNet('445660');
-  const reverseChargeBase = sum(ws.purchases.filter((p) => (p.supplier.country || 'FR') !== 'FR' && inPeriod(p.date, period)).map((p) => sum(p.lines.map((l) => l.ht))));
+  const reverseChargeBase = sum(
+    ws.purchases.filter((p) => (p.supplier.country || 'FR') !== 'FR' && inPeriod(p.date, period)).map((p) => sum(p.lines.map((l) => l.ht))),
+  );
 
   const rates = [...byRate.values()].sort((a, b) => b.rateBp - a.rateBp);
   const collected = sum(rates.map((r) => r.vat));
@@ -98,19 +116,27 @@ export function prepareCa3(ws, period, { previousCredit = 0 } = {}) {
   const warnings = [];
   // La TVA comptabilisée hors factures (écritures manuelles) ou un écart d'arrondi est signalé, jamais masqué.
   if (collectedLedger !== collected) {
-    warnings.push(`La TVA collectée d'après les factures (${collected / 100} €) diffère de celle comptabilisée en 44571 (${collectedLedger / 100} €) : vérifiez les écritures manuelles de la période.`);
+    warnings.push(
+      `La TVA collectée d'après les factures (${collected / 100} €) diffère de celle comptabilisée en 44571 (${collectedLedger / 100} €) : vérifiez les écritures manuelles de la période.`,
+    );
   }
   const drafts = ws.book.invoices.filter((i) => i.status === 'draft' && i.type !== 'quote' && inPeriod(i.issueDate || '', period));
   if (drafts.length) warnings.push(`${drafts.length} facture(s) en brouillon datée(s) de la période ne sont pas prises en compte.`);
   const openTx = ws.transactions.filter((t) => t.status === 'open' && inPeriod(t.date, period));
-  if (openTx.length) warnings.push(`${openTx.length} mouvement(s) bancaire(s) de la période restent à justifier : des encaissements ou des dépenses peuvent manquer.`);
+  if (openTx.length)
+    warnings.push(`${openTx.length} mouvement(s) bancaire(s) de la période restent à justifier : des encaissements ou des dépenses peuvent manquer.`);
 
   const boxes = {
     '01': sum(rates.map((r) => r.base)),
     '3B': reverseChargeBase,
     F2: exemptIntraGoods,
     E2: otherExempt,
-    ...Object.fromEntries(rates.flatMap((r) => [[`${RATE_LINES[r.rateBp] || '08'}-base`, r.base], [`${RATE_LINES[r.rateBp] || '08'}-taxe`, r.vat]])),
+    ...Object.fromEntries(
+      rates.flatMap((r) => [
+        [`${RATE_LINES[r.rateBp] || '08'}-base`, r.base],
+        [`${RATE_LINES[r.rateBp] || '08'}-taxe`, r.vat],
+      ]),
+    ),
     17: reverseCharge,
     16: grossVat,
     19: deductibleAssets,
@@ -141,7 +167,15 @@ export function liquidationEntry(ca3) {
   add('445670', -ca3.previousCredit);
   add('445810', -(ca3.advances || 0)); // CA12 : acomptes versés imputés
   add(ca3.balance > 0 ? '445510' : '445670', -ca3.balance);
-  return { journal: 'OD', date: ca3.period.to, label, pieceRef: `${ca3.kind || 'CA3'}-${ca3.period.from.slice(0, 7)}`, pieceDate: ca3.period.to, source: { kind: 'vat-return', period: ca3.period.from.slice(0, 7) }, lines };
+  return {
+    journal: 'OD',
+    date: ca3.period.to,
+    label,
+    pieceRef: `${ca3.kind || 'CA3'}-${ca3.period.from.slice(0, 7)}`,
+    pieceDate: ca3.period.to,
+    source: { kind: 'vat-return', period: ca3.period.from.slice(0, 7) },
+    lines,
+  };
 }
 
 /** Justification exportable (CSV Excel) : une ligne par facture prise en compte. */

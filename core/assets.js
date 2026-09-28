@@ -11,9 +11,9 @@ import { categoryById } from './pcg.js';
 import { straightLineSchedule } from './purchases.js';
 
 /** Durées d'usage courantes, à confirmer par l'expert-comptable. */
-export const DEFAULT_YEARS = { '205000': 1, '215400': 5, '218200': 5, '218300': 3, '218400': 10 };
+export const DEFAULT_YEARS = { 205000: 1, 215400: 5, 218200: 5, 218300: 3, 218400: 10 };
 
-export const DEPRECIATION_ACCOUNT = { '205000': '280500', '215400': '281540', '218200': '281820', '218300': '281830', '218400': '281840' };
+export const DEPRECIATION_ACCOUNT = { 205000: '280500', 215400: '281540', 218200: '281820', 218300: '281830', 218400: '281840' };
 
 /**
  * @param {object[]} purchases dépenses du Workspace

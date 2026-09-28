@@ -13,17 +13,47 @@ export const FEATURE_PAGES = [
     text: 'SIREN du client, nature des opérations, mentions obligatoires : la facture est bloquée tant qu’elle n’est pas conforme, avec la liste de ce qu’il manque.',
     lead: 'Créez une facture en deux minutes, sans connaître le Code de commerce : Nexus vérifie chaque mention obligatoire avant l’envoi, numérote sans trou, et prépare déjà le format électronique exigé à partir de septembre 2027.',
     images: [
-      { src: 'features/factures.webp', alt: 'Liste des factures avec les montants à échoir et en retard', caption: 'Vos factures d’un coup d’œil : ce qui est à échoir, ce qui est en retard (0-30, 31-60, plus de 60 jours), le reste dû par client et le statut de chaque facture.' },
-      { src: 'features/facture-edition.webp', alt: 'Formulaire de création d’une facture', caption: 'La saisie : un client, des dates, des lignes. La TVA et les totaux se calculent pendant que vous tapez.' },
+      {
+        src: 'features/factures.webp',
+        alt: 'Liste des factures avec les montants à échoir et en retard',
+        caption:
+          'Vos factures d’un coup d’œil : ce qui est à échoir, ce qui est en retard (0-30, 31-60, plus de 60 jours), le reste dû par client et le statut de chaque facture.',
+      },
+      {
+        src: 'features/facture-edition.webp',
+        alt: 'Formulaire de création d’une facture',
+        caption: 'La saisie : un client, des dates, des lignes. La TVA et les totaux se calculent pendant que vous tapez.',
+      },
     ],
     benefits: [
-      { title: 'Contrôle de conformité avant l’émission', text: 'Votre SIREN, votre adresse, votre capital social (pour une société), votre numéro de TVA, le SIREN et l’adresse du client, les dates, les désignations et les taux : tout est vérifié. S’il manque quelque chose, la facture n’est pas émise et Nexus vous dit exactement quoi compléter, champ par champ.' },
-      { title: 'Numérotation continue et définitive', text: 'Le numéro (F2026-0001, F2026-0002…) n’est attribué qu’au moment de l’émission, dans l’ordre, sans trou ni doublon. Tant que la facture est en brouillon, vous la modifiez librement ; une fois émise, elle ne se modifie plus : on la corrige par un avoir, comme l’exige la loi.' },
-      { title: 'Les nouvelles mentions de la réforme', text: 'Le SIREN du client et la nature des opérations (biens, services ou les deux) figurent déjà sur chaque facture, comme l’exige la facturation électronique obligatoire. Vous n’aurez rien à changer dans vos habitudes le jour venu.' },
-      { title: 'Facture électronique au format européen', text: 'Chaque facture émise se télécharge en XML au format CII, conforme à la norme européenne EN 16931 : le format que les plateformes agréées échangeront. La transmission directe par une plateforme agréée arrive avec la prochaine version, avant l’échéance de septembre 2027.' },
-      { title: 'Avoirs et factures d’acompte', text: 'Un avoir se crée en un clic depuis la facture qu’il corrige, et la référence de la facture d’origine y figure automatiquement. Pour un gros projet, émettez une facture d’acompte : elle sera déduite automatiquement de la facture finale.' },
-      { title: 'TVA et cas particuliers gérés pour vous', text: 'Taux de 20 %, 10 %, 5,5 % ou 2,1 %, ligne par ligne. Pour un client professionnel dans un autre pays de l’Union, la TVA n’est pas facturée et la mention d’autoliquidation est ajoutée. En franchise de TVA, la mention « TVA non applicable, art. 293 B du CGI » apparaît seule.' },
-      { title: 'Pénalités de retard et IBAN', text: 'Les mentions légales de pénalités de retard et d’indemnité forfaitaire de 40 € sont imprimées automatiquement, avec votre IBAN pour faciliter le virement.' },
+      {
+        title: 'Contrôle de conformité avant l’émission',
+        text: 'Votre SIREN, votre adresse, votre capital social (pour une société), votre numéro de TVA, le SIREN et l’adresse du client, les dates, les désignations et les taux : tout est vérifié. S’il manque quelque chose, la facture n’est pas émise et Nexus vous dit exactement quoi compléter, champ par champ.',
+      },
+      {
+        title: 'Numérotation continue et définitive',
+        text: 'Le numéro (F2026-0001, F2026-0002…) n’est attribué qu’au moment de l’émission, dans l’ordre, sans trou ni doublon. Tant que la facture est en brouillon, vous la modifiez librement ; une fois émise, elle ne se modifie plus : on la corrige par un avoir, comme l’exige la loi.',
+      },
+      {
+        title: 'Les nouvelles mentions de la réforme',
+        text: 'Le SIREN du client et la nature des opérations (biens, services ou les deux) figurent déjà sur chaque facture, comme l’exige la facturation électronique obligatoire. Vous n’aurez rien à changer dans vos habitudes le jour venu.',
+      },
+      {
+        title: 'Facture électronique au format européen',
+        text: 'Chaque facture émise se télécharge en XML au format CII, conforme à la norme européenne EN 16931 : le format que les plateformes agréées échangeront. La transmission directe par une plateforme agréée arrive avec la prochaine version, avant l’échéance de septembre 2027.',
+      },
+      {
+        title: 'Avoirs et factures d’acompte',
+        text: 'Un avoir se crée en un clic depuis la facture qu’il corrige, et la référence de la facture d’origine y figure automatiquement. Pour un gros projet, émettez une facture d’acompte : elle sera déduite automatiquement de la facture finale.',
+      },
+      {
+        title: 'TVA et cas particuliers gérés pour vous',
+        text: 'Taux de 20 %, 10 %, 5,5 % ou 2,1 %, ligne par ligne. Pour un client professionnel dans un autre pays de l’Union, la TVA n’est pas facturée et la mention d’autoliquidation est ajoutée. En franchise de TVA, la mention « TVA non applicable, art. 293 B du CGI » apparaît seule.',
+      },
+      {
+        title: 'Pénalités de retard et IBAN',
+        text: 'Les mentions légales de pénalités de retard et d’indemnité forfaitaire de 40 € sont imprimées automatiquement, avec votre IBAN pour faciliter le virement.',
+      },
       { title: 'Impression et PDF', text: 'Une mise en page sobre aux couleurs de Nexus, prête à imprimer ou à enregistrer en PDF pour l’envoyer par e-mail.' },
     ],
     steps: [
@@ -34,13 +64,25 @@ export const FEATURE_PAGES = [
     ],
     audience: [
       { role: 'Artisans et commerçants', text: 'Des factures propres et conformes sans logiciel compliqué, même sur le chantier ou en boutique.' },
-      { role: 'Consultants et indépendants', text: 'Prestations de services, clients en France comme à l’étranger : la bonne TVA et les bonnes mentions à chaque fois.' },
+      {
+        role: 'Consultants et indépendants',
+        text: 'Prestations de services, clients en France comme à l’étranger : la bonne TVA et les bonnes mentions à chaque fois.',
+      },
       { role: 'Dirigeants de TPE', text: 'Une facturation prête pour la réforme de 2026-2027, sans changer d’outil au dernier moment.' },
     ],
     faq: [
-      { q: 'Puis-je modifier une facture après l’avoir émise ?', a: 'Non, et c’est voulu : la loi interdit de modifier une facture émise. Vous créez un avoir en un clic depuis la facture concernée, puis une nouvelle facture si besoin. Tant qu’elle est en brouillon, en revanche, tout reste modifiable.' },
-      { q: 'Que se passe-t-il en septembre 2027 ?', a: 'Les entreprises devront envoyer leurs factures par une plateforme agréée, au format électronique. Nexus produit déjà ce format et les nouvelles mentions ; le branchement à une plateforme agréée arrive avant l’échéance, sans action de votre part sur vos factures.' },
-      { q: 'Mon client est en Belgique, que dois-je faire ?', a: 'Renseignez son numéro de TVA européen dans sa fiche. Nexus ne facture pas la TVA et ajoute la mention d’autoliquidation. Si le numéro manque, la facture est bloquée avec une explication.' },
+      {
+        q: 'Puis-je modifier une facture après l’avoir émise ?',
+        a: 'Non, et c’est voulu : la loi interdit de modifier une facture émise. Vous créez un avoir en un clic depuis la facture concernée, puis une nouvelle facture si besoin. Tant qu’elle est en brouillon, en revanche, tout reste modifiable.',
+      },
+      {
+        q: 'Que se passe-t-il en septembre 2027 ?',
+        a: 'Les entreprises devront envoyer leurs factures par une plateforme agréée, au format électronique. Nexus produit déjà ce format et les nouvelles mentions ; le branchement à une plateforme agréée arrive avant l’échéance, sans action de votre part sur vos factures.',
+      },
+      {
+        q: 'Mon client est en Belgique, que dois-je faire ?',
+        a: 'Renseignez son numéro de TVA européen dans sa fiche. Nexus ne facture pas la TVA et ajoute la mention d’autoliquidation. Si le numéro manque, la facture est bloquée avec une explication.',
+      },
     ],
     related: ['devis', 'relances', 'banque'],
   },
@@ -51,17 +93,46 @@ export const FEATURE_PAGES = [
     text: 'Un devis accepté devient une facture en un clic, et vos prestations mensuelles se facturent toutes seules à chaque échéance.',
     lead: 'Du premier devis à la dernière facture d’un contrat, Nexus enchaîne les documents sans ressaisie : le devis se transforme en facture, l’acompte se déduit tout seul, et les abonnements se préparent automatiquement chaque mois.',
     images: [
-      { src: 'features/devis-detail.webp', alt: 'Devis D2026-0001 avec le bouton Transformer en facture', caption: 'Un devis envoyé, avec sa date de validité et la mention « Bon pour accord ». Le bouton « Transformer en facture » reprend toutes les lignes.' },
-      { src: 'features/recurrentes.webp', alt: 'Formulaire de facture récurrente et liste des abonnements', caption: 'Les factures récurrentes : client, montant, fréquence et date de la prochaine facture. Vous les suspendez quand vous voulez.' },
+      {
+        src: 'features/devis-detail.webp',
+        alt: 'Devis D2026-0001 avec le bouton Transformer en facture',
+        caption: 'Un devis envoyé, avec sa date de validité et la mention « Bon pour accord ». Le bouton « Transformer en facture » reprend toutes les lignes.',
+      },
+      {
+        src: 'features/recurrentes.webp',
+        alt: 'Formulaire de facture récurrente et liste des abonnements',
+        caption: 'Les factures récurrentes : client, montant, fréquence et date de la prochaine facture. Vous les suspendez quand vous voulez.',
+      },
     ],
     benefits: [
-      { title: 'Des devis numérotés à part', text: 'Vos devis ont leur propre série (D2026-0001…), distincte de celle des factures. Ils portent une date de validité et la mention « Bon pour accord : date et signature du client ».' },
-      { title: 'Devis vers facture en un clic', text: 'Quand le client accepte, « Transformer en facture » crée un brouillon de facture avec les mêmes lignes et le même client. Le devis passe au statut « Facturé » : vous savez toujours ce qui a été converti.' },
-      { title: 'Suivi des devis', text: 'Chaque devis affiche son état : envoyé, facturé ou expiré une fois la date de validité passée. Plus besoin d’un tableau à part pour savoir où en sont vos propositions.' },
-      { title: 'Factures d’acompte', text: 'Demandez un acompte avant de commencer un chantier ou une mission. À la facture finale, les acomptes déjà versés sont déduits automatiquement et le reste à payer est juste.' },
-      { title: 'Factures récurrentes', text: 'Maintenance, loyer, suivi mensuel, abonnement : indiquez le client, le montant, la fréquence (chaque mois, trimestre ou année) et la date de départ. La période (« octobre 2026 ») est ajoutée à la désignation automatiquement.' },
-      { title: 'Brouillon ou émission automatique, au choix', text: 'Par défaut, chaque échéance prépare un brouillon qui apparaît dans votre liste « À faire » pour que vous le vérifiiez. Si vous préférez, cochez l’émission automatique : la facture part avec son numéro sans intervention.' },
-      { title: 'Une date de fin si besoin', text: 'Pour un contrat de douze mois, indiquez la date de la dernière facture : les échéances s’arrêtent d’elles-mêmes. Vous pouvez aussi suspendre ou supprimer un abonnement à tout moment.' },
+      {
+        title: 'Des devis numérotés à part',
+        text: 'Vos devis ont leur propre série (D2026-0001…), distincte de celle des factures. Ils portent une date de validité et la mention « Bon pour accord : date et signature du client ».',
+      },
+      {
+        title: 'Devis vers facture en un clic',
+        text: 'Quand le client accepte, « Transformer en facture » crée un brouillon de facture avec les mêmes lignes et le même client. Le devis passe au statut « Facturé » : vous savez toujours ce qui a été converti.',
+      },
+      {
+        title: 'Suivi des devis',
+        text: 'Chaque devis affiche son état : envoyé, facturé ou expiré une fois la date de validité passée. Plus besoin d’un tableau à part pour savoir où en sont vos propositions.',
+      },
+      {
+        title: 'Factures d’acompte',
+        text: 'Demandez un acompte avant de commencer un chantier ou une mission. À la facture finale, les acomptes déjà versés sont déduits automatiquement et le reste à payer est juste.',
+      },
+      {
+        title: 'Factures récurrentes',
+        text: 'Maintenance, loyer, suivi mensuel, abonnement : indiquez le client, le montant, la fréquence (chaque mois, trimestre ou année) et la date de départ. La période (« octobre 2026 ») est ajoutée à la désignation automatiquement.',
+      },
+      {
+        title: 'Brouillon ou émission automatique, au choix',
+        text: 'Par défaut, chaque échéance prépare un brouillon qui apparaît dans votre liste « À faire » pour que vous le vérifiiez. Si vous préférez, cochez l’émission automatique : la facture part avec son numéro sans intervention.',
+      },
+      {
+        title: 'Une date de fin si besoin',
+        text: 'Pour un contrat de douze mois, indiquez la date de la dernière facture : les échéances s’arrêtent d’elles-mêmes. Vous pouvez aussi suspendre ou supprimer un abonnement à tout moment.',
+      },
     ],
     steps: [
       'Cliquez sur « Créer un devis », choisissez le client et ajoutez vos lignes, exactement comme pour une facture.',
@@ -75,9 +146,18 @@ export const FEATURE_PAGES = [
       { role: 'Formateurs et consultants', text: 'Des propositions commerciales suivies jusqu’à la facture, sans rien ressaisir.' },
     ],
     faq: [
-      { q: 'Un devis a-t-il une valeur comptable ?', a: 'Non : un devis n’entre pas dans la comptabilité. Seule la facture, une fois émise, génère une écriture. C’est pourquoi Nexus les numérote dans deux séries séparées.' },
-      { q: 'Puis-je modifier le montant d’un abonnement ?', a: 'Oui. La modification s’applique aux prochaines échéances ; les factures déjà émises ne changent pas, comme la loi l’exige.' },
-      { q: 'Que se passe-t-il si je ne me connecte pas pendant plusieurs mois ?', a: 'Les échéances en retard sont rattrapées à votre prochaine connexion, dans l’ordre, avec une limite de douze à la fois par sécurité.' },
+      {
+        q: 'Un devis a-t-il une valeur comptable ?',
+        a: 'Non : un devis n’entre pas dans la comptabilité. Seule la facture, une fois émise, génère une écriture. C’est pourquoi Nexus les numérote dans deux séries séparées.',
+      },
+      {
+        q: 'Puis-je modifier le montant d’un abonnement ?',
+        a: 'Oui. La modification s’applique aux prochaines échéances ; les factures déjà émises ne changent pas, comme la loi l’exige.',
+      },
+      {
+        q: 'Que se passe-t-il si je ne me connecte pas pendant plusieurs mois ?',
+        a: 'Les échéances en retard sont rattrapées à votre prochaine connexion, dans l’ordre, avec une limite de douze à la fois par sécurité.',
+      },
     ],
     related: ['factures', 'relances', 'banque'],
   },
@@ -88,18 +168,51 @@ export const FEATURE_PAGES = [
     text: 'Importez votre relevé : chaque virement est associé à sa facture (montant, numéro, nom du client), les paiements groupés et partiels compris.',
     lead: 'Importez le relevé de votre banque et laissez Nexus faire le lien entre chaque mouvement et la facture ou la dépense qui lui correspond. Ce qui prend une demi-journée par mois dans un tableur se règle en quelques clics.',
     images: [
-      { src: 'features/banque.webp', alt: 'Écran Banque : virement associé à sa facture avec un indice de confiance', caption: 'Pour chaque mouvement, Nexus propose la facture correspondante et explique pourquoi : montant identique, numéro de facture dans le libellé, nom du client. Ici, confiance à 100 %.' },
-      { src: 'features/accueil.webp', alt: 'Accueil avec la trésorerie et la liste À faire', caption: 'Sur l’accueil, votre trésorerie est à jour et les mouvements à justifier remontent dans la liste « À faire ».' },
+      {
+        src: 'features/banque.webp',
+        alt: 'Écran Banque : virement associé à sa facture avec un indice de confiance',
+        caption:
+          'Pour chaque mouvement, Nexus propose la facture correspondante et explique pourquoi : montant identique, numéro de facture dans le libellé, nom du client. Ici, confiance à 100 %.',
+      },
+      {
+        src: 'features/accueil.webp',
+        alt: 'Accueil avec la trésorerie et la liste À faire',
+        caption: 'Sur l’accueil, votre trésorerie est à jour et les mouvements à justifier remontent dans la liste « À faire ».',
+      },
     ],
     benefits: [
-      { title: 'Import de relevé en CSV ou OFX', text: 'Toutes les banques françaises proposent ces formats dans leur espace client. Nexus reconnaît les colonnes, les dates et les montants, quelle que soit la banque.' },
-      { title: 'Aucun doublon, même en réimportant', text: 'Vous pouvez importer deux fois le même relevé, ou des relevés qui se chevauchent : les mouvements déjà connus sont reconnus et ignorés.' },
-      { title: 'Rapprochement intelligent', text: 'Pour chaque encaissement, Nexus cherche la facture qui correspond : même montant, numéro de facture dans le libellé du virement, nom du client. Chaque proposition affiche ses raisons et un niveau de confiance ; vous validez d’un clic sur « Associer ».' },
-      { title: 'Paiements groupés et partiels', text: 'Un client règle trois factures en un seul virement ? Nexus retrouve la combinaison. Il paie la moitié ? Le paiement partiel est enregistré et le reste dû reste suivi sur la facture.' },
-      { title: 'Une catégorie pour tout le reste', text: 'Frais bancaires, billet de train, paiement de la TVA, acompte d’impôt, apport personnel : choisissez la catégorie dans une liste en français, indiquez le taux de TVA et si vous avez la facture. L’écriture est passée pour vous.' },
-      { title: 'Justificatif manquant signalé', text: 'Si vous indiquez ne pas avoir la facture d’une dépense, elle reste signalée dans « À faire » jusqu’à ce que vous l’ajoutiez : indispensable pour récupérer la TVA et en cas de contrôle.' },
-      { title: 'État de rapprochement', text: 'Saisissez le solde affiché par votre banque : Nexus le compare au solde comptable et vous montre l’écart éventuel, pour être sûr que rien n’a été oublié.' },
-      { title: 'Lettrage automatique', text: 'Chaque paiement associé solde la facture dans les comptes clients et fournisseurs. Votre expert-comptable retrouve un compte client propre, sans pointage manuel.' },
+      {
+        title: 'Import de relevé en CSV ou OFX',
+        text: 'Toutes les banques françaises proposent ces formats dans leur espace client. Nexus reconnaît les colonnes, les dates et les montants, quelle que soit la banque.',
+      },
+      {
+        title: 'Aucun doublon, même en réimportant',
+        text: 'Vous pouvez importer deux fois le même relevé, ou des relevés qui se chevauchent : les mouvements déjà connus sont reconnus et ignorés.',
+      },
+      {
+        title: 'Rapprochement intelligent',
+        text: 'Pour chaque encaissement, Nexus cherche la facture qui correspond : même montant, numéro de facture dans le libellé du virement, nom du client. Chaque proposition affiche ses raisons et un niveau de confiance ; vous validez d’un clic sur « Associer ».',
+      },
+      {
+        title: 'Paiements groupés et partiels',
+        text: 'Un client règle trois factures en un seul virement ? Nexus retrouve la combinaison. Il paie la moitié ? Le paiement partiel est enregistré et le reste dû reste suivi sur la facture.',
+      },
+      {
+        title: 'Une catégorie pour tout le reste',
+        text: 'Frais bancaires, billet de train, paiement de la TVA, acompte d’impôt, apport personnel : choisissez la catégorie dans une liste en français, indiquez le taux de TVA et si vous avez la facture. L’écriture est passée pour vous.',
+      },
+      {
+        title: 'Justificatif manquant signalé',
+        text: 'Si vous indiquez ne pas avoir la facture d’une dépense, elle reste signalée dans « À faire » jusqu’à ce que vous l’ajoutiez : indispensable pour récupérer la TVA et en cas de contrôle.',
+      },
+      {
+        title: 'État de rapprochement',
+        text: 'Saisissez le solde affiché par votre banque : Nexus le compare au solde comptable et vous montre l’écart éventuel, pour être sûr que rien n’a été oublié.',
+      },
+      {
+        title: 'Lettrage automatique',
+        text: 'Chaque paiement associé solde la facture dans les comptes clients et fournisseurs. Votre expert-comptable retrouve un compte client propre, sans pointage manuel.',
+      },
     ],
     steps: [
       'Dans l’espace client de votre banque, téléchargez votre relevé au format CSV ou OFX.',
@@ -109,12 +222,21 @@ export const FEATURE_PAGES = [
     ],
     audience: [
       { role: 'Dirigeants pressés', text: 'Dix minutes par mois pour une banque entièrement justifiée, au lieu d’une soirée de pointage.' },
-      { role: 'Entreprises avec beaucoup d’encaissements', text: 'Paiements groupés, partiels ou avec des libellés approximatifs : Nexus retrouve les bonnes factures.' },
+      {
+        role: 'Entreprises avec beaucoup d’encaissements',
+        text: 'Paiements groupés, partiels ou avec des libellés approximatifs : Nexus retrouve les bonnes factures.',
+      },
       { role: 'Experts-comptables', text: 'Un compte banque rapproché et des comptes clients lettrés, sans reprise en fin d’année.' },
     ],
     faq: [
-      { q: 'Nexus se connecte-t-il directement à ma banque ?', a: 'Aujourd’hui, vous importez votre relevé (CSV ou OFX) en quelques secondes. La synchronisation automatique avec les banques arrivera dans une prochaine version.' },
-      { q: 'Et si Nexus se trompe de facture ?', a: 'Rien n’est associé sans votre validation. Vous voyez toujours la proposition et ses raisons avant de cliquer, et vous pouvez choisir une autre facture ou une catégorie à la place.' },
+      {
+        q: 'Nexus se connecte-t-il directement à ma banque ?',
+        a: 'Aujourd’hui, vous importez votre relevé (CSV ou OFX) en quelques secondes. La synchronisation automatique avec les banques arrivera dans une prochaine version.',
+      },
+      {
+        q: 'Et si Nexus se trompe de facture ?',
+        a: 'Rien n’est associé sans votre validation. Vous voyez toujours la proposition et ses raisons avant de cliquer, et vous pouvez choisir une autre facture ou une catégorie à la place.',
+      },
       { q: 'Que faire d’un mouvement qui ne me concerne pas ?', a: 'Cliquez sur « Ignorer » : il sort de la liste à justifier sans créer d’écriture.' },
     ],
     related: ['factures', 'depenses', 'tva'],
@@ -126,18 +248,51 @@ export const FEATURE_PAGES = [
     text: '« Carburant », « Loyer », « Logiciel » : vous choisissez la catégorie, Nexus applique les bonnes règles de TVA et repère les doublons.',
     lead: 'Pas besoin de connaître le plan comptable ni les règles de récupération de TVA : vous choisissez une catégorie en français, Nexus choisit le bon compte, applique la bonne TVA et range le justificatif.',
     images: [
-      { src: 'features/depenses.webp', alt: 'Formulaire d’ajout de dépense et liste des dépenses payées avec justificatif', caption: 'Ajouter une dépense : fournisseur, date, numéro, catégorie, montant TTC et justificatif. La liste montre ce qui est payé et ce qui a son justificatif.' },
-      { src: 'features/immobilisations.webp', alt: 'Onglet Immobilisations avec le plan d’amortissement', caption: 'Un ordinateur ou un meuble est reconnu comme équipement durable : son coût est réparti sur sa durée d’usage.' },
+      {
+        src: 'features/depenses.webp',
+        alt: 'Formulaire d’ajout de dépense et liste des dépenses payées avec justificatif',
+        caption:
+          'Ajouter une dépense : fournisseur, date, numéro, catégorie, montant TTC et justificatif. La liste montre ce qui est payé et ce qui a son justificatif.',
+      },
+      {
+        src: 'features/immobilisations.webp',
+        alt: 'Onglet Immobilisations avec le plan d’amortissement',
+        caption: 'Un ordinateur ou un meuble est reconnu comme équipement durable : son coût est réparti sur sa durée d’usage.',
+      },
     ],
     benefits: [
-      { title: '26 catégories en langage courant', text: 'Loyer, carburant, assurances, logiciels, déplacements, hôtels, honoraires, publicité, fournitures, sous-traitance… Chaque catégorie correspond au bon compte comptable, sans que vous ayez à le connaître.' },
-      { title: 'Les règles de TVA appliquées automatiquement', text: 'Carburant d’une voiture : 80 % de TVA récupérable. Location, entretien d’une voiture de tourisme, billets de train ou d’avion, hôtels : TVA non récupérable. Cadeaux clients : récupérable seulement sous le seuil de 73 € TTC par bénéficiaire. Vous ne récupérez que ce qui est permis.' },
-      { title: 'Détection des doublons', text: 'Même fournisseur, même numéro ou même montant à la même date : Nexus vous prévient avant d’enregistrer une facture déjà saisie.' },
-      { title: 'Justificatif rangé avec la dépense', text: 'Joignez la photo ou le PDF de la facture : il est conservé dans son format d’origine, rattaché à la dépense, et retrouvable par votre expert-comptable.' },
-      { title: 'Import des factures électroniques', text: 'Vos fournisseurs vous envoient des factures au format XML (CII ou UBL) ? Importez le fichier : fournisseur, numéro, date, montants et TVA sont remplis automatiquement.' },
-      { title: 'Équipements amortis automatiquement', text: 'Un ordinateur, du mobilier : Nexus les enregistre comme immobilisations, propose une durée d’amortissement et calcule la dotation de l’année et la valeur restante, avec le plan détaillé.' },
-      { title: 'Avoirs fournisseurs', text: 'Un fournisseur vous rembourse ? Choisissez le type de pièce « Avoir » : l’écriture est inversée et la TVA corrigée.' },
-      { title: 'Fournisseurs étrangers', text: 'Pour un achat auprès d’une entreprise étrangère, la TVA due en France est calculée et déduite en même temps (autoliquidation), sans effet sur votre trésorerie.' },
+      {
+        title: '26 catégories en langage courant',
+        text: 'Loyer, carburant, assurances, logiciels, déplacements, hôtels, honoraires, publicité, fournitures, sous-traitance… Chaque catégorie correspond au bon compte comptable, sans que vous ayez à le connaître.',
+      },
+      {
+        title: 'Les règles de TVA appliquées automatiquement',
+        text: 'Carburant d’une voiture : 80 % de TVA récupérable. Location, entretien d’une voiture de tourisme, billets de train ou d’avion, hôtels : TVA non récupérable. Cadeaux clients : récupérable seulement sous le seuil de 73 € TTC par bénéficiaire. Vous ne récupérez que ce qui est permis.',
+      },
+      {
+        title: 'Détection des doublons',
+        text: 'Même fournisseur, même numéro ou même montant à la même date : Nexus vous prévient avant d’enregistrer une facture déjà saisie.',
+      },
+      {
+        title: 'Justificatif rangé avec la dépense',
+        text: 'Joignez la photo ou le PDF de la facture : il est conservé dans son format d’origine, rattaché à la dépense, et retrouvable par votre expert-comptable.',
+      },
+      {
+        title: 'Import des factures électroniques',
+        text: 'Vos fournisseurs vous envoient des factures au format XML (CII ou UBL) ? Importez le fichier : fournisseur, numéro, date, montants et TVA sont remplis automatiquement.',
+      },
+      {
+        title: 'Équipements amortis automatiquement',
+        text: 'Un ordinateur, du mobilier : Nexus les enregistre comme immobilisations, propose une durée d’amortissement et calcule la dotation de l’année et la valeur restante, avec le plan détaillé.',
+      },
+      {
+        title: 'Avoirs fournisseurs',
+        text: 'Un fournisseur vous rembourse ? Choisissez le type de pièce « Avoir » : l’écriture est inversée et la TVA corrigée.',
+      },
+      {
+        title: 'Fournisseurs étrangers',
+        text: 'Pour un achat auprès d’une entreprise étrangère, la TVA due en France est calculée et déduite en même temps (autoliquidation), sans effet sur votre trésorerie.',
+      },
     ],
     steps: [
       'Dans « Dépenses », indiquez le fournisseur, la date et le numéro de la facture.',
@@ -151,8 +306,14 @@ export const FEATURE_PAGES = [
       { role: 'Experts-comptables', text: 'Des dépenses bien imputées, avec leur justificatif et une TVA juste, sans reclassement.' },
     ],
     faq: [
-      { q: 'Dois-je saisir le montant hors taxes ?', a: 'Non, saisissez le montant TTC figurant sur la facture : Nexus calcule le hors taxes et la TVA selon le taux choisi.' },
-      { q: 'Nexus lit-il automatiquement mes factures papier ?', a: 'Pas encore : la lecture automatique des photos de factures arrive dans une prochaine version. Les factures électroniques (XML), elles, se remplissent déjà toutes seules.' },
+      {
+        q: 'Dois-je saisir le montant hors taxes ?',
+        a: 'Non, saisissez le montant TTC figurant sur la facture : Nexus calcule le hors taxes et la TVA selon le taux choisi.',
+      },
+      {
+        q: 'Nexus lit-il automatiquement mes factures papier ?',
+        a: 'Pas encore : la lecture automatique des photos de factures arrive dans une prochaine version. Les factures électroniques (XML), elles, se remplissent déjà toutes seules.',
+      },
       { q: 'Où sont stockés mes justificatifs ?', a: 'Dans un espace sécurisé hébergé à Paris, accessible uniquement aux membres de votre entreprise.' },
     ],
     related: ['banque', 'tva', 'cloture'],
@@ -164,16 +325,42 @@ export const FEATURE_PAGES = [
     text: 'Collectée, déductible, à payer : chaque mois, le montant est prêt et justifié facture par facture, TVA sur encaissements comprise.',
     lead: 'Plus de calcul de dernière minute : à partir de vos factures, de vos dépenses et de votre banque, Nexus prépare votre déclaration de TVA case par case, vous rappelle l’échéance et garde la trace de ce qui a été déclaré.',
     images: [
-      { src: 'features/tva.webp', alt: 'Déclaration de TVA de juillet : TVA due, récupérable et à payer', caption: 'La déclaration du mois : TVA due, TVA récupérable, montant à payer et numéros de case du formulaire officiel. Un clic pour valider, un autre pour exporter le détail.' },
+      {
+        src: 'features/tva.webp',
+        alt: 'Déclaration de TVA de juillet : TVA due, récupérable et à payer',
+        caption:
+          'La déclaration du mois : TVA due, TVA récupérable, montant à payer et numéros de case du formulaire officiel. Un clic pour valider, un autre pour exporter le détail.',
+      },
     ],
     benefits: [
-      { title: 'Déclaration mensuelle (CA3) case par case', text: 'Ventes imposables, base et TVA par taux, TVA récupérable sur les équipements et sur les autres dépenses, crédit de TVA reporté : chaque montant est placé dans sa case du formulaire, prêt à être recopié.' },
-      { title: 'Régime simplifié (CA12) et acomptes', text: 'Au régime simplifié, Nexus prépare la déclaration annuelle et calcule les deux acomptes de juillet et décembre (55 % et 40 % de la TVA de l’année précédente).' },
-      { title: 'TVA sur les encaissements ou sur les débits', text: 'Pour les prestations de services, la TVA est due à l’encaissement : Nexus attend le paiement du client pour la compter. Si vous avez opté pour les débits, cochez la case dans les paramètres.' },
-      { title: 'Justifiée facture par facture', text: 'Chaque montant s’appuie sur la liste des factures et des dépenses concernées, avec la date d’exigibilité. Exportez ce détail en Excel pour votre expert-comptable ou en cas de contrôle.' },
-      { title: 'Rappel des échéances', text: 'La date limite de dépôt apparaît dans votre liste « À faire ». Si elle est dépassée sans déclaration validée, l’alerte passe en tête de liste.' },
-      { title: 'Validation et écriture automatique', text: 'Quand vous validez une déclaration, la TVA du mois est soldée dans la comptabilité et le montant à payer est enregistré. Au paiement, la catégorie « Paiement de TVA » dans l’écran Banque le rapproche.' },
-      { title: 'Crédit de TVA reporté', text: 'Un mois où vous récupérez plus que vous ne collectez, le crédit est automatiquement reporté sur la déclaration suivante.' },
+      {
+        title: 'Déclaration mensuelle (CA3) case par case',
+        text: 'Ventes imposables, base et TVA par taux, TVA récupérable sur les équipements et sur les autres dépenses, crédit de TVA reporté : chaque montant est placé dans sa case du formulaire, prêt à être recopié.',
+      },
+      {
+        title: 'Régime simplifié (CA12) et acomptes',
+        text: 'Au régime simplifié, Nexus prépare la déclaration annuelle et calcule les deux acomptes de juillet et décembre (55 % et 40 % de la TVA de l’année précédente).',
+      },
+      {
+        title: 'TVA sur les encaissements ou sur les débits',
+        text: 'Pour les prestations de services, la TVA est due à l’encaissement : Nexus attend le paiement du client pour la compter. Si vous avez opté pour les débits, cochez la case dans les paramètres.',
+      },
+      {
+        title: 'Justifiée facture par facture',
+        text: 'Chaque montant s’appuie sur la liste des factures et des dépenses concernées, avec la date d’exigibilité. Exportez ce détail en Excel pour votre expert-comptable ou en cas de contrôle.',
+      },
+      {
+        title: 'Rappel des échéances',
+        text: 'La date limite de dépôt apparaît dans votre liste « À faire ». Si elle est dépassée sans déclaration validée, l’alerte passe en tête de liste.',
+      },
+      {
+        title: 'Validation et écriture automatique',
+        text: 'Quand vous validez une déclaration, la TVA du mois est soldée dans la comptabilité et le montant à payer est enregistré. Au paiement, la catégorie « Paiement de TVA » dans l’écran Banque le rapproche.',
+      },
+      {
+        title: 'Crédit de TVA reporté',
+        text: 'Un mois où vous récupérez plus que vous ne collectez, le crédit est automatiquement reporté sur la déclaration suivante.',
+      },
     ],
     steps: [
       'Tenez vos factures, vos dépenses et votre banque à jour dans Nexus : c’est tout ce qu’il faut.',
@@ -187,9 +374,18 @@ export const FEATURE_PAGES = [
       { role: 'Prestataires de services', text: 'La TVA sur les encaissements gérée correctement, même avec des clients qui paient en retard.' },
     ],
     faq: [
-      { q: 'Nexus envoie-t-il la déclaration aux impôts ?', a: 'Pas encore : vous recopiez les montants sur votre espace professionnel impots.gouv.fr. La télétransmission directe arrive dans une prochaine version.' },
-      { q: 'Je suis en franchise de TVA, suis-je concerné ?', a: 'Non : en franchise, vous ne facturez pas de TVA. Nexus surveille en revanche votre chiffre d’affaires et vous prévient avant de dépasser les seuils (voir la page Micro-entrepreneur).' },
-      { q: 'Puis-je corriger une déclaration déjà validée ?', a: 'Une déclaration validée est figée, comme sur impots.gouv.fr. Une erreur se régularise sur la déclaration suivante, avec l’aide de votre expert-comptable si besoin.' },
+      {
+        q: 'Nexus envoie-t-il la déclaration aux impôts ?',
+        a: 'Pas encore : vous recopiez les montants sur votre espace professionnel impots.gouv.fr. La télétransmission directe arrive dans une prochaine version.',
+      },
+      {
+        q: 'Je suis en franchise de TVA, suis-je concerné ?',
+        a: 'Non : en franchise, vous ne facturez pas de TVA. Nexus surveille en revanche votre chiffre d’affaires et vous prévient avant de dépasser les seuils (voir la page Micro-entrepreneur).',
+      },
+      {
+        q: 'Puis-je corriger une déclaration déjà validée ?',
+        a: 'Une déclaration validée est figée, comme sur impots.gouv.fr. Une erreur se régularise sur la déclaration suivante, avec l’aide de votre expert-comptable si besoin.',
+      },
     ],
     related: ['banque', 'depenses', 'compta'],
   },
@@ -200,20 +396,53 @@ export const FEATURE_PAGES = [
     text: 'Livre des recettes, déclaration URSSAF guidée et suivie jusqu’au paiement, alerte avant de dépasser les seuils de TVA.',
     lead: 'La micro-entreprise a ses propres règles : pas de comptabilité complète, mais un livre des recettes, une déclaration à l’URSSAF et des seuils à surveiller. Nexus s’adapte et vous montre uniquement ce qui vous concerne.',
     images: [
-      { src: 'features/micro.webp', alt: 'Écran URSSAF et seuils : montants à déclarer par trimestre, suivi du seuil de TVA et livre des recettes', caption: 'Chaque période avec son chiffre d’affaires encaissé, son échéance et son état (à déclarer, en retard, déclarée, payée). Le bouton « Déclarer » ouvre le parcours guidé.' },
+      {
+        src: 'features/micro.webp',
+        alt: 'Écran URSSAF et seuils : montants à déclarer par trimestre, suivi du seuil de TVA et livre des recettes',
+        caption:
+          'Chaque période avec son chiffre d’affaires encaissé, son échéance et son état (à déclarer, en retard, déclarée, payée). Le bouton « Déclarer » ouvre le parcours guidé.',
+      },
     ],
     benefits: [
-      { title: 'Le montant URSSAF prêt chaque trimestre ou chaque mois', text: 'Le montant à déclarer est votre chiffre d’affaires réellement encaissé sur la période, et non facturé. Nexus le calcule à partir des paiements reçus, selon votre rythme de déclaration (trimestriel ou mensuel).' },
-      { title: 'Déclaration guidée, suivie jusqu’au paiement', text: 'Un bouton « Déclarer » copie le montant, ouvre votre espace URSSAF et vous invite à reporter les cotisations calculées. Chaque période affiche son échéance et son état : à déclarer, en retard, déclarée, payée. Le prélèvement de l’URSSAF, classé en « Cotisations URSSAF » dans Banque, solde automatiquement la déclaration.' },
-      { title: 'Rappel avant chaque échéance', text: 'La prochaine déclaration apparaît dans votre liste « À faire » avec sa date limite (30 avril, 31 juillet, 31 octobre, 31 janvier au trimestre). Passé ce délai, l’alerte passe en tête de liste.' },
-      { title: 'Livre des recettes tenu automatiquement', text: 'Chaque encaissement est inscrit avec sa date, la facture, le client et le mode de paiement. Le livre est exportable en Excel à tout moment, comme l’exige la loi.' },
-      { title: 'Surveillance des seuils de TVA', text: 'Nexus suit votre chiffre d’affaires encaissé de l’année et vous alerte à 80 % du seuil de franchise, puis en cas de dépassement du seuil de base ou du seuil majoré, avec ce que cela implique pour votre TVA.' },
-      { title: 'Activité mixte prise en compte', text: 'Vous vendez des biens et des services ? Les deux seuils sont suivis séparément, comme le prévoit la règle.' },
-      { title: 'Une interface allégée', text: 'Pas de TVA à déclarer, pas de bilan : le menu ne montre que Factures, Dépenses, Banque et URSSAF. Les factures portent automatiquement la mention « TVA non applicable, art. 293 B du CGI ».' },
-      { title: 'Registre des achats', text: 'Si vous vendez des marchandises, vos achats sont tenus dans un registre, lui aussi obligatoire pour cette activité.' },
+      {
+        title: 'Le montant URSSAF prêt chaque trimestre ou chaque mois',
+        text: 'Le montant à déclarer est votre chiffre d’affaires réellement encaissé sur la période, et non facturé. Nexus le calcule à partir des paiements reçus, selon votre rythme de déclaration (trimestriel ou mensuel).',
+      },
+      {
+        title: 'Déclaration guidée, suivie jusqu’au paiement',
+        text: 'Un bouton « Déclarer » copie le montant, ouvre votre espace URSSAF et vous invite à reporter les cotisations calculées. Chaque période affiche son échéance et son état : à déclarer, en retard, déclarée, payée. Le prélèvement de l’URSSAF, classé en « Cotisations URSSAF » dans Banque, solde automatiquement la déclaration.',
+      },
+      {
+        title: 'Cotisations estimées et somme à mettre de côté',
+        text: 'Pour chaque période, Nexus estime vos cotisations selon votre activité, votre caisse de retraite (régime général ou CIPAV) et votre ACRE, et affiche la somme à mettre de côté pour le trimestre en cours. L’estimation pré-remplit votre déclaration ; le montant qui fait foi reste celui de l’URSSAF. Certaines contributions (formation professionnelle, versement libératoire, chambre consulaire) seront ajoutées à l’estimation une fois leurs taux validés par notre expert-comptable.',
+      },
+      {
+        title: 'Rappel avant chaque échéance',
+        text: 'La prochaine déclaration apparaît dans votre liste « À faire » avec sa date limite (30 avril, 31 juillet, 31 octobre, 31 janvier au trimestre). Passé ce délai, l’alerte passe en tête de liste.',
+      },
+      {
+        title: 'Livre des recettes tenu automatiquement',
+        text: 'Chaque encaissement est inscrit avec sa date, la facture, le client et le mode de paiement. Le livre est exportable en Excel à tout moment, comme l’exige la loi.',
+      },
+      {
+        title: 'Une réponse claire sur la TVA',
+        text: 'En tête de l’accueil et de l’écran URSSAF : « Vous êtes en franchise de TVA : aucune déclaration de TVA à faire », avec le rappel de la mention obligatoire sur vos factures. Nexus suit votre chiffre d’affaires encaissé et vous alerte à 80 % du seuil. En cas de dépassement, il explique quand la franchise prend fin (en tenant compte de l’année précédente) et le régime qui s’applique alors par défaut : le réel simplifié, avec une déclaration annuelle et deux acomptes.',
+      },
+      {
+        title: 'Activité mixte prise en compte',
+        text: 'Vous vendez des biens et des services ? Les deux seuils sont suivis séparément, comme le prévoit la règle.',
+      },
+      {
+        title: 'Une interface allégée',
+        text: 'Pas de TVA à déclarer, pas de bilan : le menu ne montre que Factures, Dépenses, Banque et URSSAF. Les factures portent automatiquement la mention « TVA non applicable, art. 293 B du CGI ».',
+      },
+      {
+        title: 'Registre des achats',
+        text: 'Si vous vendez des marchandises, vos achats sont tenus dans un registre, lui aussi obligatoire pour cette activité.',
+      },
     ],
     steps: [
-      'À l’inscription, indiquez que vous êtes micro-entrepreneur : Nexus adapte les écrans et les factures.',
+      'À l’inscription, indiquez que vous êtes micro-entrepreneur, puis précisez votre activité, votre caisse de retraite et votre ACRE dans Paramètres > Ma micro-entreprise.',
       'Émettez vos factures et importez votre relevé bancaire pour enregistrer les encaissements.',
       'À la fin du trimestre, Nexus vous le rappelle : ouvrez « URSSAF et seuils » et cliquez sur « Déclarer ».',
       'Copiez le montant, déclarez-le sur votre espace URSSAF, puis reportez les cotisations dans Nexus : la période passe « Déclarée », puis « Payée » au prélèvement.',
@@ -221,12 +450,24 @@ export const FEATURE_PAGES = [
     audience: [
       { role: 'Freelances et indépendants', text: 'Des factures professionnelles et une déclaration URSSAF sans calcul.' },
       { role: 'Artisans et commerçants en micro', text: 'Le livre des recettes et le registre des achats tenus automatiquement.' },
-      { role: 'Micro-entrepreneurs qui grandissent', text: 'Une alerte avant de perdre la franchise de TVA, et le passage au régime réel sans changer de logiciel.' },
+      {
+        role: 'Micro-entrepreneurs qui grandissent',
+        text: 'Une alerte avant de perdre la franchise de TVA, et le passage au régime réel sans changer de logiciel.',
+      },
     ],
     faq: [
-      { q: 'Pourquoi le montant URSSAF est-il différent de ce que j’ai facturé ?', a: 'En micro-entreprise, on déclare ce qui a été encaissé, pas ce qui a été facturé. Une facture émise en mars mais payée en avril compte pour le deuxième trimestre.' },
-      { q: 'Puis-je déclarer et payer directement depuis Nexus ?', a: 'Aujourd’hui, Nexus prépare tout et vous guide : le montant se copie en un clic et votre espace URSSAF s’ouvre directement. La déclaration et le paiement sans quitter Nexus arriveront avec son raccordement au service officiel de tierce déclaration de l’URSSAF : vous autoriserez alors Nexus en un clic, sans jamais nous confier vos identifiants.' },
-      { q: 'Que se passe-t-il si je dépasse le seuil de TVA ?', a: 'Nexus vous prévient dès 80 % du seuil. En cas de dépassement, il vous indique si la franchise est perdue immédiatement ou l’année suivante, pour que vous puissiez en parler à votre expert-comptable.' },
+      {
+        q: 'Pourquoi le montant URSSAF est-il différent de ce que j’ai facturé ?',
+        a: 'En micro-entreprise, on déclare ce qui a été encaissé, pas ce qui a été facturé. Une facture émise en mars mais payée en avril compte pour le deuxième trimestre.',
+      },
+      {
+        q: 'Puis-je déclarer et payer directement depuis Nexus ?',
+        a: 'Aujourd’hui, Nexus prépare tout et vous guide : le montant se copie en un clic et votre espace URSSAF s’ouvre directement. La déclaration et le paiement sans quitter Nexus arriveront avec son raccordement au service officiel de tierce déclaration de l’URSSAF : vous autoriserez alors Nexus en un clic, sans jamais nous confier vos identifiants.',
+      },
+      {
+        q: 'Que se passe-t-il si je dépasse le seuil de TVA ?',
+        a: 'Nexus vous prévient dès 80 % du seuil. En cas de dépassement, il vous indique si la franchise est perdue immédiatement ou l’année suivante, pour que vous puissiez en parler à votre expert-comptable.',
+      },
     ],
     related: ['factures', 'banque', 'relances'],
   },
@@ -237,15 +478,39 @@ export const FEATURE_PAGES = [
     text: 'Les factures en retard remontent dans votre liste « À faire » avec un e-mail de relance déjà rédigé.',
     lead: 'Un retard de paiement sur deux vient d’un simple oubli. Nexus repère chaque facture échue, vous la signale au bon moment et prépare l’e-mail de relance : vous n’avez plus qu’à l’envoyer.',
     images: [
-      { src: 'features/relance.webp', alt: 'Facture F2026-0002 en retard avec le bouton Relancer le client', caption: 'Sur une facture impayée, le reste dû s’affiche en haut et le bouton « Relancer le client » ouvre un e-mail déjà rédigé.' },
-      { src: 'features/accueil.webp', alt: 'Liste À faire avec les factures en retard', caption: 'Chaque matin, la liste « À faire » vous dit qui relancer, avec le nombre de jours de retard. Les retards les plus anciens passent en premier.' },
+      {
+        src: 'features/relance.webp',
+        alt: 'Facture F2026-0002 en retard avec le bouton Relancer le client',
+        caption: 'Sur une facture impayée, le reste dû s’affiche en haut et le bouton « Relancer le client » ouvre un e-mail déjà rédigé.',
+      },
+      {
+        src: 'features/accueil.webp',
+        alt: 'Liste À faire avec les factures en retard',
+        caption:
+          'Chaque matin, la liste « À faire » vous dit qui relancer, avec le nombre de jours de retard. Les retards les plus anciens passent en premier.',
+      },
     ],
     benefits: [
-      { title: 'Retards détectés automatiquement', text: 'Dès le lendemain de l’échéance, la facture passe « En retard » et apparaît dans votre liste « À faire », avec le client, le numéro et le nombre de jours de retard.' },
-      { title: 'E-mail de relance prêt à envoyer', text: 'Le bouton « Relancer le client » ouvre votre messagerie avec un e-mail courtois déjà rédigé : numéro, date, montant restant et échéance. Vous le relisez, l’ajustez si besoin et l’envoyez.' },
-      { title: 'Balance âgée des créances', text: 'L’écran Factures classe ce qu’on vous doit par ancienneté : à échoir, en retard de 0 à 30 jours, de 31 à 60 jours et de plus de 60 jours. Vous voyez immédiatement où agir.' },
-      { title: 'Paiements partiels suivis', text: 'Si un client paie une partie, seul le reste dû est relancé. Le montant de l’e-mail est toujours le montant réellement restant.' },
-      { title: 'Mentions légales de pénalités', text: 'Vos factures portent les pénalités de retard et l’indemnité forfaitaire de 40 € prévues par le Code de commerce : un argument utile dans la relance.' },
+      {
+        title: 'Retards détectés automatiquement',
+        text: 'Dès le lendemain de l’échéance, la facture passe « En retard » et apparaît dans votre liste « À faire », avec le client, le numéro et le nombre de jours de retard.',
+      },
+      {
+        title: 'E-mail de relance prêt à envoyer',
+        text: 'Le bouton « Relancer le client » ouvre votre messagerie avec un e-mail courtois déjà rédigé : numéro, date, montant restant et échéance. Vous le relisez, l’ajustez si besoin et l’envoyez.',
+      },
+      {
+        title: 'Balance âgée des créances',
+        text: 'L’écran Factures classe ce qu’on vous doit par ancienneté : à échoir, en retard de 0 à 30 jours, de 31 à 60 jours et de plus de 60 jours. Vous voyez immédiatement où agir.',
+      },
+      {
+        title: 'Paiements partiels suivis',
+        text: 'Si un client paie une partie, seul le reste dû est relancé. Le montant de l’e-mail est toujours le montant réellement restant.',
+      },
+      {
+        title: 'Mentions légales de pénalités',
+        text: 'Vos factures portent les pénalités de retard et l’indemnité forfaitaire de 40 € prévues par le Code de commerce : un argument utile dans la relance.',
+      },
       { title: 'Priorités claires', text: 'Les retards de plus de 30 jours passent en haut de la liste, avant les tâches moins urgentes.' },
     ],
     steps: [
@@ -260,9 +525,15 @@ export const FEATURE_PAGES = [
       { role: 'Entreprises attentives à leur trésorerie', text: 'Une vue claire de ce qu’on vous doit, par ancienneté, pour agir avant que ça coince.' },
     ],
     faq: [
-      { q: 'Les relances partent-elles toutes seules ?', a: 'Pas encore : vous gardez la main et l’envoyez depuis votre propre messagerie, ce qui évite les relances maladroites. L’envoi automatique programmé arrivera dans une prochaine version.' },
+      {
+        q: 'Les relances partent-elles toutes seules ?',
+        a: 'Pas encore : vous gardez la main et l’envoyez depuis votre propre messagerie, ce qui évite les relances maladroites. L’envoi automatique programmé arrivera dans une prochaine version.',
+      },
       { q: 'Puis-je modifier le texte de la relance ?', a: 'Oui, l’e-mail s’ouvre dans votre messagerie : vous le modifiez librement avant de l’envoyer.' },
-      { q: 'Comment une facture sort-elle de la liste ?', a: 'Dès que le paiement est associé à la facture dans l’écran Banque, elle passe « Payée » et disparaît de la liste des retards.' },
+      {
+        q: 'Comment une facture sort-elle de la liste ?',
+        a: 'Dès que le paiement est associé à la facture dans l’écran Banque, elle passe « Payée » et disparaît de la liste des retards.',
+      },
     ],
     related: ['factures', 'banque', 'devis'],
   },
@@ -273,17 +544,46 @@ export const FEATURE_PAGES = [
     text: 'Balance, grand livre, journaux et fichier FEC pour votre expert-comptable, sans ressaisie. La partie double tourne en arrière-plan.',
     lead: 'Chaque facture, dépense et mouvement bancaire génère son écriture comptable en partie double, sans que vous ayez à la voir. En mode avancé, vous et votre expert-comptable retrouvez une comptabilité complète, conforme et exportable.',
     images: [
-      { src: 'features/compta.webp', alt: 'Balance comptable avec les comptes, leur libellé officiel et leur explication en français', caption: 'La balance : chaque compte avec son libellé officiel et, en dessous, sa signification en français (« Ce que mes clients me doivent »).' },
-      { src: 'features/fec.webp', alt: 'Validation des écritures et téléchargement du FEC', caption: 'La validation verrouille la période et numérote les écritures ; le FEC se télécharge ensuite en un clic.' },
+      {
+        src: 'features/compta.webp',
+        alt: 'Balance comptable avec les comptes, leur libellé officiel et leur explication en français',
+        caption: 'La balance : chaque compte avec son libellé officiel et, en dessous, sa signification en français (« Ce que mes clients me doivent »).',
+      },
+      {
+        src: 'features/fec.webp',
+        alt: 'Validation des écritures et téléchargement du FEC',
+        caption: 'La validation verrouille la période et numérote les écritures ; le FEC se télécharge ensuite en un clic.',
+      },
     ],
     benefits: [
-      { title: 'Écritures générées automatiquement', text: 'Facture émise, dépense saisie, paiement rapproché, déclaration de TVA validée : l’écriture est passée dans le bon journal, sur les bons comptes, en partie double. Vous n’avez rien à saisir.' },
-      { title: 'Balance, grand livre et journaux', text: 'Les trois états que votre expert-comptable consulte, à jour en permanence, avec des libellés en français à côté des numéros de compte. Chacun s’exporte en Excel ou s’imprime.' },
-      { title: 'Fichier des écritures comptables (FEC)', text: 'Le fichier exigé par l’administration en cas de contrôle, conforme à l’article A47 A-1 du Livre des procédures fiscales et contrôlable avec l’outil Test Compta Demat de la DGFiP.' },
-      { title: 'Intangibilité des écritures', text: 'La validation numérote définitivement les écritures dans l’ordre chronologique et verrouille la période. Une écriture validée ne se modifie plus : elle se corrige par une contre-passation, comme l’exige la loi.' },
-      { title: 'Reprise de votre historique', text: 'Vous venez d’un autre logiciel ? Importez le FEC de l’exercice précédent : Nexus reprend les soldes d’ouverture, le résultat et la liste de vos clients.' },
-      { title: 'Exercices clos consultables', text: 'Les années clôturées restent consultables : bilan, compte de résultat, balance de clôture et FEC de chaque exercice, en lecture seule.' },
-      { title: 'Mode standard ou mode avancé', text: 'Au quotidien, vous ne voyez que vos factures, dépenses et banque. Le mode avancé, activable dans les paramètres, affiche la comptabilité pour vous ou votre expert-comptable.' },
+      {
+        title: 'Écritures générées automatiquement',
+        text: 'Facture émise, dépense saisie, paiement rapproché, déclaration de TVA validée : l’écriture est passée dans le bon journal, sur les bons comptes, en partie double. Vous n’avez rien à saisir.',
+      },
+      {
+        title: 'Balance, grand livre et journaux',
+        text: 'Les trois états que votre expert-comptable consulte, à jour en permanence, avec des libellés en français à côté des numéros de compte. Chacun s’exporte en Excel ou s’imprime.',
+      },
+      {
+        title: 'Fichier des écritures comptables (FEC)',
+        text: 'Le fichier exigé par l’administration en cas de contrôle, conforme à l’article A47 A-1 du Livre des procédures fiscales et contrôlable avec l’outil Test Compta Demat de la DGFiP.',
+      },
+      {
+        title: 'Intangibilité des écritures',
+        text: 'La validation numérote définitivement les écritures dans l’ordre chronologique et verrouille la période. Une écriture validée ne se modifie plus : elle se corrige par une contre-passation, comme l’exige la loi.',
+      },
+      {
+        title: 'Reprise de votre historique',
+        text: 'Vous venez d’un autre logiciel ? Importez le FEC de l’exercice précédent : Nexus reprend les soldes d’ouverture, le résultat et la liste de vos clients.',
+      },
+      {
+        title: 'Exercices clos consultables',
+        text: 'Les années clôturées restent consultables : bilan, compte de résultat, balance de clôture et FEC de chaque exercice, en lecture seule.',
+      },
+      {
+        title: 'Mode standard ou mode avancé',
+        text: 'Au quotidien, vous ne voyez que vos factures, dépenses et banque. Le mode avancé, activable dans les paramètres, affiche la comptabilité pour vous ou votre expert-comptable.',
+      },
     ],
     steps: [
       'Utilisez Nexus normalement : factures, dépenses, banque. Les écritures se passent en arrière-plan.',
@@ -297,9 +597,18 @@ export const FEATURE_PAGES = [
       { role: 'Entreprises qui changent de logiciel', text: 'La reprise de l’historique par import du FEC, sans repartir de zéro.' },
     ],
     faq: [
-      { q: 'Dois-je connaître la comptabilité pour utiliser Nexus ?', a: 'Non. La comptabilité est tenue automatiquement et reste cachée en mode standard. Elle n’est affichée que si vous activez le mode avancé.' },
-      { q: 'Mon expert-comptable peut-il travailler directement dans Nexus ?', a: 'Oui : invitez-le depuis les paramètres. Il accède à votre comptabilité avec son propre compte et sa propre double authentification.' },
-      { q: 'Le FEC est-il accepté par l’administration ?', a: 'Il respecte le format de l’article A47 A-1 du LPF. Nous recommandons de le vérifier une fois avec l’outil gratuit Test Compta Demat de la DGFiP.' },
+      {
+        q: 'Dois-je connaître la comptabilité pour utiliser Nexus ?',
+        a: 'Non. La comptabilité est tenue automatiquement et reste cachée en mode standard. Elle n’est affichée que si vous activez le mode avancé.',
+      },
+      {
+        q: 'Mon expert-comptable peut-il travailler directement dans Nexus ?',
+        a: 'Oui : invitez-le depuis les paramètres. Il accède à votre comptabilité avec son propre compte et sa propre double authentification.',
+      },
+      {
+        q: 'Le FEC est-il accepté par l’administration ?',
+        a: 'Il respecte le format de l’article A47 A-1 du LPF. Nous recommandons de le vérifier une fois avec l’outil gratuit Test Compta Demat de la DGFiP.',
+      },
     ],
     related: ['cloture', 'tva', 'securite'],
   },
@@ -310,16 +619,39 @@ export const FEATURE_PAGES = [
     text: 'Check-list de fin d’année, écritures d’inventaire, impôt sur les sociétés, bilan et compte de résultat, puis ouverture de l’exercice suivant.',
     lead: 'La fin d’année n’a plus à être un marathon : Nexus vous guide pas à pas, de la check-list des points à régler jusqu’au bilan, calcule l’impôt sur les sociétés et prépare l’exercice suivant.',
     images: [
-      { src: 'features/cloture.webp', alt: 'Page Clôture : check-list et écritures d’inventaire', caption: 'La check-list de clôture signale ce qui reste à régler (mouvements à justifier, brouillons, TVA, amortissements…), puis les écritures d’inventaire se saisissent dans un formulaire simple.' },
+      {
+        src: 'features/cloture.webp',
+        alt: 'Page Clôture : check-list et écritures d’inventaire',
+        caption:
+          'La check-list de clôture signale ce qui reste à régler (mouvements à justifier, brouillons, TVA, amortissements…), puis les écritures d’inventaire se saisissent dans un formulaire simple.',
+      },
     ],
     benefits: [
-      { title: 'Check-list avant clôture', text: 'Opérations bancaires justifiées, justificatifs joints, brouillons émis, créances de plus de 90 jours examinées, déclarations de TVA validées, amortissements passés : chaque point est vérifié et mène à l’écran où le régler.' },
-      { title: 'Écritures d’inventaire guidées', text: 'Charges et produits constatés d’avance, factures à recevoir, ventes à facturer, provision pour client douteux : choisissez le type, le compte et le montant, Nexus passe l’écriture et son extourne l’année suivante.' },
+      {
+        title: 'Check-list avant clôture',
+        text: 'Opérations bancaires justifiées, justificatifs joints, brouillons émis, créances de plus de 90 jours examinées, déclarations de TVA validées, amortissements passés : chaque point est vérifié et mène à l’écran où le régler.',
+      },
+      {
+        title: 'Écritures d’inventaire guidées',
+        text: 'Charges et produits constatés d’avance, factures à recevoir, ventes à facturer, provision pour client douteux : choisissez le type, le compte et le montant, Nexus passe l’écriture et son extourne l’année suivante.',
+      },
       { title: 'Amortissements en un clic', text: 'Les dotations de l’année sont calculées pour chaque équipement et passées d’un seul bouton.' },
-      { title: 'Impôt sur les sociétés calculé', text: 'Taux réduit de 15 % jusqu’à 42 500 € de bénéfice puis 25 %, au prorata si l’exercice ne dure pas douze mois, avec imputation des déficits antérieurs.' },
-      { title: 'Bilan et compte de résultat', text: 'Des états financiers simplifiés, présentés dans l’esprit du formulaire 2033, équilibrés par construction et imprimables pour votre banquier ou vos associés.' },
-      { title: 'Ouverture de l’exercice suivant', text: 'À la clôture, le résultat est calculé, toutes les écritures sont validées définitivement, et le nouvel exercice s’ouvre avec les soldes à nouveau et les extournes.' },
-      { title: 'Affectation du résultat', text: 'L’année suivante, Nexus propose la répartition du bénéfice : réserve légale minimale, autres réserves, dividendes et report à nouveau (ou compte de l’exploitant pour une entreprise individuelle).' },
+      {
+        title: 'Impôt sur les sociétés calculé',
+        text: 'Taux réduit de 15 % jusqu’à 42 500 € de bénéfice puis 25 %, au prorata si l’exercice ne dure pas douze mois, avec imputation des déficits antérieurs.',
+      },
+      {
+        title: 'Bilan et compte de résultat',
+        text: 'Des états financiers simplifiés, présentés dans l’esprit du formulaire 2033, équilibrés par construction et imprimables pour votre banquier ou vos associés.',
+      },
+      {
+        title: 'Ouverture de l’exercice suivant',
+        text: 'À la clôture, le résultat est calculé, toutes les écritures sont validées définitivement, et le nouvel exercice s’ouvre avec les soldes à nouveau et les extournes.',
+      },
+      {
+        title: 'Affectation du résultat',
+        text: 'L’année suivante, Nexus propose la répartition du bénéfice : réserve légale minimale, autres réserves, dividendes et report à nouveau (ou compte de l’exploitant pour une entreprise individuelle).',
+      },
     ],
     steps: [
       'Ouvrez la page Clôture et réglez les points signalés dans la check-list.',
@@ -333,9 +665,18 @@ export const FEATURE_PAGES = [
       { role: 'Experts-comptables', text: 'Une clôture préparée par le client, à contrôler et à valider plutôt qu’à refaire.' },
     ],
     faq: [
-      { q: 'Nexus remplace-t-il mon expert-comptable pour la liasse fiscale ?', a: 'Pas aujourd’hui : Nexus prépare la clôture et les états financiers, et l’envoi de la liasse fiscale aux impôts arrivera avec un partenaire agréé. Pour une société, la clôture est réservée à l’expert-comptable invité, pour plus de sécurité.' },
-      { q: 'Puis-je revenir en arrière après la clôture ?', a: 'Non : un exercice clôturé est définitif, comme l’exige la loi. C’est pourquoi la check-list vous montre les points non réglés avant de confirmer.' },
-      { q: 'Et si mon exercice ne se termine pas le 31 décembre ?', a: 'Aucun problème : la date de clôture se règle à l’inscription, et l’impôt est calculé au prorata si l’exercice ne dure pas douze mois.' },
+      {
+        q: 'Nexus remplace-t-il mon expert-comptable pour la liasse fiscale ?',
+        a: 'Pas aujourd’hui : Nexus prépare la clôture et les états financiers, et l’envoi de la liasse fiscale aux impôts arrivera avec un partenaire agréé. Pour une société, la clôture est réservée à l’expert-comptable invité, pour plus de sécurité.',
+      },
+      {
+        q: 'Puis-je revenir en arrière après la clôture ?',
+        a: 'Non : un exercice clôturé est définitif, comme l’exige la loi. C’est pourquoi la check-list vous montre les points non réglés avant de confirmer.',
+      },
+      {
+        q: 'Et si mon exercice ne se termine pas le 31 décembre ?',
+        a: 'Aucun problème : la date de clôture se règle à l’inscription, et l’impôt est calculé au prorata si l’exercice ne dure pas douze mois.',
+      },
     ],
     related: ['compta', 'depenses', 'securite'],
   },
@@ -346,17 +687,46 @@ export const FEATURE_PAGES = [
     text: 'Double authentification obligatoire, données hébergées à Paris, écritures validées infalsifiables et journal d’audit.',
     lead: 'Votre comptabilité contient ce que votre entreprise a de plus sensible. Nexus la protège comme une banque protège un compte : double authentification pour tous, isolement strict entre entreprises et écritures impossibles à falsifier.',
     images: [
-      { src: 'features/connexion.webp', alt: 'Écran de connexion de Nexus Gestion', caption: 'La connexion : e-mail et mot de passe, puis un code à usage unique généré par votre téléphone, à chaque connexion.' },
-      { src: 'features/fec.webp', alt: 'Validation des écritures et verrouillage de la période', caption: 'Les écritures validées sont numérotées et verrouillées : aucune modification possible, la base de données le refuse.' },
+      {
+        src: 'features/connexion.webp',
+        alt: 'Écran de connexion de Nexus Gestion',
+        caption: 'La connexion : e-mail et mot de passe, puis un code à usage unique généré par votre téléphone, à chaque connexion.',
+      },
+      {
+        src: 'features/fec.webp',
+        alt: 'Validation des écritures et verrouillage de la période',
+        caption: 'Les écritures validées sont numérotées et verrouillées : aucune modification possible, la base de données le refuse.',
+      },
     ],
     benefits: [
-      { title: 'Double authentification obligatoire', text: 'En plus du mot de passe, un code à six chiffres généré par une application sur votre téléphone (Google Authenticator, Microsoft Authenticator…) est demandé. Sans ce code, les données restent inaccessibles, même avec le bon mot de passe.' },
-      { title: 'Une entreprise ne voit jamais les données d’une autre', text: 'L’isolement est appliqué directement par la base de données, pour chaque ligne et chaque fichier, et non seulement par l’affichage. Même une erreur dans l’application ne pourrait pas exposer les données d’une autre entreprise.' },
-      { title: 'Données hébergées à Paris', text: 'Vos données et vos justificatifs sont stockés dans un centre de données situé en France, conformément au RGPD.' },
-      { title: 'Écritures infalsifiables', text: 'Une écriture validée ne peut plus être modifiée ni supprimée : la base de données le refuse. Les corrections passent par une contre-passation visible, comme l’exige la loi.' },
-      { title: 'Journal d’audit', text: 'Chaque création, validation ou correction est enregistrée avec son auteur et sa date dans un journal auquel on peut seulement ajouter des lignes, jamais en retirer.' },
-      { title: 'Accès par rôle', text: 'Invitez votre expert-comptable ou un associé avec le rôle adapté. Chacun a son propre compte et sa propre double authentification ; les actions sensibles, comme la clôture d’une société, sont réservées au bon rôle.' },
-      { title: 'Vos données vous appartiennent', text: 'Téléchargez à tout moment une copie complète de vos données, ainsi que le FEC et les exports Excel. Rien ne vous retient.' },
+      {
+        title: 'Double authentification obligatoire',
+        text: 'En plus du mot de passe, un code à six chiffres généré par une application sur votre téléphone (Google Authenticator, Microsoft Authenticator…) est demandé. Sans ce code, les données restent inaccessibles, même avec le bon mot de passe.',
+      },
+      {
+        title: 'Une entreprise ne voit jamais les données d’une autre',
+        text: 'L’isolement est appliqué directement par la base de données, pour chaque ligne et chaque fichier, et non seulement par l’affichage. Même une erreur dans l’application ne pourrait pas exposer les données d’une autre entreprise.',
+      },
+      {
+        title: 'Données hébergées à Paris',
+        text: 'Vos données et vos justificatifs sont stockés dans un centre de données situé en France, conformément au RGPD.',
+      },
+      {
+        title: 'Écritures infalsifiables',
+        text: 'Une écriture validée ne peut plus être modifiée ni supprimée : la base de données le refuse. Les corrections passent par une contre-passation visible, comme l’exige la loi.',
+      },
+      {
+        title: 'Journal d’audit',
+        text: 'Chaque création, validation ou correction est enregistrée avec son auteur et sa date dans un journal auquel on peut seulement ajouter des lignes, jamais en retirer.',
+      },
+      {
+        title: 'Accès par rôle',
+        text: 'Invitez votre expert-comptable ou un associé avec le rôle adapté. Chacun a son propre compte et sa propre double authentification ; les actions sensibles, comme la clôture d’une société, sont réservées au bon rôle.',
+      },
+      {
+        title: 'Vos données vous appartiennent',
+        text: 'Téléchargez à tout moment une copie complète de vos données, ainsi que le FEC et les exports Excel. Rien ne vous retient.',
+      },
     ],
     steps: [
       'À l’inscription, créez votre mot de passe et confirmez votre adresse e-mail.',
@@ -370,9 +740,18 @@ export const FEATURE_PAGES = [
       { role: 'Associés', text: 'Des droits adaptés à chacun, avec une trace de toutes les opérations.' },
     ],
     faq: [
-      { q: 'Que se passe-t-il si je perds mon téléphone ?', a: 'Contactez-nous depuis l’adresse e-mail de votre compte : après vérification de votre identité, nous réinitialisons votre double authentification pour que vous puissiez la reconfigurer.' },
-      { q: 'Pourquoi la double authentification est-elle obligatoire ?', a: 'Parce qu’un mot de passe seul se vole facilement (hameçonnage, fuite d’un autre site). Pour des données comptables et bancaires, c’est le minimum que nous jugeons acceptable.' },
-      { q: 'L’équipe de Nexus peut-elle voir mes données ?', a: 'Les accès techniques sont strictement limités à la maintenance et à l’assistance que vous demandez. Vos données ne sont jamais vendues ni utilisées à d’autres fins.' },
+      {
+        q: 'Que se passe-t-il si je perds mon téléphone ?',
+        a: 'Contactez-nous depuis l’adresse e-mail de votre compte : après vérification de votre identité, nous réinitialisons votre double authentification pour que vous puissiez la reconfigurer.',
+      },
+      {
+        q: 'Pourquoi la double authentification est-elle obligatoire ?',
+        a: 'Parce qu’un mot de passe seul se vole facilement (hameçonnage, fuite d’un autre site). Pour des données comptables et bancaires, c’est le minimum que nous jugeons acceptable.',
+      },
+      {
+        q: 'L’équipe de Nexus peut-elle voir mes données ?',
+        a: 'Les accès techniques sont strictement limités à la maintenance et à l’assistance que vous demandez. Vos données ne sont jamais vendues ni utilisées à d’autres fins.',
+      },
     ],
     related: ['compta', 'cloture', 'banque'],
   },

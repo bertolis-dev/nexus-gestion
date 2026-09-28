@@ -16,7 +16,9 @@ import { sum } from './money.js';
 const REQUIRED = ['JournalCode', 'EcritureNum', 'EcritureDate', 'CompteNum', 'CompteLib', 'Debit', 'Credit'];
 
 function toCents(s) {
-  const t = String(s ?? '').trim().replace(/\s/g, '');
+  const t = String(s ?? '')
+    .trim()
+    .replace(/\s/g, '');
   if (!t) return 0;
   const m = /^(-?)(\d+)(?:[.,](\d{1,2}))?$/.exec(t);
   if (!m) throw new Error(`Montant illisible dans le FEC : « ${s} »`);
@@ -26,7 +28,10 @@ function toCents(s) {
 
 /** FEC tabulé ou « pipe » (les deux sont admis par l'article A47 A-1), avec ou sans BOM. */
 export function parseFec(text) {
-  const rows = text.replace(/^﻿/, '').split(/\r?\n/).filter((l) => l.trim());
+  const rows = text
+    .replace(/^\uFEFF/, '')
+    .split(/\r?\n/)
+    .filter((l) => l.trim());
   if (rows.length < 2) throw new Error('Fichier vide ou illisible.');
   const sep = rows[0].includes('\t') ? '\t' : '|';
   const header = rows[0].split(sep).map((h) => h.trim());
@@ -109,7 +114,18 @@ export function openingBalanceFromFec(rows, chart) {
   if (resultCents > 0) lines.push({ account: '120000', aux: '', auxLabel: '', debit: 0, credit: resultCents });
   if (resultCents < 0) lines.push({ account: '129000', aux: '', auxLabel: '', debit: -resultCents, credit: 0 });
 
-  const tiers = (prefix) => [...byKey.values()].filter((r) => r.account.startsWith(prefix) && r.aux).map((r) => ({ code: r.aux.replace(/^(401|411)/, '').toUpperCase().replace(/[^A-Z0-9]/g, ''), aux: r.aux, name: r.auxLabel, balance: r.balance }));
+  const tiers = (prefix) =>
+    [...byKey.values()]
+      .filter((r) => r.account.startsWith(prefix) && r.aux)
+      .map((r) => ({
+        code: r.aux
+          .replace(/^(401|411)/, '')
+          .toUpperCase()
+          .replace(/[^A-Z0-9]/g, ''),
+        aux: r.aux,
+        name: r.auxLabel,
+        balance: r.balance,
+      }));
   const totals = { debit: sum(lines.map((l) => l.debit)), credit: sum(lines.map((l) => l.credit)) };
   return {
     lines,

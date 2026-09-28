@@ -43,7 +43,16 @@ export function entryPayload(e, meta) {
     source: e.source ?? null,
     reversal_of: e.reversalOf ?? null,
     seq: e.seq,
-    lines: e.lines.map((l) => ({ account: l.account, aux: l.aux, auxLabel: l.auxLabel, label: l.label, debit: l.debit, credit: l.credit, letter: l.letter, letterDate: l.letterDate })),
+    lines: e.lines.map((l) => ({
+      account: l.account,
+      aux: l.aux,
+      auxLabel: l.auxLabel,
+      label: l.label,
+      debit: l.debit,
+      credit: l.credit,
+      letter: l.letter,
+      letterDate: l.letterDate,
+    })),
   };
 }
 
@@ -103,10 +112,30 @@ export function transactionRow(t, meta) {
 function settlementRows(state, meta) {
   const rows = [];
   for (const [invoiceId, list] of Object.entries(state.book?.payments || {})) {
-    for (const p of list) rows.push({ structure_id: meta.structureId, doc_kind: 'invoice', doc_id: invoiceId, amount: p.amount, pay_date: p.date, ref: p.ref, entry_id: p.entryId, line_index: p.lineIndex });
+    for (const p of list)
+      rows.push({
+        structure_id: meta.structureId,
+        doc_kind: 'invoice',
+        doc_id: invoiceId,
+        amount: p.amount,
+        pay_date: p.date,
+        ref: p.ref,
+        entry_id: p.entryId,
+        line_index: p.lineIndex,
+      });
   }
   for (const pu of state.purchases || []) {
-    for (const p of pu.payments || []) rows.push({ structure_id: meta.structureId, doc_kind: 'purchase', doc_id: pu.id, amount: p.amount, pay_date: p.date, ref: p.ref, entry_id: p.entryId, line_index: p.lineIndex });
+    for (const p of pu.payments || [])
+      rows.push({
+        structure_id: meta.structureId,
+        doc_kind: 'purchase',
+        doc_id: pu.id,
+        amount: p.amount,
+        pay_date: p.date,
+        ref: p.ref,
+        entry_id: p.entryId,
+        line_index: p.lineIndex,
+      });
   }
   return rows;
 }
@@ -146,7 +175,8 @@ export function planSync(before, after, meta) {
     if (prev && prev.status === 'validated') {
       prev.lines.forEach((l, i) => {
         const n = e.lines[i];
-        if (n && (n.letter !== l.letter || n.letterDate !== l.letterDate)) letterChanges.push({ entry_id: e.id, line_no: i + 1, letter: n.letter, letterDate: n.letterDate });
+        if (n && (n.letter !== l.letter || n.letterDate !== l.letterDate))
+          letterChanges.push({ entry_id: e.id, line_no: i + 1, letter: n.letter, letterDate: n.letterDate });
       });
       continue;
     }
@@ -167,7 +197,12 @@ export function planSync(before, after, meta) {
     if (prev?.status === 'issued') continue;
     if (!prev || !same(prev, inv)) ops.push({ kind: 'upsert', table: 'invoices', rows: [invoiceDraftRow(inv, meta)], onConflict: 'id' });
     if (inv.status === 'issued') {
-      ops.push({ kind: 'rpc', fn: 'issue_invoice', args: { p_invoice: inv.id, p_snapshot: issuedSnapshot(inv) }, expect: { type: 'invoiceNumber', value: inv.number } });
+      ops.push({
+        kind: 'rpc',
+        fn: 'issue_invoice',
+        args: { p_invoice: inv.id, p_snapshot: issuedSnapshot(inv) },
+        expect: { type: 'invoiceNumber', value: inv.number },
+      });
     }
   }
 
@@ -179,7 +214,14 @@ export function planSync(before, after, meta) {
   // Règlements
   const bSet = new Set(settlementRows(b, meta).map(settlementKey));
   const settlements = settlementRows(after, meta).filter((r) => !bSet.has(settlementKey(r)));
-  if (settlements.length) ops.push({ kind: 'upsert', table: 'settlements', rows: settlements, onConflict: 'structure_id,doc_kind,doc_id,entry_id,line_index', ignoreDuplicates: true });
+  if (settlements.length)
+    ops.push({
+      kind: 'upsert',
+      table: 'settlements',
+      rows: settlements,
+      onConflict: 'structure_id,doc_kind,doc_id,entry_id,line_index',
+      ignoreDuplicates: true,
+    });
 
   // Transactions bancaires
   const bTx = byId(b.transactions);
@@ -187,7 +229,18 @@ export function planSync(before, after, meta) {
   if (txs.length) ops.push({ kind: 'upsert', table: 'bank_transactions', rows: txs, onConflict: 'structure_id,id' });
 
   // Cycle de vie des factures (ajout seul)
-  const eventRows = (state) => Object.entries(state.book?.lifecycle || {}).flatMap(([invoiceId, events]) => events.map((e, position) => ({ structure_id: meta.structureId, invoice_id: invoiceId, position, status: e.status, event_date: e.date, source: e.source || 'manuel', detail: e.detail || '' })));
+  const eventRows = (state) =>
+    Object.entries(state.book?.lifecycle || {}).flatMap(([invoiceId, events]) =>
+      events.map((e, position) => ({
+        structure_id: meta.structureId,
+        invoice_id: invoiceId,
+        position,
+        status: e.status,
+        event_date: e.date,
+        source: e.source || 'manuel',
+        detail: e.detail || '',
+      })),
+    );
   const bEvents = new Set(eventRows(b).map((r) => `${r.invoice_id}|${r.position}`));
   const events = eventRows(after).filter((r) => !bEvents.has(`${r.invoice_id}|${r.position}`));
   if (events.length) ops.push({ kind: 'upsert', table: 'invoice_events', rows: events, onConflict: 'invoice_id,position', ignoreDuplicates: true });
@@ -202,7 +255,12 @@ export function planSync(before, after, meta) {
   // Validation de période, puis lettrage des écritures déjà validées.
   if (after.ledger?.lockedThrough && after.ledger.lockedThrough !== b.ledger?.lockedThrough) {
     const count = (after.ledger.entries || []).filter((e) => e.status === 'validated' && bEntries.get(e.id)?.status !== 'validated').length;
-    ops.push({ kind: 'rpc', fn: 'validate_through', args: { p_fiscal_year: meta.fiscalYearId, p_date: after.ledger.lockedThrough }, expect: { type: 'count', value: count } });
+    ops.push({
+      kind: 'rpc',
+      fn: 'validate_through',
+      args: { p_fiscal_year: meta.fiscalYearId, p_date: after.ledger.lockedThrough },
+      expect: { type: 'count', value: count },
+    });
   }
   // Une écriture encore brouillon avant ce lot a déjà transmis ses lettres via save_draft_entry ;
   // set_letters ne concerne que les écritures validées lors d'un lot précédent.
@@ -225,7 +283,18 @@ function letterValue(code) {
  */
 function draftFromRow(i) {
   const x = i.extra || {};
-  const draft = { id: i.id, type: i.type, series: i.series, status: 'draft', number: null, deposits: x.deposits || [], client: i.client, issueDate: i.issue_date, dueDate: i.due_date, lines: i.lines };
+  const draft = {
+    id: i.id,
+    type: i.type,
+    series: i.series,
+    status: 'draft',
+    number: null,
+    deposits: x.deposits || [],
+    client: i.client,
+    issueDate: i.issue_date,
+    dueDate: i.due_date,
+    lines: i.lines,
+  };
   if (i.credit_of) draft.creditOf = i.credit_of;
   for (const k of ['quoteRef', 'recurringId', 'period']) if (x[k]) draft[k] = x[k];
   return draft;
@@ -233,12 +302,43 @@ function draftFromRow(i) {
 
 /** Grand livre d'un exercice (clos ou non) à partir de ses écritures en base, pour consultation. */
 export function ledgerStateFromRows(entries, fiscalYear) {
-  const list = [...entries].sort((a, b) => a.seq - b.seq).map((e) => ({
-    seq: Number(e.seq), id: e.id, journal: e.journal, date: e.entry_date, label: e.label, pieceRef: e.piece_ref, pieceDate: e.piece_date,
-    source: e.source, status: e.status, number: e.number, validatedAt: e.validated_at, reversalOf: e.reversal_of,
-    lines: [...e.entry_lines].sort((a, b) => a.line_no - b.line_no).map((l) => ({ account: l.account, aux: l.aux, auxLabel: l.aux_label, label: l.label, debit: Number(l.debit), credit: Number(l.credit), letter: l.letter, letterDate: l.letter_date || '' })),
-  }));
-  return { entries: list, lockedThrough: fiscalYear.locked_through, lastNumber: fiscalYear.last_entry_number, lastLetter: 0, auditLog: [], seq: list.length ? list.at(-1).seq : 0, fiscalYear: { start: fiscalYear.start_date, end: fiscalYear.end_date } };
+  const list = [...entries]
+    .sort((a, b) => a.seq - b.seq)
+    .map((e) => ({
+      seq: Number(e.seq),
+      id: e.id,
+      journal: e.journal,
+      date: e.entry_date,
+      label: e.label,
+      pieceRef: e.piece_ref,
+      pieceDate: e.piece_date,
+      source: e.source,
+      status: e.status,
+      number: e.number,
+      validatedAt: e.validated_at,
+      reversalOf: e.reversal_of,
+      lines: [...e.entry_lines]
+        .sort((a, b) => a.line_no - b.line_no)
+        .map((l) => ({
+          account: l.account,
+          aux: l.aux,
+          auxLabel: l.aux_label,
+          label: l.label,
+          debit: Number(l.debit),
+          credit: Number(l.credit),
+          letter: l.letter,
+          letterDate: l.letter_date || '',
+        })),
+    }));
+  return {
+    entries: list,
+    lockedThrough: fiscalYear.locked_through,
+    lastNumber: fiscalYear.last_entry_number,
+    lastLetter: 0,
+    auditLog: [],
+    seq: list.length ? list.at(-1).seq : 0,
+    fiscalYear: { start: fiscalYear.start_date, end: fiscalYear.end_date },
+  };
 }
 
 export function stateFromRows(r) {
@@ -271,7 +371,16 @@ export function stateFromRows(r) {
       reversalOf: e.reversal_of,
       lines: [...e.entry_lines]
         .sort((a, b) => a.line_no - b.line_no)
-        .map((l) => ({ account: l.account, aux: l.aux, auxLabel: l.aux_label, label: l.label, debit: Number(l.debit), credit: Number(l.credit), letter: l.letter, letterDate: l.letter_date || '' })),
+        .map((l) => ({
+          account: l.account,
+          aux: l.aux,
+          auxLabel: l.aux_label,
+          label: l.label,
+          debit: Number(l.debit),
+          credit: Number(l.credit),
+          letter: l.letter,
+          letterDate: l.letter_date || '',
+        })),
     }));
   const letters = entries.flatMap((e) => e.lines.map((l) => l.letter)).filter(Boolean);
 
@@ -285,11 +394,7 @@ export function stateFromRows(r) {
 
   const invoices = [...r.invoices]
     .sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)))
-    .map((i) =>
-      i.status === 'issued'
-        ? { ...i.issued, id: i.id, status: 'issued', number: i.number }
-        : draftFromRow(i),
-    );
+    .map((i) => (i.status === 'issued' ? { ...i.issued, id: i.id, status: 'issued', number: i.number } : draftFromRow(i)));
 
   return {
     company,
@@ -307,7 +412,10 @@ export function stateFromRows(r) {
       seq: invoices.length,
       payments,
       lifecycle: Object.fromEntries(
-        Object.entries(Object.groupBy(r.events || [], (e) => e.invoice_id)).map(([id, list]) => [id, list.sort((a, b) => a.position - b.position).map((e) => ({ status: e.status, date: e.event_date, source: e.source, detail: e.detail }))]),
+        Object.entries(Object.groupBy(r.events || [], (e) => e.invoice_id)).map(([id, list]) => [
+          id,
+          list.sort((a, b) => a.position - b.position).map((e) => ({ status: e.status, date: e.event_date, source: e.source, detail: e.detail })),
+        ]),
       ),
     },
     clients: r.clients.map((c) => ({ ...c.data, id: c.id, code: c.code, name: c.name })),
@@ -333,7 +441,16 @@ export function stateFromRows(r) {
       }),
     transactions: [...r.transactions]
       .sort((a, b) => String(a.imported_at).localeCompare(String(b.imported_at)) || a.id.localeCompare(b.id))
-      .map((t) => ({ id: t.id, accountId: 'default', date: t.tx_date, label: t.label, amount: Number(t.amount), status: t.status, entryId: t.entry_id || undefined, missingReceipt: t.missing_receipt || undefined })),
+      .map((t) => ({
+        id: t.id,
+        accountId: 'default',
+        date: t.tx_date,
+        label: t.label,
+        amount: Number(t.amount),
+        status: t.status,
+        entryId: t.entry_id || undefined,
+        missingReceipt: t.missing_receipt || undefined,
+      })),
     recurring: (r.recurring || []).map((x) => ({ ...x.data, id: x.id })),
     seq: 0,
   };

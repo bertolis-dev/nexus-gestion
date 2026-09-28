@@ -11,11 +11,21 @@
 
 /** Arbre { name, attrs, children, text } d'un document XML bien formé. */
 export function parseXml(xml) {
-  const src = xml.replace(/^﻿/, '').replace(/<\?[\s\S]*?\?>/g, '').replace(/<!--[\s\S]*?-->/g, '');
+  const src = xml
+    .replace(/^\uFEFF/, '')
+    .replace(/<\?[\s\S]*?\?>/g, '')
+    .replace(/<!--[\s\S]*?-->/g, '');
   const root = { name: '#root', attrs: {}, children: [], text: '' };
   const stack = [root];
   const re = /<(\/?)([\w:.-]+)((?:\s+[\w:.-]+\s*=\s*(?:"[^"]*"|'[^']*'))*)\s*(\/?)>|<!\[CDATA\[([\s\S]*?)\]\]>|([^<]+)/g;
-  const decode = (s) => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n))).replace(/&amp;/g, '&');
+  const decode = (s) =>
+    s
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&apos;/g, "'")
+      .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+      .replace(/&amp;/g, '&');
   let m;
   while ((m = re.exec(src))) {
     const [, closing, name, attrText, selfClosing, cdata, text] = m;
@@ -78,7 +88,10 @@ const isoDate = (s) => {
 function ciiParty(p) {
   const addr = path(p, 'PostalTradeAddress');
   const legal = txt(path(p, 'SpecifiedLegalOrganization', 'ID'));
-  const vat = kids(p, 'SpecifiedTaxRegistration').map((r) => txt(path(r, 'ID'))).find((v) => /^[A-Z]{2}/.test(v)) || '';
+  const vat =
+    kids(p, 'SpecifiedTaxRegistration')
+      .map((r) => txt(path(r, 'ID')))
+      .find((v) => /^[A-Z]{2}/.test(v)) || '';
   return {
     name: txt(path(p, 'Name')),
     siren: /^\d{9}/.test(legal) ? legal.slice(0, 9) : /^FR\d{2}(\d{9})$/.test(vat) ? vat.slice(4) : '',
@@ -104,12 +117,20 @@ function fromCii(root) {
     currency: txt(path(settlement, 'InvoiceCurrencyCode')) || 'EUR',
     seller: ciiParty(path(agreement, 'SellerTradeParty')),
     buyer: ciiParty(path(agreement, 'BuyerTradeParty')),
-    taxes: kids(settlement, 'ApplicableTradeTax').map((t) => ({ category: txt(path(t, 'CategoryCode')), rateBp: rateBp(txt(path(t, 'RateApplicablePercent'))), base: cents(txt(path(t, 'BasisAmount'))), vat: cents(txt(path(t, 'CalculatedAmount'))) })),
+    taxes: kids(settlement, 'ApplicableTradeTax').map((t) => ({
+      category: txt(path(t, 'CategoryCode')),
+      rateBp: rateBp(txt(path(t, 'RateApplicablePercent'))),
+      base: cents(txt(path(t, 'BasisAmount'))),
+      vat: cents(txt(path(t, 'CalculatedAmount'))),
+    })),
     totalHt: cents(txt(path(sum, 'TaxBasisTotalAmount')) || txt(path(sum, 'LineTotalAmount'))),
     totalVat: cents(txt(findAll(sum, 'TaxTotalAmount').find((n) => !n.attrs.currencyID || n.attrs.currencyID === 'EUR'))),
     totalTtc: cents(txt(path(sum, 'GrandTotalAmount'))),
     dueAmount: cents(txt(path(sum, 'DuePayableAmount'))),
-    lines: kids(tx, 'IncludedSupplyChainTradeLineItem').map((l) => ({ label: txt(path(l, 'SpecifiedTradeProduct', 'Name')), ht: cents(txt(path(l, 'SpecifiedLineTradeSettlement', 'SpecifiedTradeSettlementLineMonetarySummation', 'LineTotalAmount'))) })),
+    lines: kids(tx, 'IncludedSupplyChainTradeLineItem').map((l) => ({
+      label: txt(path(l, 'SpecifiedTradeProduct', 'Name')),
+      ht: cents(txt(path(l, 'SpecifiedLineTradeSettlement', 'SpecifiedTradeSettlementLineMonetarySummation', 'LineTotalAmount'))),
+    })),
     iban: txt(findAll(settlement, 'IBANID')[0]),
   };
 }
@@ -141,12 +162,20 @@ function fromUbl(root) {
     currency: txt(path(root, 'DocumentCurrencyCode')) || 'EUR',
     seller: ublParty(path(root, 'AccountingSupplierParty')),
     buyer: ublParty(path(root, 'AccountingCustomerParty')),
-    taxes: kids(taxTotal, 'TaxSubtotal').map((s) => ({ category: txt(path(s, 'TaxCategory', 'ID')), rateBp: rateBp(txt(path(s, 'TaxCategory', 'Percent'))), base: cents(txt(path(s, 'TaxableAmount'))), vat: cents(txt(path(s, 'TaxAmount'))) })),
+    taxes: kids(taxTotal, 'TaxSubtotal').map((s) => ({
+      category: txt(path(s, 'TaxCategory', 'ID')),
+      rateBp: rateBp(txt(path(s, 'TaxCategory', 'Percent'))),
+      base: cents(txt(path(s, 'TaxableAmount'))),
+      vat: cents(txt(path(s, 'TaxAmount'))),
+    })),
     totalHt: cents(txt(path(totals, 'TaxExclusiveAmount'))),
     totalVat: cents(txt(path(taxTotal, 'TaxAmount'))),
     totalTtc: cents(txt(path(totals, 'TaxInclusiveAmount'))),
     dueAmount: cents(txt(path(totals, 'PayableAmount'))),
-    lines: [...kids(root, credit ? 'CreditNoteLine' : 'InvoiceLine')].map((l) => ({ label: txt(path(l, 'Item', 'Name')), ht: cents(txt(path(l, 'LineExtensionAmount'))) })),
+    lines: [...kids(root, credit ? 'CreditNoteLine' : 'InvoiceLine')].map((l) => ({
+      label: txt(path(l, 'Item', 'Name')),
+      ht: cents(txt(path(l, 'LineExtensionAmount'))),
+    })),
     iban: txt(findAll(root, 'PayeeFinancialAccount').map((a) => path(a, 'ID'))[0]),
   };
 }
@@ -165,7 +194,8 @@ export function readIncomingInvoice(xml, { ownSiren } = {}) {
   if (!inv.number) warnings.push('Numéro de facture absent.');
   if (!inv.seller.name) warnings.push('Nom du fournisseur absent.');
   if (inv.currency !== 'EUR') warnings.push(`Facture en ${inv.currency} : la conversion en euros n’est pas encore gérée.`);
-  if (ownSiren && inv.buyer.siren && inv.buyer.siren !== ownSiren) warnings.push(`Cette facture est adressée au SIREN ${inv.buyer.siren}, pas à votre entreprise (${ownSiren}).`);
+  if (ownSiren && inv.buyer.siren && inv.buyer.siren !== ownSiren)
+    warnings.push(`Cette facture est adressée au SIREN ${inv.buyer.siren}, pas à votre entreprise (${ownSiren}).`);
   const taxSum = inv.taxes.reduce((s, t) => s + t.vat, 0);
   if (inv.taxes.length && taxSum !== inv.totalVat) warnings.push('Le total de TVA ne correspond pas au détail par taux.');
   if (inv.totalHt + inv.totalVat !== inv.totalTtc) warnings.push('Le total TTC ne correspond pas à HT + TVA.');

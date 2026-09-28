@@ -46,7 +46,8 @@ export function validateTemplate(t) {
   if (!FREQUENCIES[t.frequency]) problems.push('Choisissez une fréquence.');
   if (!/^\d{4}-\d{2}-\d{2}$/.test(t.anchorDate || '')) problems.push('Indiquez la date de la première facture.');
   else if (t.endDate && t.endDate < t.anchorDate) problems.push('La date de fin précède la première facture.');
-  if (!t.lines?.length || t.lines.some((l) => !l.label?.trim() || !(Number(l.qty) > 0) || !Number.isSafeInteger(l.unitPrice))) problems.push('Complétez les lignes (désignation, quantité, prix).');
+  if (!t.lines?.length || t.lines.some((l) => !l.label?.trim() || !(Number(l.qty) > 0) || !Number.isSafeInteger(l.unitPrice)))
+    problems.push('Complétez les lignes (désignation, quantité, prix).');
   return problems;
 }
 

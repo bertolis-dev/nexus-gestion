@@ -16,7 +16,10 @@ export function parseEuros(input) {
     if (!Number.isFinite(input)) throw new TypeError(`Montant invalide : ${input}`);
     return Math.round(input * 100);
   }
-  const s = String(input).trim().replace(/[\s  €]/g, '').replace(',', '.');
+  const s = String(input)
+    .trim()
+    .replace(/[\s\u00A0\u202F€]/g, '')
+    .replace(',', '.');
   const m = /^(-?)(\d+)(?:\.(\d{1,2}))?$/.exec(s);
   if (!m) throw new TypeError(`Montant invalide : « ${input} »`);
   const cents = Number(m[2]) * 100 + Number((m[3] || '').padEnd(2, '0'));

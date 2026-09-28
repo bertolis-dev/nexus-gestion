@@ -11,10 +11,20 @@ import { purchaseEntry, findDuplicates } from './purchases.js';
 import { mergeTransactions, suggestMatches, settlementEntry, vatOnReceiptEntry, directEntry } from './bank.js';
 import { divRound, splitTtc, sum } from './money.js';
 import { openingEntry } from './fecimport.js';
+import { addDays } from './dates.js';
 import { prepareCa3, prepareCa12, ca12Advances, liquidationEntry } from './vatreturn.js';
 import { LIFECYCLE } from './lifecycle.js';
-import { declarationPeriods, urssafDeclaration, urssafDeadline } from './micro.js';
-import { inventoryEntry, depreciationEntry, incomeStatement, corporateTax, corporateTaxEntry, resultEntry, nextYearOpening, allocationEntry } from './closing.js';
+import { declarationPeriods, urssafDeclaration, urssafDeadline, estimateContributions, thresholdStatus, vatFranchiseMessage, ACTIVITY_TYPES } from './micro.js';
+import {
+  inventoryEntry,
+  depreciationEntry,
+  incomeStatement,
+  corporateTax,
+  corporateTaxEntry,
+  resultEntry,
+  nextYearOpening,
+  allocationEntry,
+} from './closing.js';
 import { validateTemplate, dueOccurrences, periodLabel } from './recurring.js';
 
 /** Entrées d'argent sans facture de vente, proposées en langage courant. */
@@ -76,7 +86,13 @@ export class Workspace {
   // ---------------------------------------------------------------- clients
 
   saveClient(data) {
-    const code = data.code || data.name.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) || 'CLIENT';
+    const code =
+      data.code ||
+      data.name
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, '')
+        .slice(0, 8) ||
+      'CLIENT';
     if (data.id) {
       const idx = this.clients.findIndex((c) => c.id === data.id);
       this.clients[idx] = { ...this.clients[idx], ...data };
@@ -144,7 +160,7 @@ export class Workspace {
     const result = { drafts: [], issued: [] };
     for (const t of this.recurring) {
       for (const occ of dueOccurrences(t, today)) {
-        const due = new Date(Date.parse(`${today}T00:00:00Z`) + (t.paymentDays ?? 30) * 86400000).toISOString().slice(0, 10);
+        const due = addDays(today, t.paymentDays ?? 30);
         const period = periodLabel(occ.date, t.frequency);
         const draft = this.book.createDraft({
           type: 'invoice',
@@ -180,7 +196,10 @@ export class Workspace {
 
   /** Crédit de TVA reporté de la dernière déclaration validée avant la période. */
   previousVatCredit(from) {
-    const last = this.vatReturns.filter((r) => r.to < from).sort((a, b) => a.to.localeCompare(b.to)).at(-1);
+    const last = this.vatReturns
+      .filter((r) => r.to < from)
+      .sort((a, b) => a.to.localeCompare(b.to))
+      .at(-1);
     return last && last.balance < 0 ? -last.balance : 0;
   }
 
@@ -191,7 +210,10 @@ export class Workspace {
 
   /** Acomptes de TVA de l'exercice (régime simplifié), d'après la dernière CA12 déclarée. */
   vatAdvancesDue() {
-    const last = this.vatReturns.filter((r) => r.kind === 'CA12').sort((a, b) => a.to.localeCompare(b.to)).at(-1);
+    const last = this.vatReturns
+      .filter((r) => r.kind === 'CA12')
+      .sort((a, b) => a.to.localeCompare(b.to))
+      .at(-1);
     return last ? ca12Advances(last.summary) : null;
   }
 
@@ -203,7 +225,16 @@ export class Workspace {
     const liquidation = liquidationEntry(ca3);
     // Mois sans aucune TVA : la déclaration « néant » est enregistrée, sans écriture (rien à solder).
     const entry = liquidation.lines.length >= 2 ? this.ledger.addDraft(liquidation) : null;
-    const record = { kind: ca3.kind || 'CA3', from: period.from, to: period.to, boxes: ca3.boxes, balance: ca3.balance, entryId: entry?.id || null, declaredAt: today, summary: { grossVat: ca3.grossVat, deductibleOther: ca3.deductibleOther } };
+    const record = {
+      kind: ca3.kind || 'CA3',
+      from: period.from,
+      to: period.to,
+      boxes: ca3.boxes,
+      balance: ca3.balance,
+      entryId: entry?.id || null,
+      declaredAt: today,
+      summary: { grossVat: ca3.grossVat, deductibleOther: ca3.deductibleOther },
+    };
     this.company.vatReturns = [...this.vatReturns, record];
     return { ca3, entry, record };
   }
@@ -215,7 +246,8 @@ export class Workspace {
   }
 
   bookDepreciation() {
-    if (this.ledger.entries.some((e) => e.source?.kind === 'inventory' && e.source.type === 'depreciation')) throw new Error('Les dotations de l’exercice sont déjà passées.');
+    if (this.ledger.entries.some((e) => e.source?.kind === 'inventory' && e.source.type === 'depreciation'))
+      throw new Error('Les dotations de l’exercice sont déjà passées.');
     const entry = depreciationEntry(this);
     if (!entry) throw new Error('Aucune immobilisation à amortir cette année.');
     return this.ledger.addDraft(entry);
@@ -252,7 +284,8 @@ export class Workspace {
     const fy = this.company.fiscalYear;
     if (today <= fy.end) throw new Error('L’exercice n’est pas terminé.');
     const result = resultEntry(this.ledger, fy);
-    if (result && this.ledger.lockedThrough >= fy.end) throw new Error('Le dernier jour de l’exercice est déjà verrouillé : l’écriture de résultat ne peut plus être passée.');
+    if (result && this.ledger.lockedThrough >= fy.end)
+      throw new Error('Le dernier jour de l’exercice est déjà verrouillé : l’écriture de résultat ne peut plus être passée.');
     if (result) this.ledger.addDraft(result);
     this.ledger.validateThrough(fy.end);
     const late = this.ledger.entries.filter((e) => e.status === 'draft');
@@ -341,10 +374,30 @@ export class Workspace {
   openDocs() {
     const sales = this.book.invoices
       .filter((i) => i.status === 'issued' && i.type !== 'credit' && i.type !== 'quote' && this.book.outstanding(i) > 0)
-      .map((i) => ({ id: i.id, kind: 'invoice', number: i.number, partyName: i.client.name, date: i.issueDate, dueDate: i.dueDate, outstanding: this.book.outstanding(i), thirdPartyAccount: '411000', aux: this.invoiceAux(i) }));
+      .map((i) => ({
+        id: i.id,
+        kind: 'invoice',
+        number: i.number,
+        partyName: i.client.name,
+        date: i.issueDate,
+        dueDate: i.dueDate,
+        outstanding: this.book.outstanding(i),
+        thirdPartyAccount: '411000',
+        aux: this.invoiceAux(i),
+      }));
     const buys = this.purchases
       .filter((p) => p.totalTtc - p.paid > 0)
-      .map((p) => ({ id: p.id, kind: p.type === 'credit' ? 'purchase-credit' : 'purchase', number: p.number || p.id, partyName: p.supplier.name, date: p.date, dueDate: p.date, outstanding: p.totalTtc - p.paid, thirdPartyAccount: p.thirdPartyAccount, aux: p.aux }));
+      .map((p) => ({
+        id: p.id,
+        kind: p.type === 'credit' ? 'purchase-credit' : 'purchase',
+        number: p.number || p.id,
+        partyName: p.supplier.name,
+        date: p.date,
+        dueDate: p.date,
+        outstanding: p.totalTtc - p.paid,
+        thirdPartyAccount: p.thirdPartyAccount,
+        aux: p.aux,
+      }));
     return [...sales, ...buys];
   }
 
@@ -367,7 +420,9 @@ export class Workspace {
         const inv = this.book.get(doc.id);
         const left = this.book.recordPayment(inv.id, { amount, date: tx.date, ref: tx.id, entryId: entry.id, lineIndex });
         const saleEntry = this.ledger.entries.find((e) => e.id === inv.entryId);
-        const vatUsesReceipts = saleEntry ? saleEntry.lines.some((l) => l.account === '445800') : inv.totals.totalVat > 0 && saleVatAccount(inv, inv.issuer) === '445800';
+        const vatUsesReceipts = saleEntry
+          ? saleEntry.lines.some((l) => l.account === '445800')
+          : inv.totals.totalVat > 0 && saleVatAccount(inv, inv.issuer) === '445800';
         if (vatUsesReceipts) {
           const vat = vatOnReceiptEntry(inv, amount, tx.date);
           if (vat) this.ledger.addDraft(vat);
@@ -377,7 +432,8 @@ export class Workspace {
           const events = this.book.lifecycle[inv.id] || [];
           const last = events.at(-1);
           // Pas de statut automatique après un statut final (facture refusée puis payée : à traiter à la main).
-          if (!last || !LIFECYCLE[last.status].final) this.book.recordStatus(inv.id, { status: 'encaissee', date: tx.date, source: 'banque', detail: tx.label });
+          if (!last || !LIFECYCLE[last.status].final)
+            this.book.recordStatus(inv.id, { status: 'encaissee', date: tx.date, source: 'banque', detail: tx.label });
         }
       } else {
         const p = this.purchases.find((x) => x.id === doc.id);
@@ -468,10 +524,47 @@ export class Workspace {
     const out = [];
     for (const inv of this.book.invoices) {
       for (const p of this.book.payments[inv.id] || []) {
-        out.push({ date: p.date, invoiceNumber: inv.number, clientName: inv.client.name, amount: p.amount, method: 'Virement', activity: this.company.microActivity || 'bnc' });
+        out.push({
+          date: p.date,
+          invoiceNumber: inv.number,
+          clientName: inv.client.name,
+          amount: p.amount,
+          method: 'Virement',
+          activity: this.company.microActivity || 'bnc',
+        });
       }
     }
     return out;
+  }
+
+  /** Situation du micro-entrepreneur utilisée pour estimer ses cotisations (Paramètres > Ma micro-entreprise). */
+  microOptions() {
+    const c = this.company;
+    return {
+      acreStart: c.acreStart || null,
+      acreEnd: c.acreEnd || null,
+      versementLiberatoire: Boolean(c.versementLiberatoire),
+      retraite: c.retraite === 'cipav' ? 'cipav' : 'general',
+      artisan: Boolean(c.artisan),
+    };
+  }
+
+  /**
+   * Situation vis-à-vis de la franchise de TVA, avec le message à afficher. L'année précédente n'est
+   * connue que si Nexus tenait déjà la comptabilité au 1er janvier de cette année-là.
+   */
+  vatFranchiseStatus(today) {
+    if (this.company.vatRegime !== 'franchise') return null;
+    const year = Number(today.slice(0, 4));
+    const receipts = this.microReceipts();
+    const family = ACTIVITY_TYPES[this.company.microActivity]?.family || (this.company.defaultNature === 'biens' ? 'biens' : 'services');
+    const current = thresholdStatus(receipts, year);
+    const since = this.archives?.[0]?.fiscalYear.start || this.company.fiscalYear.start;
+    const previousKnown = since <= `${year - 1}-01-01`;
+    const previous = thresholdStatus(receipts, year - 1).vat[family];
+    const previousYearOverBase = previousKnown ? previous === 'depasse-base' || previous === 'depasse-majore' : null;
+    const status = current.vat[family];
+    return { status, family, turnover: current.ca[family], message: vatFranchiseMessage(status, family, { year, previousYearOverBase }) };
   }
 
   get urssafDeclarations() {
@@ -483,12 +576,29 @@ export class Workspace {
     const receipts = this.microReceipts();
     // Rien avant le premier exercice tenu dans Nexus (les périodes antérieures ont été déclarées ailleurs).
     const since = this.archives?.[0]?.fiscalYear.start || this.company.fiscalYear.start;
-    return declarationPeriods(year, this.company.urssafFrequency || 'trimestrielle').filter((p) => p.to >= since).map((p) => {
-      const record = this.urssafDeclarations.find((r) => r.from === p.from);
-      const deadline = urssafDeadline(p);
-      const status = record && !record.contributions ? 'rien-a-payer' : record?.paidAt ? 'payee' : record ? 'declaree' : p.to >= today ? 'en-cours' : deadline < today ? 'en-retard' : 'a-declarer';
-      return { ...p, turnover: urssafDeclaration(receipts, p).total, deadline, record, status };
-    });
+    return declarationPeriods(year, this.company.urssafFrequency || 'trimestrielle')
+      .filter((p) => p.to >= since)
+      .map((p) => {
+        const record = this.urssafDeclarations.find((r) => r.from === p.from);
+        const deadline = urssafDeadline(p);
+        const status =
+          record && !record.contributions
+            ? 'rien-a-payer'
+            : record?.paidAt
+              ? 'payee'
+              : record
+                ? 'declaree'
+                : p.from > today
+                  ? 'a-venir'
+                  : p.to >= today
+                    ? 'en-cours'
+                    : deadline < today
+                      ? 'en-retard'
+                      : 'a-declarer';
+        const turnover = urssafDeclaration(receipts, p).total;
+        const estimate = estimateContributions(turnover, this.company.microActivity || 'bnc', this.microOptions(), p.to);
+        return { ...p, turnover, estimate, deadline, record, status };
+      });
   }
 
   /** Enregistre la déclaration faite sur autoentrepreneur.urssaf.fr (chiffre d'affaires et cotisations calculées par l'URSSAF). */
@@ -502,9 +612,7 @@ export class Workspace {
 
   /** Un prélèvement « Cotisations URSSAF » solde la plus ancienne déclaration non payée du même montant. */
   #markUrssafPaid(tx) {
-    const record = [...this.urssafDeclarations]
-      .sort((a, b) => a.from.localeCompare(b.from))
-      .find((r) => !r.paidAt && r.contributions === Math.abs(tx.amount));
+    const record = [...this.urssafDeclarations].sort((a, b) => a.from.localeCompare(b.from)).find((r) => !r.paidAt && r.contributions === Math.abs(tx.amount));
     if (!record) return;
     this.company.urssafDeclarations = this.urssafDeclarations.map((r) => (r === record ? { ...r, paidAt: tx.date, txId: tx.id } : r));
   }
@@ -516,9 +624,17 @@ export class Workspace {
     const pending = periods.find((p) => p.status === 'en-retard' || p.status === 'a-declarer');
     if (!pending) return [];
     const fr = (d) => d.split('-').reverse().join('/');
-    return [{ urgency: pending.status === 'en-retard' ? 3 : 2, kind: 'urssaf', view: 'urssaf', text: pending.status === 'en-retard'
-      ? `Déclaration URSSAF ${pending.label} en retard (échéance du ${fr(pending.deadline)})`
-      : `Déclarer votre chiffre d'affaires ${pending.label} à l'URSSAF avant le ${fr(pending.deadline)}` }];
+    return [
+      {
+        urgency: pending.status === 'en-retard' ? 3 : 2,
+        kind: 'urssaf',
+        view: 'urssaf',
+        text:
+          pending.status === 'en-retard'
+            ? `Déclaration URSSAF ${pending.label} en retard (échéance du ${fr(pending.deadline)})`
+            : `Déclarer votre chiffre d'affaires ${pending.label} à l'URSSAF avant le ${fr(pending.deadline)}`,
+      },
+    ];
   }
 
   todo(today) {
@@ -527,12 +643,20 @@ export class Workspace {
     if (open.length) items.push({ urgency: 2, kind: 'bank', view: 'banque', text: `${open.length} transaction${open.length > 1 ? 's' : ''} à justifier` });
     const late = this.receivables(today).filter((r) => r.outstanding > 0 && r.lateDays > 0);
     for (const r of late) {
-      items.push({ urgency: r.lateDays > 30 ? 3 : 2, kind: 'late', view: 'ventes', id: r.invoice.id, text: `Relancer ${r.invoice.client.name} — facture ${r.invoice.number} en retard de ${r.lateDays} j` });
+      items.push({
+        urgency: r.lateDays > 30 ? 3 : 2,
+        kind: 'late',
+        view: 'ventes',
+        id: r.invoice.id,
+        text: `Relancer ${r.invoice.client.name} — facture ${r.invoice.number} en retard de ${r.lateDays} j`,
+      });
     }
     const drafts = this.book.invoices.filter((i) => i.status === 'draft' && i.type !== 'quote');
-    if (drafts.length) items.push({ urgency: 1, kind: 'draft', view: 'ventes', text: `${drafts.length} facture${drafts.length > 1 ? 's' : ''} en brouillon à émettre` });
+    if (drafts.length)
+      items.push({ urgency: 1, kind: 'draft', view: 'ventes', text: `${drafts.length} facture${drafts.length > 1 ? 's' : ''} en brouillon à émettre` });
     const noReceipt = this.transactions.filter((t) => t.missingReceipt);
-    if (noReceipt.length) items.push({ urgency: 1, kind: 'receipt', view: 'banque', text: `${noReceipt.length} dépense${noReceipt.length > 1 ? 's' : ''} sans justificatif` });
+    if (noReceipt.length)
+      items.push({ urgency: 1, kind: 'receipt', view: 'banque', text: `${noReceipt.length} dépense${noReceipt.length > 1 ? 's' : ''} sans justificatif` });
     items.push(...this.#vatTodo(today));
     items.push(...this.#urssafTodo(today));
     return items.sort((a, b) => b.urgency - a.urgency);
@@ -554,7 +678,8 @@ export class Workspace {
     const pad = (n) => String(n).padStart(2, '0');
     if (this.company.vatRegime === 'reel-simplifie') {
       if (month === 6 || month === 11) return [{ urgency: 2, kind: 'vat', view: 'tva', text: `Acompte de TVA de ${monthName(month)} à payer (CA12)` }];
-      if (month >= 2 && month <= 4) return [{ urgency: 2, kind: 'vat', view: 'tva', text: `Déclaration annuelle de TVA (CA12) de ${y - 1} à déposer début mai` }];
+      if (month >= 2 && month <= 4)
+        return [{ urgency: 2, kind: 'vat', view: 'tva', text: `Déclaration annuelle de TVA (CA12) de ${y - 1} à déposer début mai` }];
       return [];
     }
     const deadlineDay = this.company.vatDeadlineDay || 19;
@@ -564,7 +689,12 @@ export class Workspace {
       const lateStart = new Date(Date.UTC(y, month - 1, 1)).toISOString().slice(0, 10);
       if (lateStart >= this.company.fiscalYear.start && !this.vatReturns.some((r) => r.from === lateStart)) {
         const lateName = monthName(new Date(`${lateStart}T00:00:00Z`).getUTCMonth());
-        items.push({ urgency: 3, kind: 'vat', view: 'tva', text: `TVA ${of(lateName)} non déclarée : l'échéance du ${pad(deadlineDay)}/${pad(month + 1)} est dépassée` });
+        items.push({
+          urgency: 3,
+          kind: 'vat',
+          view: 'tva',
+          text: `TVA ${of(lateName)} non déclarée : l'échéance du ${pad(deadlineDay)}/${pad(month + 1)} est dépassée`,
+        });
       }
     }
     // Mois déclaré : le précédent tant que son échéance n'est pas passée, sinon le mois en cours.
@@ -575,12 +705,15 @@ export class Workspace {
     const period = { from: start.toISOString().slice(0, 10), to: end.toISOString().slice(0, 10) };
     if (this.vatReturns.some((r) => r.from === period.from)) return items; // déjà déclarée
     const net = this.prepareVatReturn(period).balance;
-    return [...items, {
-      urgency: declared < month ? 3 : 1,
-      kind: 'vat',
-      view: 'tva',
-      amount: net,
-      text: `TVA ${of(monthName(start.getUTCMonth()))} à déclarer avant le ${pad(due.getUTCDate())}/${pad(due.getUTCMonth() + 1)}`,
-    }];
+    return [
+      ...items,
+      {
+        urgency: declared < month ? 3 : 1,
+        kind: 'vat',
+        view: 'tva',
+        amount: net,
+        text: `TVA ${of(monthName(start.getUTCMonth()))} à déclarer avant le ${pad(due.getUTCDate())}/${pad(due.getUTCMonth() + 1)}`,
+      },
+    ];
   }
 }

@@ -22,7 +22,7 @@ export function purchaseEntry(p, company) {
   const lines = [];
   let totalTtc = 0;
   let hasFixedAsset = false;
-  const deductibleByAccount = { '445660': 0, '445620': 0 };
+  const deductibleByAccount = { 445660: 0, 445620: 0 };
   let reverseChargeVat = 0;
 
   for (const l of p.lines) {
@@ -88,15 +88,17 @@ function mergeSameAccount(lines) {
 
 /** Doublon : même fournisseur, même montant TTC et même date ou même numéro de facture. */
 export function findDuplicates(candidate, existing) {
-  const norm = (s) => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const norm = (s) =>
+    String(s || '')
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '');
   const ttc = (p) => sum(p.lines.map((l) => l.ht + vatFromHt(l.ht, l.vatRateBp || 0)));
   return existing.filter(
     (p) =>
       p.id !== candidate.id &&
       (p.type || 'invoice') === (candidate.type || 'invoice') &&
       norm(p.supplier.name) === norm(candidate.supplier.name) &&
-      ((candidate.number && norm(p.number) === norm(candidate.number)) ||
-        (ttc(p) === ttc(candidate) && p.date === candidate.date)),
+      ((candidate.number && norm(p.number) === norm(candidate.number)) || (ttc(p) === ttc(candidate) && p.date === candidate.date)),
   );
 }
 

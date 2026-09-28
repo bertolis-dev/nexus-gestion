@@ -87,7 +87,7 @@
   --sidebar-width: 240px;
   --topbar-height: 64px;
   --mobile-nav-height: 64px;
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;
   /* §refonte typographique du 01/09/2026 : registre serif réservé aux titres d'écran et aux chiffres
      clés (KPI héros, total d'un donut) — jamais au corps de texte, aux boutons ni aux tableaux, qui
      restent en --font-sans. Deux registres plutôt qu'une seule graisse partout donne le côté "produit
@@ -95,13 +95,19 @@
   --font-serif: 'Fraunces', Georgia, 'Times New Roman', serif;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 /* Repère de focus clavier pour les lignes/cartes cliquables rendues via des <tr>/<div role="button">
    (salariés, organigramme, favoris, notifications) — sans ça, le focus ajouté au clavier serait invisible. */
-[role="button"]:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
+[role='button']:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   font-family: var(--font-sans);
@@ -112,16 +118,36 @@ html, body {
 
 /* Uniquement des ancres internes (menu de la landing) déclenchent un scroll natif dans toute
    l'app — aucun scrollIntoView()/scrollTo() programmatique ailleurs qui pourrait en pâtir. */
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+}
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
+  html {
+    scroll-behavior: auto;
+  }
 }
 
-h1 { font-family: var(--font-serif); font-size: 26px; font-weight: 500; letter-spacing: -0.01em; margin: 0 0 4px; }
-h2 { font-size: 16px; font-weight: 600; margin: 0 0 10px; }
-p { margin: 0; line-height: 1.5; }
+h1 {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  margin: 0 0 4px;
+}
+h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 10px;
+}
+p {
+  margin: 0;
+  line-height: 1.5;
+}
 
-.text-muted { color: var(--color-text-muted); font-size: 14px; }
+.text-muted {
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
 
 /* ---------------------------------------------------------------------
    Layout
@@ -144,7 +170,9 @@ p { margin: 0; line-height: 1.5; }
   flex-direction: column;
   flex-shrink: 0;
   position: fixed;
-  top: 0; left: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  bottom: 0;
 }
 
 .sidebar-logo {
@@ -176,7 +204,12 @@ p { margin: 0; line-height: 1.5; }
   box-sizing: border-box;
 }
 
-.logo-icon { width: 100%; height: 100%; display: block; object-fit: contain; }
+.logo-icon {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
 
 #sidebar-nav {
   display: flex;
@@ -223,15 +256,25 @@ p { margin: 0; line-height: 1.5; }
   color: var(--color-text-strong);
   cursor: pointer;
   text-align: left;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
 
-.nav-item:hover { background: var(--color-muted-soft); color: var(--color-text); }
-.nav-item.active { background: var(--color-primary-soft); color: var(--color-primary-text); }
+.nav-item:hover {
+  background: var(--color-muted-soft);
+  color: var(--color-text);
+}
+.nav-item.active {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-text);
+}
 
 /* Bouton "☰" du menu mobile (voir @media 860px pour son rôle réel) — invisible sur desktop, la
    sidebar y affiche déjà #sidebar-nav en entier, pas besoin de le déplier. */
-.mobile-nav-toggle { display: none; }
+.mobile-nav-toggle {
+  display: none;
+}
 
 .nav-section-label {
   padding: 14px 12px 4px;
@@ -242,8 +285,12 @@ p { margin: 0; line-height: 1.5; }
   color: var(--color-gold);
   opacity: 0.85;
 }
-.nav-section-label:first-child { padding-top: 4px; }
-.nav-item.disabled { opacity: 0.6; }
+.nav-section-label:first-child {
+  padding-top: 4px;
+}
+.nav-item.disabled {
+  opacity: 0.6;
+}
 
 /* §retour du 21/08/2026 : marine/or gardés comme base de la charte plutôt qu'une couleur différente
    par item (essayé, jugé "juste des noms colorés" sans vrai travail de design) — puce en dégradé
@@ -259,13 +306,28 @@ p { margin: 0; line-height: 1.5; }
   background: linear-gradient(135deg, var(--color-chip-bg), var(--color-primary-soft));
   color: var(--color-primary-text);
 }
-.nav-icon svg { width: 16px; height: 16px; display: block; }
+.nav-icon svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
 
 /* Voir icon() (app.js) — wrapper générique pour une icône ICONS.xxx insérée en ligne dans du texte
    (titres, listes, badges), ailleurs que dans .nav-icon (sidebar, son propre wrapper dédié). */
-.icon-inline { display: inline-flex; flex-shrink: 0; vertical-align: middle; margin-top: -2px; }
-.icon-inline svg { width: 100%; height: 100%; display: block; }
-.nav-label { flex: 1; }
+.icon-inline {
+  display: inline-flex;
+  flex-shrink: 0;
+  vertical-align: middle;
+  margin-top: -2px;
+}
+.icon-inline svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.nav-label {
+  flex: 1;
+}
 .nav-soon {
   font-size: 10px;
   text-transform: uppercase;
@@ -297,7 +359,11 @@ p { margin: 0; line-height: 1.5; }
   z-index: 5;
 }
 
-.topbar-title { font-weight: 600; font-size: 14px; color: var(--color-text-muted); }
+.topbar-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
 
 /* Bandeau persistant "accès d'essai restreint" — entreprises non souscrites (§ migration 0012). */
 .non-souscrit-banner {
@@ -314,7 +380,9 @@ p { margin: 0; line-height: 1.5; }
   font-weight: 500;
 }
 
-.non-souscrit-banner .btn { flex-shrink: 0; }
+.non-souscrit-banner .btn {
+  flex-shrink: 0;
+}
 
 /* D3 (audit fiabilité du 19/08/2026) : bannière persistante (pas un toast qui disparaît seul) tant
    qu'une écriture n'a pas pu être synchronisée avec le serveur — voir renderSyncFailureBanner,
@@ -333,12 +401,20 @@ p { margin: 0; line-height: 1.5; }
   font-size: 13px;
   font-weight: 500;
 }
-.sync-failure-banner .btn { flex-shrink: 0; }
+.sync-failure-banner .btn {
+  flex-shrink: 0;
+}
 
 /* Champs mot de passe — bouton "afficher" (œil) + indicateur de correspondance pour les paires
    mot de passe/confirmation, partout où ils apparaissent (connexion, inscription, réinitialisation). */
-.password-input-wrapper { position: relative; display: block; }
-.password-input-wrapper .input { width: 100%; padding-right: 40px; }
+.password-input-wrapper {
+  position: relative;
+  display: block;
+}
+.password-input-wrapper .input {
+  width: 100%;
+  padding-right: 40px;
+}
 /* .btn-icon.password-toggle (deux classes) plutôt que .password-toggle seul : .btn-icon pose aussi
    position:relative (repère de zone tactile, voir plus bas) — même spécificité qu'un simple
    .password-toggle, donc c'est l'ORDRE dans le fichier qui déciderait, et .btn-icon vient après.
@@ -363,22 +439,57 @@ p { margin: 0; line-height: 1.5; }
   font-size: 12px;
   font-weight: 600;
 }
-.password-match-indicator.match-ok { display: flex; color: var(--color-success); }
-.password-match-indicator.match-bad { display: flex; color: var(--color-danger); }
+.password-match-indicator.match-ok {
+  display: flex;
+  color: var(--color-success);
+}
+.password-match-indicator.match-bad {
+  display: flex;
+  color: var(--color-danger);
+}
 
-.password-strength { display: none; align-items: center; gap: 8px; margin-top: 6px; font-size: 12px; font-weight: 600; }
-.password-strength-bar { display: flex; gap: 3px; }
-.password-strength-bar span { width: 24px; height: 4px; border-radius: 2px; background: var(--color-border); }
-.password-strength.level-weak .password-strength-bar span:nth-child(1) { background: var(--color-danger); }
+.password-strength {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.password-strength-bar {
+  display: flex;
+  gap: 3px;
+}
+.password-strength-bar span {
+  width: 24px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-border);
+}
+.password-strength.level-weak .password-strength-bar span:nth-child(1) {
+  background: var(--color-danger);
+}
 .password-strength.level-medium .password-strength-bar span:nth-child(1),
-.password-strength.level-medium .password-strength-bar span:nth-child(2) { background: var(--color-warning); }
-.password-strength.level-strong .password-strength-bar span { background: var(--color-success); }
-.password-strength.level-weak .password-strength-label { color: var(--color-danger); }
-.password-strength.level-medium .password-strength-label { color: var(--color-warning); }
-.password-strength.level-strong .password-strength-label { color: var(--color-success); }
+.password-strength.level-medium .password-strength-bar span:nth-child(2) {
+  background: var(--color-warning);
+}
+.password-strength.level-strong .password-strength-bar span {
+  background: var(--color-success);
+}
+.password-strength.level-weak .password-strength-label {
+  color: var(--color-danger);
+}
+.password-strength.level-medium .password-strength-label {
+  color: var(--color-warning);
+}
+.password-strength.level-strong .password-strength-label {
+  color: var(--color-success);
+}
 
 /* Autocomplétion d'adresse (API Adresse gouv.fr) — suggestions sous le champ pendant la saisie. */
-.address-autocomplete-field { position: relative; }
+.address-autocomplete-field {
+  position: relative;
+}
 .address-suggestions {
   display: none;
   position: absolute;
@@ -394,16 +505,42 @@ p { margin: 0; line-height: 1.5; }
   max-height: 220px;
   overflow-y: auto;
 }
-.address-suggestion-item, .company-suggestion-item { padding: 8px 12px; font-size: 13px; cursor: pointer; }
-.address-suggestion-item:hover, .company-suggestion-item:hover { background: var(--color-muted-soft); }
+.address-suggestion-item,
+.company-suggestion-item {
+  padding: 8px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.address-suggestion-item:hover,
+.company-suggestion-item:hover {
+  background: var(--color-muted-soft);
+}
 
 /* Champ obligatoire resté vide après une tentative de soumission — voir bindGlobalEvents. */
-.input.field-invalid { border-color: var(--color-danger); background: var(--color-danger-soft); }
+.input.field-invalid {
+  border-color: var(--color-danger);
+  background: var(--color-danger-soft);
+}
 
-.field-hint-computed { display: block; margin-top: 4px; font-size: 12px; color: var(--color-text-muted); }
+.field-hint-computed {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
 
-.field-warning { display: none; align-items: center; gap: 4px; margin-top: 6px; font-size: 12px; font-weight: 600; color: var(--color-warning); }
-.field-warning.visible { display: flex; }
+.field-warning {
+  display: none;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-warning);
+}
+.field-warning.visible {
+  display: flex;
+}
 
 /* §retour Betty du 18/09/2026 (point 2.3, "rappels légaux forfait jours") : bloc informatif encadré,
    distinct d'un simple .form-hint sous un champ — regroupe plusieurs rappels liés entre eux. */
@@ -415,30 +552,67 @@ p { margin: 0; line-height: 1.5; }
   font-size: 13px;
   color: var(--color-text-muted);
 }
-.form-hint-block strong { display: block; margin-bottom: 6px; color: var(--color-text); }
-.form-hint-block ul { margin: 0; padding-left: 18px; }
-.form-hint-block li { margin-bottom: 4px; }
+.form-hint-block strong {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--color-text);
+}
+.form-hint-block ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.form-hint-block li {
+  margin-bottom: 4px;
+}
 
-.text-danger { color: var(--color-danger); font-weight: 600; }
+.text-danger {
+  color: var(--color-danger);
+  font-weight: 600;
+}
 
 /* §retour Betty du 19/09/2026 ("ajouter une valeur sur place") : révélé sous le <select> concerné
    (voir selectField/openQuickAddInline, app.js), jamais une modale/un ré-rendu — le formulaire en
    cours (souvent lui-même une modale) ne doit jamais être perdu. */
-.quick-add-inline:not([hidden]) { margin-top: 8px; }
+.quick-add-inline:not([hidden]) {
+  margin-top: 8px;
+}
 .quick-add-panel {
   padding: 12px;
   border: 1px dashed var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-muted-soft);
 }
-.quick-add-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+.quick-add-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
 
-.table-scroll { overflow-x: auto; max-height: 420px; overflow-y: auto; }
+.table-scroll {
+  overflow-x: auto;
+  max-height: 420px;
+  overflow-y: auto;
+}
 
-.quality-issue-row { flex-direction: column; align-items: flex-start; gap: 8px; }
-.quality-issue-header { display: flex; align-items: center; gap: 8px; }
-.quality-issue-employees { display: flex; flex-wrap: wrap; gap: 6px 14px; }
-.quality-issue-link { font-size: 13px; }
+.quality-issue-row {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.quality-issue-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.quality-issue-employees {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+}
+.quality-issue-link {
+  font-size: 13px;
+}
 
 /* §retour Betty du 22/09/2026 ("beaucoup d'espace perdu") et du 19/09/2026 ("là où il y a marqué
    obligatoire... ça doit être un petit point d'interrogation... l'orange doit rester réservé aux
@@ -454,7 +628,10 @@ p { margin: 0; line-height: 1.5; }
   max-width: 70ch;
   color: var(--color-text-muted);
 }
-.form-hint .btn-link { font-size: 12px; text-decoration: underline; }
+.form-hint .btn-link {
+  font-size: 12px;
+  text-decoration: underline;
+}
 
 /* §refonte "aide contextuelle" du 01/09/2026 : voir fieldHelpIcon (app.js) — un "?" discret plutôt
    qu'un pavé de texte permanent, réservé aux champs vraiment complexes. */
@@ -484,15 +661,30 @@ p { margin: 0; line-height: 1.5; }
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
 }
-.bertolis-main { max-width: 1100px; margin: 0 auto; padding: 28px; }
+.bertolis-main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px;
+}
 
-.topbar-search { position: relative; flex: 1; max-width: 480px; min-width: 0; }
-.topbar-search .input { width: 100%; }
+.topbar-search {
+  position: relative;
+  flex: 1;
+  max-width: 480px;
+  min-width: 0;
+}
+.topbar-search .input {
+  width: 100%;
+}
 
 /* Manquait entièrement : sans ça, .notif-wrapper/.user-menu-wrapper (deux <div> block) s'empilaient
    verticalement au lieu de se placer côte à côte — la cloche rendait à moitié hors écran (top négatif)
    et chevauchait l'avatar, à toutes les largeurs d'écran (pas seulement mobile). */
-.topbar-user { display: flex; align-items: center; gap: 16px; }
+.topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
 
 .search-results {
   position: absolute;
@@ -509,7 +701,9 @@ p { margin: 0; line-height: 1.5; }
   display: none;
 }
 
-.search-results.open { display: block; }
+.search-results.open {
+  display: block;
+}
 
 .search-section-label {
   font-size: 11px;
@@ -521,12 +715,29 @@ p { margin: 0; line-height: 1.5; }
 }
 
 /* Sprint SIRH premium §12 (reprise) : sections FAQ/Bonnes pratiques du Centre d'aide */
-.help-section { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--color-border); }
-.help-section p { margin-bottom: 10px; font-size: 14px; }
-.help-section p:last-child { margin-bottom: 0; }
-.help-tips { margin: 0; padding-left: 20px; font-size: 14px; }
-.help-tips li { margin-bottom: 6px; }
-.help-tips li:last-child { margin-bottom: 0; }
+.help-section {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+.help-section p {
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+.help-section p:last-child {
+  margin-bottom: 0;
+}
+.help-tips {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 14px;
+}
+.help-tips li {
+  margin-bottom: 6px;
+}
+.help-tips li:last-child {
+  margin-bottom: 0;
+}
 
 .search-result-item {
   display: flex;
@@ -536,11 +747,27 @@ p { margin: 0; line-height: 1.5; }
   cursor: pointer;
 }
 
-.search-result-item:hover, .search-result-item.highlighted { background: var(--color-muted-soft); }
-.search-result-icon { font-size: 16px; flex-shrink: 0; }
-.search-result-icon svg { width: 16px; height: 16px; display: block; }
-.search-result-label { font-weight: 600; font-size: 13px; }
-.search-result-sublabel { font-size: 12px; color: var(--color-text-muted); }
+.search-result-item:hover,
+.search-result-item.highlighted {
+  background: var(--color-muted-soft);
+}
+.search-result-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.search-result-icon svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+.search-result-label {
+  font-weight: 600;
+  font-size: 13px;
+}
+.search-result-sublabel {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
 
 .search-empty {
   padding: 16px 14px;
@@ -560,9 +787,21 @@ p { margin: 0; line-height: 1.5; }
    Vue header / KPI
    --------------------------------------------------------------------- */
 
-.view-header { margin-bottom: 20px; }
-.view-header-row { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.view-subtitle { color: var(--color-text-muted); font-size: 14px; margin-top: 2px; }
+.view-header {
+  margin-bottom: 20px;
+}
+.view-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.view-subtitle {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  margin-top: 2px;
+}
 
 /* Bandeau doré des en-têtes de page (retour du 21/08/2026 : "une bande dorée sur toutes les
    pages" + "écarte la bande dorée et le contenu en bas pour pas que ce soit collé"). Ciblé sur
@@ -576,8 +815,13 @@ p { margin: 0; line-height: 1.5; }
   margin-bottom: 24px;
   box-shadow: var(--shadow-sm);
 }
-.view-header h1, .view-header h2 { color: #221704; }
-.view-header .view-subtitle { color: rgba(34, 23, 4, 0.7); }
+.view-header h1,
+.view-header h2 {
+  color: #221704;
+}
+.view-header .view-subtitle {
+  color: rgba(34, 23, 4, 0.7);
+}
 
 /* Bandeau d'accueil du tableau de bord (§retour "de vraies couleurs, marine + or, ça doit donner
    envie" du 21/08/2026) — voir renderDashboardHero (app.js). Toujours sombre, quel que soit le
@@ -614,10 +858,24 @@ p { margin: 0; line-height: 1.5; }
   border-radius: 50%;
   pointer-events: none;
 }
-.dashboard-hero-text { position: relative; z-index: 1; }
-.dashboard-hero-text h1 { color: #fff; margin: 0 0 4px; }
-.dashboard-hero-text p { color: rgba(255, 255, 255, 0.75); margin: 0; font-size: 14px; }
-.dashboard-hero-actions { position: relative; z-index: 1; flex-shrink: 0; }
+.dashboard-hero-text {
+  position: relative;
+  z-index: 1;
+}
+.dashboard-hero-text h1 {
+  color: #fff;
+  margin: 0 0 4px;
+}
+.dashboard-hero-text p {
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0;
+  font-size: 14px;
+}
+.dashboard-hero-actions {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+}
 /* Le bouton "Personnaliser" (.btn-secondary) est thème-aware par défaut (pensé pour une carte
    claire/sombre ordinaire) — jamais adapté à ce fond toujours sombre, donc réécrit ici explicitement
    plutôt que de dépendre du thème ambiant. */
@@ -626,9 +884,13 @@ p { margin: 0; line-height: 1.5; }
   color: #fff;
   border-color: rgba(255, 255, 255, 0.3);
 }
-.dashboard-hero-actions .btn-secondary:hover { background: rgba(255, 255, 255, 0.22); }
+.dashboard-hero-actions .btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
 @media (max-width: 480px) {
-  .dashboard-hero { padding: 14px 18px; }
+  .dashboard-hero {
+    padding: 14px 18px;
+  }
 }
 
 /* Compacité voulue (retour du 21/08/2026) — grille et cartes KPI resserrées, pour voir plus de
@@ -663,9 +925,21 @@ p { margin: 0; line-height: 1.5; }
   color: var(--color-primary-text);
   margin-bottom: 7px;
 }
-.kpi-icon svg { width: 16px; height: 16px; display: block; }
-.kpi-value { font-family: var(--font-serif); font-size: 22px; font-weight: 500; }
-.kpi-label { font-size: 12.5px; color: var(--color-text-muted); margin-top: 1px; }
+.kpi-icon svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+.kpi-value {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 500;
+}
+.kpi-label {
+  font-size: 12.5px;
+  color: var(--color-text-muted);
+  margin-top: 1px;
+}
 
 /* §refonte "carte héros" du 01/09/2026 : LA métrique la plus représentative de l'écran (une seule,
    jamais plus dans une même grille) — fond marine plein, chiffre en or, au lieu de 5 cartes identiques
@@ -683,11 +957,21 @@ p { margin: 0; line-height: 1.5; }
   border-color: transparent;
   grid-column: span 2;
 }
-.kpi-card-hero .kpi-icon { background: rgba(255, 255, 255, 0.16); color: var(--landing-gold-300); }
-.kpi-card-hero .kpi-value { color: var(--landing-gold-300); font-size: 28px; }
-.kpi-card-hero .kpi-label { color: rgba(255, 255, 255, 0.78); }
+.kpi-card-hero .kpi-icon {
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--landing-gold-300);
+}
+.kpi-card-hero .kpi-value {
+  color: var(--landing-gold-300);
+  font-size: 28px;
+}
+.kpi-card-hero .kpi-label {
+  color: rgba(255, 255, 255, 0.78);
+}
 @media (max-width: 480px) {
-  .kpi-card-hero { grid-column: 1 / -1; }
+  .kpi-card-hero {
+    grid-column: 1 / -1;
+  }
 }
 
 /* ---------------------------------------------------------------------
@@ -731,25 +1015,56 @@ p { margin: 0; line-height: 1.5; }
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.05s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.05s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
-.btn:active { transform: scale(0.98); }
-.btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+.btn:active {
+  transform: scale(0.98);
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
 
 /* Pas de bordure (retour explicite du 21/08/2026, revient sur la demande initiale de bordure) —
    juste le dégradé, sans contour supplémentaire. */
-.btn-primary { background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover)); color: white; transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease; }
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+  color: white;
+  transition:
+    transform 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
 /* Lueur douce au survol (§passe "premium ++" du 21/08/2026) — même idée que .landing-page .btn-primary,
    étendue à l'appli connectée : repos inchangé (pas de poids visuel ajouté partout), la couleur ne
    "s'allume" qu'à l'interaction. */
-.btn-primary:hover { background: var(--color-primary-hover); box-shadow: 0 6px 16px -4px rgba(23, 40, 77, 0.45); transform: translateY(-1px); }
+.btn-primary:hover {
+  background: var(--color-primary-hover);
+  box-shadow: 0 6px 16px -4px rgba(23, 40, 77, 0.45);
+  transform: translateY(-1px);
+}
 
-.btn-secondary { background: var(--color-surface); color: var(--color-text); border-color: var(--color-border); }
-.btn-secondary:hover { background: var(--color-muted-soft); }
+.btn-secondary {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+.btn-secondary:hover {
+  background: var(--color-muted-soft);
+}
 
-.btn-danger { background: var(--color-danger-soft); color: var(--color-danger); }
-.btn-danger:hover { background: #fde2e2; }
+.btn-danger {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+.btn-danger:hover {
+  background: #fde2e2;
+}
 
 .btn-link {
   background: none;
@@ -776,7 +1091,11 @@ p { margin: 0; line-height: 1.5; }
   align-items: center;
   justify-content: center;
 }
-.btn-icon svg { width: 16px; height: 16px; display: block; }
+.btn-icon svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
 
 /* Zone tactile agrandie (repère WCAG ~44x44) sans changer la taille visuelle, comme .chip-remove ci-dessous — le bouton fermer de modale (~15 endroits), la cloche et les icônes d'archivage des notifications en profitent tous d'un coup. */
 .btn-icon::before {
@@ -798,7 +1117,9 @@ p { margin: 0; line-height: 1.5; }
   background: var(--color-surface);
   color: var(--color-text);
   outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .input:focus {
@@ -812,21 +1133,37 @@ p { margin: 0; line-height: 1.5; }
   flex-wrap: wrap;
 }
 
-.toolbar .input:first-child { flex: 1; min-width: 220px; }
+.toolbar .input:first-child {
+  flex: 1;
+  min-width: 220px;
+}
 
 /* §demande Betty du 09/09/2026 : repli en popover d'une toolbar de filtres à plusieurs champs, sur
    mobile uniquement — voir renderFilterToggleBar (app.js). Le bouton n'existe visuellement qu'en
    dessous de 860px ; au-dessus, la toolbar garde son affichage habituel quel que soit `.open`. */
-.filter-toggle-btn { display: none; margin-bottom: 10px; margin-right: 10px; }
+.filter-toggle-btn {
+  display: none;
+  margin-bottom: 10px;
+  margin-right: 10px;
+}
 @media (max-width: 860px) {
-  .filter-toggle-btn { display: inline-flex; }
-  .toolbar.toolbar-collapsible { display: none; }
-  .toolbar.toolbar-collapsible.open { display: flex; }
+  .filter-toggle-btn {
+    display: inline-flex;
+  }
+  .toolbar.toolbar-collapsible {
+    display: none;
+  }
+  .toolbar.toolbar-collapsible.open {
+    display: flex;
+  }
 }
 /* §amélioration du 09/09/2026 : "Réinitialiser les filtres" — visible sur desktop ET mobile dès
    qu'au moins un filtre est actif (contrairement au bouton "Filtres" ci-dessus, réservé au mobile),
    pour vider tous les champs d'un coup plutôt qu'un par un (voir FILTER_RESET_HANDLERS, app.js). */
-.filter-reset-link { display: inline-block; margin-bottom: 10px; }
+.filter-reset-link {
+  display: inline-block;
+  margin-bottom: 10px;
+}
 
 .form-section {
   border: none;
@@ -864,28 +1201,59 @@ p { margin: 0; line-height: 1.5; }
   grid-column: span 2;
 }
 @media (max-width: 480px) {
-  .form-field-pair { grid-column: span 1; grid-template-columns: 1fr; }
+  .form-field-pair {
+    grid-column: span 1;
+    grid-template-columns: 1fr;
+  }
 }
 
-.form-field { display: flex; flex-direction: column; gap: 6px; }
-.form-field label { font-size: 13px; font-weight: 500; color: var(--color-text-muted); }
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.form-field label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
 
 /* ---------------------------------------------------------------------
    Table
    --------------------------------------------------------------------- */
 
-.table-card { padding: 0; overflow-x: auto; }
+.table-card {
+  padding: 0;
+  overflow-x: auto;
+}
 
 /* §correctif retour QA du 27/08/2026 (point 1) : Tableau des compteurs — cellule multi-lignes
    (disponible / période / détail acquis-pris-attente-report / en cours d'acquisition) et colonnes
    de types non activés grisées, jamais silencieusement absentes. */
-.tc-table td, .tc-table th { vertical-align: top; }
-.tc-disponible { font-weight: 600; }
-.tc-periode, .tc-detail, .tc-en-cours { font-size: 12px; white-space: nowrap; }
-.tc-inactif { opacity: 0.55; }
+.tc-table td,
+.tc-table th {
+  vertical-align: top;
+}
+.tc-disponible {
+  font-weight: 600;
+}
+.tc-periode,
+.tc-detail,
+.tc-en-cours {
+  font-size: 12px;
+  white-space: nowrap;
+}
+.tc-inactif {
+  opacity: 0.55;
+}
 /* §demande Betty du 04/09/2026 : année/période affichées une seule fois par colonne (entête), pas
    répétées à chaque salarié — voir renderTableauCompteursPeriodInfo (app.js). */
-.tc-header-period { font-size: 11px; font-weight: 400; white-space: normal; margin-top: 2px; }
+.tc-header-period {
+  font-size: 11px;
+  font-weight: 400;
+  white-space: normal;
+  margin-top: 2px;
+}
 
 /* §demande Betty du 04/09/2026 puis généralisation du 09/09/2026 : "il faut décaler pour voir toute
    la ligne" sur téléphone — au départ réservé au Tableau des compteurs (.tc-table), ce mécanisme de
@@ -896,11 +1264,34 @@ p { margin: 0; line-height: 1.5; }
    convention ":first-child", qui casserait dès qu'une colonne technique (case à cocher de sélection
    en masse) précède la vraie colonne d'identification. */
 @media (max-width: 860px) {
-  .table.mobile-cards, .table.mobile-cards tbody, .table.mobile-cards tfoot, .table.mobile-cards tr, .table.mobile-cards td { display: block; width: 100%; }
-  .table.mobile-cards thead { display: none; }
-  .table.mobile-cards tr { border: 1px solid var(--color-border); border-radius: var(--radius-md, 10px); margin: 12px; padding: 12px 14px; }
-  .table.mobile-cards td { padding: 7px 0; text-align: left !important; border: none !important; white-space: normal; }
-  .tc-periode, .tc-detail, .tc-en-cours { white-space: normal; }
+  .table.mobile-cards,
+  .table.mobile-cards tbody,
+  .table.mobile-cards tfoot,
+  .table.mobile-cards tr,
+  .table.mobile-cards td {
+    display: block;
+    width: 100%;
+  }
+  .table.mobile-cards thead {
+    display: none;
+  }
+  .table.mobile-cards tr {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md, 10px);
+    margin: 12px;
+    padding: 12px 14px;
+  }
+  .table.mobile-cards td {
+    padding: 7px 0;
+    text-align: left !important;
+    border: none !important;
+    white-space: normal;
+  }
+  .tc-periode,
+  .tc-detail,
+  .tc-en-cours {
+    white-space: normal;
+  }
   .table.mobile-cards td[data-label]::before {
     content: attr(data-label);
     display: block;
@@ -918,11 +1309,17 @@ p { margin: 0; line-height: 1.5; }
     padding-bottom: 10px;
     margin-bottom: 4px;
   }
-  .table.mobile-cards td.row-title::before { content: none; }
-  .table.mobile-cards tfoot tr { background: var(--color-muted-soft); }
+  .table.mobile-cards td.row-title::before {
+    content: none;
+  }
+  .table.mobile-cards tfoot tr {
+    background: var(--color-muted-soft);
+  }
   /* Case à cocher de sélection en masse (Congés & absences) : fonctionnalité desktop, retirée sur
      mobile plutôt que de laisser une case orpheline sans étiquette en tête de carte. */
-  .table.mobile-cards td.table-select-cell { display: none; }
+  .table.mobile-cards td.table-select-cell {
+    display: none;
+  }
 }
 
 .pagination-bar {
@@ -935,9 +1332,16 @@ p { margin: 0; line-height: 1.5; }
   border-top: 1px solid var(--color-border);
 }
 
-.pagination-controls { display: flex; align-items: center; gap: 12px; }
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
-.table { width: 100%; border-collapse: collapse; }
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
 
 /* §retour Betty du 22/09/2026 ("fais moins de hauteur dans la ligne... on voit très peu de lignes
    parce qu'il y a beaucoup d'espace vide... il ne faut pas que ce soit tassé non plus") : 16px de
@@ -963,7 +1367,10 @@ p { margin: 0; line-height: 1.5; }
    Salariés) — trompeur. Restreint au sélecteur [data-sort] : couvre à la fois l'ancien tri de
    Salariés (data-sort seul, son propre binding séparé) et le nouveau socle (renderSortableHeader,
    bindSortableHeadersGlobalDelegation), sans avoir à toucher au HTML déjà existant de Salariés. */
-.table th[data-sort] { cursor: pointer; user-select: none; }
+.table th[data-sort] {
+  cursor: pointer;
+  user-select: none;
+}
 
 .table td {
   padding: 10px 22px;
@@ -974,7 +1381,11 @@ p { margin: 0; line-height: 1.5; }
 /* §refonte "formatage des nombres" du 01/09/2026 : colonnes montants/durées alignées à droite avec
    chiffres de largeur fixe (tabular-nums) — un tableau de paie où chaque colonne numérique reste
    verticalement alignée d'une ligne à l'autre, plutôt que des chiffres calés à gauche comme du texte. */
-.table td.cell-numeric, .table th.cell-numeric { text-align: right; font-variant-numeric: tabular-nums; }
+.table td.cell-numeric,
+.table th.cell-numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
 
 /* §correctif visuel du 14/09/2026 : une table à beaucoup de colonnes (ex. le récapitulatif de
    Préparation de paie, 11 colonnes) forçait .table (width:100%, sans table-layout:fixed) à
@@ -985,16 +1396,38 @@ p { margin: 0; line-height: 1.5; }
    horizontalement, comme prévu, plutôt que de comprimer son contenu. Classe à part (jamais sur
    .table par défaut) : un tableau avec du texte long à faire tenir dans une cellule (ex. un
    commentaire) doit continuer à pouvoir passer à la ligne normalement. */
-.table-nowrap { width: auto; min-width: 100%; }
-.table-nowrap th, .table-nowrap td { white-space: nowrap; }
+.table-nowrap {
+  width: auto;
+  min-width: 100%;
+}
+.table-nowrap th,
+.table-nowrap td {
+  white-space: nowrap;
+}
 
-.table-row { cursor: pointer; transition: background-color 0.1s ease; }
-.table-row:hover { background: var(--color-muted-soft); }
-.table-row:last-child td { border-bottom: none; }
+.table-row {
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+.table-row:hover {
+  background: var(--color-muted-soft);
+}
+.table-row:last-child td {
+  border-bottom: none;
+}
 
-.employee-cell { display: flex; align-items: center; gap: 12px; }
-.employee-name { font-weight: 600; }
-.employee-matricule { font-size: 12px; color: var(--color-text-muted); }
+.employee-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.employee-name {
+  font-weight: 600;
+}
+.employee-matricule {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
 
 /* ---------------------------------------------------------------------
    Avatar
@@ -1025,8 +1458,13 @@ p { margin: 0; line-height: 1.5; }
    (voir getAvatarColorClass — data.js, qui continue d'assigner un index stable par personne) pour ne
    rien changer côté JS, mais pointent maintenant toutes vers le même traitement marine — les
    personnes se distinguent par leurs initiales, pas par une couleur au hasard. */
-.avatar-color-0, .avatar-color-1, .avatar-color-2, .avatar-color-3,
-.avatar-color-4, .avatar-color-5, .avatar-color-6 {
+.avatar-color-0,
+.avatar-color-1,
+.avatar-color-2,
+.avatar-color-3,
+.avatar-color-4,
+.avatar-color-5,
+.avatar-color-6 {
   background: var(--color-primary-soft);
   color: var(--color-primary-text);
 }
@@ -1050,7 +1488,9 @@ p { margin: 0; line-height: 1.5; }
   user-select: none;
   -webkit-user-drag: none;
 }
-.photo-crop-stage img:active { cursor: grabbing; }
+.photo-crop-stage img:active {
+  cursor: grabbing;
+}
 
 /* §refonte accent unique du 01/09/2026 : renderContratBadge (Stage/Alternance/Apprentissage/Intérim)
    réutilisait ces mêmes classes .avatar-color-* précisément pour rester distinguable (§"une seule
@@ -1058,10 +1498,22 @@ p { margin: 0; line-height: 1.5; }
    ci-dessus aurait réintroduit exactement ce problème. Palette dédiée, à part des avatars (qui n'ont
    plus besoin d'être distingués par couleur, le nom suffit) : 4 teintes sourdes, pas un aplat vif par
    catégorie, pour rester dans le registre "un seul accent" sans redevenir illisible. */
-.tag-color-0 { background: #efe7da; color: #7a5a33; }
-.tag-color-1 { background: #dde3e0; color: #3f5d52; }
-.tag-color-2 { background: #e3e2ec; color: #4a4a72; }
-.tag-color-3 { background: #ece0e0; color: #7a4646; }
+.tag-color-0 {
+  background: #efe7da;
+  color: #7a5a33;
+}
+.tag-color-1 {
+  background: #dde3e0;
+  color: #3f5d52;
+}
+.tag-color-2 {
+  background: #e3e2ec;
+  color: #4a4a72;
+}
+.tag-color-3 {
+  background: #ece0e0;
+  color: #7a4646;
+}
 
 /* ---------------------------------------------------------------------
    Badges
@@ -1076,21 +1528,53 @@ p { margin: 0; line-height: 1.5; }
   font-size: 12px;
   font-weight: 600;
 }
-.badge svg { width: 12px; height: 12px; display: block; flex-shrink: 0; }
+.badge svg {
+  width: 12px;
+  height: 12px;
+  display: block;
+  flex-shrink: 0;
+}
 
-.badge-row { display: flex; gap: 6px; margin-top: 8px; }
+.badge-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
 
-.badge-success { background: var(--color-success-soft); color: var(--color-success); }
-.badge-warning { background: var(--color-warning-soft); color: var(--color-warning); }
-.badge-info { background: var(--color-info-soft); color: var(--color-info-text); }
-.badge-muted { background: var(--color-muted-soft); color: var(--color-text-muted); }
-.badge-danger { background: var(--color-danger-soft); color: var(--color-danger); }
+.badge-success {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+.badge-warning {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+.badge-info {
+  background: var(--color-info-soft);
+  color: var(--color-info-text);
+}
+.badge-muted {
+  background: var(--color-muted-soft);
+  color: var(--color-text-muted);
+}
+.badge-danger {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
 /* Réservé aux tags identitaires (rôle du compte) plutôt qu'à un statut — jamais mélangé avec les
    badges success/warning/info/danger ci-dessus, qui gardent leur sens fonctionnel intact. */
-.badge-primary { background: var(--color-primary-soft); color: var(--color-primary-text); }
+.badge-primary {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-text);
+}
 
-.anomaly-list { margin: 0; padding-left: 20px; }
-.anomaly-list li { margin-bottom: 4px; }
+.anomaly-list {
+  margin: 0;
+  padding-left: 20px;
+}
+.anomaly-list li {
+  margin-bottom: 4px;
+}
 
 /* ---------------------------------------------------------------------
    Détail salarié
@@ -1098,19 +1582,48 @@ p { margin: 0; line-height: 1.5; }
 
 /* §refonte "fil d'Ariane" du 01/09/2026 : "Salariés / Prénom Nom" en haut de fiche, pour ne jamais
    perdre le fil de la navigation — voir renderBreadcrumb (app.js). */
-.breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--color-text-muted); margin-bottom: 10px; }
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-bottom: 10px;
+}
 /* §retour Betty du 18/09/2026 (point 6) : plus visible qu'un simple texte gris (couleur primaire +
    plus grand + souligné en permanence, pas seulement au survol) — sans changer sa position ni son
    comportement, pour ne jamais faire doublon avec un second bouton "retour". */
-.breadcrumb .btn-link { font-size: 14px; font-weight: 600; padding: 0; margin: 0; min-height: 0; color: var(--color-primary-text); text-decoration: underline; text-decoration-color: transparent; transition: text-decoration-color 0.15s ease; }
-.breadcrumb .btn-link:hover { text-decoration-color: currentColor; }
-.breadcrumb-sep { opacity: 0.5; }
+.breadcrumb .btn-link {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0;
+  margin: 0;
+  min-height: 0;
+  color: var(--color-primary-text);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: text-decoration-color 0.15s ease;
+}
+.breadcrumb .btn-link:hover {
+  text-decoration-color: currentColor;
+}
+.breadcrumb-sep {
+  opacity: 0.5;
+}
 
 /* §retour Betty du 18/09/2026 (point 6, flèches précédent/suivant) : petite barre autonome,
    au-dessus de l'en-tête de la fiche, pour ne jamais se confondre avec les actions propres au
    salarié (Favori, Modifier...) dans .detail-header-actions. */
-.employee-detail-prev-next { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-.employee-detail-prev-next .btn-icon:disabled { opacity: 0.35; cursor: default; }
+.employee-detail-prev-next {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.employee-detail-prev-next .btn-icon:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
 
 .detail-header {
   display: flex;
@@ -1126,9 +1639,20 @@ p { margin: 0; line-height: 1.5; }
   flex-wrap: wrap;
 }
 
-.detail-header .avatar { width: 56px; height: 56px; font-size: 18px; }
-.detail-header-info { flex: 1; min-width: 220px; }
-.detail-header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.detail-header .avatar {
+  width: 56px;
+  height: 56px;
+  font-size: 18px;
+}
+.detail-header-info {
+  flex: 1;
+  min-width: 220px;
+}
+.detail-header-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 
 .detail-grid {
   display: grid;
@@ -1160,7 +1684,9 @@ p { margin: 0; line-height: 1.5; }
 }
 /* §retour QA du 27/08/2026 : panneau déroulant natif (Compteurs de congés, potentiellement très
    long) — repose sur <details>/<summary> (accessible, sans JS) plutôt qu'un composant maison. */
-.collapsible-panel { margin-top: 10px; }
+.collapsible-panel {
+  margin-top: 10px;
+}
 .collapsible-panel > summary {
   cursor: pointer;
   font-weight: 600;
@@ -1168,12 +1694,23 @@ p { margin: 0; line-height: 1.5; }
   list-style: none;
   padding: 4px 0;
 }
-.collapsible-panel > summary::-webkit-details-marker { display: none; }
-.collapsible-panel > summary::before { content: '▸ '; display: inline-block; transition: transform 0.15s ease; }
-.collapsible-panel[open] > summary::before { transform: rotate(90deg); }
-.collapsible-panel > summary:hover { text-decoration: underline; }
-.collapsible-panel .balance-grid { margin-top: 12px; }
-
+.collapsible-panel > summary::-webkit-details-marker {
+  display: none;
+}
+.collapsible-panel > summary::before {
+  content: '▸ ';
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+.collapsible-panel[open] > summary::before {
+  transform: rotate(90deg);
+}
+.collapsible-panel > summary:hover {
+  text-decoration: underline;
+}
+.collapsible-panel .balance-grid {
+  margin-top: 12px;
+}
 
 .about-modal-grid {
   display: grid;
@@ -1181,18 +1718,76 @@ p { margin: 0; line-height: 1.5; }
   gap: 14px;
 }
 
-.about-category { background: var(--color-muted-soft); border-radius: var(--radius-md); padding: 16px 18px; }
-.about-category h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 15px; }
-.about-category ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 7px; }
-.about-category li { font-size: 13px; color: var(--color-text-muted); line-height: 1.45; padding-left: 14px; position: relative; }
-.about-category li::before { content: '•'; position: absolute; left: 0; color: var(--color-primary-text); font-weight: 700; }
+.about-category {
+  background: var(--color-muted-soft);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+}
+.about-category h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  font-size: 15px;
+}
+.about-category ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.about-category li {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  line-height: 1.45;
+  padding-left: 14px;
+  position: relative;
+}
+.about-category li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: var(--color-primary-text);
+  font-weight: 700;
+}
 
-.changelog-entry { margin-bottom: 20px; }
-.changelog-entry:last-child { margin-bottom: 0; }
-.changelog-entry h3 { margin: 0 0 10px; font-size: 14px; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
-.changelog-entry ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
-.changelog-entry li { font-size: 13.5px; color: var(--color-text); line-height: 1.5; padding-left: 16px; position: relative; }
-.changelog-entry li::before { content: '•'; position: absolute; left: 0; color: var(--color-primary-text); font-weight: 700; }
+.changelog-entry {
+  margin-bottom: 20px;
+}
+.changelog-entry:last-child {
+  margin-bottom: 0;
+}
+.changelog-entry h3 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.changelog-entry ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.changelog-entry li {
+  font-size: 13.5px;
+  color: var(--color-text);
+  line-height: 1.5;
+  padding-left: 16px;
+  position: relative;
+}
+.changelog-entry li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: var(--color-primary-text);
+  font-weight: 700;
+}
 
 .info-row {
   display: flex;
@@ -1203,9 +1798,16 @@ p { margin: 0; line-height: 1.5; }
   font-size: 14px;
 }
 
-.info-row:last-child { border-bottom: none; }
-.info-label { color: var(--color-text-muted); }
-.info-value { font-weight: 500; text-align: right; }
+.info-row:last-child {
+  border-bottom: none;
+}
+.info-label {
+  color: var(--color-text-muted);
+}
+.info-value {
+  font-weight: 500;
+  text-align: right;
+}
 
 /* ---------------------------------------------------------------------
    États vides / à venir
@@ -1232,7 +1834,11 @@ p { margin: 0; line-height: 1.5; }
   color: var(--color-primary-text);
   margin-bottom: 4px;
 }
-.empty-icon svg { width: 26px; height: 26px; display: block; }
+.empty-icon svg {
+  width: 26px;
+  height: 26px;
+  display: block;
+}
 
 /* ---------------------------------------------------------------------
    Modales
@@ -1249,7 +1855,9 @@ p { margin: 0; line-height: 1.5; }
   padding: 20px;
 }
 
-#modal-root.open { display: flex; }
+#modal-root.open {
+  display: flex;
+}
 
 .modal {
   background: var(--color-surface);
@@ -1275,24 +1883,38 @@ p { margin: 0; line-height: 1.5; }
   min-height: 0;
 }
 
-.modal-large { max-width: 760px; }
-.modal-small { max-width: 420px; }
+.modal-large {
+  max-width: 760px;
+}
+.modal-small {
+  max-width: 420px;
+}
 /* §retour Betty du 19/09/2026 (point 8, "deux largeurs de fenêtre pour toute l'application... un
    choix global qui ne tient plus dès qu'un formulaire dépasse quelques champs") : un premier palier
    intermédiaire entre le défaut (480px, sans classe) et .modal-large (760px) — pour un formulaire à
    un seul form-grid mais 5-6 champs (ex. openShiftModal), un peu à l'étroit à 480px sans avoir
    besoin des 760px d'un vrai grand formulaire. Bénéficie automatiquement du même repli
    width:100% déjà posé sur .modal (aucune media query supplémentaire nécessaire). */
-.modal-medium { max-width: 600px; }
+.modal-medium {
+  max-width: 600px;
+}
 /* §retour Betty du 18/09/2026 (point 1) : la fiche salarié (onglets, plusieurs champs par ligne)
    restait bornée à 760px comme n'importe quelle petite modale, gaspillant l'espace disponible sur un
    grand écran — 95vw plafonné à 1100px reste raisonnable, et en dessous de 1100px de large (mobile
    compris) .modal { width:100% } prend simplement le relais, comme pour toutes les autres modales. */
-.modal-xlarge { max-width: min(1100px, 95vw); }
+.modal-xlarge {
+  max-width: min(1100px, 95vw);
+}
 
 @keyframes modal-in {
-  from { opacity: 0; transform: translateY(8px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .modal-header {
@@ -1314,7 +1936,9 @@ p { margin: 0; line-height: 1.5; }
   min-height: 0;
 }
 
-.modal-body a { color: var(--color-primary-text); }
+.modal-body a {
+  color: var(--color-primary-text);
+}
 
 /* §demande Betty du 09/09/2026, puis retour du 18/09/2026 (point 1, "vrais onglets") : les onglets
    d'un formulaire long (fiche salarié) restent collés en haut de .modal-body (son propre conteneur
@@ -1385,7 +2009,9 @@ p { margin: 0; line-height: 1.5; }
   padding: 20px;
 }
 
-#quick-create-root.open { display: flex; }
+#quick-create-root.open {
+  display: flex;
+}
 
 /* ---------------------------------------------------------------------
    Toasts
@@ -1410,11 +2036,18 @@ p { margin: 0; line-height: 1.5; }
   box-shadow: var(--shadow-md);
   opacity: 0;
   transform: translateY(8px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
-.toast.visible { opacity: 1; transform: translateY(0); }
-.toast-error { background: var(--color-danger); }
+.toast.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.toast-error {
+  background: var(--color-danger);
+}
 
 /* ---------------------------------------------------------------------
    Congés — onglets, soldes, actions de tableau
@@ -1438,9 +2071,13 @@ p { margin: 0; line-height: 1.5; }
   -ms-overflow-style: none;
 }
 
-.tabs::-webkit-scrollbar { display: none; }
+.tabs::-webkit-scrollbar {
+  display: none;
+}
 
-.tab { flex-shrink: 0; }
+.tab {
+  flex-shrink: 0;
+}
 
 /* §retour Betty du 19/09/2026 (blocage 5.1) : injectées en JS (enhanceScrollableTabs, app.js) dans
    CHAQUE .tabs qui déborde réellement — jamais posées en dur dans un template, sinon les ~30 endroits
@@ -1468,9 +2105,15 @@ p { margin: 0; line-height: 1.5; }
   line-height: 1;
   z-index: 2;
 }
-.tabs-arrow.visible { display: flex; }
-.tabs-arrow-left { left: 2px; }
-.tabs-arrow-right { right: 2px; }
+.tabs-arrow.visible {
+  display: flex;
+}
+.tabs-arrow-left {
+  left: 2px;
+}
+.tabs-arrow-right {
+  right: 2px;
+}
 
 .tab {
   background: none;
@@ -1484,8 +2127,13 @@ p { margin: 0; line-height: 1.5; }
   margin-bottom: -1px;
 }
 
-.tab:hover { color: var(--color-text); }
-.tab.active { color: var(--color-primary-text); border-bottom-color: var(--color-primary-text); }
+.tab:hover {
+  color: var(--color-text);
+}
+.tab.active {
+  color: var(--color-primary-text);
+  border-bottom-color: var(--color-primary-text);
+}
 
 /* §demande Betty du 09/09/2026 : un second niveau d'onglets (Télétravail → Demandes/Planning, Horaires
    → Jour/Semaine/Mois) sous un premier niveau (Congés & absences → Congés/Absences/Télétravail,
@@ -1493,13 +2141,22 @@ p { margin: 0; line-height: 1.5; }
    poids visuel, aucun repère de hiérarchie. Plus petit et plus discret, jamais un menu déroulant
    (réservé à un vrai grand nombre d'onglets, voir .parametres-tab-select ci-dessous : ici 2-3 sous-
    onglets seulement, une rangée compacte reste plus rapide qu'un select). */
-.tabs.tabs-sub .tab { padding: 6px 10px; font-size: 12.5px; }
+.tabs.tabs-sub .tab {
+  padding: 6px 10px;
+  font-size: 12.5px;
+}
 
 /* Repli mobile pour les écrans à beaucoup d'onglets (Paramètres, 12+) — voir @media 860px. Caché
    par défaut : le bouton .tab classique reste le contrôle normal sur desktop. */
-.parametres-tab-select { display: none; margin-bottom: 18px; }
+.parametres-tab-select {
+  display: none;
+  margin-bottom: 18px;
+}
 
-.btn-sm { padding: 6px 12px; font-size: 13px; }
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 13px;
+}
 
 .balance-grid {
   display: grid;
@@ -1522,10 +2179,23 @@ p { margin: 0; line-height: 1.5; }
   font-size: 13px;
 }
 
-.balance-icon { font-size: 16px; margin-bottom: 4px; }
-.balance-name { font-size: 13px; font-weight: 600; }
-.balance-value { font-size: 20px; font-weight: 700; margin-top: 2px; }
-.balance-sub { font-size: 12px; color: var(--color-text-muted); }
+.balance-icon {
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+.balance-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+.balance-value {
+  font-size: 20px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+.balance-sub {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
 
 .type-swatch {
   display: inline-block;
@@ -1535,11 +2205,19 @@ p { margin: 0; line-height: 1.5; }
   margin-right: 4px;
 }
 
-.table-actions { display: flex; gap: 10px; white-space: nowrap; }
+.table-actions {
+  display: flex;
+  gap: 10px;
+  white-space: nowrap;
+}
 
-.btn-link-danger { color: var(--color-danger); }
+.btn-link-danger {
+  color: var(--color-danger);
+}
 
-.checkbox-grid { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.checkbox-grid {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
 
 .form-field-checkbox label {
   display: flex;
@@ -1551,36 +2229,68 @@ p { margin: 0; line-height: 1.5; }
   cursor: pointer;
 }
 
-.form-field-checkbox input[type="checkbox"] {
+.form-field-checkbox input[type='checkbox'] {
   width: 16px;
   height: 16px;
   accent-color: var(--color-primary);
 }
 
-textarea.input { resize: vertical; font-family: inherit; }
+textarea.input {
+  resize: vertical;
+  font-family: inherit;
+}
 
 /* ---------------------------------------------------------------------
    Calendrier
    --------------------------------------------------------------------- */
 
-.calendar-nav { display: flex; gap: 8px; flex-wrap: wrap; }
+.calendar-nav {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 
 /* §sprint refonte UX : l'ancienne légende occupait une rangée complète, toujours visible, sous la
    grille (cf. .legend-item ci-dessous, désormais réservé au contenu du popover) — remplacée par une
    bande compacte (pastilles de couleur seules) + un bouton "Filtres" ouvrant .dropdown-panel. */
-.calendar-filter-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+.calendar-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
 /* §retour Betty du 10/09/2026 ("le bouton filtres dans calendrier moi [...] tu le mets à droite") :
    remonté dans .calendar-nav (barre dorée du haut, voir renderCalendrier) — plus besoin de la marge
    du dessus, pensée pour sa propre ligne sous la grille. */
-.calendar-nav .calendar-filter-bar { margin-top: 0; }
-.calendar-filter-dots { display: flex; align-items: center; gap: 6px; }
-.calendar-filter-dot { width: 12px; height: 12px; border-radius: 4px; transition: opacity 0.15s ease; }
-.calendar-filter-dot.legend-item-inactive { opacity: 0.25; }
+.calendar-nav .calendar-filter-bar {
+  margin-top: 0;
+}
+.calendar-filter-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.calendar-filter-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  transition: opacity 0.15s ease;
+}
+.calendar-filter-dot.legend-item-inactive {
+  opacity: 0.25;
+}
 
 /* Contenu du popover "Filtres" (voir .dropdown-panel) — chaque entrée est un vrai <button> avec un
    état "inactif" pour la catégorie masquée. Réutilisé aussi par le popover d'ajout rapide (case
    vide du calendrier), même patron "liste de lignes cliquables verticales". */
-.legend-item svg { width: 15px; height: 15px; display: block; flex-shrink: 0; }
+.legend-item svg {
+  width: 15px;
+  height: 15px;
+  display: block;
+  flex-shrink: 0;
+}
 .legend-item {
   display: flex;
   align-items: center;
@@ -1593,11 +2303,17 @@ textarea.input { resize: vertical; font-family: inherit; }
   font-size: 13px;
   color: var(--color-text);
   cursor: pointer;
-  transition: opacity 0.15s ease, background-color 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    background-color 0.15s ease;
 }
 
-.legend-item:hover { background: var(--color-muted-soft); }
-.legend-item-inactive { opacity: 0.5; }
+.legend-item:hover {
+  background: var(--color-muted-soft);
+}
+.legend-item-inactive {
+  opacity: 0.5;
+}
 
 .legend-swatch {
   display: inline-block;
@@ -1606,13 +2322,34 @@ textarea.input { resize: vertical; font-family: inherit; }
   border-radius: 4px;
 }
 
-.legend-holiday { background: var(--color-danger-soft); border: 1px solid var(--color-danger); }
-.legend-school { background: var(--color-info-soft); border: 1px solid var(--color-info); }
-.legend-conge { background: var(--color-success-soft); border: 1px solid var(--color-success); }
-.legend-teletravail { background: var(--color-primary-soft); border: 1px solid var(--color-primary); }
-.legend-anniversaire { background: var(--color-warning-soft); border: 1px solid var(--color-warning); }
-.legend-arrivee { background: var(--color-gold-soft); border: 1px solid var(--color-gold); }
-.legend-depart { background: var(--color-muted-soft); border: 1px solid var(--color-text-muted); }
+.legend-holiday {
+  background: var(--color-danger-soft);
+  border: 1px solid var(--color-danger);
+}
+.legend-school {
+  background: var(--color-info-soft);
+  border: 1px solid var(--color-info);
+}
+.legend-conge {
+  background: var(--color-success-soft);
+  border: 1px solid var(--color-success);
+}
+.legend-teletravail {
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary);
+}
+.legend-anniversaire {
+  background: var(--color-warning-soft);
+  border: 1px solid var(--color-warning);
+}
+.legend-arrivee {
+  background: var(--color-gold-soft);
+  border: 1px solid var(--color-gold);
+}
+.legend-depart {
+  background: var(--color-muted-soft);
+  border: 1px solid var(--color-text-muted);
+}
 
 /* Précédent/Suivant sur les côtés du calendrier plutôt qu'en haut (retour utilisateur : plus
    accessible) — "Aujourd'hui" reste en haut, ce n'est pas une navigation mois par mois. */
@@ -1620,7 +2357,11 @@ textarea.input { resize: vertical; font-family: inherit; }
    perdaient ~90px de largeur inutilement, cf. .calendar-side-nav ci-dessous, retiré) pour rejoindre
    le nom du mois dans l'en-tête ("‹ Octobre 2026 ›") — voir .calendar-month-nav. La grille profite
    maintenant de toute la largeur de #view-root. */
-.calendar-month-nav { display: flex; align-items: center; gap: 8px; }
+.calendar-month-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .calendar-month-nav-btn {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
@@ -1632,10 +2373,22 @@ textarea.input { resize: vertical; font-family: inherit; }
   line-height: 1;
   cursor: pointer;
 }
-.calendar-month-nav-btn:hover { background: var(--color-muted-soft); color: var(--color-text); border-color: var(--color-text-muted); }
-.calendar-month-nav .view-subtitle { margin: 0; min-width: 140px; text-align: center; }
+.calendar-month-nav-btn:hover {
+  background: var(--color-muted-soft);
+  color: var(--color-text);
+  border-color: var(--color-text-muted);
+}
+.calendar-month-nav .view-subtitle {
+  margin: 0;
+  min-width: 140px;
+  text-align: center;
+}
 
-.calendar-card { padding: 12px; margin-bottom: 12px; overflow-x: auto; }
+.calendar-card {
+  padding: 12px;
+  margin-bottom: 12px;
+  overflow-x: auto;
+}
 
 .calendar-grid {
   display: grid;
@@ -1643,7 +2396,9 @@ textarea.input { resize: vertical; font-family: inherit; }
   gap: 6px;
 }
 
-.calendar-grid-header { margin-bottom: 6px; }
+.calendar-grid-header {
+  margin-bottom: 6px;
+}
 
 .calendar-weekday {
   text-align: center;
@@ -1670,19 +2425,43 @@ textarea.input { resize: vertical; font-family: inherit; }
   gap: 4px;
 }
 
-.calendar-cell.out-month { opacity: 0.4; }
-.calendar-cell.weekend { background: var(--color-muted-soft); }
-.calendar-cell.today { border-color: var(--color-primary); box-shadow: 0 0 0 1px var(--color-primary); }
-.calendar-cell.holiday { background: var(--color-danger-soft); }
-.calendar-cell.school-holiday:not(.holiday) { background: var(--color-info-soft); }
+.calendar-cell.out-month {
+  opacity: 0.4;
+}
+.calendar-cell.weekend {
+  background: var(--color-muted-soft);
+}
+.calendar-cell.today {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+.calendar-cell.holiday {
+  background: var(--color-danger-soft);
+}
+.calendar-cell.school-holiday:not(.holiday) {
+  background: var(--color-info-soft);
+}
 
 /* §4 (reprise) : case cliquable pour ouvrir le détail du jour (openCalendarDayModal) — uniquement
  * quand la case a du contenu (cf. hasContent dans renderCalendarCell). */
-.calendar-cell-clickable { cursor: pointer; transition: border-color 0.15s ease, box-shadow 0.15s ease; }
-.calendar-cell-clickable:hover { border-color: var(--color-primary); }
+.calendar-cell-clickable {
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.calendar-cell-clickable:hover {
+  border-color: var(--color-primary);
+}
 
-.calendar-cell-header { display: flex; justify-content: space-between; }
-.calendar-day-number { font-size: 13px; font-weight: 600; }
+.calendar-cell-header {
+  display: flex;
+  justify-content: space-between;
+}
+.calendar-day-number {
+  font-size: 13px;
+  font-weight: 600;
+}
 
 .calendar-tag {
   font-size: 10px;
@@ -1692,14 +2471,25 @@ textarea.input { resize: vertical; font-family: inherit; }
   width: fit-content;
 }
 
-.calendar-tag-holiday { background: var(--color-danger); color: white; }
+.calendar-tag-holiday {
+  background: var(--color-danger);
+  color: white;
+}
 /* §correctif audit du 23/08/2026 (§7.6) : même traitement visuel que .calendar-tag-holiday (alerte
    = rouge, cohérent avec le reste de l'app) mais sa propre classe — sémantiquement un quota
    d'absences simultanées n'est pas un jour férié, éviter de les confondre au premier coup d'œil
    dans le CSS pour qui reprendrait ce code plus tard. */
-.calendar-tag-quota { background: var(--color-danger); color: white; }
+.calendar-tag-quota {
+  background: var(--color-danger);
+  color: white;
+}
 
-.calendar-badges { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; }
+.calendar-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: auto;
+}
 
 .calendar-badge {
   position: relative;
@@ -1710,7 +2500,11 @@ textarea.input { resize: vertical; font-family: inherit; }
   padding: 1px 6px;
   cursor: default;
 }
-.calendar-badge svg { width: 12px; height: 12px; vertical-align: -2px; }
+.calendar-badge svg {
+  width: 12px;
+  height: 12px;
+  vertical-align: -2px;
+}
 
 .calendar-tooltip {
   position: absolute;
@@ -1731,21 +2525,38 @@ textarea.input { resize: vertical; font-family: inherit; }
   z-index: 20;
 }
 
-.calendar-badge:hover .calendar-tooltip { opacity: 1; }
+.calendar-badge:hover .calendar-tooltip {
+  opacity: 1;
+}
 
 /* §sprint calendrier légende/filtres : même code couleur que la légende (.legend-*) pour que
    badge et entrée de légende se reconnaissent visuellement d'un coup d'œil. Placées avant
    .calendar-badge-pending pour que son `background: transparent` reste prioritaire (même
    spécificité, ordre source) même quand une demande en attente porte aussi une classe de catégorie. */
-.calendar-badge-conge { background: var(--color-success-soft); border-color: var(--color-success); }
-.calendar-badge-teletravail { background: var(--color-primary-soft); border-color: var(--color-primary); }
-.calendar-badge-anniversaire { background: var(--color-warning-soft); border-color: var(--color-warning); }
+.calendar-badge-conge {
+  background: var(--color-success-soft);
+  border-color: var(--color-success);
+}
+.calendar-badge-teletravail {
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary);
+}
+.calendar-badge-anniversaire {
+  background: var(--color-warning-soft);
+  border-color: var(--color-warning);
+}
 /* Or plutôt que le même vert que "congé" (§passe couleur du 21/08/2026) — une arrivée est un moment
    à part, pas juste "encore une absence en moins" : la seule catégorie du calendrier à utiliser
    l'accent or de la marque, pour marquer clairement sa singularité plutôt que de la fondre dans le
    code couleur des congés/absences. */
-.calendar-badge-arrivee { background: var(--color-gold-soft); border-color: var(--color-gold); }
-.calendar-badge-depart { background: var(--color-muted-soft); border-color: var(--color-text-muted); }
+.calendar-badge-arrivee {
+  background: var(--color-gold-soft);
+  border-color: var(--color-gold);
+}
+.calendar-badge-depart {
+  background: var(--color-muted-soft);
+  border-color: var(--color-text-muted);
+}
 
 /* Sprint SIRH premium §2 : demande non validée — visible mais visuellement distincte (semi-transparente, bordure en pointillés) d'une demande déjà validée. */
 .calendar-badge-pending {
@@ -1807,12 +2618,26 @@ textarea.input { resize: vertical; font-family: inherit; }
   position: absolute;
   inset: -13px;
 }
-.chip-remove svg { width: 11px; height: 11px; display: block; }
+.chip-remove svg {
+  width: 11px;
+  height: 11px;
+  display: block;
+}
 
-.chip-remove:hover { background: var(--color-danger-soft); color: var(--color-danger); }
+.chip-remove:hover {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
 
-.chip-add-form { display: flex; gap: 8px; flex-wrap: wrap; }
-.chip-add-form .input { flex: 1; min-width: 0; }
+.chip-add-form {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.chip-add-form .input {
+  flex: 1;
+  min-width: 0;
+}
 
 /* Postes ouverts au recrutement (écran Embauche) : une ligne par poste plutôt qu'un chip inline —
    le champ "places disponibles" a besoin de plus de place qu'un simple nom. */
@@ -1825,10 +2650,22 @@ textarea.input { resize: vertical; font-family: inherit; }
   border-radius: var(--radius-sm);
 }
 
-.poste-ouvert-nom { flex: 1; font-size: 14px; font-weight: 500; }
+.poste-ouvert-nom {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+}
 
-.poste-ouvert-qty-label { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-.poste-ouvert-qty { width: 64px; padding: 4px 8px; }
+.poste-ouvert-qty-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.poste-ouvert-qty {
+  width: 64px;
+  padding: 4px 8px;
+}
 
 /* Postes (Paramètres > Référentiels) : une ligne par poste avec ses formes masculine/féminine
    éditables, même raisonnement que .poste-ouvert-row ci-dessus. */
@@ -1841,9 +2678,21 @@ textarea.input { resize: vertical; font-family: inherit; }
   border-radius: var(--radius-sm);
   flex-wrap: wrap;
 }
-.poste-genre-neutre { flex: 1 1 160px; font-size: 14px; font-weight: 500; align-self: center; }
-.poste-genre-field { display: flex; flex-direction: column; gap: 2px; flex: 1 1 140px; }
-.poste-genre-input { padding: 4px 8px; }
+.poste-genre-neutre {
+  flex: 1 1 160px;
+  font-size: 14px;
+  font-weight: 500;
+  align-self: center;
+}
+.poste-genre-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 140px;
+}
+.poste-genre-input {
+  padding: 4px 8px;
+}
 
 /* ---------------------------------------------------------------------
    Télétravail — planning hebdomadaire
@@ -1865,17 +2714,45 @@ textarea.input { resize: vertical; font-family: inherit; }
    ligne malgré ce changement (deux cellules adjacentes en `separate` dessineraient chacune sa propre
    bordure, doublant l'épaisseur visible), chaque cellule ne dessine plus que sa bordure droite et
    basse ; le haut et la gauche du quadrillage viennent uniquement de la première ligne/colonne. */
-.planning-table { border-collapse: separate; border-spacing: 0; }
-.planning-table th, .planning-table td { text-align: center; border-style: solid; border-color: var(--color-border); border-width: 0 1px 1px 0; }
-.planning-table thead th { border-top-width: 1px; }
-.planning-table th:first-child, .planning-table td:first-child { text-align: left; border-left-width: 1px; }
+.planning-table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.planning-table th,
+.planning-table td {
+  text-align: center;
+  border-style: solid;
+  border-color: var(--color-border);
+  border-width: 0 1px 1px 0;
+}
+.planning-table thead th {
+  border-top-width: 1px;
+}
+.planning-table th:first-child,
+.planning-table td:first-child {
+  text-align: left;
+  border-left-width: 1px;
+}
 /* Les cases de statut (renderPlanningStatusCell/renderPlanningDayCells) perdent leur padding — la
    carte de couleur à l'intérieur (position absolute) remplit alors la case exactement de bord à
    bord, comme dans la référence, plutôt que de flotter avec une marge visible. */
-.planning-table td.planning-cell, .planning-table td.planning-leave-bar-cell { padding: 0; position: relative; text-align: left; }
+.planning-table td.planning-cell,
+.planning-table td.planning-leave-bar-cell {
+  padding: 0;
+  position: relative;
+  text-align: left;
+}
 
-.planning-cell svg { width: 14px; height: 14px; display: block; margin: 0 auto; }
-.planning-off-dash { color: var(--color-text-muted); font-size: 13px; }
+.planning-cell svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+  margin: 0 auto;
+}
+.planning-off-dash {
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
 
 /* §demande Betty du 10/09/2026 ("même design que [référence Combo], mais les couleurs actuelles") :
    bloc de couleur qui remplit toute la case (position absolute, inset 0 — un enfant en `height:100%`
@@ -1895,43 +2772,111 @@ textarea.input { resize: vertical; font-family: inherit; }
   background: var(--color-surface);
   padding: 6px 18px 6px 8px;
 }
-.planning-shift-leave { background: var(--color-success-soft); }
-.planning-shift-remote { background: var(--color-primary-soft); }
-.planning-shift-office { background: var(--color-info-soft); }
-.planning-shift-pending { opacity: 0.6; }
+.planning-shift-leave {
+  background: var(--color-success-soft);
+}
+.planning-shift-remote {
+  background: var(--color-primary-soft);
+}
+.planning-shift-office {
+  background: var(--color-info-soft);
+}
+.planning-shift-pending {
+  opacity: 0.6;
+}
 /* Repos hebdomadaire (§retour du 10/09/2026) : même case pleine que les autres statuts (tous
    pareil), simplement grise et centrée — en vue Semaine seulement (colonnes assez larges), vue Mois
    inchangée (~30 colonnes déjà étroites, un tiret suffit, voir renderPlanningStatusCell). */
-.planning-shift-off { background: var(--color-muted-soft); align-items: center; text-align: center; }
-.planning-shift-off .planning-shift-caption { color: var(--color-text-muted); text-align: center; }
+.planning-shift-off {
+  background: var(--color-muted-soft);
+  align-items: center;
+  text-align: center;
+}
+.planning-shift-off .planning-shift-caption {
+  color: var(--color-text-muted);
+  text-align: center;
+}
 /* §retour Betty du 09/09/2026 ("enlève les icônes, rends les horaires plus jolies") : la légende
    (horaires ou titre du congé) remplace désormais l'icône (voir renderPlanningStatusCell) — elle
    reprend donc la même couleur d'accent que la carte plutôt qu'un simple gris, pour rester la seule
    information visuelle du jour. */
-.planning-shift-caption { font-size: 12px; font-weight: 700; line-height: 1.3; }
-.planning-shift-subtext { font-size: 11px; font-weight: 500; line-height: 1.3; opacity: 0.85; }
-.planning-shift-leave .planning-shift-caption { color: var(--color-success); }
-.planning-shift-remote .planning-shift-caption { color: var(--color-primary); }
-.planning-shift-office .planning-shift-caption { color: var(--color-info); }
+.planning-shift-caption {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.planning-shift-subtext {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.3;
+  opacity: 0.85;
+}
+.planning-shift-leave .planning-shift-caption {
+  color: var(--color-success);
+}
+.planning-shift-remote .planning-shift-caption {
+  color: var(--color-primary);
+}
+.planning-shift-office .planning-shift-caption {
+  color: var(--color-info);
+}
 /* Petit repère d'icône en coin de carte (§demande du 10/09/2026, référence Combo) : discret, jamais
    la seule information (le texte de la légende reste la source principale), même couleur que la
    légende via currentColor. */
-.planning-shift-corner-icon { position: absolute; bottom: 4px; right: 6px; opacity: 0.55; line-height: 0; }
-.planning-shift-corner-icon svg { width: 11px; height: 11px; display: block; }
-.planning-shift-leave .planning-shift-corner-icon { color: var(--color-success); }
-.planning-shift-remote .planning-shift-corner-icon { color: var(--color-primary); }
-.planning-shift-office .planning-shift-corner-icon { color: var(--color-info); }
+.planning-shift-corner-icon {
+  position: absolute;
+  bottom: 4px;
+  right: 6px;
+  opacity: 0.55;
+  line-height: 0;
+}
+.planning-shift-corner-icon svg {
+  width: 11px;
+  height: 11px;
+  display: block;
+}
+.planning-shift-leave .planning-shift-corner-icon {
+  color: var(--color-success);
+}
+.planning-shift-remote .planning-shift-corner-icon {
+  color: var(--color-primary);
+}
+.planning-shift-office .planning-shift-corner-icon {
+  color: var(--color-info);
+}
 /* Vue Mois (~30 colonnes déjà étroites) : icône seule, recentrée (le reste de la carte est aligné à
    gauche par défaut, voir plus haut) — voir renderPlanningStatusCell. */
-.planning-shift-icon-only { align-items: center; padding: 4px; }
-.planning-shift-icon { display: flex; justify-content: center; width: 100%; }
+.planning-shift-icon-only {
+  align-items: center;
+  padding: 4px;
+}
+.planning-shift-icon {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
 /* Compteurs sous le nom du salarié (§demande du 10/09/2026) : heures hebdomadaires contractuelles
    (employee.horairesHebdo) et solde de repos compensateur (getReposCompensateurSolde) — les deux
    SEULS compteurs de la référence ayant un vrai équivalent existant dans Nexus, voir
    renderPlanningEmployeeBadges. */
-.planning-employee-badges { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
-.planning-employee-badge { font-size: 10.5px; font-weight: 700; padding: 1px 7px; border-radius: 999px; background: var(--color-muted-soft); color: var(--color-text-muted); }
-.planning-employee-badge-rcr { background: var(--color-primary-soft); color: var(--color-primary-text); }
+.planning-employee-badges {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+.planning-employee-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--color-muted-soft);
+  color: var(--color-text-muted);
+}
+.planning-employee-badge-rcr {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-text);
+}
 
 /* §retour Betty du 10/09/2026 ("fais le même planning pour le planning télétravail dans congés et
    absences") : même STRUCTURE de carte que la grille de quarts (.poste-shift-card plus bas — carte
@@ -1950,10 +2895,18 @@ textarea.input { resize: vertical; font-family: inherit; }
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--color-border);
 }
-.teletravail-planning-card .planning-shift-leave { border-left: 3px solid var(--color-success); }
-.teletravail-planning-card .planning-shift-remote { border-left: 3px solid var(--color-primary); }
-.teletravail-planning-card .planning-shift-office { border-left: 3px solid var(--color-info); }
-.teletravail-planning-card .planning-shift-off { border-left: 3px solid var(--color-border); }
+.teletravail-planning-card .planning-shift-leave {
+  border-left: 3px solid var(--color-success);
+}
+.teletravail-planning-card .planning-shift-remote {
+  border-left: 3px solid var(--color-primary);
+}
+.teletravail-planning-card .planning-shift-office {
+  border-left: 3px solid var(--color-info);
+}
+.teletravail-planning-card .planning-shift-off {
+  border-left: 3px solid var(--color-border);
+}
 
 /* ---------------------------------------------------------------------
    Planning par postes (§demande Betty du 10/09/2026) — écran distinct inspiré d'une maquette
@@ -1970,7 +2923,12 @@ textarea.input { resize: vertical; font-family: inherit; }
    pas ce qu'il y a autour") : plus de panneau de filtres ni de barre d'outils — retiré avec le reste
    des styles qui ne servaient qu'à ça (.poste-layout/.poste-filters-panel/.poste-btn-pill/
    .poste-checkbox-row/...). Ne reste que la grille elle-même. */
-.poste-group-header-row { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+.poste-group-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
 
 /* §retour Betty du 10/09/2026 ("ça doit être exactement ça sauf que c'est en bleu et doré") : carte
    FLOTTANTE avec marge (pas un remplissage bord à bord comme .planning-shift-card, utilisé lui pour
@@ -1979,7 +2937,9 @@ textarea.input { resize: vertical; font-family: inherit; }
    arrondis, légère ombre, TROIS lignes (horaire, position, pause) comme la maquette. Le fond
    légèrement teinté de la case elle-même (.poste-grid-card) rejoue le fond menthe de la référence
    avec un ton neutre de l'appli plutôt qu'une nouvelle couleur. */
-.poste-grid-card { background: var(--color-bg); }
+.poste-grid-card {
+  background: var(--color-bg);
+}
 .poste-shift-card {
   position: absolute;
   inset: 4px;
@@ -2004,10 +2964,26 @@ textarea.input { resize: vertical; font-family: inherit; }
   user-select: none;
   -webkit-user-drag: none;
 }
-.poste-shift-time { font-weight: 700; font-size: 12.5px; color: var(--color-text); }
-.poste-shift-position { font-size: 11px; color: var(--color-text-muted); }
-.poste-shift-pause { font-size: 10.5px; color: var(--color-text-muted); display: flex; align-items: center; gap: 4px; }
-.poste-shift-pause svg { width: 9px; height: 9px; }
+.poste-shift-time {
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--color-text);
+}
+.poste-shift-position {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+.poste-shift-pause {
+  font-size: 10.5px;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.poste-shift-pause svg {
+  width: 9px;
+  height: 9px;
+}
 
 /* §demande Betty du 11/09/2026 (Pointeuse QR, "dire dans le planning que l'employé est bien
    présent") : confirmation réelle (pointage scanné), distincte du quart simplement PRÉVU — vert
@@ -2015,19 +2991,49 @@ textarea.input { resize: vertical; font-family: inherit; }
    Utilisée seulement quand la carte n'a rien d'autre à montrer (pas de quart planifié) — voir
    .poste-shift-pointage-dot ci-dessous pour la carte avec un quart, trop étroite pour une ligne
    texte de plus. */
-.poste-shift-pointage { font-size: 10px; font-weight: 700; color: var(--color-success); display: flex; align-items: center; gap: 3px; margin-top: 2px; }
-.poste-shift-pointage svg { width: 9px; height: 9px; }
-.poste-shift-pointage-only { justify-content: center; align-items: center; }
+.poste-shift-pointage {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-success);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 2px;
+}
+.poste-shift-pointage svg {
+  width: 9px;
+  height: 9px;
+}
+.poste-shift-pointage-only {
+  justify-content: center;
+  align-items: center;
+}
 /* L'heure elle-même, sous "Pointé" — ligne séparée plutôt qu'un seul texte "Pointé 08:52 → 17:03"
    qui débordait de la case en se coupant au milieu (correctif visuel du 14/09/2026) : deux lignes
    courtes et prévisibles, jamais un retour à la ligne au hasard en plein milieu de l'heure. */
-.poste-shift-pointage-heures { font-size: 10px; font-weight: 700; color: var(--color-success); text-align: center; line-height: 1.3; }
+.poste-shift-pointage-heures {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-success);
+  text-align: center;
+  line-height: 1.3;
+}
 /* §correctif visuel du 14/09/2026 : une carte AVEC un quart planifié (horaire + service, déjà 2
    lignes dans une case de hauteur fixe) n'a plus de place pour une ligne de texte en plus — ce
    simple point vert (au survol : l'heure exacte, voir title) confirme le pointage sans jamais
    ajouter de ligne, donc sans jamais pouvoir déborder de la carte. */
-.poste-shift-pointage-dot { display: inline-flex; vertical-align: middle; margin-left: 3px; color: var(--color-success); cursor: help; }
-.poste-shift-pointage-dot svg { width: 9px; height: 9px; display: block; }
+.poste-shift-pointage-dot {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-left: 3px;
+  color: var(--color-success);
+  cursor: help;
+}
+.poste-shift-pointage-dot svg {
+  width: 9px;
+  height: 9px;
+  display: block;
+}
 
 /* §retour Betty du 10/09/2026 ("vérifie que ça correspond bien à l'image") : la référence ne montre
    AUCUN "+" visible dans ses cases vides (juste une case nue) — invisible par défaut, révélé au
@@ -2049,21 +3055,51 @@ textarea.input { resize: vertical; font-family: inherit; }
   opacity: 0;
   transition: opacity 0.12s ease;
 }
-.poste-shift-add:hover { opacity: 1; border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-soft); }
+.poste-shift-add:hover {
+  opacity: 1;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
 
 /* §retour Betty du 10/09/2026 (3e envoi de la même référence, "ça doit ressembler à ça") : texte
    simple sous le nom, comme la maquette — pas un badge/pilule grisé (.planning-employee-badge, gardé
    tel quel pour le Planning principal, jamais demandé à changer là-bas). */
-.poste-employee-hours { font-size: 12px; font-weight: 700; color: var(--color-primary-text); margin-top: 2px; }
+.poste-employee-hours {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-primary-text);
+  margin-top: 2px;
+}
 
-.poste-budget-row td { background: var(--color-gold-soft); border-top: 2px solid var(--color-gold); font-weight: 700; }
+.poste-budget-row td {
+  background: var(--color-gold-soft);
+  border-top: 2px solid var(--color-gold);
+  font-weight: 700;
+}
 
 /* ---------------------------------------------------------------------
    Pointeuse QR (§demande Betty du 11/09/2026)
    --------------------------------------------------------------------- */
-.pointage-today-card { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 20px; }
-.pointage-today-status { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 14px; }
-.pointage-today-status svg { color: var(--color-success); flex-shrink: 0; }
+.pointage-today-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 20px;
+}
+.pointage-today-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 14px;
+}
+.pointage-today-status svg {
+  color: var(--color-success);
+  flex-shrink: 0;
+}
 
 /* Fenêtre caméra (openPointageScanModal) : carrée, coins arrondis, la vidéo remplit tout l'espace
    (object-fit:cover, même patron que .avatar) plutôt que déformée ou avec des bandes vides. */
@@ -2076,16 +3112,30 @@ textarea.input { resize: vertical; font-family: inherit; }
   overflow: hidden;
   background: #000;
 }
-.pointage-scan-stage video { width: 100%; height: 100%; object-fit: cover; }
+.pointage-scan-stage video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
 /* Colonne Total alignée à droite, comme la référence (le reste du Planning n'a jamais eu cette
    demande, cette règle reste donc scopée à l'écran Postes). */
-.poste-grid-card th:last-child, .poste-grid-card .planning-total-cell { text-align: right; }
+.poste-grid-card th:last-child,
+.poste-grid-card .planning-total-cell {
+  text-align: right;
+}
 
 /* Sprint SIRH premium §3 : "modification par glisser-déposer" du Planning (Semaine/Mois) */
-.planning-cell[draggable="true"] { cursor: grab; }
-.planning-cell-dragging { opacity: 0.4; }
-.planning-cell-drop-target { outline: 2px dashed var(--color-primary); outline-offset: -2px; }
+.planning-cell[draggable='true'] {
+  cursor: grab;
+}
+.planning-cell-dragging {
+  opacity: 0.4;
+}
+.planning-cell-drop-target {
+  outline: 2px dashed var(--color-primary);
+  outline-offset: -2px;
+}
 
 .planning-summary-row td {
   background: var(--color-muted-soft);
@@ -2107,12 +3157,33 @@ textarea.input { resize: vertical; font-family: inherit; }
 /* §retour Betty du 09/09/2026 ("fais les cases un peu moins grandes") : padding/min-width réduits
    d'un cran (8px 6px/34px → 6px 4px/26px) — juste assez pour resserrer la grille, sans revenir à la
    bordure collapsée quasi invisible du tout premier essai. */
-.absence-cal-table { border-collapse: separate; border-spacing: 2px; }
-.absence-cal-table th, .absence-cal-table td { padding: 6px 4px; min-width: 26px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); }
-.absence-cal-table th:first-child, .absence-cal-table td:first-child { padding: 12px 18px; min-width: 0; }
-.absence-cal-table th.weekend, .absence-cal-cell.weekend { background: var(--color-muted-soft); }
-.absence-cal-table th.today { color: var(--color-primary-text); font-weight: 700; }
-.absence-cal-cell.today { box-shadow: inset 0 0 0 1px var(--color-primary-soft); }
+.absence-cal-table {
+  border-collapse: separate;
+  border-spacing: 2px;
+}
+.absence-cal-table th,
+.absence-cal-table td {
+  padding: 6px 4px;
+  min-width: 26px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+.absence-cal-table th:first-child,
+.absence-cal-table td:first-child {
+  padding: 12px 18px;
+  min-width: 0;
+}
+.absence-cal-table th.weekend,
+.absence-cal-cell.weekend {
+  background: var(--color-muted-soft);
+}
+.absence-cal-table th.today {
+  color: var(--color-primary-text);
+  font-weight: 700;
+}
+.absence-cal-cell.today {
+  box-shadow: inset 0 0 0 1px var(--color-primary-soft);
+}
 /* §retour Betty du 09/09/2026 ("même hauteur que les autres cases vides") : `height: 100%` sur la
    barre ne suffit pas — dans une cellule de tableau, la hauteur d'un enfant en pourcentage ne se
    résout pas de façon fiable contre la hauteur "auto" de la cellule (elle reste calée sur sa propre
@@ -2121,7 +3192,11 @@ textarea.input { resize: vertical; font-family: inherit; }
    case (`inset: 0`) contourne ce problème : elle se cale alors sur la hauteur RÉELLE de la case
    (celle-ci passée en `position: relative`, padding retiré puisque la barre colorée occupe tout
    l'espace), identique aux cases vides voisines. */
-.absence-cal-bar-cell { border-color: transparent !important; padding: 0 !important; position: relative; }
+.absence-cal-bar-cell {
+  border-color: transparent !important;
+  padding: 0 !important;
+  position: relative;
+}
 .absence-cal-bar {
   position: absolute;
   inset: 0;
@@ -2135,27 +3210,71 @@ textarea.input { resize: vertical; font-family: inherit; }
   font-weight: 600;
   padding: 0 6px;
 }
-.absence-cal-bar-label { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; flex: 1; text-align: center; }
-.absence-cal-bar-edge { flex-shrink: 0; font-weight: 700; opacity: 0.9; }
-.absence-cal-bar-telework { background: var(--color-primary); }
-.absence-cal-bar-pending { opacity: 0.55; background-image: repeating-linear-gradient(135deg, rgba(255,255,255,0.35) 0 6px, transparent 6px 12px); }
+.absence-cal-bar-label {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  flex: 1;
+  text-align: center;
+}
+.absence-cal-bar-edge {
+  flex-shrink: 0;
+  font-weight: 700;
+  opacity: 0.9;
+}
+.absence-cal-bar-telework {
+  background: var(--color-primary);
+}
+.absence-cal-bar-pending {
+  opacity: 0.55;
+  background-image: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.35) 0 6px, transparent 6px 12px);
+}
 
-.absence-cal-legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 12px; }
-.absence-cal-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--color-text-muted); }
-.absence-cal-legend-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; }
-.absence-cal-legend-telework { background: var(--color-primary); }
+.absence-cal-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-bottom: 12px;
+}
+.absence-cal-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+.absence-cal-legend-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+.absence-cal-legend-telework {
+  background: var(--color-primary);
+}
 
 /* §demande Betty du 09/09/2026 : avatar + total hebdomadaire, comme le modèle Agendrix (photo/
    initiales à gauche du nom, colonne "Total" à droite de la semaine) — même avatar déjà utilisé
    partout ailleurs dans l'appli (renderAvatar), même calcul que le total de service (computeDailyHours). */
-.planning-employee-cell { display: flex; align-items: center; gap: 10px; }
+.planning-employee-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 /* §correctif visuel du 14/09/2026 : sans white-space:nowrap, le nom du salarié (ex. "Julien
    Moreau") se coupait en deux lignes dans cette colonne — le tableau du planning a déjà assez de
    colonnes de jours pour que l'algorithme de mise en page (table-layout:auto) préfère rétrécir
    cette colonne texte plutôt que d'élargir le tableau, alors même que .table-card/.table-scroll
    permettent déjà de défiler horizontalement (voir le même correctif sur .table-nowrap). */
-.planning-employee-info { display: flex; flex-direction: column; gap: 2px; white-space: nowrap; }
-.planning-total-cell { white-space: nowrap; }
+.planning-employee-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  white-space: nowrap;
+}
+.planning-total-cell {
+  white-space: nowrap;
+}
 
 /* §demande Betty du 09/09/2026 : bandeau plein (au lieu d'un simple fond gris discret) pour chaque
    groupe de service, comme les bandes colorées du modèle Agendrix — une seule teinte (marine) pour
@@ -2169,7 +3288,9 @@ textarea.input { resize: vertical; font-family: inherit; }
   text-align: left;
   padding: 10px 22px;
 }
-.planning-service-header .text-muted { color: rgba(255, 255, 255, 0.75); }
+.planning-service-header .text-muted {
+  color: rgba(255, 255, 255, 0.75);
+}
 
 /* §4 (reprise) : grilles Planning/Horaires/Télétravail — beaucoup de colonnes (jours d'un mois) et
  * potentiellement beaucoup de lignes (salariés) ; sans repère fixe, on perd de vue à qui/quel jour
@@ -2191,7 +3312,9 @@ textarea.input { resize: vertical; font-family: inherit; }
  * tableaux denses ordinaires, voir plus haut) — repris ici en `visible` explicitement, sinon la
  * même spécification qui force overflow-y à 'auto' dès qu'un seul axe n'est pas 'visible' recréerait
  * le problème par ce biais, sans toucher au reste des tableaux qui utilisent .table-card ailleurs. */
-.planning-scroll-card { overflow-x: visible; }
+.planning-scroll-card {
+  overflow-x: visible;
+}
 /* §audit du 17/09/2026 : sur téléphone (largeur réelle, pas seulement redimensionnée), le tableau
    Planning/Calendrier équipe est plus large que l'écran quel que soit l'effectif affiché (beaucoup
    de colonnes jour) — avec overflow-x: visible ci-dessus, ce débordement n'était plus contenu dans
@@ -2200,7 +3323,9 @@ textarea.input { resize: vertical; font-family: inherit; }
    fixe que par rapport à la carte (pas toute la page) pendant un défilement vertical, un compromis
    largement préférable à une page entière qui déborde sur le côté. */
 @media (max-width: 860px) {
-  .planning-scroll-card { overflow-x: auto; }
+  .planning-scroll-card {
+    overflow-x: auto;
+  }
 }
 
 .planning-scroll-card .planning-table thead th {
@@ -2220,11 +3345,15 @@ textarea.input { resize: vertical; font-family: inherit; }
 }
 
 /* La cellule d'angle (coin haut-gauche) doit rester au-dessus des deux autres groupes de cellules sticky. */
-.planning-scroll-card .planning-table thead th:first-child { z-index: 4; }
+.planning-scroll-card .planning-table thead th:first-child {
+  z-index: 4;
+}
 
 /* Sans ça, les lignes de regroupement par service (bandeau marine) laisseraient transparaître le
  * fond de carte par défaut à travers la première colonne sticky, cassant le bandeau en deux teintes. */
-.planning-scroll-card .planning-service-header td:first-child { background: var(--color-primary); }
+.planning-scroll-card .planning-service-header td:first-child {
+  background: var(--color-primary);
+}
 
 /* §refonte planning du 04/09/2026 : sous-groupe équipe au sein d'un service (voir
  * groupEmployeesByServiceAndEquipe, app.js) — même principe que .planning-service-header mais en
@@ -2237,8 +3366,12 @@ textarea.input { resize: vertical; font-family: inherit; }
   padding-left: 22px;
   color: var(--color-text-muted, var(--color-muted));
 }
-.planning-scroll-card .planning-equipe-header td:first-child { background: var(--color-surface); }
-.planning-scroll-card .planning-summary-row td:first-child { background: var(--color-muted-soft); }
+.planning-scroll-card .planning-equipe-header td:first-child {
+  background: var(--color-surface);
+}
+.planning-scroll-card .planning-summary-row td:first-child {
+  background: var(--color-muted-soft);
+}
 
 /* ---------------------------------------------------------------------
    Dashboard — graphiques SVG faits maison et listes pratiques
@@ -2255,8 +3388,15 @@ textarea.input { resize: vertical; font-family: inherit; }
    Paramètres > Abonnement — offres Stripe
    --------------------------------------------------------------------- */
 
-.abonnement-summary-card { position: relative; overflow: hidden; }
-.abonnement-summary-header { display: flex; align-items: center; gap: 16px; }
+.abonnement-summary-card {
+  position: relative;
+  overflow: hidden;
+}
+.abonnement-summary-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
 .abonnement-summary-icon {
   flex-shrink: 0;
   width: 52px;
@@ -2269,9 +3409,15 @@ textarea.input { resize: vertical; font-family: inherit; }
   background: var(--color-chip-bg);
   color: var(--color-primary-text);
 }
-.abonnement-summary-icon svg { width: 26px; height: 26px; display: block; }
+.abonnement-summary-icon svg {
+  width: 26px;
+  height: 26px;
+  display: block;
+}
 
-.abonnement-jauge { margin-top: 16px; }
+.abonnement-jauge {
+  margin-top: 16px;
+}
 .abonnement-jauge-label {
   display: flex;
   justify-content: space-between;
@@ -2280,7 +3426,10 @@ textarea.input { resize: vertical; font-family: inherit; }
   color: var(--color-text-muted);
   margin-bottom: 6px;
 }
-.abonnement-jauge-label strong { color: var(--color-text); font-size: 14px; }
+.abonnement-jauge-label strong {
+  color: var(--color-text);
+  font-size: 14px;
+}
 .abonnement-jauge-bar {
   height: 8px;
   border-radius: 999px;
@@ -2305,24 +3454,66 @@ textarea.input { resize: vertical; font-family: inherit; }
    (app.js) : liste de cases à cocher à gauche, total qui se recalcule en direct dans une carte
    collante à droite (comme le prix reste visible en scrollant la liste des modules sur un écran
    qui en compte 12). Empile en une colonne sous 860px (voir media query). */
-.alacarte-builder { display: grid; grid-template-columns: 1fr 300px; gap: 24px; max-width: 900px; margin: 0 auto; align-items: start; }
-.alacarte-modules { display: flex; flex-direction: column; gap: 8px; }
+.alacarte-builder {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 24px;
+  max-width: 900px;
+  margin: 0 auto;
+  align-items: start;
+}
+.alacarte-modules {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 .alacarte-module {
   padding: 12px 14px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   transition: background-color 0.15s ease;
 }
-.alacarte-module:hover { background: var(--color-muted-soft); }
-.alacarte-module-main { display: flex; align-items: center; gap: 12px; cursor: pointer; }
-.alacarte-module-checkbox { width: 17px; height: 17px; accent-color: var(--landing-gold-500); flex-shrink: 0; }
-.alacarte-module-name { flex: 1; font-weight: 600; font-size: 14px; }
-.alacarte-module-price { font-size: 12.5px; color: var(--color-text-muted); white-space: nowrap; }
+.alacarte-module:hover {
+  background: var(--color-muted-soft);
+}
+.alacarte-module-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+.alacarte-module-checkbox {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--landing-gold-500);
+  flex-shrink: 0;
+}
+.alacarte-module-name {
+  flex: 1;
+  font-weight: 600;
+  font-size: 14px;
+}
+.alacarte-module-price {
+  font-size: 12.5px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
 /* Module "déclarant" (Notes de frais, comme Lucca) : effectif propre, distinct du curseur de
    salariés global — sous-ligne dépliée sous la case à cocher plutôt qu'un second curseur en haut
    de page, pour rester à l'endroit où ce chiffre s'applique concrètement. */
-.alacarte-module-unit-count { display: flex; align-items: center; gap: 8px; margin: 10px 0 0 29px; font-size: 12.5px; color: var(--color-text-muted); }
-.alacarte-module-unit-count input { width: 70px; padding: 4px 8px; font-size: 13px; }
+.alacarte-module-unit-count {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 0 29px;
+  font-size: 12.5px;
+  color: var(--color-text-muted);
+}
+.alacarte-module-unit-count input {
+  width: 70px;
+  padding: 4px 8px;
+  font-size: 13px;
+}
 /* Pas de trait/liseré (retour explicite du 21/08/2026) — un voile or plutôt qu'un contour, pour
    distinguer cette carte "prix final" du reste sans y ajouter une bordure. */
 .alacarte-total-card {
@@ -2335,28 +3526,83 @@ textarea.input { resize: vertical; font-family: inherit; }
   text-align: center;
   box-shadow: var(--shadow-md);
 }
-.alacarte-total-label { font-size: 12.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-muted); }
-.alacarte-discount-note { margin: 4px 0 0; font-size: 12.5px; font-weight: 600; color: var(--landing-gold-500); min-height: 1em; }
-.alacarte-total-card strong { display: block; font-size: 30px; margin: 8px 0; }
+.alacarte-total-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+}
+.alacarte-discount-note {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--landing-gold-500);
+  min-height: 1em;
+}
+.alacarte-total-card strong {
+  display: block;
+  font-size: 30px;
+  margin: 8px 0;
+}
 @media (max-width: 860px) {
-  .alacarte-builder { grid-template-columns: 1fr; }
-  .alacarte-total-card { position: static; }
+  .alacarte-builder {
+    grid-template-columns: 1fr;
+  }
+  .alacarte-total-card {
+    position: static;
+  }
 }
 
 /* Comparaison volontairement générique ("la plupart des SIRH du marché"), pas de concurrent nommé
    — trois avantages réels de Nexus (tout inclus, support inclus, sans engagement) plutôt qu'une
    liste exhaustive façon Bizneo (7 concurrents) qu'il faudrait maintenir à jour indéfiniment. */
-.landing-compare-table-wrap { max-width: 720px; margin: 40px auto 0; overflow-x: auto; }
-.landing-compare-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-.landing-compare-table th, .landing-compare-table td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--color-border); }
-.landing-compare-table thead th { font-size: 12px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
-.landing-compare-table thead th:nth-child(2) { color: var(--color-primary); }
-.landing-compare-table tbody td:first-child { font-weight: 600; color: var(--color-text-muted); white-space: nowrap; }
-.landing-compare-table tbody td:nth-child(2) { color: var(--color-primary); font-weight: 600; }
-.landing-compare-table tbody td:nth-child(3) { color: var(--color-text-muted); }
+.landing-compare-table-wrap {
+  max-width: 720px;
+  margin: 40px auto 0;
+  overflow-x: auto;
+}
+.landing-compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+.landing-compare-table th,
+.landing-compare-table td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+.landing-compare-table thead th {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.landing-compare-table thead th:nth-child(2) {
+  color: var(--color-primary);
+}
+.landing-compare-table tbody td:first-child {
+  font-weight: 600;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+.landing-compare-table tbody td:nth-child(2) {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+.landing-compare-table tbody td:nth-child(3) {
+  color: var(--color-text-muted);
+}
 @media (max-width: 480px) {
-  .landing-compare-table { font-size: 12.5px; }
-  .landing-compare-table th, .landing-compare-table td { padding: 10px 8px; }
+  .landing-compare-table {
+    font-size: 12.5px;
+  }
+  .landing-compare-table th,
+  .landing-compare-table td {
+    padding: 10px 8px;
+  }
 }
 
 .offre-card {
@@ -2370,12 +3616,23 @@ textarea.input { resize: vertical; font-family: inherit; }
   text-align: center;
   background: var(--color-surface);
   box-shadow: var(--shadow-sm);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
-.offre-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.offre-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
 
-.offre-card-active { border-color: var(--color-primary); background: var(--color-primary-soft); }
-.offre-card-recommandee { border-color: var(--color-primary); box-shadow: var(--shadow-md); }
+.offre-card-active {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+.offre-card-recommandee {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+}
 
 .offre-card-ribbon {
   position: absolute;
@@ -2406,9 +3663,19 @@ textarea.input { resize: vertical; font-family: inherit; }
   padding: 4px 10px;
   border-radius: 0 0 var(--radius-sm) var(--radius-sm);
 }
-.landing-page .offre-card-match { border-color: var(--landing-gold-500); box-shadow: 0 0 0 2px var(--landing-gold-500), var(--shadow-md); }
-.landing-page .offre-card-match .offre-card-match-badge { display: block; }
-.landing-page .offre-card-match .offre-card-icon { background: var(--landing-gold-soft); color: var(--landing-navy-900); }
+.landing-page .offre-card-match {
+  border-color: var(--landing-gold-500);
+  box-shadow:
+    0 0 0 2px var(--landing-gold-500),
+    var(--shadow-md);
+}
+.landing-page .offre-card-match .offre-card-match-badge {
+  display: block;
+}
+.landing-page .offre-card-match .offre-card-icon {
+  background: var(--landing-gold-soft);
+  color: var(--landing-navy-900);
+}
 
 .offre-card-icon {
   width: 44px;
@@ -2421,16 +3688,37 @@ textarea.input { resize: vertical; font-family: inherit; }
   color: var(--color-primary-text);
   margin-bottom: 10px;
 }
-.offre-card-icon svg { width: 22px; height: 22px; display: block; }
+.offre-card-icon svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
 
-.offre-card h3 { font-size: 16px; margin-bottom: 4px; }
+.offre-card h3 {
+  font-size: 16px;
+  margin-bottom: 4px;
+}
 
-.offre-card-accroche { font-size: 12px; margin-bottom: 14px; min-height: 32px; }
+.offre-card-accroche {
+  font-size: 12px;
+  margin-bottom: 14px;
+  min-height: 32px;
+}
 
-.offre-prix { font-size: 24px; font-weight: 700; margin-bottom: 2px; }
-.offre-prix .text-muted { font-size: 13px; font-weight: 500; }
+.offre-prix {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.offre-prix .text-muted {
+  font-size: 13px;
+  font-weight: 500;
+}
 
-.offre-card-mensualise { font-size: 12px; margin-bottom: 14px; }
+.offre-card-mensualise {
+  font-size: 12px;
+  margin-bottom: 14px;
+}
 
 .offre-card-condition {
   display: flex;
@@ -2444,19 +3732,38 @@ textarea.input { resize: vertical; font-family: inherit; }
   margin-top: auto;
 }
 
-.chart-card { display: flex; flex-direction: column; }
-.chart-subtitle { margin-top: -8px; margin-bottom: 10px; }
+.chart-card {
+  display: flex;
+  flex-direction: column;
+}
+.chart-subtitle {
+  margin-top: -8px;
+  margin-bottom: 10px;
+}
 
-.chart-svg { width: 100%; height: auto; display: block; overflow: visible; }
-.chart-donut { max-width: 200px; margin: 0 auto; }
+.chart-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+.chart-donut {
+  max-width: 200px;
+  margin: 0 auto;
+}
 
-.chart-label, .chart-value, .chart-axis-label {
+.chart-label,
+.chart-value,
+.chart-axis-label {
   font-size: 13px;
   fill: var(--color-text-muted);
   font-family: var(--font-sans);
 }
 
-.chart-value { fill: var(--color-text); font-weight: 600; }
+.chart-value {
+  fill: var(--color-text);
+  font-weight: 600;
+}
 
 .chart-donut-total {
   font-size: 24px;
@@ -2481,7 +3788,11 @@ textarea.input { resize: vertical; font-family: inherit; }
   font-weight: 600;
 }
 
-.chart-legend-item { display: flex; align-items: center; gap: 6px; }
+.chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 
 .chart-legend-swatch {
   display: inline-block;
@@ -2490,7 +3801,11 @@ textarea.input { resize: vertical; font-family: inherit; }
   border-radius: 3px;
 }
 
-.mini-list { display: flex; flex-direction: column; gap: 4px; }
+.mini-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 
 .mini-list-item {
   display: flex;
@@ -2501,7 +3816,9 @@ textarea.input { resize: vertical; font-family: inherit; }
   font-size: 14px;
 }
 
-.mini-list-item:last-child { border-bottom: none; }
+.mini-list-item:last-child {
+  border-bottom: none;
+}
 
 .mini-list-group-label {
   font-size: 12px;
@@ -2511,7 +3828,9 @@ textarea.input { resize: vertical; font-family: inherit; }
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
-.mini-list-group-label:first-child { margin-top: 0; }
+.mini-list-group-label:first-child {
+  margin-top: 0;
+}
 .mini-list-group-sub {
   font-weight: 500;
   text-transform: none;
@@ -2522,7 +3841,11 @@ textarea.input { resize: vertical; font-family: inherit; }
 
 /* §refonte "chargement unifié" du 01/09/2026 : remplace les "Chargement..." en texte brut par un
    effet de balayage, cohérent partout (une seule animation, voir renderSkeletonLines, app.js). */
-.skeleton-lines { display: flex; flex-direction: column; gap: 8px; }
+.skeleton-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 .skeleton-line {
   height: 14px;
   border-radius: var(--radius-sm);
@@ -2531,23 +3854,53 @@ textarea.input { resize: vertical; font-family: inherit; }
   animation: skeleton-shimmer 1.4s ease infinite;
 }
 @keyframes skeleton-shimmer {
-  0% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .skeleton-line { animation: none; background-position: 50% 50%; }
+  .skeleton-line {
+    animation: none;
+    background-position: 50% 50%;
+  }
 }
 
 /* §refonte "avatars discrets" du 01/09/2026 : remplace la liste "Présence aujourd'hui" (noms +
    badge texte) par des avatars ronds avec un anneau d'état — même code couleur que les badges
    (success/warning/info/muted, voir getTodayPresenceStatus), jamais une nouvelle palette. */
-.presence-avatars { display: flex; flex-wrap: wrap; gap: 16px; }
-.presence-avatar-item { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 60px; }
-.avatar-ring { display: inline-flex; padding: 2px; border-radius: 50%; border: 2px solid transparent; }
-.avatar-ring-success { border-color: var(--color-success); }
-.avatar-ring-warning { border-color: var(--color-warning); }
-.avatar-ring-info { border-color: var(--color-info); }
-.avatar-ring-muted { border-color: var(--color-border); }
+.presence-avatars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.presence-avatar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  width: 60px;
+}
+.avatar-ring {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+}
+.avatar-ring-success {
+  border-color: var(--color-success);
+}
+.avatar-ring-warning {
+  border-color: var(--color-warning);
+}
+.avatar-ring-info {
+  border-color: var(--color-info);
+}
+.avatar-ring-muted {
+  border-color: var(--color-border);
+}
 .presence-avatar-name {
   font-size: 11px;
   color: var(--color-text-muted);
@@ -2559,7 +3912,11 @@ textarea.input { resize: vertical; font-family: inherit; }
 }
 
 /* Checklists d'intégration/de départ (fiche salarié) */
-.checklist { display: flex; flex-direction: column; gap: 2px; }
+.checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
 
 .checklist-item {
   display: flex;
@@ -2570,13 +3927,28 @@ textarea.input { resize: vertical; font-family: inherit; }
   font-size: 14px;
   cursor: pointer;
 }
-.checklist-item:last-child { border-bottom: none; }
-.checklist-item input[type="checkbox"] { flex-shrink: 0; width: 18px; height: 18px; cursor: pointer; }
+.checklist-item:last-child {
+  border-bottom: none;
+}
+.checklist-item input[type='checkbox'] {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
 
-.checklist-label-done { color: var(--color-text-muted); text-decoration: line-through; }
+.checklist-label-done {
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
 
 /* Sprint SIRH premium §7 : centre d'action du tableau de bord */
-.action-center-list { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+.action-center-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
 
 .action-center-item {
   display: flex;
@@ -2592,17 +3964,37 @@ textarea.input { resize: vertical; font-family: inherit; }
   color: var(--color-text);
   cursor: pointer;
   text-align: left;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
 }
 
-.action-center-item:hover { background: var(--color-muted-soft); border-color: var(--color-primary); }
-.action-center-icon { font-size: 18px; flex-shrink: 0; }
-.action-center-icon svg { width: 18px; height: 18px; display: block; }
-.action-center-label { flex: 1; }
-.action-center-arrow { color: var(--color-text-muted); }
+.action-center-item:hover {
+  background: var(--color-muted-soft);
+  border-color: var(--color-primary);
+}
+.action-center-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.action-center-icon svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+.action-center-label {
+  flex: 1;
+}
+.action-center-arrow {
+  color: var(--color-text-muted);
+}
 
 /* Sprint SIRH premium §11 : timeline "Historique" d'une demande (congé/télétravail/note de frais) */
-.timeline { display: flex; flex-direction: column; gap: 2px; }
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
 
 .timeline-item {
   position: relative;
@@ -2621,16 +4013,27 @@ textarea.input { resize: vertical; font-family: inherit; }
   background: var(--color-primary);
 }
 
-.timeline-item:last-child { border-left-color: transparent; }
-.timeline-date { font-size: 12px; }
-.timeline-label { font-size: 14px; margin-top: 2px; }
+.timeline-item:last-child {
+  border-left-color: transparent;
+}
+.timeline-date {
+  font-size: 12px;
+}
+.timeline-label {
+  font-size: 14px;
+  margin-top: 2px;
+}
 
 /* ---------------------------------------------------------------------
    Tickets support (Phase 2 sprint amélioration RH, §16-17) — fil de discussion salarié ↔ BERTOLIS
    --------------------------------------------------------------------- */
 
-.ticket-row { cursor: pointer; }
-.ticket-row:hover { background: var(--color-muted-soft); }
+.ticket-row {
+  cursor: pointer;
+}
+.ticket-row:hover {
+  background: var(--color-muted-soft);
+}
 
 /* ---------------------------------------------------------------------
    Boîte à idées — "Vitrine Idées" (roadmap différenciation, 31/08/2026) : board par statut plutôt
@@ -2672,9 +4075,15 @@ textarea.input { resize: vertical; font-family: inherit; }
   box-shadow: var(--shadow-sm);
 }
 
-.idee-card:hover { border-color: var(--color-primary); }
+.idee-card:hover {
+  border-color: var(--color-primary);
+}
 
-.idee-card-title { font-size: 14px; font-weight: 500; margin-bottom: 8px; }
+.idee-card-title {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
 
 .idee-card-meta {
   display: flex;
@@ -2685,7 +4094,9 @@ textarea.input { resize: vertical; font-family: inherit; }
 }
 
 @media (max-width: 860px) {
-  .idees-column { min-width: 200px; }
+  .idees-column {
+    min-width: 200px;
+  }
 }
 
 /* ---------------------------------------------------------------------
@@ -2703,9 +4114,15 @@ textarea.input { resize: vertical; font-family: inherit; }
   margin-bottom: 12px;
 }
 
-.boussole-message { display: flex; }
-.boussole-message-user { justify-content: flex-end; }
-.boussole-message-assistant { justify-content: flex-start; }
+.boussole-message {
+  display: flex;
+}
+.boussole-message-user {
+  justify-content: flex-end;
+}
+.boussole-message-assistant {
+  justify-content: flex-start;
+}
 
 .boussole-message-bubble {
   max-width: 80%;
@@ -2715,13 +4132,28 @@ textarea.input { resize: vertical; font-family: inherit; }
   white-space: pre-wrap;
 }
 
-.boussole-message-user .boussole-message-bubble { background: var(--color-primary-soft); }
-.boussole-message-assistant .boussole-message-bubble { background: var(--color-surface); border: 1px solid var(--color-border); }
+.boussole-message-user .boussole-message-bubble {
+  background: var(--color-primary-soft);
+}
+.boussole-message-assistant .boussole-message-bubble {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
 
-.boussole-form { display: flex; gap: 8px; }
-.boussole-form .input { flex: 1; }
+.boussole-form {
+  display: flex;
+  gap: 8px;
+}
+.boussole-form .input {
+  flex: 1;
+}
 
-.ticket-thread { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.ticket-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
 
 .ticket-comment {
   max-width: 80%;
@@ -2733,31 +4165,61 @@ textarea.input { resize: vertical; font-family: inherit; }
 
 /* Le salarié à gauche, BERTOLIS à droite — même convention visuelle qu'une messagerie classique,
    pour distinguer les deux parties du fil sans avoir à relire "auteur" à chaque ligne. */
-.ticket-comment-salarie { align-self: flex-start; }
-.ticket-comment-bertolis { align-self: flex-end; background: var(--color-primary-soft); }
+.ticket-comment-salarie {
+  align-self: flex-start;
+}
+.ticket-comment-bertolis {
+  align-self: flex-end;
+  background: var(--color-primary-soft);
+}
 
-.ticket-comment-meta { font-size: 12px; color: var(--color-text-muted); margin-bottom: 4px; }
-.ticket-comment-body { font-size: 14px; white-space: pre-wrap; }
+.ticket-comment-meta {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-bottom: 4px;
+}
+.ticket-comment-body {
+  font-size: 14px;
+  white-space: pre-wrap;
+}
 
-.ticket-comment-form { display: flex; gap: 8px; align-items: flex-start; }
-.ticket-comment-form textarea { flex: 1; resize: vertical; }
+.ticket-comment-form {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.ticket-comment-form textarea {
+  flex: 1;
+  resize: vertical;
+}
 
 /* ---------------------------------------------------------------------
    Organigramme — arbre hiérarchique en CSS pur (lignes de connexion via ::before/::after)
    --------------------------------------------------------------------- */
 
-.org-chart-card { overflow-x: auto; padding: 32px 24px; }
+.org-chart-card {
+  overflow-x: auto;
+  padding: 32px 24px;
+}
 
-.org-tree, .org-tree ul {
+.org-tree,
+.org-tree ul {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
 }
 
-.org-tree { justify-content: center; width: max-content; min-width: 100%; }
+.org-tree {
+  justify-content: center;
+  width: max-content;
+  min-width: 100%;
+}
 
-.org-tree ul { padding-top: 32px; position: relative; }
+.org-tree ul {
+  padding-top: 32px;
+  position: relative;
+}
 
 .org-tree li {
   display: flex;
@@ -2786,10 +4248,22 @@ textarea.input { resize: vertical; font-family: inherit; }
   border-top: 2px solid var(--color-border);
 }
 
-.org-tree ul li:not(:only-child):first-child::after { left: 50%; right: 0; }
-.org-tree ul li:not(:only-child):last-child::after { left: 0; right: 50%; }
-.org-tree ul li:not(:only-child):not(:first-child):not(:last-child)::after { left: 0; right: 100%; width: 100%; }
-.org-tree ul li:only-child::before { display: none; }
+.org-tree ul li:not(:only-child):first-child::after {
+  left: 50%;
+  right: 0;
+}
+.org-tree ul li:not(:only-child):last-child::after {
+  left: 0;
+  right: 50%;
+}
+.org-tree ul li:not(:only-child):not(:first-child):not(:last-child)::after {
+  left: 0;
+  right: 100%;
+  width: 100%;
+}
+.org-tree ul li:only-child::before {
+  display: none;
+}
 
 .org-node {
   position: relative;
@@ -2807,11 +4281,32 @@ textarea.input { resize: vertical; font-family: inherit; }
   z-index: 1;
 }
 
-.org-node:hover { border-color: var(--color-primary); box-shadow: var(--shadow-md); }
-.org-node .avatar { width: 40px; height: 40px; }
-.org-node-name { font-weight: 600; font-size: 13px; text-align: center; margin-top: 2px; }
-.org-node-poste { font-size: 11px; color: var(--color-text-muted); text-align: center; }
-.org-node-poste-manquant { display: flex; align-items: center; gap: 3px; color: var(--color-warning); font-weight: 600; }
+.org-node:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+}
+.org-node .avatar {
+  width: 40px;
+  height: 40px;
+}
+.org-node-name {
+  font-weight: 600;
+  font-size: 13px;
+  text-align: center;
+  margin-top: 2px;
+}
+.org-node-poste {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+.org-node-poste-manquant {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--color-warning);
+  font-weight: 600;
+}
 
 /* §12 : replier/déplier les branches — petit bouton en coin, ne doit pas interférer avec le clic
    sur le nœud (qui ouvre la fiche du salarié) : voir evt.stopPropagation() dans bindOrganigrammeEvents. */
@@ -2833,9 +4328,17 @@ textarea.input { resize: vertical; font-family: inherit; }
   justify-content: center;
   cursor: pointer;
 }
-.org-node-toggle:hover { background: var(--color-border); }
+.org-node-toggle:hover {
+  background: var(--color-border);
+}
 
-.org-node-service { font-size: 10px; color: var(--color-primary); font-weight: 600; text-align: center; letter-spacing: 0.02em; }
+.org-node-service {
+  font-size: 10px;
+  color: var(--color-primary);
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
 
 /* §retour Betty du 23/09/2026 ("l'organigramme ne montre ni les services ni les équipes") : cadre
    autour d'une fratrie qui partage le même service (voir renderOrgSiblings, app.js) — jamais une
@@ -2866,24 +4369,34 @@ textarea.input { resize: vertical; font-family: inherit; }
   border-radius: var(--radius-sm);
   white-space: nowrap;
 }
-.org-service-frame > ul { padding-top: 10px; }
+.org-service-frame > ul {
+  padding-top: 10px;
+}
 /* À l'intérieur d'un cadre, les cartes ne sont pas les enfants d'UN manager précis (le cadre les
    regroupe par service, pas par hiérarchie) — jamais de trait de connexion individuel vers un point
    invisible en haut du cadre, seul le trait du cadre lui-même (vers son propre manager) reste. */
 .org-service-frame > ul > li::before,
-.org-service-frame > ul > li:not(:only-child)::after { display: none; }
+.org-service-frame > ul > li:not(:only-child)::after {
+  display: none;
+}
 
 @media print {
-  .org-service-frame { background: none; border-style: solid; }
+  .org-service-frame {
+    background: none;
+    border-style: solid;
+  }
 }
 
 /* ---------------------------------------------------------------------
    Notifications (topbar)
    --------------------------------------------------------------------- */
 
-.notif-wrapper { position: relative; }
+.notif-wrapper {
+  position: relative;
+}
 
-.notif-bell, #btn-help {
+.notif-bell,
+#btn-help {
   position: relative;
   font-size: 18px;
   width: 36px;
@@ -2891,7 +4404,10 @@ textarea.input { resize: vertical; font-family: inherit; }
   border-radius: 50%;
 }
 
-.notif-bell:hover, #btn-help:hover { background: var(--color-muted-soft); }
+.notif-bell:hover,
+#btn-help:hover {
+  background: var(--color-muted-soft);
+}
 
 .notif-badge {
   position: absolute;
@@ -2928,7 +4444,10 @@ textarea.input { resize: vertical; font-family: inherit; }
 /* §refonte "micro-interaction unique" du 01/09/2026 : réutilise EXACTEMENT le même fondu que les
    modales (@keyframes modal-in) — un seul effet net, cohérent sur toute l'appli, plutôt qu'une
    animation différente par type de popover (notification/menu utilisateur/filtres). */
-.notif-panel.open { display: block; animation: modal-in 0.15s ease; }
+.notif-panel.open {
+  display: block;
+  animation: modal-in 0.15s ease;
+}
 
 .notif-header {
   display: flex;
@@ -2937,10 +4456,18 @@ textarea.input { resize: vertical; font-family: inherit; }
   padding: 10px 14px 0;
 }
 
-.notif-tabs { border-bottom: none; margin-bottom: 0; }
-.notif-tabs .tab { padding: 8px 10px; font-size: 13px; }
+.notif-tabs {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+.notif-tabs .tab {
+  padding: 8px 10px;
+  font-size: 13px;
+}
 
-.notif-list { padding: 4px 0; }
+.notif-list {
+  padding: 4px 0;
+}
 
 /* §amélioration du 09/09/2026 : en-tête de groupe par jour relatif (Aujourd'hui/Hier/...), voir
    getNotifDayGroupLabel (app.js) — repère de balayage rapide, pas un élément cliquable. */
@@ -2961,21 +4488,51 @@ textarea.input { resize: vertical; font-family: inherit; }
   align-items: flex-start;
 }
 
-.notif-item:last-child { border-bottom: none; }
-.notif-item.unread { background: var(--color-primary-soft); }
-.notif-icon { font-size: 16px; margin-top: 2px; flex-shrink: 0; }
-.notif-icon svg { width: 16px; height: 16px; display: block; }
-.notif-body { flex: 1; cursor: pointer; }
-.notif-title { font-weight: 600; font-size: 13px; }
-.notif-message { font-size: 12px; color: var(--color-text-muted); margin-top: 2px; }
-.notif-date { font-size: 11px; color: var(--color-text-muted); margin-top: 4px; }
-.notif-actions .btn-icon { font-size: 14px; }
+.notif-item:last-child {
+  border-bottom: none;
+}
+.notif-item.unread {
+  background: var(--color-primary-soft);
+}
+.notif-icon {
+  font-size: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+.notif-icon svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+.notif-body {
+  flex: 1;
+  cursor: pointer;
+}
+.notif-title {
+  font-weight: 600;
+  font-size: 13px;
+}
+.notif-message {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+.notif-date {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+.notif-actions .btn-icon {
+  font-size: 14px;
+}
 
 /* ---------------------------------------------------------------------
    Menu utilisateur (topbar) — rôle, mot de passe, déconnexion
    --------------------------------------------------------------------- */
 
-.user-menu-wrapper { position: relative; }
+.user-menu-wrapper {
+  position: relative;
+}
 
 /* §retour Betty du 10/09/2026 ("c'est pas bien cadré [...] modifie ça") : #btn-user-menu est un
    <button> natif — sans ce reset, le padding/bordure par défaut du navigateur (jamais un problème
@@ -3008,11 +4565,16 @@ textarea.input { resize: vertical; font-family: inherit; }
   overflow-y: auto;
 }
 
-.user-menu-panel.open { display: block; animation: modal-in 0.15s ease; }
+.user-menu-panel.open {
+  display: block;
+  animation: modal-in 0.15s ease;
+}
 
 /* Sélecteur de poste(s) du formulaire public de candidature (§demande 18/08/2026) — même patron que
    .notif-panel/.user-menu-panel : bouton statique + panneau qui se déplie juste dessous. */
-.poste-dropdown { position: relative; }
+.poste-dropdown {
+  position: relative;
+}
 
 .poste-dropdown-toggle {
   display: flex;
@@ -3025,7 +4587,10 @@ textarea.input { resize: vertical; font-family: inherit; }
   color: var(--color-text);
 }
 
-.poste-dropdown-arrow { color: var(--color-text-muted); flex-shrink: 0; }
+.poste-dropdown-arrow {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
 
 .poste-dropdown-panel {
   display: none;
@@ -3043,7 +4608,9 @@ textarea.input { resize: vertical; font-family: inherit; }
   padding: 6px;
 }
 
-.poste-dropdown-panel.open { display: block; }
+.poste-dropdown-panel.open {
+  display: block;
+}
 
 .poste-dropdown-option {
   display: flex;
@@ -3055,8 +4622,12 @@ textarea.input { resize: vertical; font-family: inherit; }
   cursor: pointer;
 }
 
-.poste-dropdown-option:hover { background: var(--color-muted-soft); }
-.poste-dropdown-option span:nth-child(2) { flex: 1; }
+.poste-dropdown-option:hover {
+  background: var(--color-muted-soft);
+}
+.poste-dropdown-option span:nth-child(2) {
+  flex: 1;
+}
 
 .user-menu-header {
   padding: 14px;
@@ -3066,10 +4637,17 @@ textarea.input { resize: vertical; font-family: inherit; }
   gap: 6px;
 }
 
-.user-menu-name { font-weight: 600; font-size: 14px; }
+.user-menu-name {
+  font-weight: 600;
+  font-size: 14px;
+}
 
 /* §refonte "mode sombre" du 01/09/2026 : réglage manuel Système/Clair/Sombre, menu utilisateur. */
-.theme-toggle-group { display: flex; gap: 4px; padding: 10px 14px; }
+.theme-toggle-group {
+  display: flex;
+  gap: 4px;
+  padding: 10px 14px;
+}
 .theme-toggle-btn {
   flex: 1;
   padding: 6px 4px;
@@ -3081,7 +4659,11 @@ textarea.input { resize: vertical; font-family: inherit; }
   color: var(--color-text-muted);
   cursor: pointer;
 }
-.theme-toggle-btn.active { background: var(--color-primary); color: #fff; border-color: transparent; }
+.theme-toggle-btn.active {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: transparent;
+}
 
 .user-menu-item {
   display: block;
@@ -3095,7 +4677,9 @@ textarea.input { resize: vertical; font-family: inherit; }
   cursor: pointer;
 }
 
-.user-menu-item:hover { background: var(--color-muted-soft); }
+.user-menu-item:hover {
+  background: var(--color-muted-soft);
+}
 
 /* Bascule multi-entreprise (menu utilisateur, demande du 21/08/2026) — même patron visuel que
    .user-menu-item pour les lignes de compte, avec un mini avatar et deux lignes de texte. */
@@ -3108,7 +4692,10 @@ textarea.input { resize: vertical; font-family: inherit; }
   color: var(--color-text-muted);
 }
 
-.user-menu-divider { border-top: 1px solid var(--color-border); margin: 4px 0; }
+.user-menu-divider {
+  border-top: 1px solid var(--color-border);
+  margin: 4px 0;
+}
 
 .user-menu-account-row {
   display: flex;
@@ -3122,17 +4709,42 @@ textarea.input { resize: vertical; font-family: inherit; }
   cursor: pointer;
 }
 
-.user-menu-account-row:hover { background: var(--color-muted-soft); }
-.user-menu-account-row:disabled { opacity: 0.5; cursor: default; }
+.user-menu-account-row:hover {
+  background: var(--color-muted-soft);
+}
+.user-menu-account-row:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
 
 /* §correctif audit du 23/08/2026 (2.8) : bouton "retirer ce compte" — voir renderUserMenuPanel. */
-.user-menu-account-wrap { display: flex; align-items: center; }
-.user-menu-account-wrap .user-menu-account-row { flex: 1; min-width: 0; }
-.user-menu-account-remove { flex-shrink: 0; margin-right: 8px; width: 24px; height: 24px; }
+.user-menu-account-wrap {
+  display: flex;
+  align-items: center;
+}
+.user-menu-account-wrap .user-menu-account-row {
+  flex: 1;
+  min-width: 0;
+}
+.user-menu-account-remove {
+  flex-shrink: 0;
+  margin-right: 8px;
+  width: 24px;
+  height: 24px;
+}
 
-.user-menu-account-avatar { width: 26px; height: 26px; font-size: 11px; }
+.user-menu-account-avatar {
+  width: 26px;
+  height: 26px;
+  font-size: 11px;
+}
 
-.user-menu-account-info { display: flex; flex-direction: column; min-width: 0; gap: 1px; }
+.user-menu-account-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 1px;
+}
 
 .user-menu-account-name {
   font-size: 13px;
@@ -3154,7 +4766,10 @@ textarea.input { resize: vertical; font-family: inherit; }
 /* §sprint refonte UX : patron générique de popover, dérivé de .notif-panel/.user-menu-panel — pour
    ne plus avoir un système de "petit panneau flottant" différent à chaque nouvel usage (filtres
    calendrier, ajout rapide depuis une case). */
-.dropdown-wrapper { position: relative; display: inline-block; }
+.dropdown-wrapper {
+  position: relative;
+  display: inline-block;
+}
 
 .dropdown-panel {
   position: absolute;
@@ -3171,9 +4786,14 @@ textarea.input { resize: vertical; font-family: inherit; }
   display: none;
 }
 
-.dropdown-panel.open { display: block; animation: modal-in 0.15s ease; }
-.dropdown-panel.align-left { right: auto; left: 0; }
-
+.dropdown-panel.open {
+  display: block;
+  animation: modal-in 0.15s ease;
+}
+.dropdown-panel.align-left {
+  right: auto;
+  left: 0;
+}
 
 /* ---------------------------------------------------------------------
    Écran de connexion
@@ -3181,7 +4801,8 @@ textarea.input { resize: vertical; font-family: inherit; }
 
 /* #candidature-root (page publique du QR "Embauche") partage volontairement ce même habillage
    centré — même famille d'écran ("formulaire seul, sans chrome applicatif") que la connexion. */
-#login-root, #candidature-root {
+#login-root,
+#candidature-root {
   min-height: 100vh;
   align-items: center;
   justify-content: center;
@@ -3195,7 +4816,9 @@ textarea.input { resize: vertical; font-family: inherit; }
   background: var(--color-surface);
   border: 2px solid var(--login-card-border);
   border-radius: var(--radius-lg);
-  box-shadow: 0 20px 45px -12px rgba(23, 40, 77, 0.22), var(--shadow-lg);
+  box-shadow:
+    0 20px 45px -12px rgba(23, 40, 77, 0.22),
+    var(--shadow-lg);
   padding: 32px;
   display: flex;
   flex-direction: column;
@@ -3212,7 +4835,9 @@ textarea.input { resize: vertical; font-family: inherit; }
   color: var(--color-text);
 }
 
-.login-card h1 { margin: 0; }
+.login-card h1 {
+  margin: 0;
+}
 
 .login-card form {
   display: flex;
@@ -3236,13 +4861,19 @@ textarea.input { resize: vertical; font-family: inherit; }
   color: var(--color-text-muted);
   font-size: 12px;
 }
-.login-oauth-divider::before, .login-oauth-divider::after {
+.login-oauth-divider::before,
+.login-oauth-divider::after {
   content: '';
   flex: 1;
   height: 1px;
   background: var(--color-border);
 }
-.login-oauth-buttons { display: flex; flex-direction: row; gap: 10px; margin-bottom: 16px; }
+.login-oauth-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  margin-bottom: 16px;
+}
 .login-oauth-btn {
   flex: 1;
   display: flex;
@@ -3257,10 +4888,16 @@ textarea.input { resize: vertical; font-family: inherit; }
   font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
-.login-oauth-btn:hover { background: var(--color-muted-soft); }
-.login-oauth-btn svg { flex-shrink: 0; }
+.login-oauth-btn:hover {
+  background: var(--color-muted-soft);
+}
+.login-oauth-btn svg {
+  flex-shrink: 0;
+}
 
 /* ---------------------------------------------------------------------
    Page d'accueil publique (landing) — bleu marine/or repris du logo,
@@ -3322,8 +4959,15 @@ textarea.input { resize: vertical; font-family: inherit; }
   font-family: 'Manrope', var(--font-sans);
 }
 
-.landing-page h1, .landing-page h2, .landing-page h3 { font-weight: 800; letter-spacing: -0.01em; }
-.landing-page .landing-hero-text h1 { letter-spacing: -0.02em; }
+.landing-page h1,
+.landing-page h2,
+.landing-page h3 {
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.landing-page .landing-hero-text h1 {
+  letter-spacing: -0.02em;
+}
 
 .landing-topbar {
   position: sticky;
@@ -3336,18 +4980,46 @@ textarea.input { resize: vertical; font-family: inherit; }
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
 }
-.landing-topbar-left { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
-.landing-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; color: var(--color-text); }
-.landing-brand .logo-mark { width: 32px; height: 32px; }
-.landing-topbar-nav { display: flex; align-items: center; gap: 22px; }
+.landing-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.landing-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--color-text);
+}
+.landing-brand .logo-mark {
+  width: 32px;
+  height: 32px;
+}
+.landing-topbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
 
 /* §retour Betty du 17/09/2026 : "tu vas enlever le panneau déroulant et tu vas juste les alignés"
    puis "sur téléphone laisse le panneau déroulant" — alignés en permanence à partir d'une largeur
    d'écran normale (flex-wrap laisse les liens passer à la ligne plutôt que déborder), mais sous
    480px (voir plus bas) redevient un panneau cachable derrière un déclencheur ☰, comme avant. */
-.landing-nav-menu { position: relative; }
-.landing-nav-menu-trigger { display: none; }
-.landing-nav-links { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.landing-nav-menu {
+  position: relative;
+}
+.landing-nav-menu-trigger {
+  display: none;
+}
+.landing-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
 .landing-nav-link {
   border: none;
   background: none;
@@ -3357,20 +5029,45 @@ textarea.input { resize: vertical; font-family: inherit; }
   color: var(--color-text-muted);
   cursor: pointer;
 }
-.landing-nav-link:hover { color: var(--color-text); }
+.landing-nav-link:hover {
+  color: var(--color-text);
+}
 
-.feature-page-back-short { display: none; }
-.landing-topbar-cta-short { display: none; }
+.feature-page-back-short {
+  display: none;
+}
+.landing-topbar-cta-short {
+  display: none;
+}
 
-.btn-gold { background: linear-gradient(135deg, var(--landing-gold-500), var(--landing-gold-300)); color: #221704; }
-.btn-gold:hover { background: var(--landing-gold-300); }
-.btn-ghost-light { background: transparent; color: #fff; border-color: rgba(255, 255, 255, 0.35); }
-.btn-ghost-light:hover { background: rgba(255, 255, 255, 0.1); }
+.btn-gold {
+  background: linear-gradient(135deg, var(--landing-gold-500), var(--landing-gold-300));
+  color: #221704;
+}
+.btn-gold:hover {
+  background: var(--landing-gold-300);
+}
+.btn-ghost-light {
+  background: transparent;
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.35);
+}
+.btn-ghost-light:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
 
-.btn-arrow-cta .btn-arrow { display: inline-block; transition: transform 0.15s ease; }
-.btn-arrow-cta:hover .btn-arrow { transform: translateX(3px); }
+.btn-arrow-cta .btn-arrow {
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+.btn-arrow-cta:hover .btn-arrow {
+  transform: translateX(3px);
+}
 
-.landing-badge-gold { background: var(--landing-gold-soft); color: var(--landing-navy-900); }
+.landing-badge-gold {
+  background: var(--landing-gold-soft);
+  color: var(--landing-navy-900);
+}
 
 .landing-hero {
   position: relative;
@@ -3399,13 +5096,41 @@ textarea.input { resize: vertical; font-family: inherit; }
   align-items: center;
   gap: 48px;
 }
-.landing-hero-text { flex: 1; min-width: 0; }
-.landing-hero-text h1 { font-size: 38px; line-height: 1.15; margin: 16px 0; color: #fff; }
-.landing-hero-text p { font-size: 16px; color: rgba(255, 255, 255, 0.78); margin: 0 0 28px; max-width: 480px; }
-.landing-hero-cta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.landing-hero-cta .btn { font-size: 15px; padding: 12px 24px; }
+.landing-hero-text {
+  flex: 1;
+  min-width: 0;
+}
+.landing-hero-text h1 {
+  font-size: 38px;
+  line-height: 1.15;
+  margin: 16px 0;
+  color: #fff;
+}
+.landing-hero-text p {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.78);
+  margin: 0 0 28px;
+  max-width: 480px;
+}
+.landing-hero-cta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.landing-hero-cta .btn {
+  font-size: 15px;
+  padding: 12px 24px;
+}
 
-.landing-hero-mock { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.landing-hero-mock {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
 
 /* §refonte "capture d'écran réelle" du 01/09/2026 : remplace le mockup HTML (chiffres/noms inventés)
    par une vraie capture du produit — "l'interface réelle dès le premier scroll", pas une illustration
@@ -3425,7 +5150,9 @@ textarea.input { resize: vertical; font-family: inherit; }
 }
 /* §retour Betty du 17/09/2026 : voir openScreenshotLightbox (app.js) — juste un indice visuel que
    l'image s'agrandit au clic, jamais un style différent par module. */
-.landing-hero-screenshot-zoomable { cursor: zoom-in; }
+.landing-hero-screenshot-zoomable {
+  cursor: zoom-in;
+}
 .modal-image-lightbox {
   background: transparent;
   box-shadow: none;
@@ -3458,18 +5185,51 @@ textarea.input { resize: vertical; font-family: inherit; }
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
   padding: 20px;
 }
-.landing-mock-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
-.landing-mock-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--color-border); }
-.landing-mock-title { margin-left: 6px; font-size: 12px; font-weight: 600; color: var(--color-text-muted); }
-
-.landing-mock-carousel { position: relative; }
-.landing-mock-slide { display: none; }
-.landing-mock-slide.active { display: block; animation: landing-mock-fade 0.4s ease; }
-@keyframes landing-mock-fade {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+.landing-mock-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
 }
-.landing-mock-dots { display: flex; justify-content: center; gap: 8px; margin-top: 16px; }
+.landing-mock-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--color-border);
+}
+.landing-mock-title {
+  margin-left: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.landing-mock-carousel {
+  position: relative;
+}
+.landing-mock-slide {
+  display: none;
+}
+.landing-mock-slide.active {
+  display: block;
+  animation: landing-mock-fade 0.4s ease;
+}
+@keyframes landing-mock-fade {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.landing-mock-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
 .landing-carousel-dot {
   width: 8px;
   height: 8px;
@@ -3478,32 +5238,107 @@ textarea.input { resize: vertical; font-family: inherit; }
   padding: 0;
   background: rgba(255, 255, 255, 0.3);
   cursor: pointer;
-  transition: background-color 0.15s ease, transform 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    transform 0.15s ease;
 }
-.landing-carousel-dot:hover { background: rgba(255, 255, 255, 0.5); }
-.landing-carousel-dot.active { background: var(--landing-gold-500); transform: scale(1.2); }
+.landing-carousel-dot:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+.landing-carousel-dot.active {
+  background: var(--landing-gold-500);
+  transform: scale(1.2);
+}
 @media (prefers-reduced-motion: reduce) {
-  .landing-mock-slide.active { animation: none; }
+  .landing-mock-slide.active {
+    animation: none;
+  }
 }
-.landing-mock-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
-.landing-mock-kpi { background: var(--color-muted-soft); border-radius: var(--radius-sm); padding: 10px; text-align: center; }
-.landing-mock-kpi strong { display: block; font-size: 18px; font-family: var(--font-serif); font-weight: 500; }
-.landing-mock-kpi span { font-size: 11px; color: var(--color-text-muted); }
-.landing-mock-row { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: var(--radius-sm); background: var(--color-muted-soft); margin-bottom: 8px; font-size: 13px; }
-.landing-mock-row .badge { margin-left: auto; }
+.landing-mock-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.landing-mock-kpi {
+  background: var(--color-muted-soft);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  text-align: center;
+}
+.landing-mock-kpi strong {
+  display: block;
+  font-size: 18px;
+  font-family: var(--font-serif);
+  font-weight: 500;
+}
+.landing-mock-kpi span {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+.landing-mock-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--color-muted-soft);
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+.landing-mock-row .badge {
+  margin-left: auto;
+}
 
-.landing-section { max-width: 1140px; margin: 0 auto; padding: 64px 32px; }
-.landing-section-head { text-align: center; max-width: 620px; margin: 0 auto 40px; }
-.landing-section-head h2 { margin: 0 0 10px; font-size: 28px; }
-.landing-section-head p { color: var(--color-text-muted); margin: 0; }
+.landing-section {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 64px 32px;
+}
+.landing-section-head {
+  text-align: center;
+  max-width: 620px;
+  margin: 0 auto 40px;
+}
+.landing-section-head h2 {
+  margin: 0 0 10px;
+  font-size: 28px;
+}
+.landing-section-head p {
+  color: var(--color-text-muted);
+  margin: 0;
+}
 
-.landing-features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.landing-features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
 /* §retour Betty du 17/09/2026 ("dans les fonctionnalités ajoute de la couleur") : liseré et icône
    dorés, jamais une couleur différente par carte (§règle de palette bleu marine + or). */
-.landing-feature-card { text-align: left; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; border-top: 3px solid var(--landing-gold-500); }
-.landing-feature-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(201, 154, 84, 0.22); }
-.landing-feature-card:focus-visible { outline: 2px solid var(--landing-gold-500); outline-offset: 2px; }
-.landing-feature-more { display: inline-block; margin-top: 10px; font-size: 12.5px; font-weight: 600; color: var(--color-primary); }
+.landing-feature-card {
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+  border-top: 3px solid var(--landing-gold-500);
+}
+.landing-feature-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(201, 154, 84, 0.22);
+}
+.landing-feature-card:focus-visible {
+  outline: 2px solid var(--landing-gold-500);
+  outline-offset: 2px;
+}
+.landing-feature-more {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-primary);
+}
 
 /* Page de fonctionnalité (#fonctionnalite-N) : fond clair volontairement DIFFÉRENT du dégradé marine
    de la hero d'accueil (.landing-hero) — sans ce contraste, cliquer sur une carte "En savoir plus"
@@ -3523,8 +5358,12 @@ textarea.input { resize: vertical; font-family: inherit; }
   border-bottom: 1px solid var(--color-border);
   padding: 48px 32px 56px;
 }
-.feature-page-hero .landing-hero-text h1 { color: var(--color-text); }
-.feature-page-hero .landing-hero-text p { color: var(--color-text-muted); }
+.feature-page-hero .landing-hero-text h1 {
+  color: var(--color-text);
+}
+.feature-page-hero .landing-hero-text p {
+  color: var(--color-text-muted);
+}
 .feature-page-eyebrow {
   display: inline-block;
   font-size: 12px;
@@ -3545,20 +5384,67 @@ textarea.input { resize: vertical; font-family: inherit; }
   color: var(--landing-gold-300);
   margin-bottom: 16px;
 }
-.feature-page-icon-badge svg { width: 22px; height: 22px; }
-.feature-page-list { max-width: 900px; margin: 0 auto; }
+.feature-page-icon-badge svg {
+  width: 22px;
+  height: 22px;
+}
+.feature-page-list {
+  max-width: 900px;
+  margin: 0 auto;
+}
 
-.feature-audience-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; max-width: 900px; margin: 0 auto; }
-.feature-audience-card { text-align: center; border-top: 3px solid var(--landing-gold-500); }
-.feature-audience-card h3 { margin: 0 0 8px; font-size: 15px; color: var(--color-text); }
-.feature-audience-card p { margin: 0; font-size: 13.5px; }
+.feature-audience-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.feature-audience-card {
+  text-align: center;
+  border-top: 3px solid var(--landing-gold-500);
+}
+.feature-audience-card h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  color: var(--color-text);
+}
+.feature-audience-card p {
+  margin: 0;
+  font-size: 13.5px;
+}
 
-.feature-related-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; max-width: 700px; margin: 0 auto; }
-.feature-related-card { cursor: pointer; text-align: left; transition: transform 0.15s ease, box-shadow 0.15s ease; border-top: 3px solid var(--landing-gold-500); }
-.feature-related-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(201, 154, 84, 0.22); }
-.feature-related-card:focus-visible { outline: 2px solid var(--landing-gold-500); outline-offset: 2px; }
-.feature-related-card h3 { margin: 0 0 4px; font-size: 15px; }
-.feature-related-card p { margin: 0; font-size: 13px; }
+.feature-related-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+.feature-related-card {
+  cursor: pointer;
+  text-align: left;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+  border-top: 3px solid var(--landing-gold-500);
+}
+.feature-related-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(201, 154, 84, 0.22);
+}
+.feature-related-card:focus-visible {
+  outline: 2px solid var(--landing-gold-500);
+  outline-offset: 2px;
+}
+.feature-related-card h3 {
+  margin: 0 0 4px;
+  font-size: 15px;
+}
+.feature-related-card p {
+  margin: 0;
+  font-size: 13px;
+}
 
 .feature-detail-list {
   margin: 0;
@@ -3568,7 +5454,13 @@ textarea.input { resize: vertical; font-family: inherit; }
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   gap: 14px 24px;
 }
-.feature-detail-list li { font-size: 13.5px; color: var(--color-text); line-height: 1.5; padding-left: 22px; position: relative; }
+.feature-detail-list li {
+  font-size: 13.5px;
+  color: var(--color-text);
+  line-height: 1.5;
+  padding-left: 22px;
+  position: relative;
+}
 .feature-detail-list li::before {
   content: '✓';
   position: absolute;
@@ -3588,9 +5480,19 @@ textarea.input { resize: vertical; font-family: inherit; }
   margin-bottom: 12px;
   color: var(--landing-navy-700);
 }
-.landing-feature-icon svg { width: 22px; height: 22px; }
-.landing-feature-card h3 { margin: 0 0 6px; font-size: 16px; }
-.landing-feature-card p { margin: 0; font-size: 13.5px; color: var(--color-text-muted); }
+.landing-feature-icon svg {
+  width: 22px;
+  height: 22px;
+}
+.landing-feature-card h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+}
+.landing-feature-card p {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--color-text-muted);
+}
 
 /* Bandeau de chiffres juste sous la hero — des faits vérifiables sur le produit (nombre de modules,
    prix unique, zéro ressaisie), pas des statistiques d'usage inventées : Nexus est un nouveau produit
@@ -3620,18 +5522,52 @@ textarea.input { resize: vertical; font-family: inherit; }
   -webkit-text-fill-color: transparent;
 }
 
-.landing-stat-tile { text-align: center; }
-.landing-stat-tile strong { display: block; font-size: 32px; font-weight: 800; line-height: 1; margin-bottom: 8px; }
-.landing-stat-tile span { display: block; font-size: 13px; color: var(--color-text-muted); line-height: 1.4; }
+.landing-stat-tile {
+  text-align: center;
+}
+.landing-stat-tile strong {
+  display: block;
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.landing-stat-tile span {
+  display: block;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
 @media (max-width: 860px) {
-  .landing-stats-band { grid-template-columns: repeat(2, 1fr); padding: 28px 20px; gap: 20px; }
+  .landing-stats-band {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 28px 20px;
+    gap: 20px;
+  }
 }
 
-.landing-employee-slider { max-width: 420px; margin: 0 auto 28px; text-align: center; }
-.landing-employee-slider label { display: block; font-size: 13.5px; font-weight: 600; color: var(--color-text-muted); margin-bottom: 10px; }
-.landing-employee-slider-row { display: flex; align-items: center; gap: 14px; }
-.landing-employee-slider-hint { margin: 10px 0 0; font-size: 12.5px; }
-.landing-employee-slider-row input[type="range"] {
+.landing-employee-slider {
+  max-width: 420px;
+  margin: 0 auto 28px;
+  text-align: center;
+}
+.landing-employee-slider label {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-bottom: 10px;
+}
+.landing-employee-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.landing-employee-slider-hint {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+}
+.landing-employee-slider-row input[type='range'] {
   flex: 1;
   height: 6px;
   border-radius: 3px;
@@ -3639,7 +5575,13 @@ textarea.input { resize: vertical; font-family: inherit; }
   accent-color: var(--landing-gold-500);
   cursor: pointer;
 }
-.landing-employee-count-value { flex-shrink: 0; min-width: 84px; font-weight: 700; font-size: 14px; color: var(--color-primary); }
+.landing-employee-count-value {
+  flex-shrink: 0;
+  min-width: 84px;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--color-primary);
+}
 
 .landing-simulator-card {
   max-width: 640px;
@@ -3650,21 +5592,70 @@ textarea.input { resize: vertical; font-family: inherit; }
   box-shadow: var(--shadow-sm);
   padding: 28px 26px;
 }
-.landing-simulator-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 22px; }
-.landing-simulator-field label { display: block; font-size: 12.5px; font-weight: 600; color: var(--color-text-muted); margin-bottom: 6px; }
-.landing-simulator-field input { width: 100%; }
-.landing-simulator-results { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: center; padding: 18px 0; border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); }
-.landing-simulator-result { display: flex; flex-direction: column; gap: 4px; }
-.landing-simulator-result strong { font-size: 20px; }
-.landing-simulator-result span { font-size: 12px; color: var(--color-text-muted); }
-.landing-simulator-note { font-size: 12px; color: var(--color-text-muted); margin: 16px 0 0; text-align: center; }
+.landing-simulator-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+.landing-simulator-field label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-bottom: 6px;
+}
+.landing-simulator-field input {
+  width: 100%;
+}
+.landing-simulator-results {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  text-align: center;
+  padding: 18px 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+.landing-simulator-result {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.landing-simulator-result strong {
+  font-size: 20px;
+}
+.landing-simulator-result span {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+.landing-simulator-note {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin: 16px 0 0;
+  text-align: center;
+}
 
-.landing-pricing-toggle { display: flex; justify-content: center; margin-bottom: 28px; }
+.landing-pricing-toggle {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 28px;
+}
 
-.landing-section-alt { background: var(--color-muted-soft); }
+.landing-section-alt {
+  background: var(--color-muted-soft);
+}
 
-.landing-steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; max-width: 1040px; margin: 0 auto; }
-.landing-step-card { text-align: center; }
+.landing-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+.landing-step-card {
+  text-align: center;
+}
 .landing-step-badge {
   width: 40px;
   height: 40px;
@@ -3679,11 +5670,26 @@ textarea.input { resize: vertical; font-family: inherit; }
   justify-content: center;
   margin: 0 auto 14px;
 }
-.landing-step-card h3 { margin: 0 0 6px; font-size: 16px; }
-.landing-step-card p { margin: 0; font-size: 13.5px; }
+.landing-step-card h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+}
+.landing-step-card p {
+  margin: 0;
+  font-size: 13.5px;
+}
 
-.landing-install-section { background: var(--color-muted-soft); }
-.landing-install-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 1040px; margin: 0 auto; align-items: stretch; }
+.landing-install-section {
+  background: var(--color-muted-soft);
+}
+.landing-install-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  max-width: 1040px;
+  margin: 0 auto;
+  align-items: stretch;
+}
 
 .landing-platform-card {
   position: relative;
@@ -3693,8 +5699,14 @@ textarea.input { resize: vertical; font-family: inherit; }
   text-align: center;
   padding: 28px 22px;
 }
-.landing-platform-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-.landing-platform-card-active { border-color: var(--landing-gold-500); box-shadow: var(--shadow-md); }
+.landing-platform-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.landing-platform-card-active {
+  border-color: var(--landing-gold-500);
+  box-shadow: var(--shadow-md);
+}
 
 .landing-platform-badge {
   position: absolute;
@@ -3719,16 +5731,45 @@ textarea.input { resize: vertical; font-family: inherit; }
   margin-bottom: 14px;
   color: var(--landing-navy-700);
 }
-.landing-platform-icon svg { width: 26px; height: 26px; }
-.landing-platform-card h3 { margin: 0 0 6px; font-size: 17px; }
-.landing-platform-card > p.text-muted { margin: 0 0 18px; font-size: 13px; }
+.landing-platform-icon svg {
+  width: 26px;
+  height: 26px;
+}
+.landing-platform-card h3 {
+  margin: 0 0 6px;
+  font-size: 17px;
+}
+.landing-platform-card > p.text-muted {
+  margin: 0 0 18px;
+  font-size: 13px;
+}
 
-.landing-platform-card .btn { width: 100%; }
-.landing-platform-note { font-size: 12.5px; color: var(--color-text-muted); margin-top: 10px; }
+.landing-platform-card .btn {
+  width: 100%;
+}
+.landing-platform-note {
+  font-size: 12.5px;
+  color: var(--color-text-muted);
+  margin-top: 10px;
+}
 
-.landing-steps { list-style: none; margin: 4px 0 0; padding: 0; text-align: left; width: 100%; }
-.landing-step-inline-icon { display: inline-flex; align-items: center; gap: 4px; }
-.landing-step-inline-icon svg { width: 14px; height: 14px; flex-shrink: 0; }
+.landing-steps {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  text-align: left;
+  width: 100%;
+}
+.landing-step-inline-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.landing-step-inline-icon svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
 .landing-steps li {
   display: flex;
   align-items: flex-start;
@@ -3741,7 +5782,10 @@ textarea.input { resize: vertical; font-family: inherit; }
    ce wrapper, chaque <strong> devient lui-même un flex item séparé (les éléments inline ne sont
    pas fusionnés dans la boîte anonyme comme le texte brut), ce qui fragmentait la phrase avec des
    espaces disproportionnés et un retour à la ligne incohérent entre les morceaux. */
-.landing-step-text { flex: 1; min-width: 0; }
+.landing-step-text {
+  flex: 1;
+  min-width: 0;
+}
 .landing-step-num {
   flex-shrink: 0;
   width: 22px;
@@ -3764,23 +5808,74 @@ textarea.input { resize: vertical; font-family: inherit; }
    des boutons standards de l'appli, réservé ici à la landing (voir commentaire plus haut). */
 .landing-page .btn {
   border-radius: 12px;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
-  box-shadow: 0 0 0 1px rgba(14, 26, 51, 0.06), 0 1px 2px rgba(14, 26, 51, 0.05);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+  box-shadow:
+    0 0 0 1px rgba(14, 26, 51, 0.06),
+    0 1px 2px rgba(14, 26, 51, 0.05);
 }
-.landing-page .btn:hover { transform: translateY(-2px); }
-.landing-page .btn:active { transform: translateY(0) scale(0.98); }
-.landing-page .btn-gold { box-shadow: 0 0 0 1px rgba(201, 154, 84, 0.4), 0 1px 2px rgba(14, 26, 51, 0.06); }
-.landing-page .btn-gold:hover { box-shadow: 0 0 0 1px rgba(201, 154, 84, 0.5), 0 10px 22px -8px rgba(201, 154, 84, 0.55); }
-.landing-page .btn-primary, .landing-page .btn-secondary { box-shadow: 0 0 0 1px rgba(14, 26, 51, 0.08), 0 1px 2px rgba(14, 26, 51, 0.05); }
-.landing-page .btn-primary:hover, .landing-page .btn-secondary:hover { box-shadow: 0 0 0 1px rgba(14, 26, 51, 0.1), 0 8px 18px -8px rgba(14, 26, 51, 0.25); }
-.landing-page .btn-ghost-light { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.16); }
-.landing-page .btn-ghost-light:hover { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.28), 0 8px 18px -8px rgba(0, 0, 0, 0.3); }
+.landing-page .btn:hover {
+  transform: translateY(-2px);
+}
+.landing-page .btn:active {
+  transform: translateY(0) scale(0.98);
+}
+.landing-page .btn-gold {
+  box-shadow:
+    0 0 0 1px rgba(201, 154, 84, 0.4),
+    0 1px 2px rgba(14, 26, 51, 0.06);
+}
+.landing-page .btn-gold:hover {
+  box-shadow:
+    0 0 0 1px rgba(201, 154, 84, 0.5),
+    0 10px 22px -8px rgba(201, 154, 84, 0.55);
+}
+.landing-page .btn-primary,
+.landing-page .btn-secondary {
+  box-shadow:
+    0 0 0 1px rgba(14, 26, 51, 0.08),
+    0 1px 2px rgba(14, 26, 51, 0.05);
+}
+.landing-page .btn-primary:hover,
+.landing-page .btn-secondary:hover {
+  box-shadow:
+    0 0 0 1px rgba(14, 26, 51, 0.1),
+    0 8px 18px -8px rgba(14, 26, 51, 0.25);
+}
+.landing-page .btn-ghost-light {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+.landing-page .btn-ghost-light:hover {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.28),
+    0 8px 18px -8px rgba(0, 0, 0, 0.3);
+}
 
-.landing-trust-row { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 22px; }
-.landing-trust-row span { font-size: 12.5px; color: rgba(255, 255, 255, 0.65); }
+.landing-trust-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 22px;
+}
+.landing-trust-row span {
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.65);
+}
 
-.landing-faq-list { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
-.landing-faq-item { border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; }
+.landing-faq-list {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.landing-faq-item {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
 .landing-faq-question {
   width: 100%;
   display: flex;
@@ -3796,11 +5891,28 @@ textarea.input { resize: vertical; font-family: inherit; }
   text-align: left;
   cursor: pointer;
 }
-.landing-faq-chevron { transition: transform 0.2s ease; color: var(--color-text-muted); }
-.landing-faq-item-open .landing-faq-chevron { transform: rotate(180deg); }
-.landing-faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; }
-.landing-faq-item-open .landing-faq-answer { max-height: 240px; }
-.landing-faq-answer p { margin: 0; padding: 0 18px 16px; font-size: 13.5px; color: var(--color-text-muted); line-height: 1.5; }
+.landing-faq-chevron {
+  transition: transform 0.2s ease;
+  color: var(--color-text-muted);
+}
+.landing-faq-item-open .landing-faq-chevron {
+  transform: rotate(180deg);
+}
+.landing-faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease;
+}
+.landing-faq-item-open .landing-faq-answer {
+  max-height: 240px;
+}
+.landing-faq-answer p {
+  margin: 0;
+  padding: 0 18px 16px;
+  font-size: 13.5px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
 
 .landing-cta-banner {
   background: linear-gradient(135deg, var(--landing-navy-900), var(--landing-navy-700) 60%, var(--landing-navy-500));
@@ -3808,16 +5920,54 @@ textarea.input { resize: vertical; font-family: inherit; }
   text-align: center;
   padding: 56px 32px;
 }
-.landing-cta-banner h2 { margin: 0 0 10px; font-size: 26px; color: #fff; }
-.landing-cta-banner p { margin: 0 0 26px; color: rgba(255, 255, 255, 0.78); }
-.landing-cta-banner-actions { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+.landing-cta-banner h2 {
+  margin: 0 0 10px;
+  font-size: 26px;
+  color: #fff;
+}
+.landing-cta-banner p {
+  margin: 0 0 26px;
+  color: rgba(255, 255, 255, 0.78);
+}
+.landing-cta-banner-actions {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
 
-.landing-footer { padding: 40px 32px; color: var(--color-text-muted); font-size: 13px; }
-.landing-footer-top { max-width: 1140px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding-bottom: 24px; border-bottom: 1px solid var(--color-border); }
-.landing-footer-links { display: flex; flex-wrap: wrap; gap: 18px; }
-.landing-footer-links .btn-link { margin-bottom: 0; }
-.landing-footer-bottom { max-width: 1140px; margin: 16px auto 0; text-align: center; }
-.landing-footer-bottom a { color: var(--color-text-muted); }
+.landing-footer {
+  padding: 40px 32px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+.landing-footer-top {
+  max-width: 1140px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--color-border);
+}
+.landing-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+.landing-footer-links .btn-link {
+  margin-bottom: 0;
+}
+.landing-footer-bottom {
+  max-width: 1140px;
+  margin: 16px auto 0;
+  text-align: center;
+}
+.landing-footer-bottom a {
+  color: var(--color-text-muted);
+}
 
 .landing-sticky-cta {
   position: fixed;
@@ -3835,47 +5985,125 @@ textarea.input { resize: vertical; font-family: inherit; }
   opacity: 0;
   transform: translateY(12px);
   pointer-events: none;
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
 }
-.landing-sticky-cta.landing-sticky-cta-visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
-.landing-sticky-cta span { font-size: 13px; font-weight: 600; white-space: nowrap; }
+.landing-sticky-cta.landing-sticky-cta-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.landing-sticky-cta span {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
 
 @media (max-width: 860px) {
-  .feature-page-back-full { display: none; }
-  .feature-page-back-short { display: inline; }
-  .landing-hero-inner { flex-direction: column; text-align: center; }
-  .landing-hero-text p { max-width: none; margin-left: auto; margin-right: auto; }
-  .landing-hero-cta { justify-content: center; }
-  .landing-hero-text h1 { font-size: 30px; }
-  .landing-section { padding: 48px 20px; }
-  .landing-mock-card { max-width: 340px; }
-  .landing-install-grid { grid-template-columns: 1fr; max-width: 420px; }
-  .landing-steps-grid { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; }
-  .landing-trust-row { justify-content: center; }
-  .landing-footer-top { justify-content: center; text-align: center; }
+  .feature-page-back-full {
+    display: none;
+  }
+  .feature-page-back-short {
+    display: inline;
+  }
+  .landing-hero-inner {
+    flex-direction: column;
+    text-align: center;
+  }
+  .landing-hero-text p {
+    max-width: none;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .landing-hero-cta {
+    justify-content: center;
+  }
+  .landing-hero-text h1 {
+    font-size: 30px;
+  }
+  .landing-section {
+    padding: 48px 20px;
+  }
+  .landing-mock-card {
+    max-width: 340px;
+  }
+  .landing-install-grid {
+    grid-template-columns: 1fr;
+    max-width: 420px;
+  }
+  .landing-steps-grid {
+    grid-template-columns: 1fr;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+  .landing-trust-row {
+    justify-content: center;
+  }
+  .landing-footer-top {
+    justify-content: center;
+    text-align: center;
+  }
 }
 @media (max-width: 480px) {
-  .landing-hero-cta { flex-direction: column; align-items: stretch; }
-  .landing-hero-cta .btn { width: 100%; }
-  .landing-topbar { padding: 10px 12px; }
-  .landing-sticky-cta { left: 16px; right: 16px; bottom: 16px; justify-content: space-between; }
-  .landing-sticky-cta span { display: none; }
+  .landing-hero-cta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .landing-hero-cta .btn {
+    width: 100%;
+  }
+  .landing-topbar {
+    padding: 10px 12px;
+  }
+  .landing-sticky-cta {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    justify-content: space-between;
+  }
+  .landing-sticky-cta span {
+    display: none;
+  }
   /* Marque + (bouton retour sur une page de fonctionnalité) + déclencheur du menu à gauche, "Se
      connecter" + "Créer mon entreprise" à droite — resserré plutôt que masqué, tous les boutons
      restent visibles et accessibles en un tap sur les plus petits écrans. */
-  .landing-topbar-left { gap: 6px; }
-  .landing-topbar-left .btn-sm { padding: 6px 8px; font-size: 12px; }
-  .landing-topbar-nav { gap: 6px; }
-  .landing-topbar-nav > button.btn { padding: 8px 10px; font-size: 12.5px; }
-  .landing-topbar-nav .btn-arrow { display: none; }
-  .landing-topbar-cta-full { display: none; }
-  .landing-topbar-cta-short { display: inline; }
+  .landing-topbar-left {
+    gap: 6px;
+  }
+  .landing-topbar-left .btn-sm {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+  .landing-topbar-nav {
+    gap: 6px;
+  }
+  .landing-topbar-nav > button.btn {
+    padding: 8px 10px;
+    font-size: 12.5px;
+  }
+  .landing-topbar-nav .btn-arrow {
+    display: none;
+  }
+  .landing-topbar-cta-full {
+    display: none;
+  }
+  .landing-topbar-cta-short {
+    display: inline;
+  }
 
   /* §retour Betty du 17/09/2026 : "sur téléphone laisse le paneau déroulant" — redevient un
      déclencheur ☰ qui ouvre/ferme un panneau, comme avant le passage aux liens alignés (toujours
      alignés au-dessus de 480px, voir la règle de base plus haut dans ce fichier). */
-  .landing-nav-menu-trigger { display: inline-flex; align-items: center; gap: 6px; }
-  .landing-nav-menu-trigger svg { width: 16px; height: 16px; }
+  .landing-nav-menu-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .landing-nav-menu-trigger svg {
+    width: 16px;
+    height: 16px;
+  }
   .landing-nav-links {
     display: none;
     position: absolute;
@@ -3890,7 +6118,9 @@ textarea.input { resize: vertical; font-family: inherit; }
     flex-direction: column;
     z-index: 30;
   }
-  .landing-nav-links.open { display: flex; }
+  .landing-nav-links.open {
+    display: flex;
+  }
   .landing-nav-link {
     display: block;
     width: 100%;
@@ -3899,9 +6129,10 @@ textarea.input { resize: vertical; font-family: inherit; }
     font-size: 14px;
     border-radius: var(--radius-sm);
   }
-  .landing-nav-link:hover { background: var(--color-muted-soft); }
+  .landing-nav-link:hover {
+    background: var(--color-muted-soft);
+  }
 }
-
 
 /* ---------------------------------------------------------------------
    Responsive
@@ -3915,7 +6146,9 @@ textarea.input { resize: vertical; font-family: inherit; }
      ligne flex, alignement et hauteur garantis sans calcul de position séparé. #sidebar ne sert
      plus que d'ancre invisible pour #sidebar-nav (voir bindGlobalEvents, app.js, pour
      l'ouverture/fermeture — classe .open). */
-  #sidebar-nav-pinned { display: none; }
+  #sidebar-nav-pinned {
+    display: none;
+  }
   #sidebar {
     top: 0;
     left: 0;
@@ -3926,7 +6159,9 @@ textarea.input { resize: vertical; font-family: inherit; }
     overflow: visible;
     z-index: 45;
   }
-  .sidebar-logo { display: none; }
+  .sidebar-logo {
+    display: none;
+  }
   #sidebar-nav {
     display: none;
     flex-direction: column;
@@ -3946,8 +6181,12 @@ textarea.input { resize: vertical; font-family: inherit; }
     padding: 8px;
     gap: 2px;
   }
-  #sidebar-nav.open { display: flex; }
-  .nav-section-label { display: block; }
+  #sidebar-nav.open {
+    display: flex;
+  }
+  .nav-section-label {
+    display: block;
+  }
   .nav-item {
     flex-direction: row;
     justify-content: flex-start;
@@ -3955,9 +6194,18 @@ textarea.input { resize: vertical; font-family: inherit; }
     padding: 12px 14px;
     width: 100%;
   }
-  .nav-icon svg { width: 20px; height: 20px; }
-  .nav-label { font-size: 14px; white-space: normal; }
-  .logo-text, .nav-soon { display: none; }
+  .nav-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+  .nav-label {
+    font-size: 14px;
+    white-space: normal;
+  }
+  .logo-text,
+  .nav-soon {
+    display: none;
+  }
   .mobile-nav-toggle {
     display: flex;
     align-items: center;
@@ -3972,34 +6220,68 @@ textarea.input { resize: vertical; font-family: inherit; }
     color: var(--color-text);
     cursor: pointer;
   }
-  .mobile-nav-toggle svg { width: 20px; height: 20px; display: block; }
-  #main-column { margin-left: 0; }
-  #view-root { padding: 16px; }
+  .mobile-nav-toggle svg {
+    width: 20px;
+    height: 20px;
+    display: block;
+  }
+  #main-column {
+    margin-left: 0;
+  }
+  #view-root {
+    padding: 16px;
+  }
   /* Demande du 21/08/2026 : 2 colonnes plutôt qu'une seule pleine largeur, pour moins défiler sur
      une grille de nombreuses cartes KPI (jusqu'à 15 sur le tableau de bord RH/Propriétaire) — forcé en
      dur plutôt que de compter sur auto-fit/minmax, qui retombait sur une seule colonne à cette
      largeur malgré la place suffisante mesurée. */
-  .kpi-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
-  .calendar-cell { height: 84px; }
-  .calendar-weekday { font-size: 10px; }
-  #topbar { padding: 0 14px; gap: 10px; }
-  .topbar-search { max-width: none; }
+  .kpi-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .calendar-cell {
+    height: 84px;
+  }
+  .calendar-weekday {
+    font-size: 10px;
+  }
+  #topbar {
+    padding: 0 14px;
+    gap: 10px;
+  }
+  .topbar-search {
+    max-width: none;
+  }
   /* flex-wrap: wrap est maintenant la règle de base (voir .detail-header ci-dessus, plus haut dans
      ce fichier) — ne reste ici que ce qui est vraiment spécifique au mobile. */
-  .detail-header-actions { width: 100%; }
+  .detail-header-actions {
+    width: 100%;
+  }
   /* Sur mobile, .tabs (Congés/Télétravail...) défilait horizontalement sans aucun indice visuel
      qu'il y avait "plus à droite" — un simple tap avec un léger mouvement du doigt faisait glisser
      toute la rangée au lieu d'appuyer sur l'onglet visé (retour utilisateur : "je peux bouger les
      boutons"). Passer à la ligne plutôt que défiler élimine cette ambiguïté tap/scroll, correct pour
      un petit nombre d'onglets. */
-  .tabs { flex-wrap: wrap; overflow-x: visible; }
-  .tab { padding: 8px 12px; font-size: 13px; }
+  .tabs {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+  .tab {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
   /* §demande 18/08/2026 : Paramètres a 12+ onglets — même en passant à la ligne, ça fait "un tas de
      boutons au même endroit" sur un petit écran. Remplacé par un simple menu déroulant, natif et
      compact, uniquement sous ce seuil (desktop garde la rangée d'onglets habituelle). */
-  .parametres-tabs-desktop { display: none; }
-  .parametres-tab-select { display: block; }
-  #toast-root { bottom: calc(env(safe-area-inset-bottom) + 16px); }
+  .parametres-tabs-desktop {
+    display: none;
+  }
+  .parametres-tab-select {
+    display: block;
+  }
+  #toast-root {
+    bottom: calc(env(safe-area-inset-bottom) + 16px);
+  }
   /* right:-8px avec une largeur proche de 100vw dépassait du bord gauche de l'écran dès que la
      cloche n'était pas collée tout au bord droit (ex. iPhone SE : jusqu'à 20px hors écran).
      position:fixed + left/right ancrés à la fenêtre (pas au petit wrapper de la cloche, qui rendait
@@ -4032,8 +6314,12 @@ textarea.input { resize: vertical; font-family: inherit; }
      sur les ~275px disponibles, ne laissant qu'une barre de recherche d'à peine 80px de large.
      Resserre l'espacement (la zone tactile agrandie de .btn-icon::before, inset:-10px, reste bien
      assez grande même avec un espacement réduit) pour rendre la recherche réellement utilisable. */
-  .topbar-user { gap: 6px; }
-  .topbar-user .btn-icon { padding: 2px; }
+  .topbar-user {
+    gap: 6px;
+  }
+  .topbar-user .btn-icon {
+    padding: 2px;
+  }
 }
 
 /* ---------------------------------------------------------------------
@@ -4045,7 +6331,7 @@ textarea.input { resize: vertical; font-family: inherit; }
    --------------------------------------------------------------------- */
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
+  :root:not([data-theme='light']) {
     --color-bg: #14161a;
     --color-surface: #1c1f26;
     --color-border: #383c46;
@@ -4082,14 +6368,26 @@ textarea.input { resize: vertical; font-family: inherit; }
      haut) — utilise déjà --color-primary-soft/--color-primary-text, redéfinies ci-dessus pour le mode
      sombre. .tag-color-* (catégories de contrat) garde en revanche ses propres teintes sombres,
      contraste texte vérifié ≥4.5:1. */
-  :root:not([data-theme="light"]) .tag-color-0 { background: #3a2f1c; color: #d8b98a; }
-  :root:not([data-theme="light"]) .tag-color-1 { background: #1e2b26; color: #8fb5a8; }
-  :root:not([data-theme="light"]) .tag-color-2 { background: #24243a; color: #a6a6d6; }
-  :root:not([data-theme="light"]) .tag-color-3 { background: #3a2424; color: #d6a3a3; }
+  :root:not([data-theme='light']) .tag-color-0 {
+    background: #3a2f1c;
+    color: #d8b98a;
+  }
+  :root:not([data-theme='light']) .tag-color-1 {
+    background: #1e2b26;
+    color: #8fb5a8;
+  }
+  :root:not([data-theme='light']) .tag-color-2 {
+    background: #24243a;
+    color: #a6a6d6;
+  }
+  :root:not([data-theme='light']) .tag-color-3 {
+    background: #3a2424;
+    color: #d6a3a3;
+  }
 }
 
 /* Choix manuel "Sombre" : mêmes valeurs, appliquées sans condition de préférence système. */
-:root[data-theme="dark"] {
+:root[data-theme='dark'] {
   --color-bg: #14161a;
   --color-surface: #1c1f26;
   --color-border: #383c46;
@@ -4111,10 +6409,22 @@ textarea.input { resize: vertical; font-family: inherit; }
   --color-primary-text: #7694d6;
   --color-info-text: #60a5fa;
 }
-:root[data-theme="dark"] .tag-color-0 { background: #3a2f1c; color: #d8b98a; }
-:root[data-theme="dark"] .tag-color-1 { background: #1e2b26; color: #8fb5a8; }
-:root[data-theme="dark"] .tag-color-2 { background: #24243a; color: #a6a6d6; }
-:root[data-theme="dark"] .tag-color-3 { background: #3a2424; color: #d6a3a3; }
+:root[data-theme='dark'] .tag-color-0 {
+  background: #3a2f1c;
+  color: #d8b98a;
+}
+:root[data-theme='dark'] .tag-color-1 {
+  background: #1e2b26;
+  color: #8fb5a8;
+}
+:root[data-theme='dark'] .tag-color-2 {
+  background: #24243a;
+  color: #a6a6d6;
+}
+:root[data-theme='dark'] .tag-color-3 {
+  background: #3a2424;
+  color: #d6a3a3;
+}
 
 /* ---------------------------------------------------------------------
    Impression — n'imprime que le contenu marqué .print-area (notes de frais,
@@ -4131,18 +6441,36 @@ textarea.input { resize: vertical; font-family: inherit; }
   padding-bottom: 14px;
 }
 
-.print-header h1 { margin-bottom: 4px; }
+.print-header h1 {
+  margin-bottom: 4px;
+}
 
 /* §retour Betty du 18/09/2026 (point 7) : logo + identité de l'entreprise d'un côté, "Fait à ...,
    le ..." de l'autre (lieu et date ensemble, sur leur propre ligne, jamais mélangés avec autre
    chose) — voir renderPrintDocumentHeader (app.js), modèle repris du registre du personnel. */
-.print-header-identity { display: flex; align-items: center; gap: 12px; }
-.print-logo { max-width: 56px; max-height: 56px; border-radius: var(--radius-sm); object-fit: contain; }
-.print-lieu-date { font-size: 13px; color: var(--color-text-muted); white-space: nowrap; margin-top: 2px; }
+.print-header-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.print-logo {
+  max-width: 56px;
+  max-height: 56px;
+  border-radius: var(--radius-sm);
+  object-fit: contain;
+}
+.print-lieu-date {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  margin-top: 2px;
+}
 
 /* Le titre reste DÉTACHÉ de l'en-tête (jamais coincé dans le même bloc bordé que le logo/la date) —
    son propre espace, pour respirer avant que le corps du document ne commence. */
-.print-title { margin: 22px 0 18px; }
+.print-title {
+  margin: 22px 0 18px;
+}
 
 .print-document h3 {
   font-size: 12px;
@@ -4194,7 +6522,9 @@ textarea.input { resize: vertical; font-family: inherit; }
      (app.js, beforeprint/afterprint — supportés depuis IE10/Firefox 6) fait donc désormais le même
      travail en JS, sans dépendre d'aucune fonctionnalité CSS récente : cette règle reste posée en
      secours (double sécurité), mais n'est plus la seule ligne de défense. */
-  body *:not(:has(.print-area)):not(.print-area):not(.print-area *) { display: none !important; }
+  body *:not(:has(.print-area)):not(.print-area):not(.print-area *) {
+    display: none !important;
+  }
   /* Le chemin d'ancêtres restant (ex. #modal-root > .modal > .modal-body) garde son display normal
      (jamais forcé) mais perd tout ce qui, à ce niveau-là, contraignait la zone imprimable à la
      taille de l'écran (modale plafonnée à 90vh avec défilement interne, position fixe...) —
@@ -4203,7 +6533,9 @@ textarea.input { resize: vertical; font-family: inherit; }
      du personnel version Paramètres, rendu directement dans #view-root) : sans ce reset, la marge
      gauche réservée à la barre latérale (déjà masquée par la règle ci-dessus, mais sa marge reste)
      gaspillerait la largeur de la page à l'impression. */
-  .modal, .modal-body, #modal-root {
+  .modal,
+  .modal-body,
+  #modal-root {
     position: static !important;
     inset: auto !important;
     max-height: none !important;
@@ -4213,7 +6545,8 @@ textarea.input { resize: vertical; font-family: inherit; }
     padding: 0 !important;
     margin: 0 !important;
   }
-  #app-shell, #main-column {
+  #app-shell,
+  #main-column {
     min-height: 0 !important;
     margin-left: 0 !important;
   }
@@ -4222,9 +6555,11 @@ textarea.input { resize: vertical; font-family: inherit; }
   }
   /* Le voile de couleur de .card (voir plus haut) n'a pas sa place sur un document imprimé — gaspille
      de l'encre couleur pour un simple conteneur, jamais pensé comme un vrai repère ici. */
-  .card { background: white; box-shadow: none; }
+  .card {
+    background: white;
+    box-shadow: none;
+  }
 }
-
 
 /* §retour Betty du 22/09/2026 ("je préfère cette présentation dans les catégories de salariés...
    fais la même chose pour les postes, les conventions, les types de contrats, les forfaits, les
@@ -4232,10 +6567,22 @@ textarea.input { resize: vertical; font-family: inherit; }
    afficher 7 lignes") : présentation commune à toutes les listes de référence, en remplacement des
    pastilles qui déroulaient la liste entière sans hauteur maîtrisée (183 conventions collectives
    occupaient plusieurs écrans à elles seules). Voir renderSettingsListCard/renderPostesCard. */
-.settings-list-card { display: flex; flex-direction: column; }
-.settings-list-header { padding: 16px 16px 0; align-items: flex-start; gap: 12px; }
-.settings-list-header h2 { margin-bottom: 2px; }
-.settings-list-header .text-muted { font-size: 12px; margin: 0; }
+.settings-list-card {
+  display: flex;
+  flex-direction: column;
+}
+.settings-list-header {
+  padding: 16px 16px 0;
+  align-items: flex-start;
+  gap: 12px;
+}
+.settings-list-header h2 {
+  margin-bottom: 2px;
+}
+.settings-list-header .text-muted {
+  font-size: 12px;
+  margin: 0;
+}
 
 /* 7 lignes visibles, l'ascenseur prend le relais au-delà : chaque carte garde la même hauteur quel
    que soit le nombre d'éléments, une liste de 4 forfaits comme une liste de 183 conventions. */
@@ -4248,16 +6595,28 @@ textarea.input { resize: vertical; font-family: inherit; }
 
 /* Lignes volontairement plus courtes que .table standard : ces listes n'ont qu'un libellé et une
    action, jamais le contenu dense d'un tableau de salariés. */
-.table-settings-list td, .table-settings-list th { padding: 8px 16px; font-size: 13px; }
+.table-settings-list td,
+.table-settings-list th {
+  padding: 8px 16px;
+  font-size: 13px;
+}
 .table-settings-list thead th {
   position: sticky;
   top: 0;
   z-index: 1;
   background: var(--color-surface);
 }
-.settings-list-valeur { width: 100%; }
-.settings-list-action { text-align: right; white-space: nowrap; }
-.settings-list-vide { padding: 14px 16px 16px; margin: 0; }
+.settings-list-valeur {
+  width: 100%;
+}
+.settings-list-action {
+  text-align: right;
+  white-space: nowrap;
+}
+.settings-list-vide {
+  padding: 14px 16px 16px;
+  margin: 0;
+}
 .settings-list-add {
   display: flex;
   gap: 8px;
@@ -4266,8 +6625,13 @@ textarea.input { resize: vertical; font-family: inherit; }
   padding: 12px 16px 0;
   margin: 0;
 }
-.settings-list-add .input { flex: 1 1 180px; }
-.input-sm { padding: 5px 8px; font-size: 13px; }
+.settings-list-add .input {
+  flex: 1 1 180px;
+}
+.input-sm {
+  padding: 5px 8px;
+  font-size: 13px;
+}
 
 /* §retour Betty du 22/09/2026 ("on voit qu'il y a beaucoup d'espace perdu... on ne voit que deux
    cartouches alors qu'on pourrait facilement en voir plus") : les onglets de Paramètres empilaient
@@ -4282,8 +6646,12 @@ textarea.input { resize: vertical; font-family: inherit; }
   gap: 16px;
   align-items: start;
 }
-.settings-cards-grid > .card { margin-bottom: 0; }
-.settings-card-wide { grid-column: 1 / -1; }
+.settings-cards-grid > .card {
+  margin-bottom: 0;
+}
+.settings-card-wide {
+  grid-column: 1 / -1;
+}
 
 /* §retour Betty du 22/09/2026 : la carte de candidature porte désormais deux actions (avancer d'une
    étape, supprimer) au lieu d'une seule. */
@@ -4312,4 +6680,6 @@ textarea.input { resize: vertical; font-family: inherit; }
   size: A4 landscape;
   margin: 10mm;
 }
-.print-landscape { page: paysage; }
+.print-landscape {
+  page: paysage;
+}

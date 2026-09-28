@@ -102,7 +102,8 @@ export function buildCii(inv) {
     </ram:IncludedSupplyChainTradeLineItem>`;
   });
 
-  const taxes = inv.totals.vatBreakdown.map((v) => `
+  const taxes = inv.totals.vatBreakdown.map(
+    (v) => `
       <ram:ApplicableTradeTax>
         <ram:CalculatedAmount>${amount(v.vat)}</ram:CalculatedAmount>
         <ram:TypeCode>VAT</ram:TypeCode>
@@ -112,7 +113,8 @@ export function buildCii(inv) {
         ${cat.reasonCode ? `<ram:ExemptionReasonCode>${cat.reasonCode}</ram:ExemptionReasonCode>` : ''}
         ${cat.code === 'S' ? `<ram:DueDateTypeCode>${vatOnReceipt ? '72' : '5'}</ram:DueDateTypeCode>` : ''}
         <ram:RateApplicablePercent>${rate(cat.code === 'S' ? v.rateBp : 0)}</ram:RateApplicablePercent>
-      </ram:ApplicableTradeTax>`);
+      </ram:ApplicableTradeTax>`,
+  );
 
   const t = inv.totals;
   const c = inv.client;
