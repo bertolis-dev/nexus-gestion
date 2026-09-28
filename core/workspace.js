@@ -200,8 +200,10 @@ export class Workspace {
     if (period.to >= today) throw new Error('La période n’est pas terminée : la déclaration se prépare après sa dernière journée.');
     if (this.vatReturns.some((r) => r.from === period.from)) throw new Error('Cette période a déjà été déclarée.');
     const ca3 = this.prepareVatReturn(period);
-    const entry = this.ledger.addDraft(liquidationEntry(ca3));
-    const record = { kind: ca3.kind || 'CA3', from: period.from, to: period.to, boxes: ca3.boxes, balance: ca3.balance, entryId: entry.id, declaredAt: today, summary: { grossVat: ca3.grossVat, deductibleOther: ca3.deductibleOther } };
+    const liquidation = liquidationEntry(ca3);
+    // Mois sans aucune TVA : la déclaration « néant » est enregistrée, sans écriture (rien à solder).
+    const entry = liquidation.lines.length >= 2 ? this.ledger.addDraft(liquidation) : null;
+    const record = { kind: ca3.kind || 'CA3', from: period.from, to: period.to, boxes: ca3.boxes, balance: ca3.balance, entryId: entry?.id || null, declaredAt: today, summary: { grossVat: ca3.grossVat, deductibleOther: ca3.deductibleOther } };
     this.company.vatReturns = [...this.vatReturns, record];
     return { ca3, entry, record };
   }

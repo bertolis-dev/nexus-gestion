@@ -1162,6 +1162,7 @@ function viewInvoiceForm(arg) {
           ${field('Client', html`<select class="input" name="clientId" data-rerender>${ws.clients.map((c) => opt(c.id, c.name, d.clientId === c.id))}${opt('__new', '+ Nouveau client', d.clientId === '__new')}</select>`)}
           ${d.clientId === '__new' ? field('Type de client', html`<select class="input" name="newClient.type" data-rerender>${opt('B2B', 'Entreprise', nc.type !== 'B2C')}${opt('B2C', 'Particulier', nc.type === 'B2C')}</select>`) : ''}
         </div>
+        ${d.clientId !== '__new' && draftClient() ? clientEditBlock(d) : ''}
         ${d.clientId === '__new' ? html`<div class="form-grid" style="margin-top:12px">
           ${nc.type !== 'B2C' ? field('SIREN', html`<div style="display:flex;gap:8px"><input class="input" name="newClient.siren" inputmode="numeric" value="${nc.siren || ''}"><button type="button" class="btn btn-secondary btn-sm" data-action="client-lookup">Remplir</button></div>`, { hint: 'Obligatoire pour une entreprise française.' }) : ''}
           ${field('Nom ou raison sociale', html`<input class="input" name="newClient.name" value="${nc.name || ''}">`)}
@@ -1200,8 +1201,35 @@ function viewInvoiceForm(arg) {
     </form>`;
 }
 
+/** Fiche du client choisi, modifiable sans quitter la facture ; ouverte d'office s'il lui manque une mention. */
+function clientEditBlock(d) {
+  const c = ws.clients.find((x) => x.id === d.clientId);
+  if (!c) return '';
+  const e = { ...c, ...(d.clientEdit || {}) };
+  const missing = d.issues?.some((i) => i.field?.startsWith('client.'));
+  return html`<details class="client-edit" style="margin-top:12px" ${missing ? raw('open') : ''}>
+    <summary style="cursor:pointer;font-size:14px;color:var(--color-primary)">${missing ? 'Compléter la fiche de ce client' : 'Modifier la fiche de ce client'}</summary>
+    <div class="form-grid" style="margin-top:12px">
+      ${c.type !== 'B2C' ? field('SIREN', html`<input class="input" name="clientEdit.siren" inputmode="numeric" value="${e.siren || ''}">`, { hint: 'Obligatoire pour une entreprise française.' }) : ''}
+      ${field('Nom ou raison sociale', html`<input class="input" name="clientEdit.name" value="${e.name || ''}">`)}
+      ${field('Email (relances)', html`<input class="input" name="clientEdit.email" type="email" value="${e.email || ''}">`)}
+      ${field('Adresse', html`<input class="input" name="clientEdit.address" value="${e.address || ''}">`)}
+      ${c.country && c.country !== 'FR' ? field('N° de TVA intracommunautaire', html`<input class="input" name="clientEdit.vatNumber" value="${e.vatNumber || ''}">`) : ''}
+    </div></details>`;
+}
+
 function persistDraft() {
   const d = ui.draft;
+  // Modifications de la fiche du client existant, enregistrées avant de reprendre ses données dans la facture.
+  if (d.clientEdit && d.clientId !== '__new') {
+    const c = ws.clients.find((x) => x.id === d.clientId);
+    if (c) {
+      const edits = { ...d.clientEdit };
+      if (edits.siren !== undefined) edits.siren = edits.siren.replace(/\s/g, '');
+      ws.saveClient({ ...c, ...edits, id: c.id });
+    }
+    d.clientEdit = null;
+  }
   for (const l of d.lines) {
     try {
       l.unitPrice = l.priceText ? parseEuros(l.priceText) : 0;
@@ -1398,7 +1426,7 @@ function viewBank() {
     ${viewHeader('Banque', 'Associez chaque mouvement à une facture, ou choisissez une catégorie.', html`<label class="btn btn-primary" style="margin:0">${icon('upload', 14)} Importer un relevé (CSV, OFX)<input type="file" accept=".csv,.ofx,.qfx,.txt" data-action="bank-file" hidden></label>`)}
     <div class="card table-card">
       <h2 style="padding:16px 16px 0">À justifier (${open.length})</h2>
-      ${open.length ? html`<table class="table"><tbody>${open.map((t) => {
+      ${open.length ? html`<table class="table bank-open-table"><tbody>${open.map((t) => {
         const sugg = ws.suggestionsFor(t.id).slice(0, 2);
         const cats = t.amount < 0 ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
         const others = t.amount < 0 ? OUTFLOW_CATEGORIES : [];
@@ -2043,6 +2071,7 @@ document.addEventListener('input', (e) => {
   const form = el.closest('form[data-form="invoice"]');
   if (form && el.name) {
     setPath(ui.draft, el.name, el.value);
+    if (el.name === 'clientId') ui.draft.clientEdit = null;
     if (el.hasAttribute('data-rerender')) return render();
     const m = /^lines\.(\d+)\.priceText$/.exec(el.name);
     if (m) {
@@ -2754,6 +2783,8 @@ async function boot() {
       await afterSignIn();
     } else if (params.has('demo')) {
       ui.booting = false;
+      // Sans le paramètre dans l'adresse, un rechargement garde la démonstration en cours au lieu de la réinitialiser.
+      history.replaceState(null, '', location.pathname + location.hash);
       return seedDemo();
     } else if (featureSlug()) {
       ui.screen = 'landing';
