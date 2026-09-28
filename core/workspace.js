@@ -6,11 +6,13 @@
 
 import { buildChart, categoryById } from './pcg.js';
 import { Ledger } from './ledger.js';
-import { InvoiceBook, clientAux, saleVatAccount } from './invoices.js';
+import { InvoiceBook, clientAux } from './invoices.js';
 import { purchaseEntry, findDuplicates } from './purchases.js';
-import { mergeTransactions, suggestMatches, settlementEntry, vatOnReceiptEntry, directEntry } from './bank.js';
+import { mergeTransactions, suggestMatches, settlementEntry, directEntry } from './bank.js';
+import { isOnReceipt, creditsOf, originalOf, groupBalance, receiptTargets } from './receipts.js';
 import { divRound, splitTtc, sum } from './money.js';
 import { openingEntry } from './fecimport.js';
+import { creditTargetsAsset } from './assets.js';
 import { addDays } from './dates.js';
 import { prepareCa3, prepareCa12, ca12Advances, liquidationEntry } from './vatreturn.js';
 import { LIFECYCLE } from './lifecycle.js';
@@ -24,6 +26,7 @@ import {
   resultEntry,
   nextYearOpening,
   allocationEntry,
+  balanceSheet,
 } from './closing.js';
 import { validateTemplate, dueOccurrences, periodLabel } from './recurring.js';
 
@@ -109,7 +112,72 @@ export class Workspace {
   // ---------------------------------------------------------------- ventes
 
   issueInvoice(id) {
-    return this.book.issue(id, { ledger: this.ledger });
+    const issued = this.book.issue(id, { ledger: this.ledger });
+    // Un avoir modifie la TVA exigible et le restant dû de la facture qu'il corrige.
+    const original = issued.type === 'credit' ? originalOf(this.book.invoices, issued) : null;
+    if (original) {
+      this.#syncReceiptVat(original, issued.issueDate);
+      this.#letterGroupIfSettled(original, issued.issueDate);
+    }
+    return issued;
+  }
+
+  /**
+   * TVA sur encaissements : passe l'écriture 445800 → 445710 (ou inverse) qui amène la TVA exigible
+   * comptabilisée sur l'exercice au niveau attendu (receipts.js). Calcul par écart avec ce qui est
+   * déjà comptabilisé : pas de dérive d'arrondi, et un encaissement de l'exercice précédent n'est pas
+   * compté deux fois.
+   */
+  #syncReceiptVat(inv, date) {
+    if (!isOnReceipt(inv) || !inv.totals.totalVat) return;
+    const fy = this.ledger.fiscalYear;
+    const before = new Date(Date.parse(`${fy.start}T00:00:00Z`) - 86400000).toISOString().slice(0, 10);
+    const expected =
+      receiptTargets(this.book.invoices, this.book.payments, inv, date).vat - receiptTargets(this.book.invoices, this.book.payments, inv, before).vat;
+    const booked = sum(
+      this.ledger.entries
+        .filter((e) => e.source?.kind === 'vat-receipt' && e.source.id === inv.id)
+        .flatMap((e) => e.lines)
+        .filter((l) => l.account === '445710')
+        .map((l) => l.credit - l.debit),
+    );
+    const delta = expected - booked;
+    if (!delta) return;
+    const amount = Math.abs(delta);
+    this.ledger.addDraft({
+      journal: 'OD',
+      date,
+      label: `TVA exigible sur encaissement ${inv.number}`,
+      pieceRef: inv.number,
+      pieceDate: date,
+      source: { kind: 'vat-receipt', id: inv.id },
+      lines:
+        delta > 0
+          ? [
+              { account: '445800', debit: amount, credit: 0 },
+              { account: '445710', debit: 0, credit: amount },
+            ]
+          : [
+              { account: '445710', debit: amount, credit: 0 },
+              { account: '445800', debit: 0, credit: amount },
+            ],
+    });
+  }
+
+  /** Groupe soldé (facture + avoirs + règlements) : lettrage de toutes ses lignes client. */
+  #letterGroupIfSettled(inv, date) {
+    if (groupBalance(this.book.invoices, this.book.payments, inv) !== 0) return;
+    const docs = [inv, ...creditsOf(this.book.invoices, inv)];
+    const refs = [
+      ...docs.filter((d) => this.ledger.entries.some((e) => e.id === d.entryId)).map((d) => ({ entryId: d.entryId, lineIndex: 0 })),
+      ...docs.flatMap((d) => (this.book.payments[d.id] || []).map((p) => ({ entryId: p.entryId, lineIndex: p.lineIndex }))),
+    ].filter((r) => this.ledger.entries.some((e) => e.id === r.entryId));
+    if (refs.length < 2) return;
+    try {
+      this.ledger.letter(refs, date);
+    } catch {
+      // Solde non nul dans l'exercice (pièce d'un exercice précédent, écart absorbé) : lettrage manuel.
+    }
   }
 
   invoiceAux(inv) {
@@ -283,6 +351,12 @@ export class Workspace {
   closeYear(today) {
     const fy = this.company.fiscalYear;
     if (today <= fy.end) throw new Error('L’exercice n’est pas terminé.');
+    // Contrôle bloquant : on ne clôture jamais un exercice dont le bilan ne s'équilibre pas.
+    const bs = balanceSheet(this.ledger);
+    if (!bs.balanced)
+      throw new Error(
+        `Le bilan n’est pas équilibré (écart de ${(bs.totalAssets - bs.totalLiabilities) / 100} €) : la clôture est bloquée. Contactez le support.`,
+      );
     const result = resultEntry(this.ledger, fy);
     if (result && this.ledger.lockedThrough >= fy.end)
       throw new Error('Le dernier jour de l’exercice est déjà verrouillé : l’écriture de résultat ne peut plus être passée.');
@@ -349,7 +423,17 @@ export class Workspace {
    */
   addPurchaseLines({ supplier, date, number = '', lines, documentName = '', einvoice = null, type = 'invoice' }, { force = false } = {}) {
     const p = { id: this.#id('P'), supplier: { country: 'FR', ...supplier }, date, number, documentName, lines: structuredClone(lines) };
-    if (type === 'credit') p.type = 'credit';
+    if (type === 'credit') {
+      p.type = 'credit';
+      // Avoir sur un équipement du registre : il diminue le compte du bien d'origine.
+      for (const l of p.lines) {
+        if (
+          categoryById(l.categoryId).fixedAsset &&
+          creditTargetsAsset(this.purchases, this.company, { supplierName: p.supplier.name, categoryId: l.categoryId, date })
+        )
+          l.assetCredit = true;
+      }
+    }
     if (einvoice) p.einvoice = einvoice;
     const duplicates = findDuplicates(p, this.purchases);
     // Doublon probable : rien n'est enregistré tant que l'utilisateur n'a pas confirmé (force).
@@ -398,7 +482,20 @@ export class Workspace {
         thirdPartyAccount: p.thirdPartyAccount,
         aux: p.aux,
       }));
-    return [...sales, ...buys];
+    const refunds = this.book.invoices
+      .filter((c) => c.type === 'credit' && c.status === 'issued' && this.book.outstanding(c) < 0)
+      .map((c) => ({
+        id: c.id,
+        kind: 'credit',
+        number: c.number,
+        partyName: c.client.name,
+        date: c.issueDate,
+        dueDate: c.issueDate,
+        outstanding: -this.book.outstanding(c),
+        thirdPartyAccount: '411000',
+        aux: this.invoiceAux(originalOf(this.book.invoices, c) || c),
+      }));
+    return [...sales, ...buys, ...refunds];
   }
 
   suggestionsFor(txId) {
@@ -416,19 +513,23 @@ export class Workspace {
     const entry = this.ledger.addDraft(settlementEntry(tx, allocations));
     allocations.forEach(({ doc, amount }, i) => {
       const lineIndex = i + 1; // ligne 0 = banque, puis une ligne par pièce dans l'ordre des allocations
-      if (doc.kind === 'invoice') {
+      if (doc.kind === 'credit') {
+        // Remboursement d'un avoir au client : règlement négatif sur l'avoir.
+        const cn = this.book.get(doc.id);
+        this.book.recordPayment(cn.id, { amount: -amount, date: tx.date, ref: tx.id, entryId: entry.id, lineIndex });
+        const original = originalOf(this.book.invoices, cn);
+        if (original) {
+          this.#syncReceiptVat(original, tx.date);
+          this.#letterGroupIfSettled(original, tx.date);
+        }
+      } else if (doc.kind === 'invoice') {
         const inv = this.book.get(doc.id);
         const left = this.book.recordPayment(inv.id, { amount, date: tx.date, ref: tx.id, entryId: entry.id, lineIndex });
-        const saleEntry = this.ledger.entries.find((e) => e.id === inv.entryId);
-        const vatUsesReceipts = saleEntry
-          ? saleEntry.lines.some((l) => l.account === '445800')
-          : inv.totals.totalVat > 0 && saleVatAccount(inv, inv.issuer) === '445800';
-        if (vatUsesReceipts) {
-          const vat = vatOnReceiptEntry(inv, amount, tx.date);
-          if (vat) this.ledger.addDraft(vat);
-        }
+        this.#syncReceiptVat(inv, tx.date);
         if (left === 0) {
-          if (saleEntry) this.#letterSettled({ entryId: inv.entryId, lineIndex: 0 }, this.book.payments[inv.id], tx.date);
+          if (creditsOf(this.book.invoices, inv).length) this.#letterGroupIfSettled(inv, tx.date);
+          else if (this.ledger.entries.some((e) => e.id === inv.entryId))
+            this.#letterSettled({ entryId: inv.entryId, lineIndex: 0 }, this.book.payments[inv.id], tx.date);
           const events = this.book.lifecycle[inv.id] || [];
           const last = events.at(-1);
           // Pas de statut automatique après un statut final (facture refusée puis payée : à traiter à la main).
@@ -472,6 +573,22 @@ export class Workspace {
       return e;
     }
     const cat = categoryById(categoryId);
+    if (cat.fixedAsset) {
+      // Équipement payé par carte ou virement : même circuit qu'une facture d'achat (seuil
+      // d'immobilisation, registre, compte 404), puis rapprochement du paiement. Sans facture, la TVA
+      // n'est pas récupérable : elle fait partie du coût.
+      const amount = Math.abs(tx.amount);
+      const rate = hasReceipt ? vatRateBp : 0;
+      const { purchase } = this.addPurchaseLines(
+        { supplier: { name: tx.label }, date: tx.date, lines: [{ categoryId, ht: splitTtc(amount, rate).ht, vatRateBp: rate }] },
+        { force: true },
+      );
+      const doc = this.openDocs().find((d) => d.kind === 'purchase' && d.id === purchase.id);
+      const entry = this.matchTransaction(txId, [{ doc, amount }]);
+      tx.missingReceipt = !hasReceipt;
+      purchase.missingReceipt = !hasReceipt;
+      return entry;
+    }
     const franchise = this.company.vatRegime === 'franchise';
     const { tva } = splitTtc(Math.abs(tx.amount), vatRateBp);
     // Sans facture, la TVA n'est pas déductible : seule une pièce justificative ouvre droit à déduction.

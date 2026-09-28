@@ -17,7 +17,7 @@
  */
 
 import { divRound, sum } from './money.js';
-import { fixedAssets } from './assets.js';
+import { fixedAssets, assetsCrossCheck } from './assets.js';
 
 /** Nom d'un exercice : « 2026 », ou « 2025-2026 » s'il est à cheval sur deux années civiles. */
 export function fiscalYearLabel(fy) {
@@ -36,6 +36,17 @@ export function closingChecklist(ws, { today }) {
   const inYear = (d) => d >= fy.start && d <= fy.end;
   const items = [];
   const add = (id, label, ok, detail, view) => items.push({ id, label, ok, detail, view });
+
+  const assetGaps = assetsCrossCheck(ws);
+  add(
+    'assets-register',
+    'Le registre des immobilisations concorde avec la comptabilité',
+    !assetGaps.length,
+    assetGaps.length
+      ? assetGaps.map((g) => `compte ${g.account} : registre ${g.register / 100} €, comptabilité ${g.ledger / 100} €`).join(' ; ')
+      : 'Aucun écart',
+    null,
+  );
 
   const openTx = ws.transactions.filter((t) => t.status === 'open' && inYear(t.date));
   add(
@@ -170,7 +181,6 @@ export function depreciationEntry(ws) {
   const fy = ws.company.fiscalYear;
   const assets = fixedAssets(ws.purchases, ws.company, fy).filter((a) => a.dotationThisYear);
   if (!assets.length) return null;
-  const total = sum(assets.map((a) => a.dotationThisYear));
   return {
     journal: 'OD',
     date: fy.end,
@@ -179,15 +189,19 @@ export function depreciationEntry(ws) {
     pieceDate: fy.end,
     source: { kind: 'inventory', type: 'depreciation' },
     lines: [
-      { account: '681120', debit: total, credit: 0, label: 'Dotations aux amortissements' },
+      // Logiciels et autres biens incorporels (20…) en 68111, équipements (21…) en 68112.
+      ...[
+        ['681110', sum(assets.filter((a) => a.account.startsWith('20')).map((a) => a.dotationThisYear))],
+        ['681120', sum(assets.filter((a) => !a.account.startsWith('20')).map((a) => a.dotationThisYear))],
+      ]
+        .filter(([, amount]) => amount)
+        .map(([account, amount]) => ({ account, debit: amount, credit: 0, label: 'Dotations aux amortissements' })),
       ...assets.map((a) => ({ account: a.depreciationAccount, debit: 0, credit: a.dotationThisYear, label: a.label })),
     ],
   };
 }
 
 // ------------------------------------------------------------------ états financiers
-
-const sumPrefix = (balances, prefixes, sign = 1) => sum([...balances].filter(([acc]) => prefixes.some((p) => acc.startsWith(p))).map(([, v]) => sign * v));
 
 /** Soldes (débit − crédit) par compte, hors écritures de détermination du résultat. */
 function balancesOf(ledger) {
@@ -199,39 +213,125 @@ function balancesOf(ledger) {
   return out;
 }
 
+/**
+ * Rubriques du compte de résultat (esprit du 2033-B) : [préfixe, groupe, rubrique]. Chaque compte de
+ * classe 6 ou 7 est rangé dans la rubrique du préfixe LE PLUS LONG qui lui correspond ; un compte que
+ * rien ne décrit tombe dans « Autres charges » ou « Autres produits ». Aucun compte n'est ignoré : le
+ * résultat est toujours égal à −Σ(classes 6 et 7).
+ */
+const PNL_RULES = [
+  // Produits d'exploitation
+  ['707', 'opIncome', 'Ventes de marchandises'],
+  ['7097', 'opIncome', 'Ventes de marchandises'],
+  ['701', 'opIncome', 'Production vendue (biens)'],
+  ['702', 'opIncome', 'Production vendue (biens)'],
+  ['703', 'opIncome', 'Production vendue (biens)'],
+  ['7091', 'opIncome', 'Production vendue (biens)'],
+  ['7092', 'opIncome', 'Production vendue (biens)'],
+  ['7093', 'opIncome', 'Production vendue (biens)'],
+  ['704', 'opIncome', 'Production vendue (services)'],
+  ['705', 'opIncome', 'Production vendue (services)'],
+  ['706', 'opIncome', 'Production vendue (services)'],
+  ['708', 'opIncome', 'Production vendue (services)'],
+  ['709', 'opIncome', 'Production vendue (services)'],
+  ['71', 'opIncome', 'Production stockée'],
+  ['72', 'opIncome', 'Production immobilisée'],
+  ['74', 'opIncome', 'Subventions d’exploitation'],
+  ['781', 'opIncome', 'Reprises sur amortissements et provisions, transferts de charges'],
+  ['791', 'opIncome', 'Reprises sur amortissements et provisions, transferts de charges'],
+  ['75', 'opIncome', 'Autres produits'],
+  ['7', 'opIncome', 'Autres produits'],
+  // Charges d'exploitation
+  ['607', 'opCharges', 'Achats de marchandises'],
+  ['6037', 'opCharges', 'Variation de stock (marchandises)'],
+  ['601', 'opCharges', 'Achats de matières premières'],
+  ['602', 'opCharges', 'Achats de matières premières'],
+  ['6031', 'opCharges', 'Variation de stock (matières premières)'],
+  ['6032', 'opCharges', 'Variation de stock (matières premières)'],
+  ['60', 'opCharges', 'Autres achats et charges externes'],
+  ['61', 'opCharges', 'Autres achats et charges externes'],
+  ['62', 'opCharges', 'Autres achats et charges externes'],
+  ['63', 'opCharges', 'Impôts, taxes et versements assimilés'],
+  ['641', 'opCharges', 'Salaires et traitements'],
+  ['642', 'opCharges', 'Salaires et traitements'],
+  ['643', 'opCharges', 'Salaires et traitements'],
+  ['644', 'opCharges', 'Salaires et traitements'],
+  ['645', 'opCharges', 'Charges sociales'],
+  ['646', 'opCharges', 'Charges sociales'],
+  ['647', 'opCharges', 'Charges sociales'],
+  ['648', 'opCharges', 'Charges sociales'],
+  ['6811', 'opCharges', 'Dotations aux amortissements'],
+  ['6812', 'opCharges', 'Dotations aux amortissements'],
+  ['681', 'opCharges', 'Dotations aux provisions'],
+  ['65', 'opCharges', 'Autres charges'],
+  ['6', 'opCharges', 'Autres charges'],
+  // Financier, exceptionnel, impôt
+  ['76', 'finIncome', 'Produits financiers'],
+  ['786', 'finIncome', 'Produits financiers'],
+  ['796', 'finIncome', 'Produits financiers'],
+  ['66', 'finCharges', 'Charges financières'],
+  ['686', 'finCharges', 'Charges financières'],
+  ['77', 'excIncome', 'Produits exceptionnels'],
+  ['787', 'excIncome', 'Produits exceptionnels'],
+  ['797', 'excIncome', 'Produits exceptionnels'],
+  ['67', 'excCharges', 'Charges exceptionnelles'],
+  ['687', 'excCharges', 'Charges exceptionnelles'],
+  ['691', 'excCharges', 'Participation des salariés'],
+  ['69', 'tax', 'Impôt sur les bénéfices'],
+];
+const OP_INCOME_ORDER = [
+  'Ventes de marchandises',
+  'Production vendue (biens)',
+  'Production vendue (services)',
+  'Production stockée',
+  'Production immobilisée',
+  'Subventions d’exploitation',
+  'Reprises sur amortissements et provisions, transferts de charges',
+  'Autres produits',
+];
+const OP_CHARGES_ORDER = [
+  'Achats de marchandises',
+  'Variation de stock (marchandises)',
+  'Achats de matières premières',
+  'Variation de stock (matières premières)',
+  'Autres achats et charges externes',
+  'Impôts, taxes et versements assimilés',
+  'Salaires et traitements',
+  'Charges sociales',
+  'Dotations aux amortissements',
+  'Dotations aux provisions',
+  'Autres charges',
+];
+
+/** Rubrique d'un compte de classe 6 ou 7 : règle au préfixe le plus long. */
+export function pnlRubric(account) {
+  let best = null;
+  for (const rule of PNL_RULES) if (account.startsWith(rule[0]) && (!best || rule[0].length > best[0].length)) best = rule;
+  return best;
+}
+
 /** Compte de résultat simplifié (rubriques 2033-B). Produits en positif, charges en positif. */
 export function incomeStatement(ledger) {
-  const b = balancesOf(ledger);
-  const credit = (...p) => sumPrefix(b, p, -1);
-  const debit = (...p) => sumPrefix(b, p, 1);
-  const operatingIncome = {
-    'Ventes de marchandises': credit('707'),
-    'Production vendue (biens)': credit('701'),
-    'Production vendue (services)': credit('706', '708'),
-    'Autres produits': credit('758'),
-  };
-  const operatingCharges = {
-    'Achats de marchandises': debit('607'),
-    'Achats de matières premières': debit('601'),
-    'Autres achats et charges externes': debit('604', '606', '61', '62'),
-    'Impôts, taxes et versements assimilés': debit('63'),
-    'Salaires et traitements': debit('641', '644'),
-    'Charges sociales': debit('645', '646'),
-    'Dotations aux amortissements': debit('6811'),
-    'Dotations aux provisions': debit('6817'),
-    'Autres charges': debit('65'),
-  };
-  const financialIncome = credit('76');
-  const financialCharges = debit('66');
-  const exceptionalIncome = credit('77');
-  const exceptionalCharges = debit('67');
-  const incomeTax = debit('695');
+  const operatingIncome = Object.fromEntries(OP_INCOME_ORDER.map((k) => [k, 0]));
+  const operatingCharges = Object.fromEntries(OP_CHARGES_ORDER.map((k) => [k, 0]));
+  const groups = { finIncome: 0, finCharges: 0, excIncome: 0, excCharges: 0, tax: 0 };
+  let sixSeven = 0; // Σ (crédit − débit) des classes 6 et 7, pour le contrôle final
+  for (const [acc, v] of balancesOf(ledger)) {
+    if (!/^[67]/.test(acc) || !v) continue;
+    sixSeven -= v;
+    const [, group, rubric] = pnlRubric(acc);
+    if (group === 'opIncome') operatingIncome[rubric] -= v;
+    else if (group === 'opCharges') operatingCharges[rubric] += v;
+    else groups[group] += group.endsWith('Income') ? -v : v;
+  }
   const opIncome = sum(Object.values(operatingIncome));
   const opCharges = sum(Object.values(operatingCharges));
   const operatingResult = opIncome - opCharges;
-  const currentResult = operatingResult + financialIncome - financialCharges;
-  const resultBeforeTax = currentResult + exceptionalIncome - exceptionalCharges;
-  const netResult = resultBeforeTax - incomeTax;
+  const currentResult = operatingResult + groups.finIncome - groups.finCharges;
+  const resultBeforeTax = currentResult + groups.excIncome - groups.excCharges;
+  const netResult = resultBeforeTax - groups.tax;
+  // Contrôle bloquant : un compte oublié ou compté deux fois fausserait le résultat, l'IS et le bilan.
+  if (netResult !== sixSeven) throw new Error(`Compte de résultat incohérent (${netResult} ≠ ${sixSeven}) : contactez le support.`);
   const revenue = operatingIncome['Ventes de marchandises'] + operatingIncome['Production vendue (biens)'] + operatingIncome['Production vendue (services)'];
   return {
     operatingIncome,
@@ -239,13 +339,13 @@ export function incomeStatement(ledger) {
     opIncome,
     opCharges,
     operatingResult,
-    financialIncome,
-    financialCharges,
+    financialIncome: groups.finIncome,
+    financialCharges: groups.finCharges,
     currentResult,
-    exceptionalIncome,
-    exceptionalCharges,
+    exceptionalIncome: groups.excIncome,
+    exceptionalCharges: groups.excCharges,
     resultBeforeTax,
-    incomeTax,
+    incomeTax: groups.tax,
     netResult,
     revenue,
   };

@@ -7,6 +7,7 @@
 import { assertCents, divRound, sum, vatFromHt } from './money.js';
 import { REVENUE_ACCOUNT_BY_NATURE } from './pcg.js';
 import { LIFECYCLE } from './lifecycle.js';
+import { creditsOf, originalOf, groupBalance } from './receipts.js';
 
 export const VAT_RATES_BP = [2000, 1000, 550, 210, 0];
 
@@ -322,11 +323,22 @@ export class InvoiceBook {
     });
   }
 
-  /** Restant dû d'une facture émise (TTC − acomptes − paiements rattachés). */
+  /**
+   * Restant dû d'une pièce émise. Une facture et ses avoirs forment un tout : l'avoir diminue le
+   * restant dû de la facture ; s'il dépasse ce qui reste à payer, c'est le dernier avoir qui porte le
+   * remboursement dû au client (montant négatif).
+   */
   outstanding(inv) {
     if (inv.status !== 'issued' || inv.type === 'quote') return 0;
-    const sign = inv.type === 'credit' ? -1 : 1;
-    return sign * inv.totals.netToPay - sum((this.payments[inv.id] || []).map((p) => p.amount));
+    const own = (sign) => sign * inv.totals.netToPay - sum((this.payments[inv.id] || []).map((p) => p.amount));
+    if (inv.type === 'credit') {
+      const original = originalOf(this.invoices, inv);
+      if (!original) return own(-1);
+      const balance = groupBalance(this.invoices, this.payments, original);
+      return balance < 0 && creditsOf(this.invoices, original).at(-1)?.id === inv.id ? balance : 0;
+    }
+    if (!creditsOf(this.invoices, inv).length) return own(1);
+    return Math.max(0, groupBalance(this.invoices, this.payments, inv));
   }
 
   /** Ajoute un statut de cycle de vie à une facture émise (jamais à un brouillon ni à un devis). */

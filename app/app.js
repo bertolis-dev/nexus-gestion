@@ -1451,7 +1451,10 @@ function viewSales(arg) {
     if (i.status === 'draft') return badge('Brouillon');
     if (i.type === 'quote')
       return invoiced.has(i.number) ? badge('Facturé', 'success') : i.dueDate < today() ? badge('Expiré', 'muted') : badge('Envoyé', 'info');
-    if (i.type === 'credit') return badge('Avoir', 'primary');
+    if (i.type === 'credit') {
+      const due = ws.book.outstanding(i);
+      return html`<div class="badge-row">${badge('Avoir', 'primary')}${due < 0 ? badge(`À rembourser : ${eur(-due)}`, 'warning') : ''}</div>`;
+    }
     return html`<div class="badge-row">${i.type === 'deposit' ? badge('Acompte', 'primary') : ''}${badge(...STATUS[rec.get(i.id).bucket])}</div>`;
   };
   return html` ${viewHeader('Factures', 'Ce que mes clients me doivent, et ce qu’ils ont réglé.', actions)}
@@ -2308,6 +2311,9 @@ async function attachReceipt(purchase, file) {
 
 // ------------------------------------------------------------------ banque (§3.4)
 
+/** Nature d'une pièce proposée au rapprochement, en langage courant. */
+const DOC_KIND_LABELS = { invoice: 'Facture', purchase: 'Dépense', 'purchase-credit': 'Avoir fournisseur', credit: 'Remboursement de l’avoir' };
+
 function viewBank() {
   const open = ws.transactions.filter((t) => t.status === 'open').sort((a, b) => b.date.localeCompare(a.date));
   const done = ws.transactions.filter((t) => t.status !== 'open').sort((a, b) => b.date.localeCompare(a.date));
@@ -2337,7 +2343,7 @@ function viewBank() {
                         (s, si) =>
                           html`<div class="match-suggestion">
                             <span
-                              >${s.docs.map((d) => `${d.kind === 'invoice' ? 'Facture' : 'Dépense'} ${d.number} — ${d.partyName} (${eur(d.outstanding)})`).join(' + ')}<br /><span
+                              >${s.docs.map((d) => `${DOC_KIND_LABELS[d.kind] || 'Dépense'} ${d.number} — ${d.partyName} (${eur(d.outstanding)})`).join(' + ')}<br /><span
                                 class="match-reasons"
                                 >${s.reasons.join(', ')} · confiance ${s.score} %</span
                               ></span

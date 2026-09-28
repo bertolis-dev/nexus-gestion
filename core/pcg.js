@@ -86,6 +86,7 @@ export const ACCOUNTS = [
   ['646000', "Cotisations sociales personnelles de l'exploitant", 'Cotisations sociales du dirigeant'],
   ['658000', 'Charges diverses de gestion courante', 'Écarts et charges diverses'],
   ['661100', 'Intérêts des emprunts et dettes', "Intérêts d'emprunt"],
+  ['681110', 'Dotations aux amortissements des immobilisations incorporelles', "Usure des logiciels de l'année"],
   ['681120', 'Dotations aux amortissements des immobilisations corporelles', "Usure des équipements de l'année"],
   ['681740', 'Dotations aux provisions pour dépréciation des créances', 'Provision clients impayés'],
   ['695000', 'Impôts sur les bénéfices', 'Impôt sur les sociétés'],
@@ -149,6 +150,7 @@ export const EXPENSE_CATEGORIES = [
   { id: 'impots', label: 'Impôts et taxes (CFE…)', account: '635000', vatDeductiblePct: 0 },
   { id: 'materiel-info', label: 'Ordinateur et matériel informatique', account: '218300', vatDeductiblePct: 100, fixedAsset: true },
   { id: 'mobilier', label: 'Mobilier', account: '218400', vatDeductiblePct: 100, fixedAsset: true },
+  { id: 'logiciel-achat', label: 'Logiciel acheté (licence définitive)', account: '205000', vatDeductiblePct: 100, fixedAsset: true },
 ];
 
 export const REVENUE_ACCOUNT_BY_NATURE = {

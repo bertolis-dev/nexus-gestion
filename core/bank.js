@@ -127,8 +127,9 @@ function daysBetween(a, b) {
  */
 export function suggestMatches(tx, openDocs, { maxGroup = 3 } = {}) {
   const wanted = Math.abs(tx.amount);
-  // Encaissement : factures clients et avoirs fournisseurs remboursés ; décaissement : dépenses.
-  const kinds = tx.amount > 0 ? ['invoice', 'purchase-credit'] : ['purchase'];
+  // Encaissement : factures clients et avoirs fournisseurs remboursés ; décaissement : dépenses et
+  // remboursements d'avoirs aux clients.
+  const kinds = tx.amount > 0 ? ['invoice', 'purchase-credit'] : ['purchase', 'credit'];
   const docs = openDocs.filter((d) => kinds.includes(d.kind) && d.outstanding > 0);
   const label = norm(tx.label);
   const labelTokens = new Set(tokens(tx.label));

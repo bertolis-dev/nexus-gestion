@@ -33,7 +33,8 @@ export function purchaseEntry(p, company) {
       const perBeneficiaryTtc = divRound(l.ht + vat, p.giftBeneficiaries);
       if (perBeneficiaryTtc > cat.giftVatThreshold) pct = 0;
     }
-    const isAsset = cat.fixedAsset && l.ht >= threshold;
+    // Avoir sur un bien du registre (assetCredit) : il diminue le compte du bien, quel que soit son montant.
+    const isAsset = cat.fixedAsset && (l.assetCredit || l.ht >= threshold);
     hasFixedAsset ||= isAsset;
     const account = cat.fixedAsset && !isAsset ? '606300' : cat.account;
 

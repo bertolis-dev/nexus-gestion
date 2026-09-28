@@ -21,6 +21,7 @@
  */
 
 import { divRound, sum } from './money.js';
+import { isOnReceipt, originalOf, receiptEvents } from './receipts.js';
 
 export const RATE_LINES = { 2000: '08', 1000: '9B', 550: '09', 210: '10' };
 
@@ -49,6 +50,31 @@ export function prepareCa3(ws, period, { previousCredit = 0 } = {}) {
 
   for (const inv of ws.book.invoices) {
     if (inv.status !== 'issued' || inv.type === 'quote') continue;
+    // TVA sur encaissements : facture, avoirs et encaissements forment un tout (receipts.js). L'avoir
+    // d'une telle facture est compté avec elle ; la facture, à chaque événement de la période.
+    const original = inv.type === 'credit' ? originalOf(ws.book.invoices, inv) : null;
+    if (original && isOnReceipt(original) && original.totals.totalVat) continue;
+    if (inv.type !== 'credit' && isOnReceipt(inv) && inv.totals.totalVat) {
+      for (const ev of receiptEvents(ws.book.invoices, ws.book.payments, inv)) {
+        if (!inPeriod(ev.date, period)) continue;
+        for (const [rateBp, d] of ev.byRate) {
+          const row = byRate.get(rateBp) || { rateBp, base: 0, vat: 0 };
+          row.base += d.base;
+          row.vat += d.vat;
+          byRate.set(rateBp, row);
+          justification.push({
+            line: RATE_LINES[rateBp] || '08',
+            number: inv.number,
+            client: inv.client.name,
+            date: ev.date,
+            reason: ev.reason,
+            base: d.base,
+            vat: d.vat,
+          });
+        }
+      }
+      continue;
+    }
     const sign = inv.type === 'credit' ? -1 : 1;
     const parts = exigibleParts(inv, ws.book.payments[inv.id] || [], period);
     for (const part of parts) {
