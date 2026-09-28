@@ -538,6 +538,14 @@ export class Workspace {
   }
 
   /** Situation du micro-entrepreneur utilisée pour estimer ses cotisations (Paramètres > Ma micro-entreprise). */
+  /**
+   * SIREN, forme juridique et régime fiscal figés dès la première facture émise ou écriture validée
+   * (même règle que la base de données, migration 0009) : ils figurent sur des pièces définitives.
+   */
+  identityLocked() {
+    return this.ledger.entries.some((e) => e.status === 'validated') || this.book.invoices.some((i) => i.status === 'issued');
+  }
+
   microOptions() {
     const c = this.company;
     return {

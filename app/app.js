@@ -3620,17 +3620,26 @@ function viewAssets() {
 
 function viewSettings() {
   const c = ws.company;
+  const locked = ws.identityLocked();
+  const lockedHint = 'Figé : des factures ont été émises ou des écritures validées. Pour un changement de situation, contactez le support.';
   return html` ${viewHeader('Paramètres', 'Informations imprimées sur vos factures et préférences d’affichage.')}
     <form class="card" data-form="company" style="display:flex;flex-direction:column;gap:14px">
       <h2>Mon entreprise</h2>
       <div class="form-grid">
         ${field('Nom', html`<input class="input" name="name" value="${c.name}" />`)}
-        ${field('SIREN', html`<input class="input" name="siren" value="${c.siren}" inputmode="numeric" />`)}
+        ${field(
+          'SIREN',
+          html`<input class="input" name="siren" value="${c.siren}" inputmode="numeric" ${locked ? raw('readonly aria-readonly="true"') : ''} />`,
+          {
+            hint: locked ? lockedHint : '',
+          },
+        )}
         ${field(
           'Forme juridique',
-          html`<select class="input" name="legalForm">
+          html`<select class="input" name="legalForm" ${locked ? raw('disabled') : ''}>
             ${['EI', 'EURL', 'SARL', 'SAS', 'SASU'].map((f) => opt(f, f, c.legalForm === f))}
           </select>`,
+          { hint: locked ? lockedHint : '' },
         )}
         ${field('Capital social', html`<input class="input" name="capital" value="${c.capital || ''}" placeholder="Ex. : 1 000 €" />`, { hint: 'Obligatoire sur les factures d’une société.' })}
         ${field('Adresse', html`<input class="input" name="address" value="${c.address}" />`)}
@@ -4009,6 +4018,16 @@ document.addEventListener('submit', async (e) => {
   if (kind === 'company') {
     const siren = f.siren.replace(/\s/g, '');
     if (!isValidSiren(siren)) return toast('Le SIREN saisi n’est pas valide.', true);
+    // Identité figée : la forme juridique (champ désactivé, donc absent du formulaire) reste celle enregistrée.
+    if (ws.identityLocked()) {
+      if (siren !== ws.company.siren) {
+        return toast(
+          'Le SIREN ne peut plus être modifié : des factures ont été émises ou des écritures validées. Pour un changement de situation, contactez le support.',
+          true,
+        );
+      }
+      f.legalForm = ws.company.legalForm;
+    }
     Object.assign(ws.company, { ...f, siren, vatOnDebits: fd.has('vatOnDebits'), paymentTermsDays: Number(f.paymentTermsDays) || 30 });
     save();
     render();
