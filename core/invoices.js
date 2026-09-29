@@ -7,6 +7,7 @@
 import { assertCents, divRound, sum, vatFromHt } from './money.js';
 import { REVENUE_ACCOUNT_BY_NATURE } from './pcg.js';
 import { LIFECYCLE } from './lifecycle.js';
+import { tradeZone } from './countries.js';
 import { creditsOf, originalOf, groupBalance } from './receipts.js';
 
 export const VAT_RATES_BP = [2000, 1000, 550, 210, 0];
@@ -75,7 +76,12 @@ export function computeTotals(invoice, { franchise = false } = {}) {
  */
 export function isVatExempt(invoice, company) {
   const c = invoice.client || {};
-  return company.vatRegime === 'franchise' || (c.type !== 'B2C' && (c.country || 'FR') !== 'FR');
+  if (company.vatRegime === 'franchise') return true;
+  const zone = tradeZone(c.country);
+  if (c.type !== 'B2C') return zone !== 'FR';
+  // Particulier hors UE : l'exportation de biens est exonérée (art. 262 I) ; ses prestations restent
+  // en principe taxées en France.
+  return zone === 'HORS_UE' && operationNature(invoice.lines || []) === 'biens';
 }
 
 /** Nature des opérations (mention obligatoire au 01/09/2027, activée dès la V1). */
@@ -102,6 +108,11 @@ export function checkInvoice(invoice, company) {
   need(company.address, 'L’adresse de votre entreprise est manquante (Paramètres).', 'company.address');
   if (isCompany) {
     need(company.capital, 'Le capital social de votre société doit figurer sur la facture (Paramètres).', 'company.capital');
+    need(
+      company.registration?.trim(),
+      'L’immatriculation de votre société (RCS ou RM et ville, par exemple « RCS Lyon ») doit figurer sur la facture (Paramètres).',
+      'company.registration',
+    );
   }
   if (company.vatRegime !== 'franchise') {
     need(
@@ -117,8 +128,8 @@ export function checkInvoice(invoice, company) {
   if (b2bFrance && invoice.type !== 'quote') {
     need(isValidSiren(c.siren), 'Le SIREN de ce client est manquant : il est obligatoire pour envoyer la facture.', 'client.siren');
   }
-  if (c.type !== 'B2C' && (c.country || 'FR') !== 'FR' && company.vatRegime !== 'franchise') {
-    need(c.vatNumber, 'Le numéro de TVA de ce client étranger est manquant (autoliquidation).', 'client.vatNumber');
+  if (c.type !== 'B2C' && tradeZone(c.country) === 'UE' && company.vatRegime !== 'franchise') {
+    need(c.vatNumber, 'Le numéro de TVA intracommunautaire de ce client européen est manquant (autoliquidation).', 'client.vatNumber');
   }
 
   need(invoice.issueDate, "La date d'émission est manquante.", 'issueDate');
@@ -147,12 +158,18 @@ export function legalMentions(invoice, company) {
   if (company.vatRegime === 'franchise') m.push(FRANCHISE_MENTION);
   if (company.vatOnDebits) m.push('Option pour le paiement de la TVA d’après les débits');
   const c = invoice.client || {};
-  if (c.type !== 'B2C' && (c.country || 'FR') !== 'FR' && company.vatRegime !== 'franchise') {
-    m.push(
-      operationNature(invoice.lines) === 'services'
-        ? 'Autoliquidation — art. 283-2 du CGI / art. 196 de la directive 2006/112/CE'
-        : 'Exonération de TVA, art. 262 ter I du CGI (livraison intracommunautaire)',
-    );
+  const zone = tradeZone(c.country);
+  const nature = operationNature(invoice.lines);
+  if (company.vatRegime !== 'franchise' && zone !== 'FR' && (c.type !== 'B2C' || isVatExempt(invoice, company))) {
+    const goods = nature !== 'services';
+    const services = nature !== 'biens';
+    if (zone === 'UE') {
+      if (goods) m.push('Exonération de TVA, art. 262 ter I du CGI (livraison intracommunautaire)');
+      if (services) m.push('Autoliquidation — art. 283-2 du CGI / art. 196 de la directive 2006/112/CE');
+    } else {
+      if (goods) m.push('Exonération de TVA, art. 262 I du CGI (exportation hors de l’Union européenne)');
+      if (services && c.type !== 'B2C') m.push('TVA non applicable, art. 259-1 du CGI (prestation réalisée hors de France)');
+    }
   }
   if (invoice.type === 'quote')
     m.push(`Devis valable jusqu'au ${invoice.dueDate.split('-').reverse().join('/')}. Bon pour accord : date et signature du client.`);
@@ -370,6 +387,33 @@ export function clientAux(client) {
 export const DOCUMENT_LABELS = { invoice: 'Facture', credit: 'Avoir', deposit: "Facture d'acompte", quote: 'Devis' };
 
 /** Compte de TVA d'une vente : services sans option débits → TVA exigible à l'encaissement (445800). */
+/**
+ * TVA d'une facture répartie par nature d'opération et par taux : { biens: [...], services: [...] },
+ * chaque élément { rateBp, base, vat }. La part des services est calculée au prorata de sa base,
+ * celle des biens prend le reste : la somme égale toujours le total de la facture.
+ */
+export function vatByNature(inv) {
+  const out = { biens: [], services: [] };
+  for (const v of inv.totals.vatBreakdown) {
+    if (!v.vat) continue;
+    const servicesBase = sum(inv.lines.filter((l) => l.nature === 'services' && l.vatRateBp === v.rateBp).map(lineHt));
+    const servicesVat = v.base ? divRound(v.vat * servicesBase, v.base) : 0;
+    if (servicesBase) out.services.push({ rateBp: v.rateBp, base: servicesBase, vat: servicesVat });
+    if (v.base - servicesBase) out.biens.push({ rateBp: v.rateBp, base: v.base - servicesBase, vat: v.vat - servicesVat });
+  }
+  return out;
+}
+
+/**
+ * Nom de l'émetteur tel qu'il doit figurer sur ses documents : un entrepreneur individuel ajoute « EI »
+ * (ou « entrepreneur individuel ») à son nom (C. com. art. L.526-22 et R.526-26).
+ */
+export function issuerName(company) {
+  const name = company.name || '';
+  if (company.legalForm !== 'EI' || /(^|[\s,(])EI([\s,)]|$)|entrepreneur individuel/i.test(name)) return name;
+  return `${name} EI`;
+}
+
 export function saleVatAccount(inv, company) {
   return inv.operationNature === 'services' && !company.vatOnDebits ? '445800' : '445710';
 }
@@ -404,7 +448,13 @@ export function invoiceEntry(inv, company) {
     [...byAccount].forEach(([account, ht], i) => add(account, i === 0 ? ht + drift : ht));
   }
   const vatAccount = saleVatAccount(inv, company);
-  add(vatAccount, inv.totals.totalVat);
+  if (inv.operationNature === 'mixte' && !company.vatOnDebits) {
+    // Facture mixte : chaque part de TVA suit la règle de sa nature (biens à la facturation,
+    // services à l'encaissement).
+    const split = vatByNature(inv);
+    add('445710', sum(split.biens.map((v) => v.vat)));
+    add('445800', sum(split.services.map((v) => v.vat)));
+  } else add(vatAccount, inv.totals.totalVat);
   for (const d of inv.deposits || []) {
     add('419100', -d.amountHt);
     add(d.vatAccount || vatAccount, -d.amountVat);

@@ -11,10 +11,11 @@
  */
 
 import { divRound, sum } from './money.js';
+import { vatByNature } from './invoices.js';
 
 /** TVA exigible à l'encaissement (et non à la facturation) ? Un avoir suit la facture qu'il corrige. */
 export function isOnReceipt(inv) {
-  return inv.operationNature === 'services' && !inv.issuer?.vatOnDebits;
+  return (inv.operationNature === 'services' || inv.operationNature === 'mixte') && !inv.issuer?.vatOnDebits;
 }
 
 /** Avoirs émis rattachés à une facture (par son numéro). */
@@ -43,15 +44,22 @@ export function groupBalance(invoices, payments, inv, date = null) {
   );
 }
 
-/** Base et TVA par taux, nettes des acomptes déduits (même répartition que la déclaration). */
+/**
+ * Part « services » (exigible à l'encaissement) de la base et de la TVA, par taux, nette des acomptes
+ * déduits (au prorata de cette part). Une facture de biens n'a pas de part à l'encaissement.
+ */
 function ratesOf(inv, sign = 1) {
   const depositVat = sum((inv.deposits || []).map((d) => d.amountVat));
   const depositHt = sum((inv.deposits || []).map((d) => d.amountHt));
+  const services = new Map(vatByNature(inv).services.map((s) => [s.rateBp, s]));
   return inv.totals.vatBreakdown
-    .filter((v) => v.vat)
+    .filter((v) => v.vat && services.has(v.rateBp))
     .map((v) => {
+      const s = services.get(v.rateBp);
       const weight = inv.totals.totalVat ? v.vat / inv.totals.totalVat : 0;
-      return { rateBp: v.rateBp, base: sign * (v.base - Math.round(depositHt * weight)), vat: sign * (v.vat - Math.round(depositVat * weight)) };
+      const netBase = v.base - Math.round(depositHt * weight);
+      const netVat = v.vat - Math.round(depositVat * weight);
+      return { rateBp: v.rateBp, base: sign * divRound(netBase * s.base, v.base), vat: sign * divRound(netVat * s.vat, v.vat) };
     });
 }
 

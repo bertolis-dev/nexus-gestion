@@ -12,7 +12,8 @@
  * le validateur de la PA retenue.
  */
 
-import { lineHt } from './invoices.js';
+import { tradeZone } from './countries.js';
+import { lineHt, issuerName } from './invoices.js';
 import { sum, vatFromHt } from './money.js';
 
 const NS = {
@@ -46,15 +47,33 @@ export function splitAddress(address = '') {
 export function vatCategory(inv, issuer) {
   if (issuer.vatRegime === 'franchise') return { code: 'E', reason: 'TVA non applicable, art. 293 B du CGI', reasonCode: 'VATEX-FR-FRANCHISE' };
   const c = inv.client || {};
-  if (c.type !== 'B2C' && (c.country || 'FR') !== 'FR') {
-    return inv.operationNature === 'services'
+  const zone = tradeZone(c.country);
+  const services = inv.operationNature === 'services';
+  if (zone === 'UE' && c.type !== 'B2C') {
+    return services
       ? { code: 'AE', reason: 'Autoliquidation', reasonCode: 'VATEX-EU-AE' }
       : { code: 'K', reason: 'Livraison intracommunautaire exonérée, art. 262 ter I du CGI', reasonCode: 'VATEX-EU-IC' };
+  }
+  if (zone === 'HORS_UE' && !services && inv.totals.totalVat === 0) {
+    return { code: 'G', reason: 'Exportation hors de l’Union européenne, art. 262 I du CGI', reasonCode: 'VATEX-EU-G' };
+  }
+  if (zone === 'HORS_UE' && services && c.type !== 'B2C') {
+    return { code: 'O', reason: 'Prestation hors du champ de la TVA française, art. 259-1 du CGI', reasonCode: 'VATEX-EU-O' };
   }
   return { code: 'S' };
 }
 
-function party(tag, { name, siren, address, country = 'FR', vatNumber, email }) {
+function postalAddress(address, country) {
+  const a = splitAddress(address);
+  return `<ram:PostalTradeAddress>
+          ${a.postcode ? `<ram:PostcodeCode>${a.postcode}</ram:PostcodeCode>` : ''}
+          ${a.line ? `<ram:LineOne>${xmlEscape(a.line)}</ram:LineOne>` : ''}
+          ${a.city ? `<ram:CityName>${xmlEscape(a.city)}</ram:CityName>` : ''}
+          <ram:CountryID>${xmlEscape(country)}</ram:CountryID>
+        </ram:PostalTradeAddress>`;
+}
+
+function party(tag, { name, siren, address, country = 'FR', vatNumber, fiscalId, email }) {
   const a = splitAddress(address);
   return `<ram:${tag}>
         <ram:Name>${xmlEscape(name)}</ram:Name>
@@ -67,8 +86,40 @@ function party(tag, { name, siren, address, country = 'FR', vatNumber, email }) 
         </ram:PostalTradeAddress>
         ${siren ? `<ram:URIUniversalCommunication><ram:URIID schemeID="0225">${xmlEscape(siren)}</ram:URIID></ram:URIUniversalCommunication>` : email ? `<ram:URIUniversalCommunication><ram:URIID schemeID="EM">${xmlEscape(email)}</ram:URIID></ram:URIUniversalCommunication>` : ''}
         ${vatNumber ? `<ram:SpecifiedTaxRegistration><ram:ID schemeID="VA">${xmlEscape(vatNumber)}</ram:ID></ram:SpecifiedTaxRegistration>` : ''}
+        ${!vatNumber && fiscalId ? `<ram:SpecifiedTaxRegistration><ram:ID schemeID="FC">${xmlEscape(fiscalId)}</ram:ID></ram:SpecifiedTaxRegistration>` : ''}
       </ram:${tag}>`;
 }
+
+/**
+ * Cadre de facturation (BT-23, CIUS FR) : B (biens), S (services), M (mixte), suivi de 1 (facture
+ * déposée) ou 4 (facture définitive après acompte). Codes à valider par l'expert-comptable.
+ */
+export function businessProcess(inv) {
+  const letter = { biens: 'B', services: 'S', mixte: 'M' }[inv.operationNature] || 'S';
+  return `${letter}${inv.deposits?.length ? '4' : '1'}`;
+}
+
+/** Notes de la facture : mentions légales, avec pénalités (PMD), escompte (AAB) et conditions de paiement (PMT) séparées. */
+function invoiceNotes(inv) {
+  const notes = [];
+  for (const m of inv.mentions || []) {
+    if (/retard|pénalités/i.test(m)) {
+      const [penalties, discount] = m.split(/(?=Pas d.escompte)/);
+      notes.push({ code: 'PMD', text: penalties.trim() });
+      if (discount) notes.push({ code: 'AAB', text: discount.trim() });
+    } else notes.push({ code: 'AAI', text: m });
+  }
+  if (inv.type !== 'credit' && inv.dueDate) {
+    const due = inv.dueDate.split('-').reverse().join('/');
+    notes.push({ code: 'PMT', text: `Paiement au plus tard le ${due}${inv.issuer.iban ? ' par virement' : ''}.` });
+  }
+  notes.push({ code: 'AAI', text: `Nature des opérations : ${inv.operationNature}` });
+  if (inv.issuer.capital) notes.push({ code: 'ABL', text: `${inv.issuer.legalForm} au capital de ${inv.issuer.capital}` });
+  return notes;
+}
+
+/** Catégorie de TVA d'une ligne ou d'un taux : Z pour un taux à 0 % sur une facture taxée. */
+const categoryFor = (cat, rateBp) => (cat.code === 'S' && rateBp === 0 ? 'Z' : cat.code);
 
 /** Montants signés : un avoir (381) porte des montants positifs, c'est le type de document qui l'inverse. */
 export function buildCii(inv) {
@@ -77,11 +128,7 @@ export function buildCii(inv) {
   const issuer = inv.issuer;
   const cat = vatCategory(inv, issuer);
   const vatOnReceipt = inv.operationNature === 'services' && !issuer.vatOnDebits && cat.code === 'S';
-  const notes = [
-    ...(inv.mentions || []).map((m) => ({ code: /retard|pénalités/i.test(m) ? 'PMD' : 'AAI', text: m })),
-    { code: 'AAI', text: `Nature des opérations : ${inv.operationNature}` },
-  ];
-  if (issuer.capital) notes.push({ code: 'ABL', text: `${issuer.legalForm} au capital de ${issuer.capital}` });
+  const notes = invoiceNotes(inv);
 
   const lines = inv.lines.map((l, i) => {
     const net = lineHt(l);
@@ -95,7 +142,7 @@ export function buildCii(inv) {
       </ram:SpecifiedLineTradeAgreement>
       <ram:SpecifiedLineTradeDelivery><ram:BilledQuantity unitCode="C62">${quantity(l.qty)}</ram:BilledQuantity></ram:SpecifiedLineTradeDelivery>
       <ram:SpecifiedLineTradeSettlement>
-        <ram:ApplicableTradeTax><ram:TypeCode>VAT</ram:TypeCode><ram:CategoryCode>${cat.code}</ram:CategoryCode><ram:RateApplicablePercent>${rate(lineRate)}</ram:RateApplicablePercent></ram:ApplicableTradeTax>
+        <ram:ApplicableTradeTax><ram:TypeCode>VAT</ram:TypeCode><ram:CategoryCode>${categoryFor(cat, lineRate)}</ram:CategoryCode><ram:RateApplicablePercent>${rate(lineRate)}</ram:RateApplicablePercent></ram:ApplicableTradeTax>
         ${l.discountBp ? `<ram:SpecifiedTradeAllowanceCharge><ram:ChargeIndicator><udt:Indicator>false</udt:Indicator></ram:ChargeIndicator><ram:ActualAmount>${amount(Math.round(Number(l.qty) * l.unitPrice) - net)}</ram:ActualAmount><ram:Reason>Remise</ram:Reason></ram:SpecifiedTradeAllowanceCharge>` : ''}
         <ram:SpecifiedTradeSettlementLineMonetarySummation><ram:LineTotalAmount>${amount(net)}</ram:LineTotalAmount></ram:SpecifiedTradeSettlementLineMonetarySummation>
       </ram:SpecifiedLineTradeSettlement>
@@ -109,9 +156,9 @@ export function buildCii(inv) {
         <ram:TypeCode>VAT</ram:TypeCode>
         ${cat.reason ? `<ram:ExemptionReason>${xmlEscape(cat.reason)}</ram:ExemptionReason>` : ''}
         <ram:BasisAmount>${amount(v.base)}</ram:BasisAmount>
-        <ram:CategoryCode>${cat.code}</ram:CategoryCode>
+        <ram:CategoryCode>${categoryFor(cat, cat.code === 'S' ? v.rateBp : 0)}</ram:CategoryCode>
         ${cat.reasonCode ? `<ram:ExemptionReasonCode>${cat.reasonCode}</ram:ExemptionReasonCode>` : ''}
-        ${cat.code === 'S' ? `<ram:DueDateTypeCode>${vatOnReceipt ? '72' : '5'}</ram:DueDateTypeCode>` : ''}
+        ${categoryFor(cat, v.rateBp) === 'S' ? `<ram:DueDateTypeCode>${vatOnReceipt ? '72' : '5'}</ram:DueDateTypeCode>` : ''}
         <ram:RateApplicablePercent>${rate(cat.code === 'S' ? v.rateBp : 0)}</ram:RateApplicablePercent>
       </ram:ApplicableTradeTax>`,
   );
@@ -121,6 +168,7 @@ export function buildCii(inv) {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rsm:CrossIndustryInvoice xmlns:rsm="${NS.rsm}" xmlns:ram="${NS.ram}" xmlns:qdt="${NS.qdt}" xmlns:udt="${NS.udt}">
   <rsm:ExchangedDocumentContext>
+    <ram:BusinessProcessSpecifiedDocumentContextParameter><ram:ID>${businessProcess(inv)}</ram:ID></ram:BusinessProcessSpecifiedDocumentContextParameter>
     <ram:GuidelineSpecifiedDocumentContextParameter><ram:ID>urn:cen.eu:en16931:2017</ram:ID></ram:GuidelineSpecifiedDocumentContextParameter>
   </rsm:ExchangedDocumentContext>
   <rsm:ExchangedDocument>
@@ -131,10 +179,16 @@ export function buildCii(inv) {
   </rsm:ExchangedDocument>
   <rsm:SupplyChainTradeTransaction>${lines.join('')}
     <ram:ApplicableHeaderTradeAgreement>
-      ${party('SellerTradeParty', { name: issuer.name, siren: issuer.siren, address: issuer.address, vatNumber: issuer.vatNumber })}
+      ${party('SellerTradeParty', { name: issuerName(issuer), siren: issuer.siren, address: issuer.address, vatNumber: issuer.vatNumber, fiscalId: issuer.siren })}
       ${party('BuyerTradeParty', { name: c.name, siren: c.type === 'B2C' ? '' : c.siren, address: c.address, country: c.country || 'FR', vatNumber: c.vatNumber, email: c.email })}
     </ram:ApplicableHeaderTradeAgreement>
-    <ram:ApplicableHeaderTradeDelivery/>
+    <ram:ApplicableHeaderTradeDelivery>
+      <ram:ShipToTradeParty>
+        <ram:Name>${xmlEscape(c.name)}</ram:Name>
+        ${postalAddress(inv.deliveryAddress || c.address, inv.deliveryCountry || c.country || 'FR')}
+      </ram:ShipToTradeParty>
+      <ram:ActualDeliverySupplyChainEvent><ram:OccurrenceDateTime><udt:DateTimeString format="102">${date102(inv.deliveryDate || inv.issueDate)}</udt:DateTimeString></ram:OccurrenceDateTime></ram:ActualDeliverySupplyChainEvent>
+    </ram:ApplicableHeaderTradeDelivery>
     <ram:ApplicableHeaderTradeSettlement>
       <ram:InvoiceCurrencyCode>EUR</ram:InvoiceCurrencyCode>
       ${issuer.iban ? `<ram:SpecifiedTradeSettlementPaymentMeans><ram:TypeCode>58</ram:TypeCode><ram:PayeePartyCreditorFinancialAccount><ram:IBANID>${xmlEscape(issuer.iban.replace(/\s/g, ''))}</ram:IBANID></ram:PayeePartyCreditorFinancialAccount></ram:SpecifiedTradeSettlementPaymentMeans>` : ''}${taxes.join('')}
@@ -177,7 +231,14 @@ export function checkEn16931(inv) {
   rule(inv.lines.length > 0, 'BR-16', 'au moins une ligne');
   if (cat.code === 'S') rule(/^FR/.test(issuer.vatNumber || ''), 'BR-S-02', 'n° de TVA du vendeur obligatoire en catégorie S');
   if (cat.code === 'AE' || cat.code === 'K') rule(Boolean(c.vatNumber), `BR-${cat.code}-02`, 'n° de TVA de l’acheteur obligatoire');
-  if (cat.code === 'E') rule(t.totalVat === 0, 'BR-E-10', 'aucune TVA en catégorie exonérée');
+  if (cat.code === 'E') {
+    rule(t.totalVat === 0, 'BR-E-10', 'aucune TVA en catégorie exonérée');
+    rule(Boolean(issuer.vatNumber || issuer.siren), 'BR-E-02', 'identifiant fiscal du vendeur obligatoire (n° de TVA ou SIREN)');
+  }
+  if (cat.code === 'K') {
+    rule(Boolean(inv.deliveryDate || inv.issueDate), 'BR-IC-11', 'date de livraison obligatoire pour une livraison intracommunautaire');
+    rule(Boolean(inv.deliveryCountry || c.country), 'BR-IC-12', 'pays de livraison obligatoire pour une livraison intracommunautaire');
+  }
   if (c.type !== 'B2C' && (c.country || 'FR') === 'FR') rule(/^\d{9}$/.test(c.siren || ''), 'BR-FR-10', 'SIREN de l’acheteur obligatoire (B2B France)');
 
   const lineSum = sum(inv.lines.map(lineHt));

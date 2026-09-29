@@ -6,14 +6,14 @@
 
 import { buildChart, categoryById } from './pcg.js';
 import { Ledger } from './ledger.js';
-import { InvoiceBook, clientAux } from './invoices.js';
+import { InvoiceBook, clientAux, lineHt } from './invoices.js';
 import { purchaseEntry, findDuplicates } from './purchases.js';
 import { mergeTransactions, suggestMatches, settlementEntry, directEntry } from './bank.js';
 import { isOnReceipt, creditsOf, originalOf, groupBalance, receiptTargets } from './receipts.js';
 import { divRound, splitTtc, sum } from './money.js';
 import { openingEntry } from './fecimport.js';
 import { creditTargetsAsset } from './assets.js';
-import { addDays } from './dates.js';
+import { addDays, nextFiscalYear } from './dates.js';
 import { prepareCa3, prepareCa12, ca12Advances, liquidationEntry } from './vatreturn.js';
 import { LIFECYCLE } from './lifecycle.js';
 import { declarationPeriods, urssafDeclaration, urssafDeadline, estimateContributions, thresholdStatus, vatFranchiseMessage, ACTIVITY_TYPES } from './micro.js';
@@ -27,6 +27,7 @@ import {
   nextYearOpening,
   allocationEntry,
   balanceSheet,
+  fiscalYearMonths,
 } from './closing.js';
 import { validateTemplate, dueOccurrences, periodLabel } from './recurring.js';
 
@@ -51,6 +52,23 @@ export const OUTFLOW_CATEGORIES = [
   { id: 'remboursement-associe', label: 'Remboursement du compte courant d’associé', account: '455000' },
   { id: 'virement-interne-sortant', label: 'Virement vers un autre de mes comptes', account: '580000' },
 ];
+
+/** Somme de plusieurs estimations de cotisations (activité mixte). */
+function combineEstimates(list) {
+  const total = (k) => sum(list.map((e) => e[k]));
+  return {
+    turnover: total('turnover'),
+    social: total('social'),
+    acreReduction: total('acreReduction'),
+    cfp: total('cfp'),
+    liberatoire: total('liberatoire'),
+    chamber: total('chamber'),
+    total: total('total'),
+    rates: list[0].rates,
+    missing: [...new Set(list.flatMap((e) => e.missing))],
+    byActivity: list,
+  };
+}
 
 export class Workspace {
   constructor({ company, state = {}, now, newId } = {}) {
@@ -310,7 +328,17 @@ export class Workspace {
   // ---------------------------------------------------------------- clôture de l'exercice
 
   addInventory(item) {
-    return this.ledger.addDraft(inventoryEntry(item, this.company.fiscalYear));
+    // Client douteux : toute sa créance encore ouverte est transférée en 416.
+    const receivableTtc =
+      item.type === 'doubtful' && item.aux
+        ? sum(
+            this.ledger
+              .lines()
+              .filter((l) => l.account === '411000' && l.aux === item.aux)
+              .map((l) => l.debit - l.credit),
+          )
+        : 0;
+    return this.ledger.addDraft(inventoryEntry(item, this.company.fiscalYear, { receivableTtc }));
   }
 
   bookDepreciation() {
@@ -325,7 +353,7 @@ export class Workspace {
   computeCorporateTax(opts = {}) {
     const fy = this.company.fiscalYear;
     const days = Math.round((Date.parse(fy.end) - Date.parse(fy.start)) / 86400000) + 1;
-    return corporateTax({ resultBeforeTax: incomeStatement(this.ledger).resultBeforeTax, days, ...opts });
+    return corporateTax({ resultBeforeTax: incomeStatement(this.ledger).resultBeforeTax, days, months: fiscalYearMonths(fy), ...opts });
   }
 
   /** Passe (ou remplace, tant qu'elle est en brouillon) l'écriture d'IS de l'exercice. */
@@ -364,9 +392,7 @@ export class Workspace {
     this.ledger.validateThrough(fy.end);
     const late = this.ledger.entries.filter((e) => e.status === 'draft');
     if (late.length) throw new Error(`${late.length} écriture(s) sont datées après la fin de l’exercice.`);
-    const nextStart = new Date(Date.parse(`${fy.end}T00:00:00Z`) + 86400000).toISOString().slice(0, 10);
-    const [y, m, d] = fy.end.split('-').map(Number);
-    const nextEnd = new Date(Date.UTC(y + 1, m - 1, d)).toISOString().slice(0, 10);
+    const { start: nextStart, end: nextEnd } = nextFiscalYear(fy);
     const { opening, reversals } = nextYearOpening(this.ledger, nextStart);
     const nextCompany = { ...structuredClone(this.company), fiscalYear: { start: nextStart, end: nextEnd } };
     const next = new Workspace({
@@ -408,12 +434,15 @@ export class Workspace {
    * @param {{supplier, date, number, categoryId, ttc, vatRateBp}} data
    * @param {{force?: boolean}} opts enregistrer malgré un doublon probable
    */
-  addPurchase({ supplier, date, number = '', categoryId, ttc, vatRateBp = 2000, documentName = '', type = 'invoice' }, { force = false } = {}) {
+  addPurchase(
+    { supplier, date, number = '', categoryId, ttc, vatRateBp = 2000, documentName = '', type = 'invoice', reverseCharge = false },
+    { force = false } = {},
+  ) {
     // Fournisseur étranger (autoliquidation) : sa facture ne porte pas de TVA française, le montant
     // saisi est donc déjà le HT — la TVA due est calculée à part par purchaseEntry.
-    const foreign = (supplier.country || 'FR') !== 'FR';
+    const foreign = reverseCharge || (supplier.country || 'FR') !== 'FR';
     const { ht } = foreign ? { ht: ttc } : splitTtc(ttc, vatRateBp);
-    return this.addPurchaseLines({ supplier, date, number, documentName, type, lines: [{ categoryId, ht, vatRateBp }] }, { force });
+    return this.addPurchaseLines({ supplier, date, number, documentName, type, reverseCharge, lines: [{ categoryId, ht, vatRateBp }] }, { force });
   }
 
   /**
@@ -421,8 +450,12 @@ export class Workspace {
    * @param {{supplier, date, number, lines: {categoryId, ht, vatRateBp}[], documentName?, einvoice?}} data
    * @param {{force?: boolean}} opts enregistrer malgré un doublon probable
    */
-  addPurchaseLines({ supplier, date, number = '', lines, documentName = '', einvoice = null, type = 'invoice' }, { force = false } = {}) {
+  addPurchaseLines(
+    { supplier, date, number = '', lines, documentName = '', einvoice = null, type = 'invoice', reverseCharge = false },
+    { force = false } = {},
+  ) {
     const p = { id: this.#id('P'), supplier: { country: 'FR', ...supplier }, date, number, documentName, lines: structuredClone(lines) };
+    if (reverseCharge) p.reverseCharge = true;
     if (type === 'credit') {
       p.type = 'credit';
       // Avoir sur un équipement du registre : il diminue le compte du bien d'origine.
@@ -530,6 +563,12 @@ export class Workspace {
           if (creditsOf(this.book.invoices, inv).length) this.#letterGroupIfSettled(inv, tx.date);
           else if (this.ledger.entries.some((e) => e.id === inv.entryId))
             this.#letterSettled({ entryId: inv.entryId, lineIndex: 0 }, this.book.payments[inv.id], tx.date);
+          else {
+            // Facture d'un exercice précédent : on lettre sa ligne d'à-nouveau avec les règlements de l'exercice.
+            const ref = this.#openingRef(inv);
+            const inLedger = (this.book.payments[inv.id] || []).filter((p) => this.ledger.entries.some((e) => e.id === p.entryId));
+            if (ref) this.#letterSettled(ref, inLedger, tx.date);
+          }
           const events = this.book.lifecycle[inv.id] || [];
           const last = events.at(-1);
           // Pas de statut automatique après un statut final (facture refusée puis payée : à traiter à la main).
@@ -549,6 +588,16 @@ export class Workspace {
     tx.status = 'matched';
     tx.entryId = entry.id;
     return entry;
+  }
+
+  /** Ligne d'à-nouveau d'une facture d'un exercice précédent (même tiers, référence dans le libellé). */
+  #openingRef(inv) {
+    const aux = this.invoiceAux(inv);
+    for (const e of this.ledger.entries.filter((x) => x.source?.kind === 'opening')) {
+      const lineIndex = e.lines.findIndex((l) => l.account === '411000' && l.aux === aux && !l.letter && l.label.includes(inv.number));
+      if (lineIndex >= 0) return { entryId: e.id, lineIndex };
+    }
+    return null;
   }
 
   #letterSettled(docRef, payments, date) {
@@ -638,23 +687,28 @@ export class Workspace {
 
   /** Encaissements de l'année (base du chiffre d'affaires à déclarer en micro-entreprise). */
   microReceipts() {
+    // Chiffre d'affaires encaissé : hors taxes si l'entreprise facture la TVA ; réparti entre ventes
+    // (lignes « biens ») et prestations (lignes « services ») pour une activité mixte ; les
+    // remboursements d'avoirs (règlements négatifs) le diminuent.
+    const franchise = this.company.vatRegime === 'franchise';
+    const servicesActivity = this.company.microActivity === 'bnc' ? 'bnc' : 'bic-services';
     const out = [];
     for (const inv of this.book.invoices) {
-      for (const p of this.book.payments[inv.id] || []) {
-        out.push({
-          date: p.date,
-          invoiceNumber: inv.number,
-          clientName: inv.client.name,
-          amount: p.amount,
-          method: 'Virement',
-          activity: this.company.microActivity || 'bnc',
-        });
+      const payments = this.book.payments[inv.id] || [];
+      if (!payments.length) continue;
+      const goodsHt = sum(inv.lines.filter((l) => l.nature !== 'services').map(lineHt));
+      const totalHt = sum(inv.lines.map(lineHt));
+      for (const p of payments) {
+        const amount = franchise || !inv.totals.totalTtc ? p.amount : divRound(p.amount * inv.totals.totalHt, inv.totals.totalTtc);
+        const goods = totalHt ? divRound(amount * goodsHt, totalHt) : 0;
+        const base = { date: p.date, invoiceNumber: inv.number, clientName: inv.client.name, method: 'Virement' };
+        if (goods) out.push({ ...base, amount: goods, activity: 'bic-vente' });
+        if (amount - goods) out.push({ ...base, amount: amount - goods, activity: servicesActivity });
       }
     }
     return out;
   }
 
-  /** Situation du micro-entrepreneur utilisée pour estimer ses cotisations (Paramètres > Ma micro-entreprise). */
   /**
    * SIREN, forme juridique et régime fiscal figés dès la première facture émise ou écriture validée
    * (même règle que la base de données, migration 0009) : ils figurent sur des pièces définitives.
@@ -663,6 +717,7 @@ export class Workspace {
     return this.ledger.entries.some((e) => e.status === 'validated') || this.book.invoices.some((i) => i.status === 'issued');
   }
 
+  /** Situation du micro-entrepreneur utilisée pour estimer ses cotisations (Paramètres > Ma micro-entreprise). */
   microOptions() {
     const c = this.company;
     return {
@@ -720,8 +775,15 @@ export class Workspace {
                     : deadline < today
                       ? 'en-retard'
                       : 'a-declarer';
-        const turnover = urssafDeclaration(receipts, p).total;
-        const estimate = estimateContributions(turnover, this.company.microActivity || 'bnc', this.microOptions(), p.to);
+        const declaration = urssafDeclaration(receipts, p);
+        const turnover = declaration.total;
+        // Activité mixte : chaque activité à son propre taux ; un remboursement supérieur aux
+        // encaissements du trimestre ne donne rien à payer (à valider).
+        const parts = Object.entries(declaration.byActivity).filter(([, amount]) => amount > 0);
+        const estimates = (parts.length ? parts : [[this.company.microActivity || 'bnc', 0]]).map(([activity, amount]) =>
+          estimateContributions(amount, activity, this.microOptions(), p.to),
+        );
+        const estimate = estimates.length === 1 ? estimates[0] : combineEstimates(estimates);
         return { ...p, turnover, estimate, deadline, record, status };
       });
   }
@@ -793,6 +855,40 @@ export class Workspace {
    * jour passé, on annonce la déclaration du mois en cours. Réel simplifié : acomptes de juillet et
    * décembre, CA12 annuelle début mai.
    */
+  /**
+   * Périodes de déclaration de TVA (CA3) couvrant l'exercice : mois civils, ou trimestres civils si
+   * l'entreprise déclare chaque trimestre (company.vatPeriodicity = 'trimestrielle').
+   */
+  vatPeriods() {
+    const fy = this.company.fiscalYear;
+    const quarterly = this.company.vatPeriodicity === 'trimestrielle';
+    const span = quarterly ? 3 : 1;
+    let [y, m] = fy.start.split('-').map(Number);
+    if (quarterly) m = Math.floor((m - 1) / 3) * 3 + 1;
+    const out = [];
+    for (let guard = 0; guard < 40; guard++) {
+      const from = `${y}-${String(m).padStart(2, '0')}-01`;
+      if (from > fy.end) break;
+      const to = new Date(Date.UTC(y, m - 1 + span, 0)).toISOString().slice(0, 10);
+      const label = quarterly
+        ? `${(m - 1) / 3 + 1 === 1 ? '1er' : `${(m - 1) / 3 + 1}e`} trimestre ${y}`
+        : new Date(Date.UTC(2000, m - 1, 1)).toLocaleDateString('fr-FR', { month: 'long', timeZone: 'UTC' });
+      out.push({ from, to, label });
+      m += span;
+      if (m > 12) {
+        m -= 12;
+        y += 1;
+      }
+    }
+    return out;
+  }
+
+  /** Date limite de dépôt d'une CA3 : le jour limite du mois qui suit la période. */
+  vatDeadline(period) {
+    const [y, m] = period.to.split('-').map(Number);
+    return new Date(Date.UTC(y, m, this.company.vatDeadlineDay || 19)).toISOString().slice(0, 10);
+  }
+
   #vatTodo(today) {
     if (this.company.vatRegime === 'franchise') return [];
     const d = new Date(`${today}T00:00:00Z`);
@@ -800,44 +896,46 @@ export class Workspace {
     const month = d.getUTCMonth(); // 0-11
     const monthName = (m) => new Date(Date.UTC(2000, m, 1)).toLocaleDateString('fr-FR', { month: 'long', timeZone: 'UTC' });
     const of = (name) => (/^[aeiouyh]/i.test(name) ? `d’${name}` : `de ${name}`);
-    const pad = (n) => String(n).padStart(2, '0');
     if (this.company.vatRegime === 'reel-simplifie') {
       if (month === 6 || month === 11) return [{ urgency: 2, kind: 'vat', view: 'tva', text: `Acompte de TVA de ${monthName(month)} à payer (CA12)` }];
       if (month >= 2 && month <= 4)
         return [{ urgency: 2, kind: 'vat', view: 'tva', text: `Déclaration annuelle de TVA (CA12) de ${y - 1} à déposer début mai` }];
       return [];
     }
-    const deadlineDay = this.company.vatDeadlineDay || 19;
+    const quarterly = this.company.vatPeriodicity === 'trimestrielle';
+    const periods = this.vatPeriods();
+    const isDeclared = (p) => this.vatReturns.some((r) => r.from === p.from);
+    const name = (p) => (quarterly ? `du ${p.label}` : of(p.label));
+    const ddmm = (iso) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
     const items = [];
-    // Mois précédent non déclaré alors que son échéance est passée : retard, en tête de liste.
-    if (d.getUTCDate() > deadlineDay) {
-      const lateStart = new Date(Date.UTC(y, month - 1, 1)).toISOString().slice(0, 10);
-      if (lateStart >= this.company.fiscalYear.start && !this.vatReturns.some((r) => r.from === lateStart)) {
-        const lateName = monthName(new Date(`${lateStart}T00:00:00Z`).getUTCMonth());
-        items.push({
-          urgency: 3,
-          kind: 'vat',
-          view: 'tva',
-          text: `TVA ${of(lateName)} non déclarée : l'échéance du ${pad(deadlineDay)}/${pad(month + 1)} est dépassée`,
-        });
-      }
+    // Dernière période terminée, non déclarée alors que son échéance est passée : retard, en tête de
+    // liste. Les périodes plus anciennes ne sont pas signalées : elles ont pu être déclarées avant
+    // l'arrivée dans Nexus (la check-list de clôture les recense).
+    const lastEnded = periods.filter((p) => p.to < today).at(-1);
+    const late = lastEnded && !isDeclared(lastEnded) && this.vatDeadline(lastEnded) < today ? lastEnded : null;
+    if (late) {
+      items.push({
+        urgency: 3,
+        kind: 'vat',
+        view: 'tva',
+        period: late.from,
+        text: `TVA ${name(late)} non déclarée : l'échéance du ${ddmm(this.vatDeadline(late))} est dépassée`,
+      });
     }
-    // Mois déclaré : le précédent tant que son échéance n'est pas passée, sinon le mois en cours.
-    const declared = d.getUTCDate() <= deadlineDay ? month - 1 : month;
-    const start = new Date(Date.UTC(y, declared, 1));
-    const end = new Date(Date.UTC(y, declared + 1, 0));
-    const due = new Date(Date.UTC(y, declared + 1, deadlineDay));
-    const period = { from: start.toISOString().slice(0, 10), to: end.toISOString().slice(0, 10) };
-    if (this.vatReturns.some((r) => r.from === period.from)) return items; // déjà déclarée
-    const net = this.prepareVatReturn(period).balance;
+    // Période à déclarer : la première dont l'échéance n'est pas passée (la période échue tant que
+    // son échéance court, sinon la période en cours).
+    const next = periods.find((p) => this.vatDeadline(p) >= today && p.from <= today);
+    if (!next || isDeclared(next)) return items;
+    const net = this.prepareVatReturn(next).balance;
     return [
       ...items,
       {
-        urgency: declared < month ? 3 : 1,
+        urgency: next.to < today ? 3 : 1,
         kind: 'vat',
         view: 'tva',
+        period: next.from,
         amount: net,
-        text: `TVA ${of(monthName(start.getUTCMonth()))} à déclarer avant le ${pad(due.getUTCDate())}/${pad(due.getUTCMonth() + 1)}`,
+        text: `TVA ${name(next)} à déclarer avant le ${ddmm(this.vatDeadline(next))}`,
       },
     ];
   }

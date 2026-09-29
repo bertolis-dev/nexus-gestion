@@ -20,10 +20,25 @@
  *   28 TVA nette due · 32 total à payer.
  */
 
-import { divRound, sum } from './money.js';
+import { divRound, sum, vatFromHt } from './money.js';
 import { isOnReceipt, originalOf, receiptEvents } from './receipts.js';
+import { vatByNature } from './invoices.js';
+import { tradeZone } from './countries.js';
 
-export const RATE_LINES = { 2000: '08', 1000: '9B', 550: '09', 210: '10' };
+/**
+ * Lignes de la CA3 par taux de TVA, par millésime du formulaire 3310-CA3 — À VALIDER PAR L'EXPERT-
+ * COMPTABLE à chaque nouveau millésime. Une année absente reprend le dernier millésime connu.
+ */
+export const CA3_RATE_LINES = { 2026: { 2000: '08', 1000: '9B', 550: '09', 210: '10' } };
+export function rateLine(rateBp, year) {
+  const known = Object.keys(CA3_RATE_LINES)
+    .map(Number)
+    .sort((a, b) => a - b);
+  const y = known.filter((k) => k <= year).at(-1) ?? known[0];
+  return CA3_RATE_LINES[y][rateBp] || '08';
+}
+/** Millésime 2026, conservé pour compatibilité. */
+export const RATE_LINES = CA3_RATE_LINES[2026];
 
 const inPeriod = (d, { from, to }) => d >= from && d <= to;
 
@@ -43,9 +58,11 @@ function exigibleParts(inv, payments, period) {
  * @param {{ previousCredit?: number }} opts crédit de TVA reporté de la déclaration précédente
  */
 export function prepareCa3(ws, period, { previousCredit = 0 } = {}) {
+  const year = Number(period.to.slice(0, 4));
   const byRate = new Map();
   const justification = [];
   let exemptIntraGoods = 0;
+  let exemptExports = 0;
   let otherExempt = 0;
 
   for (const inv of ws.book.invoices) {
@@ -53,8 +70,28 @@ export function prepareCa3(ws, period, { previousCredit = 0 } = {}) {
     // TVA sur encaissements : facture, avoirs et encaissements forment un tout (receipts.js). L'avoir
     // d'une telle facture est compté avec elle ; la facture, à chaque événement de la période.
     const original = inv.type === 'credit' ? originalOf(ws.book.invoices, inv) : null;
-    if (original && isOnReceipt(original) && original.totals.totalVat) continue;
-    if (inv.type !== 'credit' && isOnReceipt(inv) && inv.totals.totalVat) {
+    const grouped = original ? isOnReceipt(original) && original.totals.totalVat : inv.type !== 'credit' && isOnReceipt(inv) && inv.totals.totalVat;
+    if (grouped && inPeriod(inv.issueDate, period)) {
+      // Part « biens » d'une facture ou d'un avoir mixte : exigible à la date d'émission.
+      const sign = inv.type === 'credit' ? -1 : 1;
+      for (const v of vatByNature(inv).biens) {
+        const row = byRate.get(v.rateBp) || { rateBp: v.rateBp, base: 0, vat: 0 };
+        row.base += sign * v.base;
+        row.vat += sign * v.vat;
+        byRate.set(v.rateBp, row);
+        justification.push({
+          line: rateLine(v.rateBp, year),
+          number: inv.number,
+          client: inv.client.name,
+          date: inv.issueDate,
+          reason: 'facturation (biens)',
+          base: sign * v.base,
+          vat: sign * v.vat,
+        });
+      }
+    }
+    if (original && grouped) continue;
+    if (grouped) {
       for (const ev of receiptEvents(ws.book.invoices, ws.book.payments, inv)) {
         if (!inPeriod(ev.date, period)) continue;
         for (const [rateBp, d] of ev.byRate) {
@@ -63,7 +100,7 @@ export function prepareCa3(ws, period, { previousCredit = 0 } = {}) {
           row.vat += d.vat;
           byRate.set(rateBp, row);
           justification.push({
-            line: RATE_LINES[rateBp] || '08',
+            line: rateLine(rateBp, year),
             number: inv.number,
             client: inv.client.name,
             date: ev.date,
@@ -81,11 +118,16 @@ export function prepareCa3(ws, period, { previousCredit = 0 } = {}) {
       if (inv.totals.totalVat === 0) {
         // Opération non soumise à la TVA française : livraison intracommunautaire ou autre (autoliquidation, franchise).
         const ht = sign * divRound(inv.totals.totalHt * part.num, part.den);
-        const foreignGoods = (inv.client.country || 'FR') !== 'FR' && inv.operationNature !== 'services';
-        if (foreignGoods) exemptIntraGoods += ht;
+        // Biens vers l'UE : livraisons intracommunautaires (F2) ; hors UE : exportations (E1) ;
+        // prestations et autres opérations non imposables : E2.
+        const zone = tradeZone(inv.client.country);
+        const goods = inv.operationNature !== 'services';
+        const line = goods && zone === 'UE' ? 'F2' : goods && zone === 'HORS_UE' ? 'E1' : 'E2';
+        if (line === 'F2') exemptIntraGoods += ht;
+        else if (line === 'E1') exemptExports += ht;
         else otherExempt += ht;
         justification.push({
-          line: foreignGoods ? 'F2' : 'E2',
+          line,
           number: inv.number,
           client: inv.client.name,
           date: part.date,
@@ -108,7 +150,7 @@ export function prepareCa3(ws, period, { previousCredit = 0 } = {}) {
         row.vat += vat;
         byRate.set(v.rateBp, row);
         justification.push({
-          line: RATE_LINES[v.rateBp] || '08',
+          line: rateLine(v.rateBp, year),
           number: inv.number,
           client: inv.client.name,
           date: part.date,
@@ -117,6 +159,26 @@ export function prepareCa3(ws, period, { previousCredit = 0 } = {}) {
           vat,
         });
       }
+    }
+  }
+
+  // Lignes à 0 % d'une facture par ailleurs taxée (débours, opérations exonérées) : « autres
+  // opérations non imposables » (E2), à la date d'émission.
+  for (const inv of ws.book.invoices) {
+    if (inv.status !== 'issued' || inv.type === 'quote' || !inv.totals.totalVat || !inPeriod(inv.issueDate, period)) continue;
+    const sign = inv.type === 'credit' ? -1 : 1;
+    for (const v of inv.totals.vatBreakdown) {
+      if (v.rateBp !== 0 || !v.base) continue;
+      otherExempt += sign * v.base;
+      justification.push({
+        line: 'E2',
+        number: inv.number,
+        client: inv.client.name,
+        date: inv.issueDate,
+        reason: 'facturation (0 %)',
+        base: sign * v.base,
+        vat: 0,
+      });
     }
   }
 
@@ -129,8 +191,28 @@ export function prepareCa3(ws, period, { previousCredit = 0 } = {}) {
   const reverseCharge = net('445200');
   const deductibleAssets = debitNet('445620');
   const deductibleOther = debitNet('445660');
-  const reverseChargeBase = sum(
-    ws.purchases.filter((p) => (p.supplier.country || 'FR') !== 'FR' && inPeriod(p.date, period)).map((p) => sum(p.lines.map((l) => l.ht))),
+  // Achats autoliquidés auprès d'un fournisseur étranger : un avoir diminue la base.
+  const foreignPurchases = ws.purchases.filter((p) => (p.supplier.country || 'FR') !== 'FR' && inPeriod(p.date, period));
+  const purchaseSign = (p) => (p.type === 'credit' ? -1 : 1);
+  const reverseChargeBase = sum(foreignPurchases.map((p) => purchaseSign(p) * sum(p.lines.map((l) => l.ht))));
+  // Autoliquidation reprise dans les lignes par taux (base et taxe) ; la case 17 en donne le détail.
+  const reverseByRate = new Map();
+  for (const p of [...foreignPurchases, ...ws.purchases.filter((x) => x.reverseCharge && (x.supplier.country || 'FR') === 'FR' && inPeriod(x.date, period))]) {
+    for (const l of p.lines) {
+      const r = l.vatRateBp ?? 2000;
+      if (!r) continue;
+      const row = reverseByRate.get(r) || { rateBp: r, base: 0, vat: 0 };
+      row.base += purchaseSign(p) * l.ht;
+      row.vat += purchaseSign(p) * vatFromHt(l.ht, r);
+      reverseByRate.set(r, row);
+    }
+  }
+  // Autoliquidation « interne » (sous-traitance dans le bâtiment) : base calculée à part ; sa case de
+  // la CA3 reste à confirmer par l'expert-comptable (voir docs/regles-a-valider.md).
+  const domesticReverseChargeBase = sum(
+    ws.purchases
+      .filter((p) => p.reverseCharge && (p.supplier.country || 'FR') === 'FR' && inPeriod(p.date, period))
+      .map((p) => (p.type === 'credit' ? -1 : 1) * sum(p.lines.map((l) => l.ht))),
   );
 
   const rates = [...byRate.values()].sort((a, b) => b.rateBp - a.rateBp);
@@ -155,13 +237,18 @@ export function prepareCa3(ws, period, { previousCredit = 0 } = {}) {
   const boxes = {
     '01': sum(rates.map((r) => r.base)),
     '3B': reverseChargeBase,
+    E1: exemptExports,
     F2: exemptIntraGoods,
     E2: otherExempt,
     ...Object.fromEntries(
-      rates.flatMap((r) => [
-        [`${RATE_LINES[r.rateBp] || '08'}-base`, r.base],
-        [`${RATE_LINES[r.rateBp] || '08'}-taxe`, r.vat],
-      ]),
+      [...new Set([...rates.map((r) => r.rateBp), ...reverseByRate.keys()])].flatMap((rateBp) => {
+        const sale = byRate.get(rateBp) || { base: 0, vat: 0 };
+        const rc = reverseByRate.get(rateBp) || { base: 0, vat: 0 };
+        return [
+          [`${rateLine(rateBp, year)}-base`, sale.base + rc.base],
+          [`${rateLine(rateBp, year)}-taxe`, sale.vat + rc.vat],
+        ];
+      }),
     ),
     17: reverseCharge,
     16: grossVat,
@@ -173,7 +260,25 @@ export function prepareCa3(ws, period, { previousCredit = 0 } = {}) {
     28: balance > 0 ? balance : 0,
     32: balance > 0 ? balance : 0,
   };
-  return { period, rates, boxes, collected, grossVat, reverseCharge, deductibleAssets, deductibleOther, previousCredit, balance, justification, warnings };
+  if (domesticReverseChargeBase)
+    warnings.push(
+      `Sous-traitance du bâtiment autoliquidée : base de ${domesticReverseChargeBase / 100} € à reporter sur la CA3 (case à confirmer avec votre expert-comptable).`,
+    );
+  return {
+    period,
+    rates,
+    boxes,
+    collected,
+    grossVat,
+    reverseCharge,
+    domesticReverseChargeBase,
+    deductibleAssets,
+    deductibleOther,
+    previousCredit,
+    balance,
+    justification,
+    warnings,
+  };
 }
 
 /**

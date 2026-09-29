@@ -16,7 +16,9 @@ export const FIXED_ASSET_THRESHOLD_HT = 50000; // 500 € HT, paramétrable par 
 export function purchaseEntry(p, company) {
   const franchise = company.vatRegime === 'franchise';
   const threshold = company.fixedAssetThreshold ?? FIXED_ASSET_THRESHOLD_HT;
-  const reverseCharge = (p.supplier.country || 'FR') !== 'FR';
+  // Autoliquidation : fournisseur étranger, ou case cochée (sous-traitance dans le bâtiment, CGI art.
+  // 283-2 nonies) — la facture reçue est alors hors taxes et la TVA est due par l'acheteur.
+  const reverseCharge = p.reverseCharge === true || (p.supplier.country || 'FR') !== 'FR';
   const label = `${p.supplier.name} ${p.number || ''}`.trim();
   const supplierCode = `${p.supplier.code || p.supplier.name.slice(0, 8)}`.toUpperCase().replace(/[^A-Z0-9]/g, '');
   const lines = [];
@@ -40,7 +42,7 @@ export function purchaseEntry(p, company) {
 
     if (reverseCharge) {
       // Autoliquidation : facture reçue HT, TVA due et (si déductible) récupérée en même temps.
-      const dueVat = vatFromHt(l.ht, l.vatRateBp || 2000);
+      const dueVat = vatFromHt(l.ht, l.vatRateBp ?? 2000); // un taux saisi à 0 % reste 0 %
       const deductible = divRound(dueVat * pct, 100);
       reverseChargeVat += dueVat;
       deductibleByAccount[isAsset ? '445620' : '445660'] += deductible;

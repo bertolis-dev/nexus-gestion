@@ -69,7 +69,14 @@ export function invoiceDraftRow(inv, meta) {
     credit_of: inv.creditOf || null,
     entry_id: inv.entryId || null,
     // Informations du brouillon sans colonne dédiée (acomptes à déduire, devis d'origine, modèle récurrent).
-    extra: { deposits: inv.deposits || [], quoteRef: inv.quoteRef || null, recurringId: inv.recurringId || null, period: inv.period || null },
+    extra: {
+      deposits: inv.deposits || [],
+      quoteRef: inv.quoteRef || null,
+      recurringId: inv.recurringId || null,
+      period: inv.period || null,
+      // Livraison : seulement si elle diffère de la date d'émission ou de l'adresse du client.
+      ...Object.fromEntries(['deliveryDate', 'deliveryAddress', 'deliveryCountry'].filter((k) => inv[k]).map((k) => [k, inv[k]])),
+    },
   };
 }
 
@@ -92,6 +99,7 @@ export function purchaseRow(p, meta) {
     third_party_account: p.thirdPartyAccount,
     document_name: p.documentName || '',
     kind: p.type === 'credit' ? 'credit' : 'invoice',
+    reverse_charge: Boolean(p.reverseCharge),
   };
 }
 
@@ -296,7 +304,7 @@ function draftFromRow(i) {
     lines: i.lines,
   };
   if (i.credit_of) draft.creditOf = i.credit_of;
-  for (const k of ['quoteRef', 'recurringId', 'period']) if (x[k]) draft[k] = x[k];
+  for (const k of ['quoteRef', 'recurringId', 'period', 'deliveryDate', 'deliveryAddress', 'deliveryCountry']) if (x[k]) draft[k] = x[k];
   return draft;
 }
 
@@ -432,6 +440,7 @@ export function stateFromRows(r) {
           lines: p.lines,
           entryId: p.entry_id,
           ...(p.kind === 'credit' ? { type: 'credit' } : {}),
+          ...(p.reverse_charge ? { reverseCharge: true } : {}),
           totalTtc: Number(p.total_ttc),
           paid: pays.reduce((sum, x) => sum + x.amount, 0),
           payments: pays,

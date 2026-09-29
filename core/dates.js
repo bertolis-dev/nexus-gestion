@@ -25,3 +25,32 @@ export function addDays(isoDate, days) {
   const [y, m, d] = isoDate.split('-').map(Number);
   return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
 }
+
+const lastDayOf = (y, m) => new Date(Date.UTC(y, m, 0)).getUTCDate();
+const iso = (y, m, d) => `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+
+/** Même jour un an plus tard ; un dernier jour de mois reste un dernier jour de mois (28/02 → 29/02). */
+function sameDayNextYear(isoDate) {
+  const [y, m, d] = isoDate.split('-').map(Number);
+  const last = d === lastDayOf(y, m);
+  return iso(y + 1, m, last ? lastDayOf(y + 1, m) : Math.min(d, lastDayOf(y + 1, m)));
+}
+
+/** Exercice qui suit : du lendemain de la clôture à la même date de fin l'année suivante. */
+export function nextFiscalYear(fy) {
+  return { start: addDays(fy.end, 1), end: sameDayNextYear(fy.end) };
+}
+
+/**
+ * Premier exercice : 12 mois se terminant à la date choisie, ou du début d'activité à cette date
+ * (premier exercice long possible, 24 mois au plus — à valider par l'expert-comptable).
+ */
+export function firstFiscalYear({ end, activityStart = null }) {
+  const [y, m, d] = end.split('-').map(Number);
+  const twelve = addDays(iso(y - 1, m, d === lastDayOf(y, m) ? lastDayOf(y - 1, m) : Math.min(d, lastDayOf(y - 1, m))), 1);
+  if (!activityStart) return { start: twelve, end };
+  if (activityStart > end) throw new Error('La fin du premier exercice doit être après le début d’activité.');
+  const earliest = addDays(iso(y - 2, m, d === lastDayOf(y, m) ? lastDayOf(y - 2, m) : Math.min(d, lastDayOf(y - 2, m))), 1);
+  if (activityStart < earliest) throw new Error('Le premier exercice ne peut pas dépasser 24 mois : choisissez une date de fin plus proche.');
+  return { start: activityStart, end };
+}

@@ -13,8 +13,9 @@ export const THRESHOLDS_2026 = {
     biens: { base: 8500000, majore: 9350000 },
     services: { base: 3750000, majore: 4125000 },
   },
-  // Plafonds de chiffre d'affaires du régime micro
-  microRegime: { biens: 18870000, services: 7760000 },
+  // Plafonds de chiffre d'affaires du régime micro, revalorisés pour 2026-2028 (203 100 € / 83 600 €,
+  // contre 188 700 € / 77 700 € en 2023-2025 ; CGI art. 50-0 et 102 ter) — à valider par l'expert-comptable.
+  microRegime: { biens: 20310000, services: 8360000 },
 };
 
 /** Activité URSSAF : vente de marchandises (BIC), prestations BIC, prestations BNC. */

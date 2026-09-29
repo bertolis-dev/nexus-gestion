@@ -197,3 +197,21 @@ export function checkFEC(content) {
   for (const [num, balance] of byNum) if (balance !== 0) errors.push(`Écriture ${num} déséquilibrée`);
   return { ok: errors.length === 0, errors };
 }
+
+/**
+ * Encodage ISO 8859-15 (Latin-9) du FEC, jeu de caractères cité par l'article A47 A-1 du LPF (à
+ * valider par l'expert-comptable, avec un fichier testé dans l'outil Test Compta Demat de la DGFiP).
+ * Latin-9 = Latin-1 sauf huit positions (€, Š, š, Ž, ž, Œ, œ, Ÿ) ; un caractère hors jeu devient « ? ».
+ */
+const LATIN9 = { '€': 0xa4, Š: 0xa6, š: 0xa8, Ž: 0xb4, ž: 0xb8, Œ: 0xbc, œ: 0xbd, Ÿ: 0xbe };
+const LATIN1_REPLACED = new Set([0xa4, 0xa6, 0xa8, 0xb4, 0xb8, 0xbc, 0xbd, 0xbe]);
+export function encodeLatin9(text) {
+  const out = [];
+  for (const ch of text) {
+    const code = ch.codePointAt(0);
+    if (LATIN9[ch] !== undefined) out.push(LATIN9[ch]);
+    else if (code < 0x100 && !LATIN1_REPLACED.has(code)) out.push(code);
+    else out.push(0x3f);
+  }
+  return Uint8Array.from(out);
+}

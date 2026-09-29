@@ -46,6 +46,8 @@ export const ACCOUNTS = [
   ['445710', 'TVA collectée', 'TVA facturée à mes clients'],
   ['445800', 'TVA à régulariser ou en attente', 'TVA en attente (encaissements)'],
   ['445810', 'Acomptes - régime simplifié d’imposition', 'Acomptes de TVA versés'],
+  ['445860', 'Taxes sur le chiffre d’affaires sur factures non parvenues', 'TVA des factures fournisseurs à recevoir'],
+  ['445870', 'Taxes sur le chiffre d’affaires sur factures à établir', 'TVA des ventes à facturer'],
   ['455000', 'Associés - comptes courants', 'Argent prêté par l’associé'],
   ['457000', 'Associés - dividendes à payer', 'Dividendes à verser'],
   ['467000', 'Autres comptes débiteurs ou créditeurs', 'Autres montants à régler'],

@@ -16,7 +16,7 @@
  * cahier des charges pour limiter la responsabilité de BERTOLIS) : ce contrôle est fait en base.
  */
 
-import { divRound, sum } from './money.js';
+import { divRound, sum, vatFromHt } from './money.js';
 import { fixedAssets, assetsCrossCheck } from './assets.js';
 
 /** Nom d'un exercice : « 2026 », ou « 2025-2026 » s'il est à cheval sur deux années civiles. */
@@ -84,18 +84,15 @@ export function closingChecklist(ws, { today }) {
   );
 
   if (ws.company.vatRegime === 'reel-normal') {
-    const months = [];
-    for (let d = fy.start; d <= fy.end;) {
-      months.push(d);
-      const [y, m] = d.split('-').map(Number);
-      d = new Date(Date.UTC(y, m, 1)).toISOString().slice(0, 10);
-    }
-    const missing = months.filter((m) => !ws.vatReturns.some((r) => r.from === m));
+    // Seules les périodes terminées comptent (pas les mois à venir de l'exercice).
+    const quarterly = ws.company.vatPeriodicity === 'trimestrielle';
+    const missing = ws.vatPeriods().filter((p) => p.to < today && !ws.vatReturns.some((r) => r.from === p.from));
+    const unit = quarterly ? ['trimestre non déclaré', 'trimestres non déclarés'] : ['mois non déclaré', 'mois non déclarés'];
     add(
       'vat',
       'Toutes les déclarations de TVA de l’exercice sont validées',
       !missing.length,
-      missing.length ? `${missing.length} mois non déclaré(s)` : 'TVA déclarée pour chaque mois',
+      missing.length ? `${missing.length} ${unit[missing.length > 1 ? 1 : 0]}` : 'TVA déclarée pour chaque période échue',
       'tva',
     );
   } else if (ws.company.vatRegime === 'reel-simplifie') {
@@ -138,11 +135,14 @@ export const INVENTORY_TYPES = INVENTORY;
  *   account : compte de charge (prepaid, accrued) ou de produit (deferred, receivable) concerné ;
  *   pour doubtful, aux = sous-compte du client.
  */
-export function inventoryEntry(item, fy) {
+export function inventoryEntry(item, fy, { receivableTtc = 0 } = {}) {
   const { type, account, amount } = item;
   if (!INVENTORY[type]) throw new Error(`Type d'écriture d'inventaire inconnu : ${type}`);
   if (!Number.isSafeInteger(amount) || amount <= 0) throw new Error('Le montant doit être positif.');
   const label = item.label || INVENTORY[type].label;
+  // TVA des factures non parvenues (44586) et à établir (44587), sur le montant HT saisi.
+  const vat = item.vatRateBp ? vatFromHt(amount, item.vatRateBp) : 0;
+  const aux = item.aux || '';
   const pairs = {
     prepaid: [
       ['486000', amount, 0],
@@ -152,15 +152,16 @@ export function inventoryEntry(item, fy) {
       [account, amount, 0],
       ['487000', 0, amount],
     ],
-    accrued: [
-      [account, amount, 0],
-      ['408000', 0, amount],
-    ],
-    receivable: [
-      ['418000', amount, 0],
-      [account, 0, amount],
-    ],
+    accrued: [[account, amount, 0], ...(vat ? [['445860', vat, 0]] : []), ['408000', 0, amount + vat]],
+    receivable: [['418000', amount + vat, 0], [account, 0, amount], ...(vat ? [['445870', 0, vat]] : [])],
+    // Client douteux : sa créance TTC passe en 416 (clients douteux), la provision HT en 491.
     doubtful: [
+      ...(receivableTtc > 0
+        ? [
+            ['416000', receivableTtc, 0],
+            ['411000', 0, receivableTtc],
+          ]
+        : []),
       ['681740', amount, 0],
       ['491000', 0, amount],
     ],
@@ -172,7 +173,7 @@ export function inventoryEntry(item, fy) {
     pieceRef: 'INVENTAIRE',
     pieceDate: fy.end,
     source: { kind: 'inventory', type, reverse: ['prepaid', 'deferred', 'accrued', 'receivable'].includes(type) },
-    lines: pairs[type].map(([acc, debit, credit]) => ({ account: acc, debit, credit, label, aux: acc === '491000' ? item.aux || '' : '' })),
+    lines: pairs[type].map(([acc, debit, credit]) => ({ account: acc, debit, credit, label, aux: ['491000', '416000', '411000'].includes(acc) ? aux : '' })),
   };
 }
 
@@ -446,13 +447,26 @@ export const IS_RATES = { reduced: 1500, normal: 2500, reducedCap: 4250000 };
  * Arrondi à l'euro. La contribution sociale (IS > 763 000 €) est hors champ des TPE visées.
  * @param {{ resultBeforeTax, addBacks?, deductions?, previousLosses?, reducedRateEligible?, days? }} p
  */
-export function corporateTax({ resultBeforeTax, addBacks = 0, deductions = 0, previousLosses = 0, reducedRateEligible = true, days = 365 }) {
+/**
+ * Durée d'un exercice en mois entiers (du 1er d'un mois au dernier jour d'un mois), sinon null.
+ */
+export function fiscalYearMonths({ start, end }) {
+  const [sy, sm, sd] = start.split('-').map(Number);
+  const [ey, em, ed] = end.split('-').map(Number);
+  const lastDay = new Date(Date.UTC(ey, em, 0)).getUTCDate();
+  if (sd !== 1 || ed !== lastDay) return null;
+  return (ey - sy) * 12 + (em - sm) + 1;
+}
+
+export function corporateTax({ resultBeforeTax, addBacks = 0, deductions = 0, previousLosses = 0, reducedRateEligible = true, days = 365, months = null }) {
   const taxableBeforeLosses = resultBeforeTax + addBacks - deductions;
   // Report en avant des déficits : imputation dans la limite de 1 M€ + 50 % au-delà (CGI art. 209-I).
   const cap = taxableBeforeLosses > 100000000 ? 100000000 + divRound((taxableBeforeLosses - 100000000) * 50, 100) : taxableBeforeLosses;
   const lossesUsed = taxableBeforeLosses > 0 ? Math.min(previousLosses, cap) : 0;
   const taxable = Math.max(0, taxableBeforeLosses - lossesUsed);
-  const reducedCap = reducedRateEligible ? divRound(IS_RATES.reducedCap * days, 365) : 0;
+  // Plafond du taux réduit ajusté à la durée de l'exercice : en mois quand l'exercice compte des mois
+  // entiers (aucun prorata pour 12 mois, même une année bissextile), sinon en jours.
+  const reducedCap = !reducedRateEligible ? 0 : months ? divRound(IS_RATES.reducedCap * months, 12) : divRound(IS_RATES.reducedCap * days, 365);
   const atReduced = Math.min(taxable, reducedCap);
   const atNormal = taxable - atReduced;
   const raw = divRound(atReduced * IS_RATES.reduced, 10000) + divRound(atNormal * IS_RATES.normal, 10000);
@@ -514,8 +528,24 @@ export function resultEntry(ledger, fy) {
  */
 export function nextYearOpening(ledger, nextStart) {
   const byKey = new Map();
+  const detailed = [];
   for (const l of ledger.lines()) {
     if (!/^[1-5]/.test(l.account)) continue;
+    // Clients et fournisseurs : une ligne par pièce restée ouverte (non lettrée), avec sa référence,
+    // pour pouvoir la lettrer à son règlement l'exercice suivant.
+    if (/^4[01]/.test(l.account) && l.aux) {
+      if (!l.letter && l.debit - l.credit) {
+        detailed.push({
+          account: l.account,
+          aux: l.aux,
+          auxLabel: l.auxLabel || '',
+          label: `Report à nouveau ${l.entry.pieceRef || l.entry.label}`.trim(),
+          debit: l.debit,
+          credit: l.credit,
+        });
+      }
+      continue;
+    }
     const key = `${l.account}|${l.aux || ''}`;
     const row = byKey.get(key) || { account: l.account, aux: l.aux || '', auxLabel: l.auxLabel || '', balance: 0 };
     row.balance += l.debit - l.credit;
@@ -530,7 +560,8 @@ export function nextYearOpening(ledger, nextStart) {
       label: 'Report à nouveau des soldes',
       debit: r.balance > 0 ? r.balance : 0,
       credit: r.balance < 0 ? -r.balance : 0,
-    }));
+    }))
+    .concat(detailed);
   const opening = {
     journal: 'AN',
     date: nextStart,

@@ -165,8 +165,10 @@ export class Ledger {
   }
 
   /** Valide tous les brouillons datés jusqu'à `date` incluse, numérotés dans l'ordre chronologique. */
-  validateThrough(date) {
+  validateThrough(date, { today = null } = {}) {
     if (!ISO_DATE.test(date)) throw new LedgerError(`Date invalide : ${date}`);
+    // On ne valide définitivement que ce qui est déjà arrivé (une écriture future pourrait encore changer).
+    if (today && date > today) throw new LedgerError(`Impossible de valider des écritures datées après aujourd’hui (${today.split('-').reverse().join('/')}).`);
     if (this.lockedThrough && date < this.lockedThrough) {
       throw new LedgerError(`Déjà verrouillé jusqu'au ${this.lockedThrough}`);
     }

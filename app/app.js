@@ -24,9 +24,9 @@ import { Workspace, INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../core/worksp
 import { EXPENSE_CATEGORIES, buildChart } from '../core/pcg.js';
 import { parseFec, openingBalanceFromFec } from '../core/fecimport.js';
 import { formatEuros, parseEuros, formatDecimalComma } from '../core/money.js';
-import { computeTotals, checkInvoice, InvoiceError, isValidSiren, isVatExempt, lineHt, VAT_RATES_BP } from '../core/invoices.js';
+import { computeTotals, checkInvoice, InvoiceError, isValidSiren, isVatExempt, lineHt, VAT_RATES_BP, issuerName } from '../core/invoices.js';
 import { parseBankCsv, parseOfx, reconciliationStatement } from '../core/bank.js';
-import { trialBalance, generalLedger, exportFEC, checkFEC, journalReport } from '../core/reports.js';
+import { trialBalance, generalLedger, exportFEC, checkFEC, journalReport, encodeLatin9 } from '../core/reports.js';
 import { JOURNALS, Ledger } from '../core/ledger.js';
 import { receiptsBook, ACTIVITY_TYPES, CIPAV_PROFESSIONS, ESTIMATE_MISSING_LABELS } from '../core/micro.js';
 import { buildCii, checkEn16931, ciiFileName } from '../core/einvoice.js';
@@ -40,7 +40,7 @@ import { closingChecklist, incomeStatement, balanceSheet, INVENTORY_TYPES, fisca
 import { ledgerStateFromRows } from '../core/sync.js';
 import { toCsv } from '../core/exports.js';
 import { ICONS } from './icons.js';
-import { todayParis, addDays } from '../core/dates.js';
+import { todayParis, addDays, firstFiscalYear } from '../core/dates.js';
 import * as cloud from './cloud.js';
 import { FEATURE_PAGES, featureBySlug } from './features.js';
 
@@ -977,6 +977,7 @@ function viewOnboarding() {
       ${data.chargesVat === 'oui' ? field('Déclarez-vous la TVA chaque mois ou une fois par an ?', html`<div class="choice-cards">${choice('vatFrequency', 'mensuelle', 'Chaque mois (CA3)')}${choice('vatFrequency', 'annuelle', 'Une fois par an (CA12)')}</div>`) : ''}
       ${field('Vendez-vous des biens, des services ou les deux ?', html`<div class="choice-cards">${choice('nature', 'biens', 'Des biens')}${choice('nature', 'services', 'Des services')}${choice('nature', 'mixte', 'Les deux')}</div>`)}
       ${field('Date de fin de votre exercice comptable', html`<input class="input" id="ob-fy" type="date" data-ob="fyEnd" value="${data.fyEnd}" style="max-width:220px" />`, { id: 'ob-fy', hint: 'Le plus souvent le 31 décembre.' })}
+      ${field('Date de début d’activité (entreprise créée cette année)', html`<input class="input" id="ob-start" type="date" data-ob="activityStart" value="${data.activityStart || ''}" style="max-width:220px" />`, { id: 'ob-start', hint: 'Facultatif : le premier exercice court alors de cette date à la date de fin (24 mois au plus).' })}
       ${errBox}${nav()}`;
   } else if (step === 3) {
     body = html`<h1>Votre banque</h1>
@@ -1143,11 +1144,6 @@ async function readOpeningFile(file) {
   return opening;
 }
 
-function fiscalYearFromEnd(end) {
-  const [y, m, d] = end.split('-').map(Number);
-  return { start: new Date(Date.UTC(y - 1, m - 1, d + 1)).toISOString().slice(0, 10), end };
-}
-
 async function finishOnboarding() {
   if (ui.ob.loading) return;
   const d = ui.ob.data;
@@ -1166,7 +1162,7 @@ async function finishOnboarding() {
     taxRegime: micro ? (d.nature === 'biens' ? 'micro-bic' : 'micro-bnc') : d.legalForm === 'EI' ? 'ir-reel' : 'is-reel',
     microActivity: d.nature === 'biens' ? 'bic-vente' : 'bnc',
     defaultNature: d.nature === 'biens' ? 'biens' : 'services',
-    fiscalYear: fiscalYearFromEnd(d.fyEnd),
+    fiscalYear: firstFiscalYear({ end: d.fyEnd, activityStart: d.activityStart || null }),
     paymentTermsDays: 30,
   };
   ui.ob.loading = true;
@@ -1220,6 +1216,14 @@ async function onboardingAction(action) {
       if (!isValidSiren(siren)) ob.error = 'Le SIREN est obligatoire (9 chiffres) : il figure sur toutes vos factures.';
       else if (!ob.data.name?.trim() || !ob.data.address?.trim()) ob.error = "Le nom et l'adresse de l'entreprise sont obligatoires.";
       if (ob.error) return render();
+    }
+    if (ob.step === 2) {
+      try {
+        firstFiscalYear({ end: ob.data.fyEnd, activityStart: ob.data.activityStart || null });
+      } catch (err) {
+        ob.error = err.message;
+        return render();
+      }
     }
     if (ob.step === 4) return finishOnboarding();
     ob.step++;
@@ -1404,7 +1408,7 @@ function viewHome() {
           ? html`<div class="action-center-list">
               ${todo.map(
                 (i) =>
-                  html` <button type="button" class="action-center-item" data-href="#/${i.view}${i.id ? `/${i.id}` : ''}">
+                  html` <button type="button" class="action-center-item" data-href="#/${i.view}${i.id ? `/${i.id}` : i.period ? `/${i.period}` : ''}">
                     <span class="action-center-icon">${raw(ICONS[todoIcon[i.kind] || 'info'])}</span>
                     <span class="action-center-label">${i.text}${i.amount != null ? ` — ${eur(i.amount)}` : ''}</span>
                     <span class="action-center-arrow">→</span>
@@ -1710,6 +1714,8 @@ function draftInvoiceData() {
     deposits,
     ...(d.creditOf ? { creditOf: d.creditOf } : {}),
     ...(d.quoteRef ? { quoteRef: d.quoteRef } : {}),
+    ...(d.deliveryDate ? { deliveryDate: d.deliveryDate } : {}),
+    ...(d.deliveryAddress?.trim() ? { deliveryAddress: d.deliveryAddress.trim() } : {}),
   };
 }
 
@@ -1814,6 +1820,8 @@ function viewInvoiceForm(arg) {
         <div class="form-grid">
           ${field("Date d'émission", html`<input class="input" type="date" name="issueDate" value="${d.issueDate}" />`)}
           ${field(d.type === 'quote' ? 'Valable jusqu’au' : "Date d'échéance", html`<input class="input" type="date" name="dueDate" value="${d.dueDate}" />`)}
+          ${field('Date de livraison ou d’exécution', html`<input class="input" type="date" name="deliveryDate" value="${d.deliveryDate || ''}" />`, { hint: 'Si elle diffère de la date d’émission.' })}
+          ${field('Adresse de livraison', html`<input class="input" name="deliveryAddress" value="${d.deliveryAddress || ''}" />`, { hint: 'Si elle diffère de l’adresse du client.' })}
         </div>
       </div>
       ${
@@ -1997,8 +2005,8 @@ function viewInvoice(id) {
     <article class="invoice-sheet">
       <div class="sheet-head">
         <div class="party">
-          <strong>${company.name}</strong
-          ><br />${company.address}<br />${company.legalForm}${company.capital ? ` au capital de ${company.capital}` : ''}<br />SIREN
+          <strong>${issuerName(company)}</strong
+          ><br />${company.address}<br />${company.legalForm}${company.capital ? ` au capital de ${company.capital}` : ''}${company.registration ? html`<br />${company.registration} ${company.siren}` : ''}<br />SIREN
           ${company.siren}${company.vatNumber ? html`<br />TVA ${company.vatNumber}` : ''}
         </div>
         <div>
@@ -2007,7 +2015,7 @@ function viewInvoice(id) {
           <div class="party">
             N° <strong>${inv.number || '(attribué à l’émission)'}</strong><br />Date : ${frDate(inv.issueDate)}<br />${quote ? 'Valable jusqu’au' : 'Échéance'}
             :
-            ${frDate(inv.dueDate)}${inv.creditOf ? html`<br />Avoir sur facture ${inv.creditOf}` : ''}${inv.quoteRef ? html`<br />Selon devis ${inv.quoteRef}` : ''}${issued ? html`<br />Nature : ${inv.operationNature}` : ''}
+            ${frDate(inv.dueDate)}${inv.creditOf ? html`<br />Avoir sur facture ${inv.creditOf}` : ''}${inv.quoteRef ? html`<br />Selon devis ${inv.quoteRef}` : ''}${inv.deliveryDate ? html`<br />Livraison / exécution : ${frDate(inv.deliveryDate)}` : ''}${inv.deliveryAddress ? html`<br />Livré à : ${inv.deliveryAddress}` : ''}${issued ? html`<br />Nature : ${inv.operationNature}` : ''}
           </div>
         </div>
       </div>
@@ -2145,6 +2153,14 @@ function viewExpenses() {
         }
         ${field('Justificatif', html`<input class="input" type="file" name="document" accept="image/*,application/pdf" capture="environment" />`, { hint: 'Photo ou PDF, conservé au format d’origine.' })}
       </div>
+      ${
+        franchise
+          ? ''
+          : html`<label class="form-field-checkbox" style="display:flex;gap:8px;align-items:center"
+              ><input type="checkbox" name="reverseCharge" ${f.reverseCharge ? raw('checked') : ''} />Facture reçue sans TVA à reverser par moi (autoliquidation
+              : sous-traitance dans le bâtiment)</label
+            >`
+      }
       <div><button class="btn btn-primary" type="submit">Enregistrer la dépense</button></div>
     </form>
     <div class="card table-card">
@@ -2448,7 +2464,9 @@ async function importBankFile(file) {
 
 // ------------------------------------------------------------------ TVA (§3.6)
 
-function viewVat() {
+function viewVat(arg) {
+  // Lien depuis « À faire » : #/tva/AAAA-MM-JJ ouvre directement la période concernée.
+  if (/^\d{4}-\d{2}-\d{2}$/.test(arg || '')) ui.vatPeriod = arg;
   if (ws.company.vatRegime === 'franchise') {
     return html`${viewHeader('TVA', 'Vous êtes en franchise en base : vous ne facturez pas de TVA.')}${franchiseBanner()}
       <div class="card">${thresholdCard()}</div>`;
@@ -2466,7 +2484,15 @@ function viewVat() {
       y++;
     }
   }
-  if (ws.company.vatRegime === 'reel-normal') return viewCa3(months);
+  if (ws.company.vatRegime === 'reel-normal') {
+    const quarterly = ws.company.vatPeriodicity === 'trimestrielle';
+    return viewCa3(
+      ws.vatPeriods().map((p) => ({
+        ...p,
+        label: quarterly ? p.label : new Date(`${p.from}T00:00:00`).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }),
+      })),
+    );
+  }
   if (ws.company.vatRegime === 'reel-simplifie') return viewCa12();
   return html` ${viewHeader('TVA', `${ws.company.vatRegime === 'reel-normal' ? 'Déclaration mensuelle (CA3).' : 'Déclaration annuelle (CA12) avec acomptes.'} La télétransmission arrive avec la prochaine version.`)}
     <div class="notice-gold" style="margin-bottom:14px">
@@ -2601,10 +2627,10 @@ const CA3_ROWS = [
 function viewCa3(months) {
   const closed = months.filter((mo) => mo.to < today());
   const declared = new Map(ws.vatReturns.map((r) => [r.from, r]));
-  const selected = closed.find((mo) => mo.from === ui.vatPeriod) || closed.find((mo) => !declared.has(mo.from)) || closed.at(-1);
+  const selected = closed.find((mo) => mo.from === ui.vatPeriod) || closed.at(-1);
   const header = viewHeader(
     'TVA',
-    'Déclaration mensuelle (CA3) préparée à partir de vos factures et de votre banque. La télétransmission arrive avec la prochaine version.',
+    `Déclaration ${ws.company.vatPeriodicity === 'trimestrielle' ? 'trimestrielle' : 'mensuelle'} (CA3) préparée à partir de vos factures et de votre banque. La télétransmission arrive avec la prochaine version.`,
   );
   if (!selected)
     return html`${header}
@@ -3249,6 +3275,16 @@ function viewClosing() {
               )
         }
         ${field('Montant HT', html`<input class="input" data-inv="amount" inputmode="decimal" placeholder="0,00" value="${it.amount || ''}" />`)}
+        ${
+          ['accrued', 'receivable'].includes(it.type) && ws.company.vatRegime !== 'franchise'
+            ? field(
+                'TVA de la facture attendue',
+                html`<select class="input" data-inv="vatRateBp">
+                  ${VAT_RATES_BP.map((r) => opt(r, pct(r), r === 2000))}
+                </select>`,
+              )
+            : ''
+        }
         ${field('Libellé (facultatif)', html`<input class="input" data-inv="label" value="${it.label || ''}" />`)}
       </div>
       <div><button class="btn btn-primary" data-action="inventory-add">Ajouter l'écriture</button></div>
@@ -3648,11 +3684,23 @@ function viewSettings() {
           { hint: locked ? lockedHint : '' },
         )}
         ${field('Capital social', html`<input class="input" name="capital" value="${c.capital || ''}" placeholder="Ex. : 1 000 €" />`, { hint: 'Obligatoire sur les factures d’une société.' })}
+        ${field('Immatriculation', html`<input class="input" name="registration" value="${c.registration || ''}" placeholder="Ex. : RCS Lyon, RM 69" />`, { hint: 'RCS (commerce) ou RM (artisanat) et ville du greffe : obligatoire sur les factures d’une société.' })}
         ${field('Adresse', html`<input class="input" name="address" value="${c.address}" />`)}
         ${field('N° de TVA intracommunautaire', html`<input class="input" name="vatNumber" value="${c.vatNumber || ''}" />`)}
         ${field('IBAN (affiché sur les factures)', html`<input class="input" name="iban" value="${c.iban || ''}" />`)}
         ${field('Délai de paiement (jours)', html`<input class="input" name="paymentTermsDays" inputmode="numeric" value="${c.paymentTermsDays || 30}" />`)}
       </div>
+      ${
+        c.vatRegime === 'reel-normal'
+          ? field(
+              'Déclaration de TVA',
+              html`<select class="input" name="vatPeriodicity" style="max-width:260px">
+                ${opt('mensuelle', 'Chaque mois', c.vatPeriodicity !== 'trimestrielle')}${opt('trimestrielle', 'Chaque trimestre', c.vatPeriodicity === 'trimestrielle')}
+              </select>`,
+              { hint: 'Chaque trimestre : possible quand la TVA due sur l’année reste faible (à confirmer avec votre expert-comptable).' },
+            )
+          : ''
+      }
       <label class="form-field-checkbox" style="display:flex;gap:8px;align-items:center"
         ><input type="checkbox" name="vatOnDebits" ${c.vatOnDebits ? raw('checked') : ''} />J'ai opté pour le paiement de la TVA d'après les débits</label
       >
@@ -3715,6 +3763,7 @@ function seedDemo() {
       siren: '732829320',
       address: '12 rue des Lilas, 69003 Lyon',
       legalForm: 'EURL',
+      registration: 'RCS Lyon',
       capital: '1 000 €',
       vatRegime: 'reel-normal',
       vatNumber: vatNumberFromSiren('732829320'),
@@ -3975,6 +4024,7 @@ document.addEventListener('submit', async (e) => {
         vatRateBp: Number(f.vatRateBp ?? 0),
         documentName: file && file.size ? file.name : '',
         type: f.docType === 'credit' ? 'credit' : 'invoice',
+        reverseCharge: fd.has('reverseCharge'),
       };
       if (!data.supplier.name) throw new Error('Indiquez le fournisseur.');
       if (data.ttc <= 0) throw new Error('Le montant doit être positif.');
@@ -4400,7 +4450,14 @@ document.addEventListener('click', async (e) => {
       const form = Object.fromEntries([...document.querySelectorAll('[data-inv]')].map((e) => [e.dataset.inv, e.value]));
       try {
         const amount = parseEuros(form.amount || '');
-        ws.addInventory({ type: form.type || f.type, account: form.account, aux: form.aux, amount, label: form.label?.trim() || undefined });
+        ws.addInventory({
+          type: form.type || f.type,
+          account: form.account,
+          aux: form.aux,
+          amount,
+          vatRateBp: Number(form.vatRateBp || 0),
+          label: form.label?.trim() || undefined,
+        });
         ui.inventoryForm = { type: form.type };
         save();
         render();
@@ -4467,7 +4524,7 @@ document.addEventListener('click', async (e) => {
     case 'archive-fec':
       try {
         const fec = exportFEC(ui.archive.ledger, { siren: ws.company.siren, closingDate: ui.archive.fiscalYear.end });
-        return download(fec.fileName, fec.content);
+        return download(fec.fileName, encodeLatin9(fec.content), 'text/plain;charset=iso-8859-15');
       } catch (err) {
         return toast(err.message, true);
       }
@@ -4569,7 +4626,7 @@ document.addEventListener('click', async (e) => {
         return toast('Le dernier jour de l’exercice est validé par la clôture (page Clôture), après les écritures d’inventaire et le résultat.', true);
       if (!confirm(`Valider définitivement toutes les écritures jusqu'au ${frDate(date)} ? Elles ne pourront plus être modifiées.`)) return;
       try {
-        const n = ws.ledger.validateThrough(date);
+        const n = ws.ledger.validateThrough(date, { today: today() });
         save();
         render();
         toast(`${n} écriture(s) validée(s).`);
@@ -4582,7 +4639,7 @@ document.addEventListener('click', async (e) => {
       try {
         const fec = exportFEC(ws.ledger, { siren: ws.company.siren });
         const check = checkFEC(fec.content);
-        download(fec.fileName, fec.content);
+        download(fec.fileName, encodeLatin9(fec.content), 'text/plain;charset=iso-8859-15');
         toast(check.ok ? 'FEC téléchargé (contrôles internes OK).' : `FEC téléchargé avec ${check.errors.length} anomalie(s).`, !check.ok);
       } catch (err) {
         toast(err.message, true);
