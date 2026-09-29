@@ -68,6 +68,9 @@ export function parseFec(text) {
 export function mapAccount(number, chart) {
   const digits = String(number).replace(/\D/g, '');
   const six = digits.slice(0, 6).padEnd(6, '0');
+  // 512100 à 512900 sont les comptes bancaires ajoutés dans Nexus : la banque de l'ancien logiciel
+  // est reprise sur le compte principal (512000).
+  if (/^512[1-9]/.test(six)) return { account: '512000', exact: false };
   if (chart.has(six)) return { account: six, exact: true };
   let best = null;
   for (const key of chart.keys()) {

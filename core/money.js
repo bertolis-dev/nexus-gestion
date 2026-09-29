@@ -16,14 +16,23 @@ export function parseEuros(input) {
     if (!Number.isFinite(input)) throw new TypeError(`Montant invalide : ${input}`);
     return Math.round(input * 100);
   }
-  const s = String(input)
-    .trim()
-    .replace(/[\s\u00A0\u202F€]/g, '')
-    .replace(',', '.');
-  const m = /^(-?)(\d+)(?:\.(\d{1,2}))?$/.exec(s);
-  if (!m) throw new TypeError(`Montant invalide : « ${input} »`);
-  const cents = Number(m[2]) * 100 + Number((m[3] || '').padEnd(2, '0'));
-  return m[1] ? -cents : cents;
+  const invalid = () => new TypeError(`Montant invalide : « ${input} »`);
+  let s = String(input).replace(/[\s\u00A0\u202F€']/g, '');
+  // Signe : « -12 », « +12 », « 12- » (relevés bancaires) ou « (12) » (présentation comptable).
+  let negative = false;
+  let m = /^\((.+)\)$/.exec(s);
+  if (m) [negative, s] = [true, m[1]];
+  m = /^([+-]?)(.*?)(-?)$/.exec(s);
+  if (m[1] && m[3]) throw invalid();
+  if (m[1] === '-' || m[3]) negative = !negative;
+  s = m[2];
+  // Séparateurs : le dernier « , » ou « . » suivi de 1 ou 2 chiffres est la virgule décimale ; les
+  // autres sont des séparateurs de milliers, acceptés seulement par groupes de 3 chiffres
+  // (« 1.234,56 », « 1,234.56 »). « 1.234 » seul reste ambigu : refusé.
+  m = /^(\d{1,3}(?:([.,])\d{3})*|\d+)(?:([.,])(\d{1,2}))?$/.exec(s);
+  if (!m || (m[2] && m[3] === m[2]) || (m[2] && !m[3] && !/^\d{1,3}(?:[.,]\d{3}){2,}$/.test(s))) throw invalid();
+  const cents = Number(m[1].replace(/[.,]/g, '')) * 100 + Number((m[4] || '').padEnd(2, '0'));
+  return negative ? -cents : cents;
 }
 
 const euroFmt = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });

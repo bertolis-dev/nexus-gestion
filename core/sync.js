@@ -103,11 +103,24 @@ export function purchaseRow(p, meta) {
   };
 }
 
+/** Compte bancaire ajouté (le compte principal existe déjà en base, créé avec l'entreprise). */
+export function bankAccountRow(a, meta) {
+  return {
+    id: a.id,
+    structure_id: meta.structureId,
+    label: a.label,
+    provider: a.provider || 'manual',
+    iban_last4: a.ibanLast4 || null,
+    gl_account: a.glAccount,
+  };
+}
+
 export function transactionRow(t, meta) {
   return {
     structure_id: meta.structureId,
     id: t.id,
-    bank_account_id: meta.bankAccountId,
+    // « default » : compte principal, dont l'identifiant en base est connu au chargement.
+    bank_account_id: t.accountId && t.accountId !== 'default' ? t.accountId : meta.bankAccountId,
     tx_date: t.date,
     label: t.label,
     amount: t.amount,
@@ -230,6 +243,11 @@ export function planSync(before, after, meta) {
       onConflict: 'structure_id,doc_kind,doc_id,entry_id,line_index',
       ignoreDuplicates: true,
     });
+
+  // Comptes bancaires ajoutés (avant leurs mouvements)
+  const bBanks = byId(b.bankAccounts);
+  const banks = (after.bankAccounts || []).filter((a) => a.id !== 'default' && !same(bBanks.get(a.id), a)).map((a) => bankAccountRow(a, meta));
+  if (banks.length) ops.push({ kind: 'upsert', table: 'bank_accounts', rows: banks, onConflict: 'id' });
 
   // Transactions bancaires
   const bTx = byId(b.transactions);
@@ -362,6 +380,19 @@ export function stateFromRows(r) {
     fiscalYear: { start: r.fiscalYear.start_date, end: r.fiscalYear.end_date },
   };
 
+  // Comptes bancaires : le compte en 512000 est le compte principal (« default » dans l'état local).
+  const bankRows = r.bankAccounts || [];
+  const primaryBankId = (bankRows.find((x) => x.gl_account === '512000') || bankRows[0])?.id || r.bankAccountId || null;
+  const bankAccounts = [
+    ...bankRows
+      .filter((x) => x.id === primaryBankId)
+      .map((x) => ({ ...DEFAULT_BANK_ACCOUNT, label: x.label || DEFAULT_BANK_ACCOUNT.label, ibanLast4: x.iban_last4 || null })),
+    ...bankRows
+      .filter((x) => x.id !== primaryBankId)
+      .map((x) => ({ id: x.id, label: x.label, glAccount: x.gl_account, provider: x.provider || 'manual', ibanLast4: x.iban_last4 || null })),
+  ];
+  if (!bankAccounts.length) bankAccounts.push({ ...DEFAULT_BANK_ACCOUNT });
+
   const entries = [...r.entries]
     .sort((a, b) => a.seq - b.seq)
     .map((e) => ({
@@ -448,11 +479,12 @@ export function stateFromRows(r) {
           thirdPartyAccount: p.third_party_account,
         };
       }),
+    bankAccounts,
     transactions: [...r.transactions]
       .sort((a, b) => String(a.imported_at).localeCompare(String(b.imported_at)) || a.id.localeCompare(b.id))
       .map((t) => ({
         id: t.id,
-        accountId: 'default',
+        accountId: t.bank_account_id && t.bank_account_id !== primaryBankId ? t.bank_account_id : 'default',
         date: t.tx_date,
         label: t.label,
         amount: Number(t.amount),
@@ -484,3 +516,4 @@ export function applySyncResult(ws, op, result) {
 export function isDivergence(error) {
   return Boolean(error?.divergence || error?.code === '23505');
 }
+import { DEFAULT_BANK_ACCOUNT } from './bank.js';

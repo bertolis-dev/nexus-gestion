@@ -8,7 +8,8 @@ import { buildChart, categoryById } from './pcg.js';
 import { Ledger } from './ledger.js';
 import { InvoiceBook, clientAux, lineHt } from './invoices.js';
 import { purchaseEntry, findDuplicates } from './purchases.js';
-import { mergeTransactions, suggestMatches, settlementEntry, directEntry } from './bank.js';
+import { mergeTransactions, suggestMatches, settlementEntry, directEntry, DEFAULT_BANK_ACCOUNT } from './bank.js';
+export { DEFAULT_BANK_ACCOUNT };
 import { isOnReceipt, creditsOf, originalOf, groupBalance, receiptTargets } from './receipts.js';
 import { divRound, splitTtc, sum } from './money.js';
 import { openingEntry } from './fecimport.js';
@@ -70,6 +71,8 @@ function combineEstimates(list) {
   };
 }
 
+export const MAX_BANK_ACCOUNTS = 10;
+
 export class Workspace {
   constructor({ company, state = {}, now, newId } = {}) {
     this.company = company;
@@ -80,6 +83,7 @@ export class Workspace {
     this.clients = state.clients || [];
     this.purchases = state.purchases || [];
     this.transactions = state.transactions || [];
+    this.bankAccounts = state.bankAccounts || [{ ...DEFAULT_BANK_ACCOUNT }];
     this.recurring = state.recurring || [];
     this.archives = state.archives || [];
     this.seq = state.seq || 0;
@@ -93,6 +97,7 @@ export class Workspace {
       clients: this.clients,
       purchases: this.purchases,
       transactions: this.transactions,
+      bankAccounts: this.bankAccounts,
       recurring: this.recurring,
       archives: this.archives,
       seq: this.seq,
@@ -488,6 +493,31 @@ export class Workspace {
     return mergeTransactions(this.transactions, list);
   }
 
+  /** Compte bancaire supplémentaire : sous-compte 512100, 512200… (10 comptes au plus). */
+  addBankAccount({ label, iban = '', provider = 'manual' }) {
+    const name = String(label ?? '').trim();
+    if (!name) throw new Error('Donnez un nom à ce compte (par exemple « Qonto » ou « Livret »).');
+    if (this.bankAccounts.length >= MAX_BANK_ACCOUNTS) throw new Error(`${MAX_BANK_ACCOUNTS} comptes bancaires au plus.`);
+    const used = new Set(this.bankAccounts.map((a) => a.glAccount));
+    const glAccount = [1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `512${n}00`).find((a) => !used.has(a));
+    const digits = String(iban).replace(/\s/g, '');
+    const account = { id: this.#id('bank'), label: name, glAccount, provider, ibanLast4: digits.length >= 4 ? digits.slice(-4) : null };
+    this.bankAccounts.push(account);
+    return account;
+  }
+
+  /** Sous-compte 512 du compte d'une transaction (compte principal par défaut). */
+  bankGlOf(tx) {
+    return this.bankAccounts.find((a) => a.id === (tx.accountId || 'default'))?.glAccount || '512000';
+  }
+
+  /** Solde comptable d'un compte bancaire. */
+  bankBalance(accountId, opts) {
+    const account = this.bankAccounts.find((a) => a.id === accountId);
+    if (!account) throw new Error('Compte bancaire inconnu');
+    return this.ledger.balanceOf(account.glAccount, opts);
+  }
+
   openDocs() {
     const sales = this.book.invoices
       .filter((i) => i.status === 'issued' && i.type !== 'credit' && i.type !== 'quote' && this.book.outstanding(i) > 0)
@@ -543,7 +573,7 @@ export class Workspace {
   matchTransaction(txId, allocations) {
     const tx = this.transactions.find((t) => t.id === txId);
     if (!tx || tx.status !== 'open') throw new Error('Transaction déjà traitée');
-    const entry = this.ledger.addDraft(settlementEntry(tx, allocations));
+    const entry = this.ledger.addDraft(settlementEntry(tx, allocations, { bankAccount: this.bankGlOf(tx) }));
     allocations.forEach(({ doc, amount }, i) => {
       const lineIndex = i + 1; // ligne 0 = banque, puis une ligne par pièce dans l'ordre des allocations
       if (doc.kind === 'credit') {
@@ -615,7 +645,7 @@ export class Workspace {
     if (!tx || tx.status !== 'open') throw new Error('Transaction déjà traitée');
     const income = INCOME_CATEGORIES.find((c) => c.id === categoryId) || OUTFLOW_CATEGORIES.find((c) => c.id === categoryId);
     if (income) {
-      const e = this.ledger.addDraft(directEntry(tx, { account: income.account, missingReceipt: false }));
+      const e = this.ledger.addDraft(directEntry(tx, { account: income.account, missingReceipt: false, bankAccount: this.bankGlOf(tx) }));
       tx.status = 'matched';
       tx.entryId = e.id;
       if (categoryId === 'cotisations-urssaf') this.#markUrssafPaid(tx);
@@ -643,7 +673,13 @@ export class Workspace {
     // Sans facture, la TVA n'est pas déductible : seule une pièce justificative ouvre droit à déduction.
     const deductible = franchise || !hasReceipt ? 0 : divRound(tva * cat.vatDeductiblePct, 100);
     const entry = this.ledger.addDraft(
-      directEntry(tx, { account: cat.account, vatAccount: cat.fixedAsset ? '445620' : '445660', vatAmount: deductible, missingReceipt: !hasReceipt }),
+      directEntry(tx, {
+        account: cat.account,
+        vatAccount: cat.fixedAsset ? '445620' : '445660',
+        vatAmount: deductible,
+        missingReceipt: !hasReceipt,
+        bankAccount: this.bankGlOf(tx),
+      }),
     );
     tx.status = 'matched';
     tx.entryId = entry.id;

@@ -20,12 +20,13 @@ const URL_AUTH_ERROR = (() => {
   return `Le lien n'a pas pu être validé (${params.get('error_description') || code}). Demandez un nouvel e-mail ci-dessous.`;
 })();
 
-import { Workspace, INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../core/workspace.js';
+import { Workspace, INCOME_CATEGORIES, OUTFLOW_CATEGORIES, MAX_BANK_ACCOUNTS } from '../core/workspace.js';
 import { EXPENSE_CATEGORIES, buildChart } from '../core/pcg.js';
 import { parseFec, openingBalanceFromFec } from '../core/fecimport.js';
 import { formatEuros, parseEuros, formatDecimalComma } from '../core/money.js';
 import { computeTotals, checkInvoice, InvoiceError, isValidSiren, isVatExempt, lineHt, VAT_RATES_BP, issuerName } from '../core/invoices.js';
-import { parseBankCsv, parseOfx, reconciliationStatement } from '../core/bank.js';
+import { parseBankCsv, reconciliationStatement } from '../core/bank.js';
+import { importStatement, decodeStatement } from '../core/bank-import.js';
 import { trialBalance, generalLedger, exportFEC, checkFEC, journalReport, encodeLatin9 } from '../core/reports.js';
 import { JOURNALS, Ledger } from '../core/ledger.js';
 import { receiptsBook, ACTIVITY_TYPES, CIPAV_PROFESSIONS, ESTIMATE_MISSING_LABELS } from '../core/micro.js';
@@ -379,7 +380,7 @@ const LANDING_FAQ = [
   },
   {
     q: 'Puis-je importer mon relevé bancaire ?',
-    a: 'Oui, aux formats CSV et OFX proposés par toutes les banques. Un relevé importé deux fois ne crée aucun doublon.',
+    a: 'Oui, aux formats CSV, OFX, CAMT.053 et QIF proposés par les banques. Un relevé importé deux fois ne crée aucun doublon.',
   },
 ];
 
@@ -1012,7 +1013,7 @@ function viewOnboarding() {
       <p class="text-muted">Vos transactions alimentent le rapprochement automatique avec vos factures.</p>
       <div class="notice-gold">
         <strong>Connexion automatique (Qonto, Shine, autres banques)</strong> : disponible dès l'ouverture des accès partenaires. En attendant, importez le
-        relevé CSV ou OFX de votre banque.
+        relevé CSV, OFX, CAMT.053 ou QIF de votre banque.
       </div>
       ${field('Relevé bancaire (facultatif)', html`<input class="input" id="ob-bank" type="file" accept=".csv,.ofx,.qfx,.txt" data-action="ob-bank-file" />`, { id: 'ob-bank' })}
       ${data.bankFileName ? html`<p class="text-muted">Relevé prêt : <strong>${data.bankFileName}</strong> (${data.bankTx.length} transactions)</p>` : ''}
@@ -2424,16 +2425,19 @@ async function attachReceipt(purchase, file) {
 const DOC_KIND_LABELS = { invoice: 'Facture', purchase: 'Dépense', 'purchase-credit': 'Avoir fournisseur', credit: 'Remboursement de l’avoir' };
 
 function viewBank() {
-  const open = ws.transactions.filter((t) => t.status === 'open').sort((a, b) => b.date.localeCompare(a.date));
-  const done = ws.transactions.filter((t) => t.status !== 'open').sort((a, b) => b.date.localeCompare(a.date));
+  const account = currentBankAccount();
+  const mine = ws.transactions.filter((t) => (t.accountId || 'default') === account.id);
+  const open = mine.filter((t) => t.status === 'open').sort((a, b) => b.date.localeCompare(a.date));
+  const done = mine.filter((t) => t.status !== 'open').sort((a, b) => b.date.localeCompare(a.date));
   let stmt = null;
   if (ui.statementBalance) {
     try {
-      stmt = reconciliationStatement(ws.ledger, ws.transactions, { date: today(), statementBalance: parseEuros(ui.statementBalance) });
+      stmt = reconciliationStatement(ws.ledger, ws.transactions, { date: today(), statementBalance: parseEuros(ui.statementBalance), account });
     } catch {}
   }
   const franchise = ws.company.vatRegime === 'franchise';
-  return html` ${viewHeader('Banque', 'Associez chaque mouvement à une facture, ou choisissez une catégorie.', html`<label class="btn btn-primary" style="margin:0">${icon('upload', 14)} Importer un relevé (CSV, OFX)<input type="file" accept=".csv,.ofx,.qfx,.txt" data-action="bank-file" hidden /></label>`)}
+  return html` ${viewHeader('Banque', 'Associez chaque mouvement à une facture, ou choisissez une catégorie.', html`<label class="btn btn-primary" style="margin:0">${icon('upload', 14)} Importer un relevé (CSV, OFX, CAMT.053, QIF)<input type="file" accept=".csv,.ofx,.qfx,.xml,.qif,.txt" data-action="bank-file" hidden /></label>`)}
+    ${bankAccountsBar()} ${bankImportReport()}
     <div class="card table-card">
       <h2 style="padding:16px 16px 0">À justifier (${open.length})</h2>
       ${
@@ -2550,9 +2554,77 @@ function viewBank() {
     }`;
 }
 
-async function importBankFile(file) {
-  const text = await file.text();
-  return /<OFX|<STMTTRN/i.test(text) ? parseOfx(text) : parseBankCsv(text);
+/**
+ * Relevé choisi par l'utilisateur : encodage et format détectés, lignes illisibles signalées. Un
+ * relevé CAMT.053 portant l'IBAN d'un autre compte enregistré est rattaché à ce compte.
+ */
+async function importBankFile(file, accountId = 'default') {
+  const text = decodeStatement(await file.arrayBuffer());
+  const result = importStatement(text, { accountId });
+  const last4 = result.iban?.slice(-4);
+  const byIban = last4 && ws?.bankAccounts.find((a) => a.ibanLast4 === last4);
+  if (byIban && byIban.id !== accountId) return { ...importStatement(text, { accountId: byIban.id }), accountId: byIban.id };
+  return { ...result, accountId };
+}
+
+/** Compte bancaire affiché (et destinataire des imports). */
+function currentBankAccount() {
+  return ws.bankAccounts.find((a) => a.id === ui.bankAccountId) || ws.bankAccounts[0];
+}
+
+/** Sélecteur de compte et ajout d'un compte bancaire. */
+function bankAccountsBar() {
+  const accounts = ws.bankAccounts;
+  const current = currentBankAccount();
+  const label = (a) => `${a.label}${a.ibanLast4 ? ` (…${a.ibanLast4})` : ''}`;
+  return html`<div class="card" style="display:flex;gap:10px;align-items:${accounts.length > 1 ? 'flex-end' : 'center'};flex-wrap:wrap">
+    ${
+      accounts.length > 1
+        ? field(
+            'Compte affiché',
+            html`<select class="input" id="f-bank-account" data-bank-account>
+              ${accounts.map((a) => opt(a.id, label(a), a.id === current.id))}
+            </select>`,
+            { id: 'f-bank-account' },
+          )
+        : html`<p style="margin:0">Compte : <strong>${label(current)}</strong></p>`
+    }
+    <span class="text-muted" style="margin-bottom:${accounts.length > 1 ? 8 : 0}px">Solde comptable : <strong>${eur(ws.bankBalance(current.id))}</strong></span>
+    ${
+      ui.addingBank
+        ? html`<form data-form="bank-account-add" style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+            ${field('Nom du compte', html`<input class="input" id="f-bank-label" name="label" required placeholder="Qonto, Livret…" />`, { id: 'f-bank-label' })}
+            ${field('IBAN (facultatif)', html`<input class="input" id="f-bank-iban" name="iban" placeholder="FR76 …" />`, { id: 'f-bank-iban' })}
+            <button class="btn btn-primary" type="submit" style="margin-bottom:2px">Ajouter</button>
+            <button class="btn btn-secondary" type="button" data-action="bank-account-cancel" style="margin-bottom:2px">Annuler</button>
+          </form>`
+        : accounts.length < MAX_BANK_ACCOUNTS
+          ? html`<button class="btn btn-secondary" data-action="bank-account-new" style="margin-left:auto">Ajouter un compte bancaire</button>`
+          : ''
+    }
+  </div>`;
+}
+
+/** Compte rendu du dernier import : banque reconnue, lignes rejetées avec leur numéro. */
+function bankImportReport() {
+  const r = ui.bankImport;
+  if (!r) return '';
+  return html`<div class="${r.errors.length ? 'notice-gold' : 'card'}" style="display:flex;flex-direction:column;gap:6px">
+    <strong
+      >${r.fileName}${r.bank ? ` (relevé ${r.bank})` : ''} : ${r.added} nouvelle(s)
+      opération(s)${r.skipped ? `, ${r.skipped} opération(s) refusée(s) ou en attente ignorée(s)` : ''}</strong
+    >
+    ${
+      r.errors.length
+        ? html`<span>${r.errors.length} ligne(s) n'ont pas pu être lues et n'ont pas été importées :</span>
+            <ul style="margin:0;padding-left:18px">
+              ${r.errors.slice(0, 10).map((e) => html`<li>ligne ${e.line} : ${e.message}</li>`)}
+            </ul>
+            ${r.errors.length > 10 ? html`<span>… et ${r.errors.length - 10} autre(s).</span>` : ''}`
+        : ''
+    }
+    <div><button class="btn btn-secondary btn-sm" data-action="bank-import-dismiss">Fermer</button></div>
+  </div>`;
 }
 
 // ------------------------------------------------------------------ TVA (§3.6)
@@ -4009,6 +4081,11 @@ document.addEventListener('input', (e) => {
 document.addEventListener('change', async (e) => {
   const el = e.target;
   if (el.dataset.statement !== undefined) return render();
+  if (el.dataset.bankAccount !== undefined) {
+    ui.bankAccountId = el.value;
+    ui.statementBalance = '';
+    return render();
+  }
   if (el.dataset.urssafFrequency !== undefined) {
     ws.company.urssafFrequency = el.value;
     ui.urssafDeclare = null;
@@ -4025,7 +4102,7 @@ document.addEventListener('change', async (e) => {
   }
   if (el.dataset.action === 'ob-bank-file' && el.files[0]) {
     try {
-      Object.assign(ui.ob.data, { bankFileName: el.files[0].name, bankTx: await importBankFile(el.files[0]) });
+      Object.assign(ui.ob.data, { bankFileName: el.files[0].name, bankTx: (await importBankFile(el.files[0])).transactions });
     } catch (err) {
       ui.ob.error = err.message;
     }
@@ -4033,10 +4110,16 @@ document.addEventListener('change', async (e) => {
   }
   if (el.dataset.action === 'bank-file' && el.files[0]) {
     try {
-      const added = ws.importTransactions(await importBankFile(el.files[0]));
+      const result = await importBankFile(el.files[0], currentBankAccount().id);
+      ui.bankAccountId = result.accountId;
+      const added = ws.importTransactions(result.transactions);
+      ui.bankImport = { ...result, fileName: el.files[0].name, added: added.length };
       save();
       render();
-      toast(added.length ? `${added.length} nouvelle(s) transaction(s) importée(s).` : 'Aucune nouvelle transaction : ce relevé était déjà importé.');
+      toast(
+        added.length ? `${added.length} nouvelle(s) transaction(s) importée(s).` : 'Aucune nouvelle transaction : ce relevé était déjà importé.',
+        result.errors.length > 0,
+      );
     } catch (err) {
       toast(err.message, true);
     }
@@ -4198,6 +4281,19 @@ document.addEventListener('submit', async (e) => {
     save();
     render();
     return toast('Situation enregistrée : les estimations de cotisations sont à jour.');
+  }
+  if (kind === 'bank-account-add') {
+    try {
+      const account = ws.addBankAccount({ label: f.label, iban: f.iban });
+      ui.addingBank = false;
+      ui.bankAccountId = account.id;
+      save();
+      render();
+      toast(`Compte « ${account.label} » ajouté : importez-y ses relevés.`);
+    } catch (err) {
+      toast(err.message, true);
+    }
+    return;
   }
   if (kind === 'mfa-add') {
     try {
@@ -4698,6 +4794,15 @@ document.addEventListener('click', async (e) => {
       }
       return;
     }
+    case 'bank-account-new':
+      ui.addingBank = true;
+      return render();
+    case 'bank-account-cancel':
+      ui.addingBank = false;
+      return render();
+    case 'bank-import-dismiss':
+      ui.bankImport = null;
+      return render();
     case 'remove-member': {
       const m = (ui.members || []).find((x) => x.user_id === id);
       if (!confirm(`Retirer l’accès de ${m?.email || 'ce membre'} à votre comptabilité ?`)) return;

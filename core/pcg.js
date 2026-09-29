@@ -57,6 +57,16 @@ export const ACCOUNTS = [
   ['491000', 'Dépréciation des comptes clients', 'Risque de clients impayés'],
   // Classe 5 — trésorerie
   ['512000', 'Banque', 'Compte bancaire'],
+  // Comptes bancaires supplémentaires (un sous-compte par compte, dans l’ordre d’ajout).
+  ['512100', 'Banque - compte 2', 'Compte bancaire n° 2'],
+  ['512200', 'Banque - compte 3', 'Compte bancaire n° 3'],
+  ['512300', 'Banque - compte 4', 'Compte bancaire n° 4'],
+  ['512400', 'Banque - compte 5', 'Compte bancaire n° 5'],
+  ['512500', 'Banque - compte 6', 'Compte bancaire n° 6'],
+  ['512600', 'Banque - compte 7', 'Compte bancaire n° 7'],
+  ['512700', 'Banque - compte 8', 'Compte bancaire n° 8'],
+  ['512800', 'Banque - compte 9', 'Compte bancaire n° 9'],
+  ['512900', 'Banque - compte 10', 'Compte bancaire n° 10'],
   ['530000', 'Caisse', 'Espèces'],
   ['580000', 'Virements internes', 'Transferts entre mes comptes'],
   // Classe 6 — charges

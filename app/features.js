@@ -182,8 +182,8 @@ export const FEATURE_PAGES = [
     ],
     benefits: [
       {
-        title: 'Import de relevé en CSV ou OFX',
-        text: 'Toutes les banques françaises proposent ces formats dans leur espace client. Nexus reconnaît les colonnes, les dates et les montants, quelle que soit la banque.',
+        title: 'Import de relevé en CSV, OFX, CAMT.053 ou QIF',
+        text: 'Toutes les banques françaises proposent au moins l’un de ces formats dans leur espace client. Nexus reconnaît les colonnes, les dates et les montants (y compris les exports de Qonto, Shine, Société Générale, Crédit Agricole, BNP Paribas, Boursorama et LCL). Une ligne illisible vous est signalée avec son numéro, sans bloquer le reste du relevé.',
       },
       {
         title: 'Aucun doublon, même en réimportant',
@@ -215,7 +215,7 @@ export const FEATURE_PAGES = [
       },
     ],
     steps: [
-      'Dans l’espace client de votre banque, téléchargez votre relevé au format CSV ou OFX.',
+      'Dans l’espace client de votre banque, téléchargez votre relevé (CSV, OFX, CAMT.053 ou QIF).',
       'Dans Nexus, cliquez sur « Importer un relevé » et choisissez le fichier.',
       'Pour chaque mouvement, validez la facture proposée ou choisissez une catégorie.',
       'Les mouvements passent dans « Déjà justifiées », vos factures sont marquées payées et votre trésorerie est à jour.',
@@ -231,7 +231,7 @@ export const FEATURE_PAGES = [
     faq: [
       {
         q: 'Nexus se connecte-t-il directement à ma banque ?',
-        a: 'Aujourd’hui, vous importez votre relevé (CSV ou OFX) en quelques secondes. La synchronisation automatique avec les banques arrivera dans une prochaine version.',
+        a: 'Aujourd’hui, vous importez votre relevé (CSV, OFX, CAMT.053 ou QIF) en quelques secondes. La synchronisation automatique avec les banques arrivera dans une prochaine version.',
       },
       {
         q: 'Et si Nexus se trompe de facture ?',

@@ -1,105 +1,23 @@
 /**
- * Banque (§3.4) : import des relevés (CSV, OFX — secours de la synchronisation Qonto / agrégateur),
- * propositions de rapprochement classées par confiance, et écritures de règlement + lettrage.
+ * Banque (§3.4) : fusion des relevés importés (bank-import.js), propositions de rapprochement classées par confiance, et écritures de règlement + lettrage.
  * L'import est idempotent : chaque transaction porte un identifiant stable (FITID OFX, identifiant
  * Qonto, ou empreinte date|montant|libellé|rang pour le CSV), et un ré-import ne crée aucun doublon.
  */
 
-import { divRound, parseEuros, sum } from './money.js';
+import { divRound, sum } from './money.js';
 
-// ------------------------------------------------------------------ import
+/** Compte bancaire principal (512000), créé avec l'entreprise ; « default » le relie à sa ligne en base. */
+export const DEFAULT_BANK_ACCOUNT = { id: 'default', label: 'Compte principal', glAccount: '512000', provider: 'manual', ibanLast4: null };
 
-function fnv1a(str) {
-  let h = 0x811c9dc5;
-  for (let i = 0; i < str.length; i++) {
-    h ^= str.charCodeAt(i);
-    h = Math.imul(h, 0x01000193) >>> 0;
-  }
-  return h.toString(16).padStart(8, '0');
-}
+// Lecture des relevés (CSV, OFX…) : voir bank-import.js ; réexportée pour les appels existants.
+export { parseBankCsv, parseOfx } from './bank-import.js';
 
-function toIsoDate(s) {
-  const t = s.trim();
-  let m = /^(\d{2})[/.-](\d{2})[/.-](\d{4})$/.exec(t);
-  if (m) return `${m[3]}-${m[2]}-${m[1]}`;
-  m = /^(\d{4})-?(\d{2})-?(\d{2})/.exec(t);
-  if (m) return `${m[1]}-${m[2]}-${m[3]}`;
-  throw new Error(`Date non reconnue : « ${s} »`);
-}
-
-function splitCsvLine(line, sep) {
-  const out = [];
-  let cur = '';
-  let quoted = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') {
-      if (quoted && line[i + 1] === '"') {
-        cur += '"';
-        i++;
-      } else quoted = !quoted;
-    } else if (ch === sep && !quoted) {
-      out.push(cur);
-      cur = '';
-    } else cur += ch;
-  }
-  out.push(cur);
-  return out.map((c) => c.trim());
-}
-
-const norm = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
-
-/**
- * CSV bancaire français : séparateur « ; » ou « , », colonnes reconnues par leur en-tête
- * (date, libellé, montant — ou débit/crédit séparés).
- */
-export function parseBankCsv(text, { accountId = 'default' } = {}) {
-  const rows = text
-    .replace(/^\uFEFF/, '')
-    .split(/\r?\n/)
-    .filter((l) => l.trim());
-  if (rows.length < 2) return [];
-  const sep = (rows[0].match(/;/g) || []).length >= (rows[0].match(/,/g) || []).length ? ';' : ',';
-  const header = splitCsvLine(rows[0], sep).map(norm);
-  const col = (...names) => header.findIndex((h) => names.some((n) => h.includes(n)));
-  const iDate = col('date operation', 'date');
-  const iLabel = col('libelle', 'description', 'intitule', 'label');
-  const iAmount = col('montant', 'amount');
-  const iDebit = col('debit');
-  const iCredit = col('credit');
-  if (iDate < 0 || iLabel < 0 || (iAmount < 0 && iDebit < 0)) {
-    throw new Error('Colonnes attendues introuvables : date, libellé et montant (ou débit/crédit)');
-  }
-  const seen = new Map();
-  return rows.slice(1).map((line) => {
-    const c = splitCsvLine(line, sep);
-    const date = toIsoDate(c[iDate]);
-    const label = c[iLabel];
-    let amount;
-    if (iAmount >= 0 && c[iAmount]) amount = parseEuros(c[iAmount]);
-    else amount = (c[iCredit] ? parseEuros(c[iCredit]) : 0) - Math.abs(c[iDebit] ? parseEuros(c[iDebit]) : 0);
-    const base = `${accountId}|${date}|${amount}|${label}`;
-    const rank = (seen.get(base) || 0) + 1;
-    seen.set(base, rank);
-    return { id: `csv-${fnv1a(`${base}|${rank}`)}`, accountId, date, label, amount, status: 'open' };
-  });
-}
-
-/** OFX (SGML ou XML) : blocs <STMTTRN>, identifiant stable FITID. */
-export function parseOfx(text, { accountId = 'default' } = {}) {
-  const tag = (block, name) => {
-    const m = new RegExp(`<${name}>([^<\\r\\n]*)`, 'i').exec(block);
-    return m ? m[1].trim() : '';
-  };
-  return [...text.matchAll(/<STMTTRN>([\s\S]*?)(?:<\/STMTTRN>|(?=<STMTTRN>)|(?=<\/BANKTRANLIST>))/gi)].map(([, b]) => ({
-    id: `ofx-${tag(b, 'FITID')}`,
-    accountId,
-    date: toIsoDate(tag(b, 'DTPOSTED')),
-    label: [tag(b, 'NAME'), tag(b, 'MEMO')].filter(Boolean).join(' '),
-    amount: parseEuros(tag(b, 'TRNAMT')),
-    status: 'open',
-  }));
-}
+const norm = (s) =>
+  s
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
 
 /** Fusionne un import dans la liste existante sans doublon ; renvoie les transactions ajoutées. */
 export function mergeTransactions(existing, incoming) {
@@ -186,9 +104,9 @@ export function suggestMatches(tx, openDocs, { maxGroup = 3 } = {}) {
  * Écriture de banque pour un règlement de pièces (clients ou fournisseurs).
  * @param {object} tx transaction
  * @param {{doc: object, amount: number}[]} allocations montants imputés par pièce
- * @param {{ writeOffThreshold?: number }} opts écart de centimes absorbé en 658/758 (défaut 1 €)
+ * @param {{ writeOffThreshold?: number, bankAccount?: string }} opts écart de centimes absorbé en 658/758 (défaut 1 €), sous-compte 512 du compte bancaire
  */
-export function settlementEntry(tx, allocations, { writeOffThreshold = 100 } = {}) {
+export function settlementEntry(tx, allocations, { writeOffThreshold = 100, bankAccount = '512000' } = {}) {
   const incoming = tx.amount > 0;
   const bank = Math.abs(tx.amount);
   const allocated = sum(allocations.map((a) => a.amount));
@@ -197,7 +115,7 @@ export function settlementEntry(tx, allocations, { writeOffThreshold = 100 } = {
     throw new Error(`Le montant imputé (${allocated}) dépasse la transaction (${bank})`);
   }
   const lines = [];
-  lines.push({ account: '512000', label: tx.label, debit: incoming ? bank : 0, credit: incoming ? 0 : bank });
+  lines.push({ account: bankAccount, label: tx.label, debit: incoming ? bank : 0, credit: incoming ? 0 : bank });
   for (const { doc, amount } of allocations) {
     lines.push({
       account: doc.thirdPartyAccount,
@@ -259,19 +177,22 @@ export function vatOnReceiptEntry(invoice, paidAmount, date) {
 }
 
 /** Dépense ou recette sans pièce (frais bancaires, abonnement prélevé…), signalée si sans justificatif. */
-export function directEntry(tx, { account, vatAccount, vatAmount = 0, missingReceipt = true }) {
+export function directEntry(tx, { account, vatAccount, vatAmount = 0, missingReceipt = true, bankAccount = '512000' }) {
   const abs = Math.abs(tx.amount);
   const out = tx.amount < 0;
-  const lines = [{ account: '512000', label: tx.label, debit: out ? 0 : abs, credit: out ? abs : 0 }];
+  const lines = [{ account: bankAccount, label: tx.label, debit: out ? 0 : abs, credit: out ? abs : 0 }];
   lines.push({ account, label: tx.label, debit: out ? abs - vatAmount : 0, credit: out ? 0 : abs - vatAmount });
   if (vatAmount) lines.push({ account: vatAccount, label: tx.label, debit: out ? vatAmount : 0, credit: out ? 0 : vatAmount });
   return { journal: 'BQ', date: tx.date, label: tx.label, pieceRef: tx.id, pieceDate: tx.date, source: { kind: 'bank', id: tx.id, missingReceipt }, lines };
 }
 
-/** État de rapprochement : solde relevé vs solde du 512, avec les suspens. */
-export function reconciliationStatement(ledger, transactions, { date, statementBalance }) {
-  const bookBalance = ledger.balanceOf('512', { to: date });
-  const pending = transactions.filter((t) => t.date <= date && t.status === 'open');
+/**
+ * État de rapprochement : solde relevé vs solde comptable, avec les suspens. Avec `account`
+ * (compte bancaire), limité à son sous-compte 512 et à ses mouvements ; sinon, tous les comptes.
+ */
+export function reconciliationStatement(ledger, transactions, { date, statementBalance, account = null }) {
+  const bookBalance = ledger.balanceOf(account ? account.glAccount : '512', { to: date });
+  const pending = transactions.filter((t) => t.date <= date && t.status === 'open' && (!account || (t.accountId || 'default') === account.id));
   return {
     date,
     statementBalance,

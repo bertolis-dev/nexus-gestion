@@ -180,7 +180,7 @@ export async function loadStructure(structureId) {
   if (!fiscalYear) throw new Error('Aucun exercice ouvert pour cette entreprise.');
   const [structure, banks, entries, invoices, counters, settlements, clients, purchases, transactions, recurring, documents, events] = await Promise.all([
     supabase.from('structures').select('*').eq('id', structureId).single().then(check),
-    supabase.from('bank_accounts').select('id').eq('structure_id', structureId).order('created_at').then(check),
+    supabase.from('bank_accounts').select('*').eq('structure_id', structureId).order('created_at').then(check),
     all(() => eq('entries', '*, entry_lines(*)')().eq('fiscal_year_id', fiscalYear.id).order('seq')),
     all(() => eq('invoices')().order('created_at')),
     supabase.from('invoice_counters').select('*').eq('structure_id', structureId).then(check),
@@ -192,8 +192,22 @@ export async function loadStructure(structureId) {
     all(() => eq('documents')().order('uploaded_at')),
     all(() => eq('invoice_events')().order('position')),
   ]);
-  const meta = { structureId, fiscalYearId: fiscalYear.id, bankAccountId: banks[0]?.id };
-  const state = stateFromRows({ structure, fiscalYear, entries, invoices, counters, settlements, clients, purchases, transactions, recurring, events });
+  const primary = banks.find((b) => b.gl_account === '512000') || banks[0];
+  const meta = { structureId, fiscalYearId: fiscalYear.id, bankAccountId: primary?.id };
+  const state = stateFromRows({
+    structure,
+    fiscalYear,
+    bankAccounts: banks,
+    entries,
+    invoices,
+    counters,
+    settlements,
+    clients,
+    purchases,
+    transactions,
+    recurring,
+    events,
+  });
   return { meta, state, documents };
 }
 
