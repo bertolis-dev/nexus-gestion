@@ -464,3 +464,23 @@ export function stateFromRows(r) {
     seq: 0,
   };
 }
+
+/**
+ * Applique à l'appareil la réponse du serveur à une opération : le numéro d'ordre d'une écriture est
+ * attribué par le serveur (migration 0014) et doit être repris localement.
+ * @returns {boolean} vrai si l'état local a changé
+ */
+export function applySyncResult(ws, op, result) {
+  if (op.kind !== 'rpc' || op.fn !== 'save_draft_entry' || !result || typeof result !== 'object' || result.seq == null) return false;
+  const entry = ws.ledger.entries.find((e) => e.id === op.args.p.id);
+  const seq = Number(result.seq);
+  if (!entry || entry.seq === seq) return false;
+  entry.seq = seq;
+  ws.ledger.seq = Math.max(ws.ledger.seq, seq);
+  return true;
+}
+
+/** Erreur qui signale que la base a évolué ailleurs (autre appareil, autre onglet) : recharger. */
+export function isDivergence(error) {
+  return Boolean(error?.divergence || error?.code === '23505');
+}

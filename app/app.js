@@ -37,7 +37,7 @@ import { justificationRows } from '../core/vatreturn.js';
 import { readIncomingInvoice, purchaseLinesFrom } from '../core/einvoice-in.js';
 import { LIFECYCLE, nextStatuses } from '../core/lifecycle.js';
 import { closingChecklist, incomeStatement, balanceSheet, INVENTORY_TYPES, fiscalYearLabel, allocationProposal } from '../core/closing.js';
-import { ledgerStateFromRows } from '../core/sync.js';
+import { ledgerStateFromRows, applySyncResult } from '../core/sync.js';
 import { toCsv } from '../core/exports.js';
 import { ICONS } from './icons.js';
 import { todayParis, addDays, firstFiscalYear } from '../core/dates.js';
@@ -217,8 +217,24 @@ function download(name, content, type = 'text/plain;charset=utf-8') {
 
 // ------------------------------------------------------------------ synchronisation
 
+/** Réponse du serveur : le numéro d'ordre attribué à une écriture est repris localement (et dans la copie synchronisée, pour ne pas la renvoyer). */
+function onSyncResult(op, result) {
+  if (!applySyncResult(ws, op, result)) return;
+  const synced = cloudState.synced?.ledger?.entries?.find((e) => e.id === op.args.p.id);
+  if (synced) synced.seq = Number(result.seq);
+  if (cloudState.synced?.ledger) cloudState.synced.ledger.seq = Math.max(cloudState.synced.ledger.seq || 0, Number(result.seq));
+}
+
+/** Facture émise localement dont la base n'a pas encore confirmé le numéro (mode connecté). */
+function isUnconfirmed(inv) {
+  return Boolean(!ui.demo && inv?.status === 'issued' && cloudState.outbox?.unconfirmedInvoices().has(inv.id));
+}
+
 function onSyncStatus(status) {
+  const wasPending = cloudState.status?.pending > 0;
   cloudState.status = status;
+  // Numéros confirmés : la fiche de la facture affichée devient imprimable.
+  if (wasPending && !status.pending && /^#\/ventes\/(?!modifier-|nouve)[^/]+$/.test(location.hash)) render();
   const el = document.getElementById('sync-status');
   if (el) el.outerHTML = syncStatusHtml().s;
   if (status.error) toast(`Enregistrement refusé : ${status.error}`, true);
@@ -242,7 +258,7 @@ async function openStructure(structureId) {
   cloudState.meta = meta;
   cloudState.documents = documents || [];
   cloudState.role = await cloud.myRole(structureId).catch(() => null);
-  cloudState.outbox = new cloud.Outbox({ key: `nexus_gestion_outbox_${structureId}`, onStatus: onSyncStatus });
+  cloudState.outbox = new cloud.Outbox({ key: `${cloud.OUTBOX_PREFIX}${structureId}`, onStatus: onSyncStatus, onResult: onSyncResult });
   ws = new Workspace({ company: state.company, state, newId });
   cloudState.synced = JSON.parse(JSON.stringify(ws));
   if (cloudState.outbox.queue.length) {
@@ -255,7 +271,7 @@ async function openStructure(structureId) {
 async function afterSignIn() {
   const mfa = await cloud.mfaStatus();
   if (mfa.step !== 'ok') {
-    ui.mfa = mfa.step === 'enroll' ? { step: 'enroll', ...(await cloud.mfaEnroll()) } : { step: 'challenge', factorId: mfa.factorId };
+    ui.mfa = mfa.step === 'enroll' ? { step: 'enroll', ...(await cloud.mfaEnroll()) } : { step: 'challenge', factorId: mfa.factorId, factors: mfa.factors };
     ui.screen = 'login';
     return render();
   }
@@ -900,7 +916,19 @@ function viewAuth() {
 function viewMfa() {
   const m = ui.mfa;
   const err = m.error ? html`<p class="login-error" role="alert">${m.error}</p>` : '';
+  const choices = m.factors?.length > 1 ? m.factors : null;
   const form = html`<form data-form="mfa">
+      ${
+        choices
+          ? field(
+              'Application utilisée',
+              html`<select class="input" id="f-mfa-factor" name="factor">
+                ${choices.map((x) => opt(x.id, x.name, x.id === m.factorId))}
+              </select>`,
+              { id: 'f-mfa-factor' },
+            )
+          : ''
+      }
       ${field('Code à 6 chiffres', html`<input class="input" id="f-mfa" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required autofocus />`, { id: 'f-mfa' })}
       ${err}<button type="submit" class="btn btn-primary" style="width:100%" ${m.busy ? raw('disabled') : ''}>Valider</button>
     </form>
@@ -1052,6 +1080,64 @@ function microSettingsCard() {
 }
 
 /** Accès partagés : expert-comptable et collaborateurs (mode connecté uniquement). */
+/** Double authentification : appareils enregistrés, ajout d'un appareil de secours, retrait. */
+function securityCard() {
+  if (ui.demo || !cloudState.session) return '';
+  if (!ui.security) {
+    ui.security = { loading: true };
+    cloud
+      .mfaStatus()
+      .then((s) => {
+        ui.security = { factors: s.factors };
+        render();
+      })
+      .catch(() => (ui.security = { factors: [] }));
+  }
+  const s = ui.security;
+  const factors = s.factors || [];
+  const a = s.adding;
+  return html`<div class="card" style="display:flex;flex-direction:column;gap:10px">
+    <h2>Double authentification</h2>
+    ${
+      factors.length === 1
+        ? html`<div class="notice-gold">
+            Un seul appareil enregistré : si vous perdez ce téléphone, vous ne pourrez plus ouvrir votre comptabilité. Ajoutez un appareil de secours (second
+            téléphone, tablette ou gestionnaire de mots de passe).
+          </div>`
+        : ''
+    }
+    ${
+      factors.length
+        ? html`<table class="table">
+            <tbody>
+              ${factors.map(
+                (x) =>
+                  html`<tr>
+                    <td>${x.name}</td>
+                    <td class="num">
+                      ${factors.length > 1 ? html`<button class="btn btn-secondary btn-sm" data-action="mfa-remove" data-id="${x.id}">Retirer</button>` : ''}
+                    </td>
+                  </tr>`,
+              )}
+            </tbody>
+          </table>`
+        : ''
+    }
+    ${
+      a
+        ? html`<p>Scannez ce code avec l'application de secours, puis saisissez le code à 6 chiffres qu'elle affiche.</p>
+            <img class="mfa-qr" src="${a.qrCode}" alt="QR code à scanner avec l'application de secours" width="190" height="190" />
+            <p class="form-hint">Impossible de scanner ? Saisissez cette clé : <span class="mono">${a.secret}</span></p>
+            <form data-form="mfa-add" style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+              ${field('Code à 6 chiffres', html`<input class="input" id="f-mfa-add" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required />`, { id: 'f-mfa-add' })}
+              <button class="btn btn-primary" type="submit" style="margin-bottom:2px">Valider</button>
+            </form>
+            ${a.error ? html`<p class="login-error" role="alert">${a.error}</p>` : ''}`
+        : html`<div><button class="btn btn-secondary" data-action="mfa-add" ${s.loading ? raw('disabled') : ''}>Ajouter un appareil de secours</button></div>`
+    }
+  </div>`;
+}
+
 function membersCard() {
   if (ui.demo) return '';
   if (!ui.members && cloudState.meta) {
@@ -1081,6 +1167,9 @@ function membersCard() {
                   html`<tr>
                     <td>${m.email || '—'}</td>
                     <td>${badge(roleLabel[m.role] || m.role, m.role === 'expert' ? 'primary' : 'muted')}</td>
+                    <td class="num">
+                      ${m.role === 'dirigeant' ? '' : html`<button class="btn btn-secondary btn-sm" data-action="remove-member" data-id="${m.user_id}">Retirer l’accès</button>`}
+                    </td>
                   </tr>`,
               )}
             </tbody>
@@ -1170,7 +1259,7 @@ async function finishOnboarding() {
   try {
     const created = await cloud.createStructure(company);
     cloudState.meta = { structureId: created.structure_id, fiscalYearId: created.fiscal_year_id, bankAccountId: created.bank_account_id };
-    cloudState.outbox = new cloud.Outbox({ key: `nexus_gestion_outbox_${created.structure_id}`, onStatus: onSyncStatus });
+    cloudState.outbox = new cloud.Outbox({ key: `${cloud.OUTBOX_PREFIX}${created.structure_id}`, onStatus: onSyncStatus, onResult: onSyncResult });
     cloudState.synced = null;
   } catch (e) {
     ui.ob.loading = false;
@@ -1970,27 +2059,31 @@ function viewInvoice(id) {
       ? `mailto:${encodeURIComponent(c.email)}?subject=${encodeURIComponent(`Facture ${inv.number} en attente de règlement`)}&body=${encodeURIComponent(`Bonjour,\n\nSauf erreur de notre part, la facture ${inv.number} du ${frDate(inv.issueDate)}, d'un montant de ${eur(outstanding)}, arrivée à échéance le ${frDate(inv.dueDate)}, reste à régler.\n\nMerci de procéder au règlement dans les meilleurs délais.\n\nCordialement,\n${ws.company.name}`)}`
       : '';
   const quote = inv.type === 'quote';
+  // Mode connecté : le numéro n'est définitif qu'une fois attribué par la base.
+  const unconfirmed = issued && isUnconfirmed(inv);
   const invoicedFrom = quote && issued ? ws.book.invoices.find((i) => i.quoteRef === inv.number) : null;
   const subtitle = !issued
     ? 'Brouillon : pas encore de numéro, modifiable.'
-    : quote
-      ? invoicedFrom
-        ? `Devis facturé (${invoicedFrom.number || 'facture en brouillon'})`
-        : `Devis valable jusqu'au ${frDate(inv.dueDate)}`
-      : outstanding > 0
-        ? `Reste dû : ${eur(outstanding)}`
-        : inv.type === 'credit'
-          ? `Avoir sur la facture ${inv.creditOf}`
-          : 'Payée intégralement';
+    : unconfirmed
+      ? 'Émission en cours : numéro en attente de confirmation par le serveur. Impression et envoi disponibles dans un instant.'
+      : quote
+        ? invoicedFrom
+          ? `Devis facturé (${invoicedFrom.number || 'facture en brouillon'})`
+          : `Devis valable jusqu'au ${frDate(inv.dueDate)}`
+        : outstanding > 0
+          ? `Reste dû : ${eur(outstanding)}`
+          : inv.type === 'credit'
+            ? `Avoir sur la facture ${inv.creditOf}`
+            : 'Payée intégralement';
   const actions = html` ${!issued ? html`<button class="btn btn-primary" data-action="invoice-issue-existing" data-id="${inv.id}">Émettre</button><button class="btn btn-secondary" data-href="#/ventes/modifier-${inv.id}">Modifier</button><button class="btn btn-secondary" data-action="invoice-delete" data-id="${inv.id}">Supprimer</button>` : ''}
   ${quote && issued && !invoicedFrom ? html`<button class="btn btn-gold" data-action="quote-convert" data-id="${inv.id}">Transformer en facture</button>` : ''}
-  ${issued ? html`<button class="btn btn-secondary" data-action="print">Imprimer / PDF</button>` : ''}
-  ${issued && !quote ? html`<button class="btn btn-secondary" data-action="einvoice" data-id="${inv.id}">Facture électronique (XML)</button>` : ''}
-  ${mailto && !quote ? html`<a class="btn btn-gold" href="${mailto}">Relancer le client</a>` : ''}
+  ${issued && !unconfirmed ? html`<button class="btn btn-secondary" data-action="print">Imprimer / PDF</button>` : ''}
+  ${issued && !quote && !unconfirmed ? html`<button class="btn btn-secondary" data-action="einvoice" data-id="${inv.id}">Facture électronique (XML)</button>` : ''}
+  ${mailto && !quote && !unconfirmed ? html`<a class="btn btn-gold" href="${mailto}">Relancer le client</a>` : ''}
   ${issued && inv.type !== 'credit' && !quote ? html`<button class="btn btn-secondary" data-action="credit-note" data-id="${inv.id}">Créer un avoir</button>` : ''}`;
   return html` <div class="no-print">
       <button class="btn-link" data-href="#/ventes">← Retour aux factures</button
-      >${viewHeader(inv.number || (quote ? 'Brouillon de devis' : 'Brouillon de facture'), subtitle, actions)}
+      >${viewHeader(unconfirmed ? `${quote ? 'Devis' : 'Facture'} en cours d’émission` : inv.number || (quote ? 'Brouillon de devis' : 'Brouillon de facture'), subtitle, actions)}
     </div>
     ${
       issues.length
@@ -3714,7 +3807,7 @@ function viewSettings() {
         journaux, FEC)</label
       >
     </div>
-    ${membersCard()}
+    ${securityCard()} ${membersCard()}
     ${
       ws.ledger.entries.some((e) => e.source?.kind === 'fec-import')
         ? ''
@@ -4106,11 +4199,23 @@ document.addEventListener('submit', async (e) => {
     render();
     return toast('Situation enregistrée : les estimations de cotisations sont à jour.');
   }
+  if (kind === 'mfa-add') {
+    try {
+      await cloud.mfaVerify(ui.security.adding.factorId, f.code);
+      ui.security = null;
+      render();
+      toast('Appareil de secours enregistré : il donne accès à votre comptabilité si vous perdez votre téléphone.');
+    } catch (err) {
+      ui.security.adding.error = cloud.friendly(err);
+      render();
+    }
+    return;
+  }
   if (kind === 'mfa') {
     ui.mfa = { ...ui.mfa, busy: true, error: '' };
     render();
     try {
-      await cloud.mfaVerify(ui.mfa.factorId, f.code);
+      await cloud.mfaVerify(f.factor || ui.mfa.factorId, f.code);
       ui.mfa = null;
       await afterSignIn();
     } catch (err) {
@@ -4279,6 +4384,7 @@ document.addEventListener('click', async (e) => {
         save();
         location.hash = `#/ventes/${issued.id}`;
         render();
+        if (isUnconfirmed(issued)) return toast('Émission envoyée : le numéro s’affiche dès sa confirmation par le serveur.');
         toast(
           `${issued.type === 'quote' ? 'Devis' : issued.type === 'deposit' ? "Facture d'acompte" : issued.type === 'credit' ? 'Avoir' : 'Facture'} ${issued.number} émis${issued.type === 'quote' || issued.type === 'credit' ? '' : 'e'}.`,
         );
@@ -4309,6 +4415,7 @@ document.addEventListener('click', async (e) => {
       return window.print();
     case 'einvoice': {
       const inv = ws.book.get(id);
+      if (isUnconfirmed(inv)) return toast('Numéro en attente de confirmation par le serveur : réessayez dans un instant.', true);
       const problems = checkEn16931(inv);
       if (problems.length) return toast(`Facture électronique non conforme : ${problems[0]}`, true);
       download(ciiFileName(inv), buildCii(inv), 'application/xml;charset=utf-8');
@@ -4562,10 +4669,43 @@ document.addEventListener('click', async (e) => {
       const role = document.querySelector('[data-invite-role]').value;
       if (!email) return toast('Indiquez l’adresse e-mail.', true);
       try {
-        await cloud.inviteMember(cloudState.meta.structureId, email, role);
+        // Réponse identique qu'un compte existe ou non (la base ne révèle pas les adresses inscrites).
+        const message = await cloud.inviteMember(cloudState.meta.structureId, email, role);
         ui.members = await cloud.listMembers(cloudState.meta.structureId);
         render();
-        toast(`${email} a désormais accès à votre comptabilité.`);
+        toast(message);
+      } catch (err) {
+        toast(cloud.friendly(err), true);
+      }
+      return;
+    }
+    case 'mfa-add':
+      try {
+        ui.security = { ...ui.security, adding: await cloud.mfaEnroll(`Appareil de secours ${frDate(today())}`) };
+      } catch (err) {
+        toast(cloud.friendly(err), true);
+      }
+      return render();
+    case 'mfa-remove': {
+      if (!confirm('Retirer cette application d’authentification ? Elle ne permettra plus d’ouvrir votre comptabilité.')) return;
+      try {
+        await cloud.mfaRemove(id);
+        ui.security = null;
+        render();
+        toast('Application retirée.');
+      } catch (err) {
+        toast(cloud.friendly(err), true);
+      }
+      return;
+    }
+    case 'remove-member': {
+      const m = (ui.members || []).find((x) => x.user_id === id);
+      if (!confirm(`Retirer l’accès de ${m?.email || 'ce membre'} à votre comptabilité ?`)) return;
+      try {
+        await cloud.removeMember(cloudState.meta.structureId, id);
+        ui.members = await cloud.listMembers(cloudState.meta.structureId);
+        render();
+        toast('Accès retiré.');
       } catch (err) {
         toast(cloud.friendly(err), true);
       }
@@ -4646,11 +4786,9 @@ document.addEventListener('click', async (e) => {
       }
       return;
     case 'export-receipts': {
-      const rows = receiptsBook(microReceipts()).rows;
-      const csv =
-        '﻿Date;Facture;Client;Mode;Montant\r\n' +
-        rows.map((r) => [frDate(r.date), r.invoiceNumber, r.clientName, r.method, (r.amount / 100).toFixed(2).replace('.', ',')].join(';')).join('\r\n');
-      return download('livre-des-recettes.csv', csv, 'text/csv;charset=utf-8');
+      // Même format protégé que les autres exports (guillemets, formules neutralisées, montants à virgule).
+      const rows = receiptsBook(microReceipts()).rows.map((r) => [frDate(r.date), r.invoiceNumber, r.clientName, r.method, formatDecimalComma(r.amount)]);
+      return download('livre-des-recettes.csv', toCsv(['Date', 'Facture', 'Client', 'Mode', 'Montant'], rows), 'text/csv;charset=utf-8');
     }
     case 'backup':
       return download(`nexus-gestion-${today()}.json`, JSON.stringify(ws.toJSON(), null, 2), 'application/json');
@@ -4668,6 +4806,9 @@ document.addEventListener('click', async (e) => {
       Object.assign(cloudState, { session: null, meta: null, outbox: null, synced: null, status: { pending: 0, error: null } });
       ws = null;
       ui.mfa = null;
+      // Rien de la session précédente ne reste affichable (membres, appareils).
+      ui.security = null;
+      ui.members = null;
       ui.ob = freshOnboarding();
       ui.screen = 'login';
       ui.auth = { view: 'login', error: '', info: '', busy: false, email: ui.auth.email };

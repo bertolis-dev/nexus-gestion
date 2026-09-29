@@ -142,7 +142,7 @@ export function buildCii(inv) {
       </ram:SpecifiedLineTradeAgreement>
       <ram:SpecifiedLineTradeDelivery><ram:BilledQuantity unitCode="C62">${quantity(l.qty)}</ram:BilledQuantity></ram:SpecifiedLineTradeDelivery>
       <ram:SpecifiedLineTradeSettlement>
-        <ram:ApplicableTradeTax><ram:TypeCode>VAT</ram:TypeCode><ram:CategoryCode>${categoryFor(cat, lineRate)}</ram:CategoryCode><ram:RateApplicablePercent>${rate(lineRate)}</ram:RateApplicablePercent></ram:ApplicableTradeTax>
+        <ram:ApplicableTradeTax><ram:TypeCode>VAT</ram:TypeCode><ram:CategoryCode>${categoryFor(cat, lineRate)}</ram:CategoryCode>${cat.code === 'O' ? '' : `<ram:RateApplicablePercent>${rate(lineRate)}</ram:RateApplicablePercent>`}</ram:ApplicableTradeTax>
         ${l.discountBp ? `<ram:SpecifiedTradeAllowanceCharge><ram:ChargeIndicator><udt:Indicator>false</udt:Indicator></ram:ChargeIndicator><ram:ActualAmount>${amount(Math.round(Number(l.qty) * l.unitPrice) - net)}</ram:ActualAmount><ram:Reason>Remise</ram:Reason></ram:SpecifiedTradeAllowanceCharge>` : ''}
         <ram:SpecifiedTradeSettlementLineMonetarySummation><ram:LineTotalAmount>${amount(net)}</ram:LineTotalAmount></ram:SpecifiedTradeSettlementLineMonetarySummation>
       </ram:SpecifiedLineTradeSettlement>
@@ -159,7 +159,7 @@ export function buildCii(inv) {
         <ram:CategoryCode>${categoryFor(cat, cat.code === 'S' ? v.rateBp : 0)}</ram:CategoryCode>
         ${cat.reasonCode ? `<ram:ExemptionReasonCode>${cat.reasonCode}</ram:ExemptionReasonCode>` : ''}
         ${categoryFor(cat, v.rateBp) === 'S' ? `<ram:DueDateTypeCode>${vatOnReceipt ? '72' : '5'}</ram:DueDateTypeCode>` : ''}
-        <ram:RateApplicablePercent>${rate(cat.code === 'S' ? v.rateBp : 0)}</ram:RateApplicablePercent>
+        ${cat.code === 'O' ? '' : `<ram:RateApplicablePercent>${rate(cat.code === 'S' ? v.rateBp : 0)}</ram:RateApplicablePercent>`}
       </ram:ApplicableTradeTax>`,
   );
 
@@ -179,8 +179,8 @@ export function buildCii(inv) {
   </rsm:ExchangedDocument>
   <rsm:SupplyChainTradeTransaction>${lines.join('')}
     <ram:ApplicableHeaderTradeAgreement>
-      ${party('SellerTradeParty', { name: issuerName(issuer), siren: issuer.siren, address: issuer.address, vatNumber: issuer.vatNumber, fiscalId: issuer.siren })}
-      ${party('BuyerTradeParty', { name: c.name, siren: c.type === 'B2C' ? '' : c.siren, address: c.address, country: c.country || 'FR', vatNumber: c.vatNumber, email: c.email })}
+      ${party('SellerTradeParty', { name: issuerName(issuer), siren: issuer.siren, address: issuer.address, vatNumber: cat.code === 'O' ? '' : issuer.vatNumber, fiscalId: issuer.siren })}
+      ${party('BuyerTradeParty', { name: c.name, siren: c.type === 'B2C' ? '' : c.siren, address: c.address, country: c.country || 'FR', vatNumber: cat.code === 'O' ? '' : c.vatNumber, email: c.email })}
     </ram:ApplicableHeaderTradeAgreement>
     <ram:ApplicableHeaderTradeDelivery>
       <ram:ShipToTradeParty>

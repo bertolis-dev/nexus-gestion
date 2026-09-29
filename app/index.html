@@ -2,6 +2,11 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
+    <!-- Politique de sécurité : scripts du site uniquement (aucun CDN), connexions limitées à la base et aux API publiques. Styles en ligne admis (attributs style des vues). -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://socvvthikxaubehihewl.supabase.co; font-src 'self'; connect-src 'self' https://socvvthikxaubehihewl.supabase.co wss://socvvthikxaubehihewl.supabase.co https://recherche-entreprises.api.gouv.fr; frame-src 'self' blob: https://socvvthikxaubehihewl.supabase.co; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
+    />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Nexus Gestion</title>
     <meta

@@ -9,8 +9,14 @@ import { trialBalance, generalLedger, journalReport } from './reports.js';
 import { JOURNALS } from './ledger.js';
 import { formatDecimalComma } from './money.js';
 
+/**
+ * Cellule CSV. Un texte commençant par =, +, -, @, une tabulation ou un retour chariot serait
+ * interprété comme une formule par le tableur (injection) : il est préfixé d'une apostrophe. Les
+ * montants (« -12,50 ») restent des nombres.
+ */
 const cell = (v) => {
-  const s = v == null ? '' : String(v);
+  let s = v == null ? '' : String(v);
+  if (/^[=+\-@\t\r]/.test(s) && !/^-?\d+(,\d+)?$/.test(s)) s = `'${s}`;
   return /[;"\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };
 const money = (cents) => (cents ? formatDecimalComma(cents) : '');
