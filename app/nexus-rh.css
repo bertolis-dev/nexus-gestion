@@ -1,16 +1,5 @@
-/* ===========================================================================
-   Seven RH — Design system
-   Inspiré de Lucca / Factorial / PayFit / Notion / Linear : sobre, arrondi,
-   animations discrètes. Variables CSS centralisées pour un futur dark mode.
-   ========================================================================= */
-
+/* Feuille reprise de Nexus RH, purgée des règles inutilisées par scripts/purge-css.mjs. */
 :root {
-  /* Identité de marque (bleu marine/or, repris du logo) — déclarée en tête pour servir de source
-     unique à --color-primary ci-dessous ET aux classes .landing-* / .feature-* (page publique).
-     Définie ici plutôt que sur .landing-page : le bouton flottant (#landing-sticky-cta) et les
-     modales (#modal-root) sont des siblings de .landing-page dans le DOM, pas des descendants, donc
-     n'auraient jamais vu ces variables sinon (bug réel trouvé en vérifiant la couleur réellement
-     appliquée, pas juste sa présence). */
   --landing-navy-900: #0e1a33;
   --landing-navy-700: #17284d;
   --landing-navy-500: #24406e;
@@ -18,38 +7,21 @@
   --landing-gold-300: #e3c08a;
   --landing-gold-soft: #f8efe0;
 
-  /* §refonte identité 20/08/2026 : l'accent interactif de l'application (boutons, liens, éléments
-     actifs) reprend désormais le bleu marine de la marque au lieu d'un indigo générique (#4f46e5 —
-     littéralement la couleur "indigo-600" par défaut de Tailwind/shadcn, sans lien avec l'identité
-     Nexus, alors que la page publique avait déjà sa propre identité). */
   --color-bg: #f6f7f9;
   --color-surface: #ffffff;
-  /* §refonte identité 20/08/2026 : bordure renforcée (était #e6e8eb, presque invisible sur un fond
-     blanc/quasi-blanc) — sépare plus nettement la barre latérale, la barre du haut et chaque carte,
-     demande explicite plutôt qu'une simple ombre discrète. */
+
   --color-border: #d6dae0;
-  /* §refonte "ombres légères" du 01/09/2026 : liseré atténué réservé aux cartes, qui comptent
-     désormais sur une ombre portée pour se détacher du fond plutôt que sur un contour marqué —
-     --color-border (plus soutenu) reste utilisé tel quel pour les séparateurs qui doivent rester
-     nets (sidebar, topbar, tableaux). */
+
   --color-border-soft: #e7e9ed;
   --login-card-border: rgba(23, 40, 77, 0.65);
   --color-text: #1a1d24;
   --color-text-muted: #6b7280;
-  /* §retour Betty du 09/09/2026, en deux temps : --color-text (quasi noir, léger reflet bleuté) a
-     d'abord remplacé --color-text-muted sur le menu latéral, jugé encore trop clair — un noir neutre
-     dédié, sans le moindre reflet de couleur, pour le texte qui doit vraiment "sauter aux yeux". En
-     mode sombre, retombe sur --color-text (déjà clair, voir les blocs de thème plus bas). */
+
   --color-text-strong: #000000;
   --color-primary: var(--landing-navy-700);
   --color-primary-hover: var(--landing-navy-900);
   --color-primary-soft: #eaeef5;
-  /* Puces d'icône PURES (KPI, écrans vides, cartes d'offre — pas de texte dedans) : distinct de
-     --color-primary-soft, resté quasi invisible mesuré au contraste (1.16:1 clair, 1.03:1 sombre —
-     autant dire aucune différence perceptible avec la carte derrière) une fois que le retour "je ne
-     vois pas la différence" a poussé à vérifier plutôt que supposer. --color-primary-soft reste
-     inchangé pour les badges/nav actif où du TEXTE est posé dessus (son contraste texte est déjà
-     correct, l'assombrir davantage l'aurait fait chuter sous les seuils WCAG). */
+
   --color-chip-bg: #a3c0ec;
   --color-success: #16a34a;
   --color-success-soft: #ecfdf3;
@@ -60,20 +32,10 @@
   --color-danger: #dc2626;
   --color-danger-soft: #fef2f2;
   --color-muted-soft: #f1f2f4;
-  /* Jeton d'accent or dédié à l'app (calendrier — badge "arrivée", §passe couleur du 21/08/2026),
-     distinct de --landing-gold-* qui reste figé pour la page publique (toujours sur fond marine
-     sombre, jamais affectée par le thème clair/sombre de l'app). Vaut la même teinte qu'ici en
-     clair, mais reçoit son propre assombrissement en mode sombre plus bas — contrairement à
-     --landing-gold-*, qui rendrait beaucoup trop clair/criard sur une carte sombre. */
+
   --color-gold: var(--landing-gold-500);
   --color-gold-soft: var(--landing-gold-soft);
-  /* §correctif 20/08/2026 : jetons dédiés au TEXTE écrit avec --color-primary/--color-info (liens,
-     onglet actif, badge, initiales d'avatar) — identiques aux couleurs de base en mode clair, mais
-     éclaircis en mode sombre (voir le bloc dark mode) où le bleu/indigo d'origine, jamais pensé pour
-     être lu sur un fond quasi noir, tombait sous le seuil de contraste lisible (mesuré ~2.4-3.2:1,
-     sous les 4.5:1 recommandés). Ne PAS utiliser --color-primary/--color-info directement pour du
-     texte : réservés aux fonds (boutons, cases à cocher, bordures), où éclaircir casserait le
-     contraste inverse (texte blanc dessus). */
+
   --color-primary-text: var(--color-primary);
   --color-info-text: var(--color-info);
 
@@ -88,10 +50,7 @@
   --topbar-height: 64px;
   --mobile-nav-height: 64px;
   --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;
-  /* §refonte typographique du 01/09/2026 : registre serif réservé aux titres d'écran et aux chiffres
-     clés (KPI héros, total d'un donut) — jamais au corps de texte, aux boutons ni aux tableaux, qui
-     restent en --font-sans. Deux registres plutôt qu'une seule graisse partout donne le côté "produit
-     dessiné" recherché, à l'opposé d'un outil où tout le texte sort de la même police par défaut. */
+
   --font-serif: 'Fraunces', Georgia, 'Times New Roman', serif;
 }
 
@@ -99,8 +58,6 @@
   box-sizing: border-box;
 }
 
-/* Repère de focus clavier pour les lignes/cartes cliquables rendues via des <tr>/<div role="button">
-   (salariés, organigramme, favoris, notifications) — sans ça, le focus ajouté au clavier serait invisible. */
 [role='button']:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: -2px;
@@ -116,8 +73,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Uniquement des ancres internes (menu de la landing) déclenchent un scroll natif dans toute
-   l'app — aucun scrollIntoView()/scrollTo() programmatique ailleurs qui pourrait en pâtir. */
 html {
   scroll-behavior: smooth;
 }
@@ -149,10 +104,6 @@ p {
   font-size: 14px;
 }
 
-/* ---------------------------------------------------------------------
-   Layout
-   --------------------------------------------------------------------- */
-
 #app-shell {
   display: flex;
   min-height: 100vh;
@@ -160,10 +111,7 @@ p {
 
 #sidebar {
   width: var(--sidebar-width);
-  /* Léger voile marine du haut vers le bas (§passe couleur "premium ++" du 21/08/2026) — la barre
-     latérale reste sinon la plus grande zone plate/neutre de toute l'appli, visible en permanence
-     sur chaque écran : un aplat uni s'y voit plus qu'ailleurs. Étiré à 250% pour que la teinte
-     reste discrète sur la hauteur réellement visible sans défiler (pas un dégradé franc). */
+
   background: linear-gradient(180deg, var(--color-surface), var(--color-primary-soft) 250%);
   border-right: 1px solid var(--color-border);
   display: flex;
@@ -185,12 +133,6 @@ p {
   letter-spacing: 0.01em;
 }
 
-/* §correctif 20/08/2026 : logo.png a un fond transparent avec un tracé "N" en bleu marine très
-   sombre (proche de #0a1f3c) — invisible en mode sombre, où #sidebar prend un fond quasi noir de la
-   même famille de teinte. Fond clair fixe (jamais themé, contrairement à --color-surface) : garde un
-   contraste correct dans les deux modes plutôt que de dépendre d'une deuxième version du fichier
-   logo. box-sizing: border-box pour que le padding ne fasse pas dépasser la taille déjà utilisée
-   partout (sidebar, écrans de connexion, page publique). */
 .logo-mark {
   display: inline-flex;
   align-items: center;
@@ -216,19 +158,12 @@ p {
   flex-direction: column;
   gap: 2px;
   padding: 8px;
-  /* #sidebar est en position:fixed (hauteur = 100vh) : sans ça, un compte avec beaucoup d'entrées
-     de menu (Propriétaire...) sur un écran court (téléphone) poussait les derniers éléments sous le
-     bas de l'écran, purement inatteignables (rien ne défilait). */
+
   flex: 1;
   min-height: 0;
   overflow-y: auto;
 }
 
-/* §retour du 21/08/2026 "mets tickets et boîte à idées tout en bas, qui ne bouge pas" : en dehors
-   de la zone défilante #sidebar-nav (qui a flex:1 ci-dessus) — reste donc toujours visible en bas
-   de la barre latérale sans jamais défiler avec le reste, quelle que soit la longueur du menu
-   au-dessus. Vide sur mobile (voir renderSidebar, app.js) : le panneau déroulant y est temporaire,
-   pas besoin d'une zone fixe séparée — les deux menus sont simplement en fin de cette même liste. */
 #sidebar-nav-pinned {
   display: flex;
   flex-direction: column;
@@ -248,11 +183,7 @@ p {
   border-radius: var(--radius-sm);
   font-size: 14px;
   font-weight: 500;
-  /* §retour Betty du 09/09/2026, en deux temps : "mets les écritures en plus foncé" — d'abord passé
-     de --color-text-muted (gris moyen) à --color-text (quasi noir), jugé encore trop clair (léger
-     reflet bleuté) — --color-text-strong (noir neutre pur en clair, voir :root) va plus loin sans
-     retomber sur un gris fixe qui resterait clair en mode sombre (adapté dans les deux blocs de
-     thème sombre). */
+
   color: var(--color-text-strong);
   cursor: pointer;
   text-align: left;
@@ -270,8 +201,6 @@ p {
   color: var(--color-primary-text);
 }
 
-/* Bouton "☰" du menu mobile (voir @media 860px pour son rôle réel) — invisible sur desktop, la
-   sidebar y affiche déjà #sidebar-nav en entier, pas besoin de le déplier. */
 .mobile-nav-toggle {
   display: none;
 }
@@ -292,9 +221,6 @@ p {
   opacity: 0.6;
 }
 
-/* §retour du 21/08/2026 : marine/or gardés comme base de la charte plutôt qu'une couleur différente
-   par item (essayé, jugé "juste des noms colorés" sans vrai travail de design) — puce en dégradé
-   marine, plus riche qu'un aplat, cohérente avec le reste (boutons, sidebar). */
 .nav-icon {
   display: inline-flex;
   align-items: center;
@@ -312,8 +238,6 @@ p {
   display: block;
 }
 
-/* Voir icon() (app.js) — wrapper générique pour une icône ICONS.xxx insérée en ligne dans du texte
-   (titres, listes, badges), ailleurs que dans .nav-icon (sidebar, son propre wrapper dédié). */
 .icon-inline {
   display: inline-flex;
   flex-shrink: 0;
@@ -327,14 +251,6 @@ p {
 }
 .nav-label {
   flex: 1;
-}
-.nav-soon {
-  font-size: 10px;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
-  background: var(--color-muted-soft);
-  padding: 2px 6px;
-  border-radius: 999px;
 }
 
 #main-column {
@@ -359,54 +275,6 @@ p {
   z-index: 5;
 }
 
-.topbar-title {
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--color-text-muted);
-}
-
-/* Bandeau persistant "accès d'essai restreint" — entreprises non souscrites (§ migration 0012). */
-.non-souscrit-banner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  padding: 10px 28px;
-  background: var(--color-warning-soft);
-  color: var(--color-warning);
-  border-bottom: 1px solid var(--color-warning);
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.non-souscrit-banner .btn {
-  flex-shrink: 0;
-}
-
-/* D3 (audit fiabilité du 19/08/2026) : bannière persistante (pas un toast qui disparaît seul) tant
-   qu'une écriture n'a pas pu être synchronisée avec le serveur — voir renderSyncFailureBanner,
-   DB._pushInBackground (app.js/data.js). Couleurs danger (pas warning comme non-souscrit-banner) :
-   risque réel de perte de donnée, pas juste une limite d'offre. */
-.sync-failure-banner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  padding: 10px 28px;
-  background: var(--color-danger-soft);
-  color: var(--color-danger);
-  border-bottom: 1px solid var(--color-danger);
-  font-size: 13px;
-  font-weight: 500;
-}
-.sync-failure-banner .btn {
-  flex-shrink: 0;
-}
-
-/* Champs mot de passe — bouton "afficher" (œil) + indicateur de correspondance pour les paires
-   mot de passe/confirmation, partout où ils apparaissent (connexion, inscription, réinitialisation). */
 .password-input-wrapper {
   position: relative;
   display: block;
@@ -415,11 +283,7 @@ p {
   width: 100%;
   padding-right: 40px;
 }
-/* .btn-icon.password-toggle (deux classes) plutôt que .password-toggle seul : .btn-icon pose aussi
-   position:relative (repère de zone tactile, voir plus bas) — même spécificité qu'un simple
-   .password-toggle, donc c'est l'ORDRE dans le fichier qui déciderait, et .btn-icon vient après.
-   Résultat observé sans ce doublement de classe : le bouton restait position:relative, poussé dans
-   le flux normal sous le champ au lieu de flotter dedans, à droite, centré verticalement. */
+
 .btn-icon.password-toggle {
   position: absolute;
   right: 4px;
@@ -431,196 +295,12 @@ p {
   line-height: 1;
 }
 
-.password-match-indicator {
-  display: none;
-  align-items: center;
-  gap: 4px;
-  margin-top: 6px;
-  font-size: 12px;
-  font-weight: 600;
-}
-.password-match-indicator.match-ok {
-  display: flex;
-  color: var(--color-success);
-}
-.password-match-indicator.match-bad {
-  display: flex;
-  color: var(--color-danger);
-}
-
-.password-strength {
-  display: none;
-  align-items: center;
-  gap: 8px;
-  margin-top: 6px;
-  font-size: 12px;
-  font-weight: 600;
-}
-.password-strength-bar {
-  display: flex;
-  gap: 3px;
-}
-.password-strength-bar span {
-  width: 24px;
-  height: 4px;
-  border-radius: 2px;
-  background: var(--color-border);
-}
-.password-strength.level-weak .password-strength-bar span:nth-child(1) {
-  background: var(--color-danger);
-}
-.password-strength.level-medium .password-strength-bar span:nth-child(1),
-.password-strength.level-medium .password-strength-bar span:nth-child(2) {
-  background: var(--color-warning);
-}
-.password-strength.level-strong .password-strength-bar span {
-  background: var(--color-success);
-}
-.password-strength.level-weak .password-strength-label {
-  color: var(--color-danger);
-}
-.password-strength.level-medium .password-strength-label {
-  color: var(--color-warning);
-}
-.password-strength.level-strong .password-strength-label {
-  color: var(--color-success);
-}
-
-/* Autocomplétion d'adresse (API Adresse gouv.fr) — suggestions sous le champ pendant la saisie. */
-.address-autocomplete-field {
-  position: relative;
-}
-.address-suggestions {
-  display: none;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  z-index: 30;
-  margin-top: 2px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-md);
-  max-height: 220px;
-  overflow-y: auto;
-}
-.address-suggestion-item,
-.company-suggestion-item {
-  padding: 8px 12px;
-  font-size: 13px;
-  cursor: pointer;
-}
-.address-suggestion-item:hover,
-.company-suggestion-item:hover {
-  background: var(--color-muted-soft);
-}
-
-/* Champ obligatoire resté vide après une tentative de soumission — voir bindGlobalEvents. */
-.input.field-invalid {
-  border-color: var(--color-danger);
-  background: var(--color-danger-soft);
-}
-
-.field-hint-computed {
-  display: block;
-  margin-top: 4px;
-  font-size: 12px;
-  color: var(--color-text-muted);
-}
-
-.field-warning {
-  display: none;
-  align-items: center;
-  gap: 4px;
-  margin-top: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-warning);
-}
-.field-warning.visible {
-  display: flex;
-}
-
-/* §retour Betty du 18/09/2026 (point 2.3, "rappels légaux forfait jours") : bloc informatif encadré,
-   distinct d'un simple .form-hint sous un champ — regroupe plusieurs rappels liés entre eux. */
-.form-hint-block {
-  margin-top: 16px;
-  padding: 12px 16px;
-  border-radius: var(--radius-md);
-  background: var(--color-chip-bg);
-  font-size: 13px;
-  color: var(--color-text-muted);
-}
-.form-hint-block strong {
-  display: block;
-  margin-bottom: 6px;
-  color: var(--color-text);
-}
-.form-hint-block ul {
-  margin: 0;
-  padding-left: 18px;
-}
-.form-hint-block li {
-  margin-bottom: 4px;
-}
-
-.text-danger {
-  color: var(--color-danger);
-  font-weight: 600;
-}
-
-/* §retour Betty du 19/09/2026 ("ajouter une valeur sur place") : révélé sous le <select> concerné
-   (voir selectField/openQuickAddInline, app.js), jamais une modale/un ré-rendu — le formulaire en
-   cours (souvent lui-même une modale) ne doit jamais être perdu. */
-.quick-add-inline:not([hidden]) {
-  margin-top: 8px;
-}
-.quick-add-panel {
-  padding: 12px;
-  border: 1px dashed var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-muted-soft);
-}
-.quick-add-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 10px;
-}
-
 .table-scroll {
   overflow-x: auto;
   max-height: 420px;
   overflow-y: auto;
 }
 
-.quality-issue-row {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-}
-.quality-issue-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.quality-issue-employees {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-}
-.quality-issue-link {
-  font-size: 13px;
-}
-
-/* §retour Betty du 22/09/2026 ("beaucoup d'espace perdu") et du 19/09/2026 ("là où il y a marqué
-   obligatoire... ça doit être un petit point d'interrogation... l'orange doit rester réservé aux
-   vrais avertissements") : .form-hint portait la couleur d'avertissement alors qu'elle sert, dans
-   ses 53 emplois, à EXPLIQUER un champ, jamais à alerter. Un vrai avertissement a sa propre classe
-   (.field-warning, en gras, masquée tant qu'il n'y a rien à signaler). Ces explications passent
-   donc en gris de texte secondaire, et leur mesure est bornée : elles occupaient jusqu'à quatre
-   lignes pleine largeur sous un seul champ. */
 .form-hint {
   margin-top: 4px;
   font-size: 12px;
@@ -633,40 +313,6 @@ p {
   text-decoration: underline;
 }
 
-/* §refonte "aide contextuelle" du 01/09/2026 : voir fieldHelpIcon (app.js) — un "?" discret plutôt
-   qu'un pavé de texte permanent, réservé aux champs vraiment complexes. */
-.field-help {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  background: var(--color-muted-soft);
-  color: var(--color-text-muted);
-  font-size: 10px;
-  font-weight: 700;
-  margin-left: 5px;
-  cursor: help;
-  vertical-align: middle;
-}
-
-/* Console BERTOLIS (§9.6) — écran séparé de l'app-shell salarié, pas de sidebar. */
-.bertolis-topbar {
-  height: var(--topbar-height);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 28px;
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
-}
-.bertolis-main {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 28px;
-}
-
 .topbar-search {
   position: relative;
   flex: 1;
@@ -677,9 +323,6 @@ p {
   width: 100%;
 }
 
-/* Manquait entièrement : sans ça, .notif-wrapper/.user-menu-wrapper (deux <div> block) s'empilaient
-   verticalement au lieu de se placer côte à côte — la cloche rendait à moitié hors écran (top négatif)
-   et chevauchait l'avatar, à toutes les largeurs d'écran (pas seulement mobile). */
 .topbar-user {
   display: flex;
   align-items: center;
@@ -705,40 +348,6 @@ p {
   display: block;
 }
 
-.search-section-label {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--color-text-muted);
-  padding: 10px 14px 4px;
-}
-
-/* Sprint SIRH premium §12 (reprise) : sections FAQ/Bonnes pratiques du Centre d'aide */
-.help-section {
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid var(--color-border);
-}
-.help-section p {
-  margin-bottom: 10px;
-  font-size: 14px;
-}
-.help-section p:last-child {
-  margin-bottom: 0;
-}
-.help-tips {
-  margin: 0;
-  padding-left: 20px;
-  font-size: 14px;
-}
-.help-tips li {
-  margin-bottom: 6px;
-}
-.help-tips li:last-child {
-  margin-bottom: 0;
-}
-
 .search-result-item {
   display: flex;
   align-items: center;
@@ -747,8 +356,7 @@ p {
   cursor: pointer;
 }
 
-.search-result-item:hover,
-.search-result-item.highlighted {
+.search-result-item:hover {
   background: var(--color-muted-soft);
 }
 .search-result-icon {
@@ -769,12 +377,6 @@ p {
   color: var(--color-text-muted);
 }
 
-.search-empty {
-  padding: 16px 14px;
-  font-size: 13px;
-  color: var(--color-text-muted);
-}
-
 #view-root {
   padding: 20px 32px;
   max-width: 1440px;
@@ -782,10 +384,6 @@ p {
   min-width: 0;
   margin: 0 auto;
 }
-
-/* ---------------------------------------------------------------------
-   Vue header / KPI
-   --------------------------------------------------------------------- */
 
 .view-header {
   margin-bottom: 20px;
@@ -803,11 +401,6 @@ p {
   margin-top: 2px;
 }
 
-/* Bandeau doré des en-têtes de page (retour du 21/08/2026 : "une bande dorée sur toutes les
-   pages" + "écarte la bande dorée et le contenu en bas pour pas que ce soit collé"). Ciblé sur
-   .view-header (en-tête de PAGE, premier niveau, avec ou sans .view-header-row) et non sur
-   .view-header-row seul, qui sert aussi à des sous-en-têtes imbriqués dans des cards/modales (ex.
-   "Documents", "Compteurs de congés") — ceux-là ne doivent pas recevoir ce traitement. */
 .view-header {
   background: linear-gradient(135deg, var(--landing-gold-500), var(--landing-gold-300));
   border-radius: var(--radius-lg);
@@ -823,13 +416,6 @@ p {
   color: rgba(34, 23, 4, 0.7);
 }
 
-/* Bandeau d'accueil du tableau de bord (§retour "de vraies couleurs, marine + or, ça doit donner
-   envie" du 21/08/2026) — voir renderDashboardHero (app.js). Toujours sombre, quel que soit le
-   thème choisi (même principe que .landing-hero) : tout le contenu posé dessus est stylé pour CE
-   fond précisément, jamais pour le thème ambiant — un texte thème-aware ici recasserait le même
-   problème de contraste déjà rencontré (et corrigé) sur la landing plus tôt dans la session. */
-/* Compacité voulue (retour du 21/08/2026 : "moins de cases grosses, moins descendre") — padding
-   réduit par rapport à la première version. */
 .dashboard-hero {
   position: relative;
   overflow: hidden;
@@ -844,8 +430,7 @@ p {
   margin-bottom: 14px;
   box-shadow: var(--shadow-md);
 }
-/* Halo or décoratif en coin — la touche "premium" qui donne envie de regarder, sans devenir un
-   vrai élément d'interface (purement décoratif, aria-hidden via son absence de contenu/rôle). */
+
 .dashboard-hero::before {
   content: '';
   position: absolute;
@@ -876,9 +461,7 @@ p {
   z-index: 1;
   flex-shrink: 0;
 }
-/* Le bouton "Personnaliser" (.btn-secondary) est thème-aware par défaut (pensé pour une carte
-   claire/sombre ordinaire) — jamais adapté à ce fond toujours sombre, donc réécrit ici explicitement
-   plutôt que de dépendre du thème ambiant. */
+
 .dashboard-hero-actions .btn-secondary {
   background: rgba(255, 255, 255, 0.14);
   color: #fff;
@@ -893,8 +476,6 @@ p {
   }
 }
 
-/* Compacité voulue (retour du 21/08/2026) — grille et cartes KPI resserrées, pour voir plus de
-   contenu sans avoir à beaucoup descendre. */
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -910,10 +491,6 @@ p {
   box-shadow: var(--shadow-sm);
 }
 
-/* Puce colorée en dégradé (§passe couleur "premium" du 21/08/2026, ravivé le même jour : marine/or
-   gardés comme base plutôt qu'une couleur par carte) — même patron que .landing-feature-icon
-   (fond teinté, icône colorée) plutôt qu'une icône nue de la couleur du texte, avec un dégradé pour
-   plus de profondeur qu'un aplat. */
 .kpi-icon {
   width: 32px;
   height: 32px;
@@ -941,17 +518,6 @@ p {
   margin-top: 1px;
 }
 
-/* §refonte "carte héros" du 01/09/2026 : LA métrique la plus représentative de l'écran (une seule,
-   jamais plus dans une même grille) — fond marine plein, chiffre en or, au lieu de 5 cartes identiques
-   qui se valent toutes à l'œil. Réutilise §retour du 21/08/2026 (pas une couleur par carte) : ici ce
-   n'est pas "une couleur pour CETTE carte" mais un second NIVEAU de carte, appliqué au même titre pour
-   toutes les grilles KPI de l'appli. */
-/* §correctif audit du 01/09/2026 (mode sombre) : utilisait --color-primary/--color-primary-hover,
-   éclaircis exprès en mode sombre pour qu'un BOUTON ressorte d'une carte (voir plus bas) — mais ici
-   c'est le fond de LA carte elle-même, pas un bouton dessus. Le chiffre en or fixe (--landing-gold-300,
-   jamais retouché par thème) tombait donc à ~2.8:1 de contraste en mode sombre (mesuré), sous le
-   minimum WCAG. --landing-navy-700/900 (même dégradé que .dashboard-hero) ne changent eux jamais
-   selon le thème : contraste ~8:1 stable en clair ET en sombre. */
 .kpi-card-hero {
   background: linear-gradient(135deg, var(--landing-navy-700), var(--landing-navy-900));
   border-color: transparent;
@@ -974,39 +540,23 @@ p {
   }
 }
 
-/* ---------------------------------------------------------------------
-   Cartes
-   --------------------------------------------------------------------- */
-
-/* Retour explicite : pas de liseré/trait de couleur (essayé puis refusé le 21/08/2026) — de la
-   couleur par un REMPLISSAGE doux plutôt qu'un contour. Léger voile marine en coin (même idée que
-   la sidebar), assez discret pour ne jamais gêner la lecture du texte posé dessus. */
 .card {
   background: linear-gradient(135deg, var(--color-surface), var(--color-primary-soft) 320%);
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-md);
-  /* §retour Betty du 22/09/2026 : sur une carte qui ne porte que deux ou trois champs, la marge
-     interne et l'espace sous le titre pesaient plus lourd que le contenu. Resserré sans coller. */
+
   padding: 14px 18px;
   box-shadow: var(--shadow-md);
   margin-bottom: 12px;
   min-width: 0;
 }
 
-/* ---------------------------------------------------------------------
-   Boutons
-   --------------------------------------------------------------------- */
-
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  /* margin vertical (jamais horizontal, pour ne pas doubler un gap déjà posé par un conteneur
-     flex parent) : plusieurs boutons "nus" directement dans une .card (ex. raccourcis du tableau
-     de bord) se recollaient sans le moindre espace dès qu'ils passaient à la ligne sur mobile —
-     inline-flex respecte les marges verticales, contrairement à inline, donc ça suffit à créer un
-     vrai espacement entre lignes, y compris là où on n'a pas pensé à ajouter un gap explicite. */
+
   margin: 3px 0;
   padding: 9px 16px;
   border-radius: var(--radius-sm);
@@ -1030,8 +580,6 @@ p {
   transform: none;
 }
 
-/* Pas de bordure (retour explicite du 21/08/2026, revient sur la demande initiale de bordure) —
-   juste le dégradé, sans contour supplémentaire. */
 .btn-primary {
   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
   color: white;
@@ -1040,9 +588,7 @@ p {
     background-color 0.15s ease,
     box-shadow 0.15s ease;
 }
-/* Lueur douce au survol (§passe "premium ++" du 21/08/2026) — même idée que .landing-page .btn-primary,
-   étendue à l'appli connectée : repos inchangé (pas de poids visuel ajouté partout), la couleur ne
-   "s'allume" qu'à l'interaction. */
+
 .btn-primary:hover {
   background: var(--color-primary-hover);
   box-shadow: 0 6px 16px -4px rgba(23, 40, 77, 0.45);
@@ -1056,14 +602,6 @@ p {
 }
 .btn-secondary:hover {
   background: var(--color-muted-soft);
-}
-
-.btn-danger {
-  background: var(--color-danger-soft);
-  color: var(--color-danger);
-}
-.btn-danger:hover {
-  background: #fde2e2;
 }
 
 .btn-link {
@@ -1097,16 +635,11 @@ p {
   display: block;
 }
 
-/* Zone tactile agrandie (repère WCAG ~44x44) sans changer la taille visuelle, comme .chip-remove ci-dessous — le bouton fermer de modale (~15 endroits), la cloche et les icônes d'archivage des notifications en profitent tous d'un coup. */
 .btn-icon::before {
   content: '';
   position: absolute;
   inset: -10px;
 }
-
-/* ---------------------------------------------------------------------
-   Formulaires / filtres
-   --------------------------------------------------------------------- */
 
 .input {
   padding: 10px 14px;
@@ -1125,44 +658,6 @@ p {
 .input:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px var(--color-primary-soft);
-}
-
-.toolbar {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.toolbar .input:first-child {
-  flex: 1;
-  min-width: 220px;
-}
-
-/* §demande Betty du 09/09/2026 : repli en popover d'une toolbar de filtres à plusieurs champs, sur
-   mobile uniquement — voir renderFilterToggleBar (app.js). Le bouton n'existe visuellement qu'en
-   dessous de 860px ; au-dessus, la toolbar garde son affichage habituel quel que soit `.open`. */
-.filter-toggle-btn {
-  display: none;
-  margin-bottom: 10px;
-  margin-right: 10px;
-}
-@media (max-width: 860px) {
-  .filter-toggle-btn {
-    display: inline-flex;
-  }
-  .toolbar.toolbar-collapsible {
-    display: none;
-  }
-  .toolbar.toolbar-collapsible.open {
-    display: flex;
-  }
-}
-/* §amélioration du 09/09/2026 : "Réinitialiser les filtres" — visible sur desktop ET mobile dès
-   qu'au moins un filtre est actif (contrairement au bouton "Filtres" ci-dessus, réservé au mobile),
-   pour vider tous les champs d'un coup plutôt qu'un par un (voir FILTER_RESET_HANDLERS, app.js). */
-.filter-reset-link {
-  display: inline-block;
-  margin-bottom: 10px;
 }
 
 .form-section {
@@ -1187,26 +682,6 @@ p {
   gap: 16px;
 }
 
-/* §retour Betty du 22/09/2026 (point 2.4, "Modifier le salarié") : deux champs qui se lisent
-   ensemble (nom de naissance/nom d'usage, code postal/ville) doivent rester visuellement côte à
-   côte, quel que soit le nombre de colonnes que .form-grid retient selon la largeur disponible —
-   un simple ordre de champs consécutifs ne le garantit pas (ils peuvent tomber sur des lignes
-   différentes dès que le nombre de colonnes change). span 2 les regroupe dans le même bloc, plus
-   large qu'un champ isolé mais bien plus étroit qu'une pleine ligne (jamais la largeur démesurée
-   d'un champ "Adresse" pour un simple code postal). */
-.form-field-pair {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  grid-column: span 2;
-}
-@media (max-width: 480px) {
-  .form-field-pair {
-    grid-column: span 1;
-    grid-template-columns: 1fr;
-  }
-}
-
 .form-field {
   display: flex;
   flex-direction: column;
@@ -1218,124 +693,12 @@ p {
   color: var(--color-text-muted);
 }
 
-/* ---------------------------------------------------------------------
-   Table
-   --------------------------------------------------------------------- */
-
 .table-card {
   padding: 0;
   overflow-x: auto;
 }
 
-/* §correctif retour QA du 27/08/2026 (point 1) : Tableau des compteurs — cellule multi-lignes
-   (disponible / période / détail acquis-pris-attente-report / en cours d'acquisition) et colonnes
-   de types non activés grisées, jamais silencieusement absentes. */
-.tc-table td,
-.tc-table th {
-  vertical-align: top;
-}
-.tc-disponible {
-  font-weight: 600;
-}
-.tc-periode,
-.tc-detail,
-.tc-en-cours {
-  font-size: 12px;
-  white-space: nowrap;
-}
-.tc-inactif {
-  opacity: 0.55;
-}
-/* §demande Betty du 04/09/2026 : année/période affichées une seule fois par colonne (entête), pas
-   répétées à chaque salarié — voir renderTableauCompteursPeriodInfo (app.js). */
-.tc-header-period {
-  font-size: 11px;
-  font-weight: 400;
-  white-space: normal;
-  margin-top: 2px;
-}
-
-/* §demande Betty du 04/09/2026 puis généralisation du 09/09/2026 : "il faut décaler pour voir toute
-   la ligne" sur téléphone — au départ réservé au Tableau des compteurs (.tc-table), ce mécanisme de
-   carte empilée (1 bloc par colonne, précédé de son nom en étiquette) est désormais partagé par
-   toute table qui porte la classe `mobile-cards` (Salariés, Congés & absences, Notes de frais,
-   Tickets restaurant équipe — voir app.js) plutôt que de le réserver à un seul écran. La cellule
-   "titre" de la carte (nom du salarié en général) porte la classe `row-title` — jamais une simple
-   convention ":first-child", qui casserait dès qu'une colonne technique (case à cocher de sélection
-   en masse) précède la vraie colonne d'identification. */
 @media (max-width: 860px) {
-  .table.mobile-cards,
-  .table.mobile-cards tbody,
-  .table.mobile-cards tfoot,
-  .table.mobile-cards tr,
-  .table.mobile-cards td {
-    display: block;
-    width: 100%;
-  }
-  .table.mobile-cards thead {
-    display: none;
-  }
-  .table.mobile-cards tr {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md, 10px);
-    margin: 12px;
-    padding: 12px 14px;
-  }
-  .table.mobile-cards td {
-    padding: 7px 0;
-    text-align: left !important;
-    border: none !important;
-    white-space: normal;
-  }
-  .tc-periode,
-  .tc-detail,
-  .tc-en-cours {
-    white-space: normal;
-  }
-  .table.mobile-cards td[data-label]::before {
-    content: attr(data-label);
-    display: block;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-    color: var(--color-text-muted);
-    margin-bottom: 3px;
-  }
-  .table.mobile-cards td.row-title {
-    font-weight: 600;
-    font-size: 15px;
-    border-bottom: 1px solid var(--color-border) !important;
-    padding-bottom: 10px;
-    margin-bottom: 4px;
-  }
-  .table.mobile-cards td.row-title::before {
-    content: none;
-  }
-  .table.mobile-cards tfoot tr {
-    background: var(--color-muted-soft);
-  }
-  /* Case à cocher de sélection en masse (Congés & absences) : fonctionnalité desktop, retirée sur
-     mobile plutôt que de laisser une case orpheline sans étiquette en tête de carte. */
-  .table.mobile-cards td.table-select-cell {
-    display: none;
-  }
-}
-
-.pagination-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-  padding: 14px 20px;
-  border-top: 1px solid var(--color-border);
-}
-
-.pagination-controls {
-  display: flex;
-  align-items: center;
-  gap: 12px;
 }
 
 .table {
@@ -1343,14 +706,6 @@ p {
   border-collapse: collapse;
 }
 
-/* §retour Betty du 22/09/2026 ("fais moins de hauteur dans la ligne... on voit très peu de lignes
-   parce qu'il y a beaucoup d'espace vide... il ne faut pas que ce soit tassé non plus") : 16px de
-   marge en haut ET en bas donnaient des lignes de ~53px, soit une dizaine de lignes par écran sur
-   les jours fériés, les salariés ou la préparation de paie. 10px ramène la ligne à ~41px, un quart
-   de lignes visibles en plus, sans coller le texte aux bordures. Valeur volontairement commune à
-   TOUTES les tables (.table) plutôt qu'à un seul écran : elle demandait que ce soit valable
-   partout. Les listes de référence restent un cran plus serrées (.table-settings-list, 8px) : un
-   libellé court et une action, jamais le contenu dense d'un tableau de salariés. */
 .table th {
   text-align: left;
   font-size: 12px;
@@ -1362,76 +717,11 @@ p {
   border-bottom: 1px solid var(--color-border);
 }
 
-/* §retour Betty du 19/09/2026 (point 6, "socle commun") : le curseur "cliquable" s'affichait jusqu'ici
-   sur TOUS les <th> (ci-dessus), y compris des colonnes qui ne trient rien (ex. "Ancienneté" sur
-   Salariés) — trompeur. Restreint au sélecteur [data-sort] : couvre à la fois l'ancien tri de
-   Salariés (data-sort seul, son propre binding séparé) et le nouveau socle (renderSortableHeader,
-   bindSortableHeadersGlobalDelegation), sans avoir à toucher au HTML déjà existant de Salariés. */
-.table th[data-sort] {
-  cursor: pointer;
-  user-select: none;
-}
-
 .table td {
   padding: 10px 22px;
   border-bottom: 1px solid var(--color-border);
   font-size: 14px;
 }
-
-/* §refonte "formatage des nombres" du 01/09/2026 : colonnes montants/durées alignées à droite avec
-   chiffres de largeur fixe (tabular-nums) — un tableau de paie où chaque colonne numérique reste
-   verticalement alignée d'une ligne à l'autre, plutôt que des chiffres calés à gauche comme du texte. */
-.table td.cell-numeric,
-.table th.cell-numeric {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-/* §correctif visuel du 14/09/2026 : une table à beaucoup de colonnes (ex. le récapitulatif de
-   Préparation de paie, 11 colonnes) forçait .table (width:100%, sans table-layout:fixed) à
-   COMPRESSER ses colonnes les plus étroites plutôt que de dépasser la largeur de la carte — un nom
-   de salarié se coupait sur deux lignes ("Julien" / "Moreau"), et une icône d'ajustement (crayon)
-   retombait sous son montant. .table-card a pourtant déjà overflow-x:auto : il suffit d'empêcher le
-   retour à la ligne pour que le tableau grandisse au-delà de la carte et devienne DÉFILABLE
-   horizontalement, comme prévu, plutôt que de comprimer son contenu. Classe à part (jamais sur
-   .table par défaut) : un tableau avec du texte long à faire tenir dans une cellule (ex. un
-   commentaire) doit continuer à pouvoir passer à la ligne normalement. */
-.table-nowrap {
-  width: auto;
-  min-width: 100%;
-}
-.table-nowrap th,
-.table-nowrap td {
-  white-space: nowrap;
-}
-
-.table-row {
-  cursor: pointer;
-  transition: background-color 0.1s ease;
-}
-.table-row:hover {
-  background: var(--color-muted-soft);
-}
-.table-row:last-child td {
-  border-bottom: none;
-}
-
-.employee-cell {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.employee-name {
-  font-weight: 600;
-}
-.employee-matricule {
-  font-size: 12px;
-  color: var(--color-text-muted);
-}
-
-/* ---------------------------------------------------------------------
-   Avatar
-   --------------------------------------------------------------------- */
 
 .avatar {
   width: 36px;
@@ -1451,53 +741,6 @@ p {
   font-size: 13px;
 }
 
-/* §refonte accent unique du 01/09/2026 : la palette d'avatars façon Slack/Trello (7 teintes
-   distinctes par personne, §"premium ++, pas que les boutons" du 21/08/2026) revient sur un seul
-   accent chromatique — le marine de la marque, qui reste la seule couleur "active" de l'appli, l'or
-   étant réservé aux éléments qui comptent vraiment (carte héros, validation). Les 7 classes restent
-   (voir getAvatarColorClass — data.js, qui continue d'assigner un index stable par personne) pour ne
-   rien changer côté JS, mais pointent maintenant toutes vers le même traitement marine — les
-   personnes se distinguent par leurs initiales, pas par une couleur au hasard. */
-.avatar-color-0,
-.avatar-color-1,
-.avatar-color-2,
-.avatar-color-3,
-.avatar-color-4,
-.avatar-color-5,
-.avatar-color-6 {
-  background: var(--color-primary-soft);
-  color: var(--color-primary-text);
-}
-
-/* §retour Betty du 10/09/2026 ("qu'on puisse la recadrer quand on la met") : fenêtre de recadrage
-   (openPhotoCropModal, app.js) — cercle (la photo s'affiche toujours en cercle, voir .avatar
-   ci-dessus) dans lequel la photo se déplace/zoome, jamais un carré à angles droits qui tromperait
-   sur le résultat final. */
-.photo-crop-stage {
-  position: relative;
-  overflow: hidden;
-  border-radius: 50%;
-  border: 1px solid var(--color-border);
-  background: var(--color-muted-soft);
-  margin: 0 auto;
-  touch-action: none;
-}
-.photo-crop-stage img {
-  position: absolute;
-  cursor: grab;
-  user-select: none;
-  -webkit-user-drag: none;
-}
-.photo-crop-stage img:active {
-  cursor: grabbing;
-}
-
-/* §refonte accent unique du 01/09/2026 : renderContratBadge (Stage/Alternance/Apprentissage/Intérim)
-   réutilisait ces mêmes classes .avatar-color-* précisément pour rester distinguable (§"une seule
-   teinte pour 4 concepts différents" était le problème corrigé à l'époque) — les recoller au marine
-   ci-dessus aurait réintroduit exactement ce problème. Palette dédiée, à part des avatars (qui n'ont
-   plus besoin d'être distingués par couleur, le nom suffit) : 4 teintes sourdes, pas un aplat vif par
-   catégorie, pour rester dans le registre "un seul accent" sans redevenir illisible. */
 .tag-color-0 {
   background: #efe7da;
   color: #7a5a33;
@@ -1514,10 +757,6 @@ p {
   background: #ece0e0;
   color: #7a4646;
 }
-
-/* ---------------------------------------------------------------------
-   Badges
-   --------------------------------------------------------------------- */
 
 .badge {
   display: inline-flex;
@@ -1561,257 +800,17 @@ p {
   background: var(--color-danger-soft);
   color: var(--color-danger);
 }
-/* Réservé aux tags identitaires (rôle du compte) plutôt qu'à un statut — jamais mélangé avec les
-   badges success/warning/info/danger ci-dessus, qui gardent leur sens fonctionnel intact. */
+
 .badge-primary {
   background: var(--color-primary-soft);
   color: var(--color-primary-text);
 }
 
-.anomaly-list {
-  margin: 0;
-  padding-left: 20px;
-}
-.anomaly-list li {
-  margin-bottom: 4px;
-}
-
-/* ---------------------------------------------------------------------
-   Détail salarié
-   --------------------------------------------------------------------- */
-
-/* §refonte "fil d'Ariane" du 01/09/2026 : "Salariés / Prénom Nom" en haut de fiche, pour ne jamais
-   perdre le fil de la navigation — voir renderBreadcrumb (app.js). */
-.breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: var(--color-text-muted);
-  margin-bottom: 10px;
-}
-/* §retour Betty du 18/09/2026 (point 6) : plus visible qu'un simple texte gris (couleur primaire +
-   plus grand + souligné en permanence, pas seulement au survol) — sans changer sa position ni son
-   comportement, pour ne jamais faire doublon avec un second bouton "retour". */
-.breadcrumb .btn-link {
-  font-size: 14px;
-  font-weight: 600;
-  padding: 0;
-  margin: 0;
-  min-height: 0;
-  color: var(--color-primary-text);
-  text-decoration: underline;
-  text-decoration-color: transparent;
-  transition: text-decoration-color 0.15s ease;
-}
-.breadcrumb .btn-link:hover {
-  text-decoration-color: currentColor;
-}
-.breadcrumb-sep {
-  opacity: 0.5;
-}
-
-/* §retour Betty du 18/09/2026 (point 6, flèches précédent/suivant) : petite barre autonome,
-   au-dessus de l'en-tête de la fiche, pour ne jamais se confondre avec les actions propres au
-   salarié (Favori, Modifier...) dans .detail-header-actions. */
-.employee-detail-prev-next {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-.employee-detail-prev-next .btn-icon:disabled {
-  opacity: 0.35;
-  cursor: default;
-}
-
-.detail-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  /* §correctif visuel du 14/09/2026 : sans ce flex-wrap, .detail-header-actions (5-7 boutons sur une
-     fiche salarié) réclamait sa largeur de contenu complète ("auto") avant que .detail-header-info
-     ne reçoive le moindre espace en grow — le nom du salarié se retrouvait écrasé sur quelques
-     dizaines de pixels et se coupait sur plusieurs lignes ("Sarah" / "Benali") même en plein écran,
-     alors qu'il restait largement la place de tout afficher en repassant les actions à la ligne.
-     Auparavant réservé à @media (max-width: 860px) — mais le même écrasement se produit largement
-     au-dessus de ce seuil dès qu'il y a assez de boutons, donc plus la peine de le limiter au mobile. */
-  flex-wrap: wrap;
-}
-
-.detail-header .avatar {
-  width: 56px;
-  height: 56px;
-  font-size: 18px;
-}
-.detail-header-info {
-  flex: 1;
-  min-width: 220px;
-}
 .detail-header-actions {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
-
-.detail-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
-  /* §retour QA du 27/08/2026 ("gros trou blanc" sur une fiche salarié) : align-items défaut d'une
-     grille CSS est stretch — chaque carte d'une même ligne s'étire à la hauteur de la plus haute
-     (ex. "Identité", plusieurs champs) même si son propre contenu (ex. "Suivi médical", 2-3 lignes)
-     tient en bien moins de place, laissant un grand vide en bas de la carte courte. `start` laisse
-     chaque carte prendre sa hauteur naturelle. */
-  align-items: start;
-}
-
-/* §retour Betty du 22/09/2026 (point 2.1, "la grille ne profite pas de la largeur d'écran") : la
-   mise en colonnes CSS du 27/08/2026 (voir git blame) évitait bien le "trou blanc" sous une carte
-   courte, mais au prix d'un défaut plus visible sur un écran large — avec 2-3 cartes seulement
-   (ex. onglet Congés) et column-count:3, la ou les colonnes excédentaires restent VIDES plutôt que
-   redistribuer la largeur disponible aux cartes réellement présentes : jusqu'à un tiers de l'écran
-   perdu. Retour à une vraie grille CSS (comme .detail-grid) : chaque carte utilise toute la largeur
-   disponible de sa colonne, quel que soit le nombre de cartes. align-items:start évite qu'une carte
-   courte s'étire pour rien ; la contrepartie assumée est qu'une ligne suivante ne peut pas "remonter"
-   dans le vide sous une carte courte de la ligne précédente (mise en page en lignes, pas en
-   colonnes façon Pinterest) — un compromis jugé préférable à des colonnes vides sur grand écran. */
-.detail-grid-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
-  align-items: start;
-}
-/* §retour QA du 27/08/2026 : panneau déroulant natif (Compteurs de congés, potentiellement très
-   long) — repose sur <details>/<summary> (accessible, sans JS) plutôt qu'un composant maison. */
-.collapsible-panel {
-  margin-top: 10px;
-}
-.collapsible-panel > summary {
-  cursor: pointer;
-  font-weight: 600;
-  color: var(--color-primary);
-  list-style: none;
-  padding: 4px 0;
-}
-.collapsible-panel > summary::-webkit-details-marker {
-  display: none;
-}
-.collapsible-panel > summary::before {
-  content: '▸ ';
-  display: inline-block;
-  transition: transform 0.15s ease;
-}
-.collapsible-panel[open] > summary::before {
-  transform: rotate(90deg);
-}
-.collapsible-panel > summary:hover {
-  text-decoration: underline;
-}
-.collapsible-panel .balance-grid {
-  margin-top: 12px;
-}
-
-.about-modal-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 14px;
-}
-
-.about-category {
-  background: var(--color-muted-soft);
-  border-radius: var(--radius-md);
-  padding: 16px 18px;
-}
-.about-category h3 {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 10px;
-  font-size: 15px;
-}
-.about-category ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-.about-category li {
-  font-size: 13px;
-  color: var(--color-text-muted);
-  line-height: 1.45;
-  padding-left: 14px;
-  position: relative;
-}
-.about-category li::before {
-  content: '•';
-  position: absolute;
-  left: 0;
-  color: var(--color-primary-text);
-  font-weight: 700;
-}
-
-.changelog-entry {
-  margin-bottom: 20px;
-}
-.changelog-entry:last-child {
-  margin-bottom: 0;
-}
-.changelog-entry h3 {
-  margin: 0 0 10px;
-  font-size: 14px;
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-.changelog-entry ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.changelog-entry li {
-  font-size: 13.5px;
-  color: var(--color-text);
-  line-height: 1.5;
-  padding-left: 16px;
-  position: relative;
-}
-.changelog-entry li::before {
-  content: '•';
-  position: absolute;
-  left: 0;
-  color: var(--color-primary-text);
-  font-weight: 700;
-}
-
-.info-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--color-border);
-  font-size: 14px;
-}
-
-.info-row:last-child {
-  border-bottom: none;
-}
-.info-label {
-  color: var(--color-text-muted);
-}
-.info-value {
-  font-weight: 500;
-  text-align: right;
-}
-
-/* ---------------------------------------------------------------------
-   États vides / à venir
-   --------------------------------------------------------------------- */
 
 .empty-state {
   display: flex;
@@ -1840,10 +839,6 @@ p {
   display: block;
 }
 
-/* ---------------------------------------------------------------------
-   Modales
-   --------------------------------------------------------------------- */
-
 #modal-root {
   position: fixed;
   inset: 0;
@@ -1871,39 +866,11 @@ p {
   animation: modal-in 0.15s ease;
 }
 
-/* Beaucoup de modales enveloppent .modal-body + .modal-footer dans un <form> (pour le submit) —
-   ce <form>, en display:block par défaut, casse la chaîne flex column de .modal : il grandit à la
-   hauteur naturelle de son contenu au lieu de participer à la répartition flex, ce qui empêche
-   .modal-body de jamais être contraint et donc de défiler (symptôme vu sur mobile : le bas des
-   formulaires longs devenait inatteignable, aucun scroll nulle part). */
 .modal > form {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
-}
-
-.modal-large {
-  max-width: 760px;
-}
-.modal-small {
-  max-width: 420px;
-}
-/* §retour Betty du 19/09/2026 (point 8, "deux largeurs de fenêtre pour toute l'application... un
-   choix global qui ne tient plus dès qu'un formulaire dépasse quelques champs") : un premier palier
-   intermédiaire entre le défaut (480px, sans classe) et .modal-large (760px) — pour un formulaire à
-   un seul form-grid mais 5-6 champs (ex. openShiftModal), un peu à l'étroit à 480px sans avoir
-   besoin des 760px d'un vrai grand formulaire. Bénéficie automatiquement du même repli
-   width:100% déjà posé sur .modal (aucune media query supplémentaire nécessaire). */
-.modal-medium {
-  max-width: 600px;
-}
-/* §retour Betty du 18/09/2026 (point 1) : la fiche salarié (onglets, plusieurs champs par ligne)
-   restait bornée à 760px comme n'importe quelle petite modale, gaspillant l'espace disponible sur un
-   grand écran — 95vw plafonné à 1100px reste raisonnable, et en dessous de 1100px de large (mobile
-   compris) .modal { width:100% } prend simplement le relais, comme pour toutes les autres modales. */
-.modal-xlarge {
-  max-width: min(1100px, 95vw);
 }
 
 @keyframes modal-in {
@@ -1917,68 +884,6 @@ p {
   }
 }
 
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px 22px;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.modal-body {
-  padding: 22px;
-  overflow-y: auto;
-  flex: 1;
-  /* Sans ça, un flex item garde par défaut min-height:auto (= sa hauteur de contenu naturelle),
-     ce qui annule le overflow-y:auto ci-dessus : le corps grandissait au-delà de max-height:90vh
-     de .modal au lieu de défiler dedans — sur mobile (viewport court), le bas des formulaires
-     longs (fiche salarié...) devenait purement inatteignable, aucun scroll possible nulle part. */
-  min-height: 0;
-}
-
-.modal-body a {
-  color: var(--color-primary-text);
-}
-
-/* §demande Betty du 09/09/2026, puis retour du 18/09/2026 (point 1, "vrais onglets") : les onglets
-   d'un formulaire long (fiche salarié) restent collés en haut de .modal-body (son propre conteneur
-   de défilement, voir ci-dessus) même une fois descendu dans un onglet au contenu long. Scopé à
-   .modal-body (pas .tabs tout court, utilisé ailleurs hors modale) pour ne rien changer aux onglets
-   de page classiques. */
-.modal-body > .tabs:first-child {
-  position: sticky;
-  top: -22px;
-  margin: -22px -22px 18px;
-  padding: 10px 22px 0;
-  background: var(--color-surface);
-  z-index: 1;
-}
-
-/* Point rouge sur un onglet contenant un champ obligatoire manquant/invalide (voir
-   updateEmployeeFormTabErrors, app.js) — jamais bloquant en soi, juste un repère avant le submit.
-   §retour Betty du 22/09/2026 ("4 points rouges" visibles sur sa propre fiche, non reproduit à la
-   lecture du JS) : la cause n'était pas côté validation mais ici — `display: inline-block` posé
-   directement sur `.tab-error-dot` a la même spécificité que la règle UA `[hidden] { display: none }`
-   (un sélecteur simple chacune), et une feuille d'auteur l'emporte sur la feuille du navigateur à
-   spécificité égale : l'attribut `hidden` posé par défaut sur ce <span> (voir renderEmployeeFormTabs)
-   n'avait donc AUCUN effet visuel, le point restait affiché sur TOUS les onglets dès l'ouverture de
-   la modale, jamais piloté par updateEmployeeFormTabErrors — d'où exactement 4 points rouges sur
-   n'importe quelle fiche en édition, jamais spécifique à une saisie invalide. `:not([hidden])`
-   (même idiome que .quick-add-inline plus haut) ne pose ces styles que si l'attribut est absent,
-   laissant la règle UA `display: none` agir normalement quand il est présent. */
-.tab-error-dot:not([hidden]) {
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  margin-left: 5px;
-  border-radius: 50%;
-  background: var(--color-danger);
-  vertical-align: middle;
-}
-
-/* Séparateur visible entre deux groupes de champs À L'INTÉRIEUR d'un même onglet (ex. Temps de
-   travail : champs principaux puis Horaires) — un simple espacement ne suffisait pas à signaler
-   qu'on entre dans un bloc distinct. */
 .form-subsection-title {
   margin-top: 18px;
   padding-top: 14px;
@@ -1986,36 +891,6 @@ p {
   color: var(--color-text-muted);
   font-size: 13px;
 }
-
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  padding: 16px 22px;
-  border-top: 1px solid var(--color-border);
-}
-
-/* §retour Betty du 19/09/2026 ("ajouter une valeur sur place") : DOM root séparé de #modal-root,
-   même patron visuel (fond sombre, centré) mais son propre z-index — doit rester PAR-DESSUS une
-   modale déjà ouverte (#modal-root : 50) plutôt que dedans, pour ne jamais écraser son contenu. */
-#quick-create-root {
-  position: fixed;
-  inset: 0;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  background: rgba(15, 17, 21, 0.45);
-  z-index: 65;
-  padding: 20px;
-}
-
-#quick-create-root.open {
-  display: flex;
-}
-
-/* ---------------------------------------------------------------------
-   Toasts
-   --------------------------------------------------------------------- */
 
 #toast-root {
   position: fixed;
@@ -2049,24 +924,14 @@ p {
   background: var(--color-danger);
 }
 
-/* ---------------------------------------------------------------------
-   Congés — onglets, soldes, actions de tableau
-   --------------------------------------------------------------------- */
-
 .tabs {
   display: flex;
   gap: 4px;
   border-bottom: 1px solid var(--color-border);
   margin-bottom: 18px;
   overflow-x: auto;
-  position: relative; /* ancrage pour .tabs-arrow (position: sticky), voir enhanceScrollableTabs (app.js) */
-  /* La scrollbar native (avec ses flèches sur certains navigateurs/OS) apparaissait dès que le
-     contenu dépassait la largeur de quelques pixels et provoquait un léger décalage visuel au
-     survol. Le défilement tactile reste actif (overflow-x:auto), seule la barre est masquée — voir
-     .tabs-arrow ci-dessous, qui la remplace par un vrai contrôle à la souris (retour Betty du
-     19/09/2026, blocage 5.1 : sans lui, une rangée de 15 onglets comme Paramètres n'avait
-     LITTÉRALEMENT aucun moyen d'être atteinte à la souris sur un ordinateur de bureau — le menu
-     déroulant de repli, .parametres-tab-select plus bas, n'apparaît que sous 860px). */
+  position: relative;
+
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -2077,42 +942,6 @@ p {
 
 .tab {
   flex-shrink: 0;
-}
-
-/* §retour Betty du 19/09/2026 (blocage 5.1) : injectées en JS (enhanceScrollableTabs, app.js) dans
-   CHAQUE .tabs qui déborde réellement — jamais posées en dur dans un template, sinon les ~30 endroits
-   qui construisent un <div class="tabs"> devraient tous être modifiés un par un. `position: sticky`
-   à l'intérieur du conteneur qui défile lui-même (pas un wrapper séparé) : reste à l'écran pendant le
-   défilement sans changer la structure DOM existante. Cachées par défaut (`display: none`, pas
-   seulement une opacité) : une rangée de 2-3 onglets qui ne débordent jamais ne doit montrer AUCUNE
-   flèche inutile. */
-.tabs-arrow {
-  position: sticky;
-  align-self: center;
-  flex-shrink: 0;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-md);
-  color: var(--color-text);
-  cursor: pointer;
-  font-size: 14px;
-  line-height: 1;
-  z-index: 2;
-}
-.tabs-arrow.visible {
-  display: flex;
-}
-.tabs-arrow-left {
-  left: 2px;
-}
-.tabs-arrow-right {
-  right: 2px;
 }
 
 .tab {
@@ -2135,88 +964,9 @@ p {
   border-bottom-color: var(--color-primary-text);
 }
 
-/* §demande Betty du 09/09/2026 : un second niveau d'onglets (Télétravail → Demandes/Planning, Horaires
-   → Jour/Semaine/Mois) sous un premier niveau (Congés & absences → Congés/Absences/Télétravail,
-   Planning → Semaine/Mois/Année/Horaires/Astreintes) se distinguait mal du premier — mêmes taille et
-   poids visuel, aucun repère de hiérarchie. Plus petit et plus discret, jamais un menu déroulant
-   (réservé à un vrai grand nombre d'onglets, voir .parametres-tab-select ci-dessous : ici 2-3 sous-
-   onglets seulement, une rangée compacte reste plus rapide qu'un select). */
-.tabs.tabs-sub .tab {
-  padding: 6px 10px;
-  font-size: 12.5px;
-}
-
-/* Repli mobile pour les écrans à beaucoup d'onglets (Paramètres, 12+) — voir @media 860px. Caché
-   par défaut : le bouton .tab classique reste le contrôle normal sur desktop. */
-.parametres-tab-select {
-  display: none;
-  margin-bottom: 18px;
-}
-
 .btn-sm {
   padding: 6px 12px;
   font-size: 13px;
-}
-
-.balance-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
-}
-
-.balance-card {
-  position: relative;
-  border: 1px solid var(--color-border);
-  border-left: 3px solid var(--type-color, var(--color-primary));
-  border-radius: var(--radius-sm);
-  padding: 12px 14px;
-}
-
-.balance-adjust-btn {
-  position: absolute;
-  top: 6px;
-  right: 8px;
-  font-size: 13px;
-}
-
-.balance-icon {
-  font-size: 16px;
-  margin-bottom: 4px;
-}
-.balance-name {
-  font-size: 13px;
-  font-weight: 600;
-}
-.balance-value {
-  font-size: 20px;
-  font-weight: 700;
-  margin-top: 2px;
-}
-.balance-sub {
-  font-size: 12px;
-  color: var(--color-text-muted);
-}
-
-.type-swatch {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  margin-right: 4px;
-}
-
-.table-actions {
-  display: flex;
-  gap: 10px;
-  white-space: nowrap;
-}
-
-.btn-link-danger {
-  color: var(--color-danger);
-}
-
-.checkbox-grid {
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
 .form-field-checkbox label {
@@ -2240,1323 +990,6 @@ textarea.input {
   font-family: inherit;
 }
 
-/* ---------------------------------------------------------------------
-   Calendrier
-   --------------------------------------------------------------------- */
-
-.calendar-nav {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-/* §sprint refonte UX : l'ancienne légende occupait une rangée complète, toujours visible, sous la
-   grille (cf. .legend-item ci-dessous, désormais réservé au contenu du popover) — remplacée par une
-   bande compacte (pastilles de couleur seules) + un bouton "Filtres" ouvrant .dropdown-panel. */
-.calendar-filter-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 10px;
-  flex-wrap: wrap;
-}
-/* §retour Betty du 10/09/2026 ("le bouton filtres dans calendrier moi [...] tu le mets à droite") :
-   remonté dans .calendar-nav (barre dorée du haut, voir renderCalendrier) — plus besoin de la marge
-   du dessus, pensée pour sa propre ligne sous la grille. */
-.calendar-nav .calendar-filter-bar {
-  margin-top: 0;
-}
-.calendar-filter-dots {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.calendar-filter-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 4px;
-  transition: opacity 0.15s ease;
-}
-.calendar-filter-dot.legend-item-inactive {
-  opacity: 0.25;
-}
-
-/* Contenu du popover "Filtres" (voir .dropdown-panel) — chaque entrée est un vrai <button> avec un
-   état "inactif" pour la catégorie masquée. Réutilisé aussi par le popover d'ajout rapide (case
-   vide du calendrier), même patron "liste de lignes cliquables verticales". */
-.legend-item svg {
-  width: 15px;
-  height: 15px;
-  display: block;
-  flex-shrink: 0;
-}
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  text-align: left;
-  border: none;
-  background: none;
-  padding: 10px 14px;
-  font-size: 13px;
-  color: var(--color-text);
-  cursor: pointer;
-  transition:
-    opacity 0.15s ease,
-    background-color 0.15s ease;
-}
-
-.legend-item:hover {
-  background: var(--color-muted-soft);
-}
-.legend-item-inactive {
-  opacity: 0.5;
-}
-
-.legend-swatch {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border-radius: 4px;
-}
-
-.legend-holiday {
-  background: var(--color-danger-soft);
-  border: 1px solid var(--color-danger);
-}
-.legend-school {
-  background: var(--color-info-soft);
-  border: 1px solid var(--color-info);
-}
-.legend-conge {
-  background: var(--color-success-soft);
-  border: 1px solid var(--color-success);
-}
-.legend-teletravail {
-  background: var(--color-primary-soft);
-  border: 1px solid var(--color-primary);
-}
-.legend-anniversaire {
-  background: var(--color-warning-soft);
-  border: 1px solid var(--color-warning);
-}
-.legend-arrivee {
-  background: var(--color-gold-soft);
-  border: 1px solid var(--color-gold);
-}
-.legend-depart {
-  background: var(--color-muted-soft);
-  border: 1px solid var(--color-text-muted);
-}
-
-/* Précédent/Suivant sur les côtés du calendrier plutôt qu'en haut (retour utilisateur : plus
-   accessible) — "Aujourd'hui" reste en haut, ce n'est pas une navigation mois par mois. */
-/* §sprint refonte UX : la navigation mois précédent/suivant a quitté les côtés de la grille (qui
-   perdaient ~90px de largeur inutilement, cf. .calendar-side-nav ci-dessous, retiré) pour rejoindre
-   le nom du mois dans l'en-tête ("‹ Octobre 2026 ›") — voir .calendar-month-nav. La grille profite
-   maintenant de toute la largeur de #view-root. */
-.calendar-month-nav {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.calendar-month-nav-btn {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-text-muted);
-  width: 28px;
-  height: 28px;
-  font-size: 18px;
-  line-height: 1;
-  cursor: pointer;
-}
-.calendar-month-nav-btn:hover {
-  background: var(--color-muted-soft);
-  color: var(--color-text);
-  border-color: var(--color-text-muted);
-}
-.calendar-month-nav .view-subtitle {
-  margin: 0;
-  min-width: 140px;
-  text-align: center;
-}
-
-.calendar-card {
-  padding: 12px;
-  margin-bottom: 12px;
-  overflow-x: auto;
-}
-
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
-}
-
-.calendar-grid-header {
-  margin-bottom: 6px;
-}
-
-.calendar-weekday {
-  text-align: center;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  padding: 6px 0;
-}
-
-.calendar-cell {
-  /* height fixe (pas min-height) : une case avec beaucoup de badges (congés+télétravail+anniversaire...)
-     grossissait et étirait toute sa ligne de grille avec elle (une grille CSS aligne la hauteur de
-     chaque ligne sur sa case la plus haute), rendant les lignes visiblement inégales entre elles —
-     toutes les cases ont maintenant la même taille, un jour chargé défile en interne plutôt que
-     de grandir. */
-  height: 112px;
-  overflow-y: auto;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.calendar-cell.out-month {
-  opacity: 0.4;
-}
-.calendar-cell.weekend {
-  background: var(--color-muted-soft);
-}
-.calendar-cell.today {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 1px var(--color-primary);
-}
-.calendar-cell.holiday {
-  background: var(--color-danger-soft);
-}
-.calendar-cell.school-holiday:not(.holiday) {
-  background: var(--color-info-soft);
-}
-
-/* §4 (reprise) : case cliquable pour ouvrir le détail du jour (openCalendarDayModal) — uniquement
- * quand la case a du contenu (cf. hasContent dans renderCalendarCell). */
-.calendar-cell-clickable {
-  cursor: pointer;
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
-}
-.calendar-cell-clickable:hover {
-  border-color: var(--color-primary);
-}
-
-.calendar-cell-header {
-  display: flex;
-  justify-content: space-between;
-}
-.calendar-day-number {
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.calendar-tag {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 1px 6px;
-  border-radius: 999px;
-  width: fit-content;
-}
-
-.calendar-tag-holiday {
-  background: var(--color-danger);
-  color: white;
-}
-/* §correctif audit du 23/08/2026 (§7.6) : même traitement visuel que .calendar-tag-holiday (alerte
-   = rouge, cohérent avec le reste de l'app) mais sa propre classe — sémantiquement un quota
-   d'absences simultanées n'est pas un jour férié, éviter de les confondre au premier coup d'œil
-   dans le CSS pour qui reprendrait ce code plus tard. */
-.calendar-tag-quota {
-  background: var(--color-danger);
-  color: white;
-}
-
-.calendar-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: auto;
-}
-
-.calendar-badge {
-  position: relative;
-  font-size: 12px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  padding: 1px 6px;
-  cursor: default;
-}
-.calendar-badge svg {
-  width: 12px;
-  height: 12px;
-  vertical-align: -2px;
-}
-
-.calendar-tooltip {
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--color-text);
-  color: white;
-  font-size: 12px;
-  font-weight: 400;
-  padding: 8px 10px;
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-md);
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s ease;
-  z-index: 20;
-}
-
-.calendar-badge:hover .calendar-tooltip {
-  opacity: 1;
-}
-
-/* §sprint calendrier légende/filtres : même code couleur que la légende (.legend-*) pour que
-   badge et entrée de légende se reconnaissent visuellement d'un coup d'œil. Placées avant
-   .calendar-badge-pending pour que son `background: transparent` reste prioritaire (même
-   spécificité, ordre source) même quand une demande en attente porte aussi une classe de catégorie. */
-.calendar-badge-conge {
-  background: var(--color-success-soft);
-  border-color: var(--color-success);
-}
-.calendar-badge-teletravail {
-  background: var(--color-primary-soft);
-  border-color: var(--color-primary);
-}
-.calendar-badge-anniversaire {
-  background: var(--color-warning-soft);
-  border-color: var(--color-warning);
-}
-/* Or plutôt que le même vert que "congé" (§passe couleur du 21/08/2026) — une arrivée est un moment
-   à part, pas juste "encore une absence en moins" : la seule catégorie du calendrier à utiliser
-   l'accent or de la marque, pour marquer clairement sa singularité plutôt que de la fondre dans le
-   code couleur des congés/absences. */
-.calendar-badge-arrivee {
-  background: var(--color-gold-soft);
-  border-color: var(--color-gold);
-}
-.calendar-badge-depart {
-  background: var(--color-muted-soft);
-  border-color: var(--color-text-muted);
-}
-
-/* Sprint SIRH premium §2 : demande non validée — visible mais visuellement distincte (semi-transparente, bordure en pointillés) d'une demande déjà validée. */
-.calendar-badge-pending {
-  opacity: 0.55;
-  border-style: dashed;
-  background: transparent;
-}
-
-/* ---------------------------------------------------------------------
-   Paramètres — listes de référence
-   --------------------------------------------------------------------- */
-
-.settings-lists-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 16px;
-}
-
-.chip-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 14px;
-  /* La zone tactile agrandie de .chip-remove (::before, inset:-10px) déborde son propre bouton
-     sans rien changer visuellement, mais compte dans le scrollWidth d'un ancêtre en
-     overflow:visible — avec beaucoup de chips (Paramètres notamment), ça rendait toute la page
-     horizontalement "scrollable" de quelques pixels sur un écran étroit. */
-  overflow: hidden;
-}
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--color-muted-soft);
-  border-radius: 999px;
-  padding: 5px 6px 5px 12px;
-  font-size: 13px;
-}
-
-.chip-remove {
-  position: relative;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--color-text-muted);
-  font-size: 10px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Zone tactile agrandie à 44x44 (repère WCAG) sans changer la taille visuelle du chip, via une zone invisible superposée. */
-.chip-remove::before {
-  content: '';
-  position: absolute;
-  inset: -13px;
-}
-.chip-remove svg {
-  width: 11px;
-  height: 11px;
-  display: block;
-}
-
-.chip-remove:hover {
-  background: var(--color-danger-soft);
-  color: var(--color-danger);
-}
-
-.chip-add-form {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.chip-add-form .input {
-  flex: 1;
-  min-width: 0;
-}
-
-/* Postes ouverts au recrutement (écran Embauche) : une ligne par poste plutôt qu'un chip inline —
-   le champ "places disponibles" a besoin de plus de place qu'un simple nom. */
-.poste-ouvert-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
-  background: var(--color-muted-soft);
-  border-radius: var(--radius-sm);
-}
-
-.poste-ouvert-nom {
-  flex: 1;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.poste-ouvert-qty-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-}
-.poste-ouvert-qty {
-  width: 64px;
-  padding: 4px 8px;
-}
-
-/* Postes (Paramètres > Référentiels) : une ligne par poste avec ses formes masculine/féminine
-   éditables, même raisonnement que .poste-ouvert-row ci-dessus. */
-.poste-genre-row {
-  display: flex;
-  align-items: flex-end;
-  gap: 12px;
-  padding: 8px 12px;
-  background: var(--color-muted-soft);
-  border-radius: var(--radius-sm);
-  flex-wrap: wrap;
-}
-.poste-genre-neutre {
-  flex: 1 1 160px;
-  font-size: 14px;
-  font-weight: 500;
-  align-self: center;
-}
-.poste-genre-field {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 1 1 140px;
-}
-.poste-genre-input {
-  padding: 4px 8px;
-}
-
-/* ---------------------------------------------------------------------
-   Télétravail — planning hebdomadaire
-   --------------------------------------------------------------------- */
-
-/* §retour Betty du 10/09/2026 ("ça ne ressemble pas à l'image, il faut le même cadrillage, tous
-   pareil sauf les couleurs") : la référence est un vrai quadrillage façon tableur — bordure fine
-   autour de CHAQUE case (pas juste un filet horizontal comme les autres tableaux de l'appli), un
-   bloc de couleur qui remplit la case de bord à bord (pas une carte arrondie flottant avec une
-   marge/ombre), texte aligné à gauche.
-   §correctif retour Betty du 16/09/2026 ("les jours se superposent quand je descends") :
-   `border-collapse: collapse` (hérité de .table) rend le calcul des bordures partagées PAR LE
-   TABLEAU LUI-MÊME plutôt que par chaque cellule isolément — incompatible avec `position: sticky`
-   sur les th (voir plus bas), qui repositionne certaines cellules hors du calcul de bordures
-   collapsées du navigateur. Résultat observé : la case colorée d'une ligne juste sous l'en-tête
-   déborde visuellement d'un ou deux pixels PAR-DESSUS l'en-tête figé pendant le scroll (une barre de
-   congé "remonte" dans la ligne des jours). Passé en `border-collapse: separate` (voir .planning-table
-   ci-dessous) : sticky redevient fiable. Pour garder EXACTEMENT le même quadrillage fin à une seule
-   ligne malgré ce changement (deux cellules adjacentes en `separate` dessineraient chacune sa propre
-   bordure, doublant l'épaisseur visible), chaque cellule ne dessine plus que sa bordure droite et
-   basse ; le haut et la gauche du quadrillage viennent uniquement de la première ligne/colonne. */
-.planning-table {
-  border-collapse: separate;
-  border-spacing: 0;
-}
-.planning-table th,
-.planning-table td {
-  text-align: center;
-  border-style: solid;
-  border-color: var(--color-border);
-  border-width: 0 1px 1px 0;
-}
-.planning-table thead th {
-  border-top-width: 1px;
-}
-.planning-table th:first-child,
-.planning-table td:first-child {
-  text-align: left;
-  border-left-width: 1px;
-}
-/* Les cases de statut (renderPlanningStatusCell/renderPlanningDayCells) perdent leur padding — la
-   carte de couleur à l'intérieur (position absolute) remplit alors la case exactement de bord à
-   bord, comme dans la référence, plutôt que de flotter avec une marge visible. */
-.planning-table td.planning-cell,
-.planning-table td.planning-leave-bar-cell {
-  padding: 0;
-  position: relative;
-  text-align: left;
-}
-
-.planning-cell svg {
-  width: 14px;
-  height: 14px;
-  display: block;
-  margin: 0 auto;
-}
-.planning-off-dash {
-  color: var(--color-text-muted);
-  font-size: 13px;
-}
-
-/* §demande Betty du 10/09/2026 ("même design que [référence Combo], mais les couleurs actuelles") :
-   bloc de couleur qui remplit toute la case (position absolute, inset 0 — un enfant en `height:100%`
-   ne se résout pas de façon fiable dans une cellule de tableau, même leçon déjà tirée pour
-   .absence-cal-bar, voir plus bas dans ce fichier), à peine arrondi (pas une carte flottante avec
-   ombre), texte aligné à gauche — mêmes trois teintes sémantiques qu'avant, jamais une couleur par
-   service/poste (voir seven_rh_design_palette_rule). */
-.planning-shift-card {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 2px;
-  box-sizing: border-box;
-  border-radius: 3px;
-  background: var(--color-surface);
-  padding: 6px 18px 6px 8px;
-}
-.planning-shift-leave {
-  background: var(--color-success-soft);
-}
-.planning-shift-remote {
-  background: var(--color-primary-soft);
-}
-.planning-shift-office {
-  background: var(--color-info-soft);
-}
-.planning-shift-pending {
-  opacity: 0.6;
-}
-/* Repos hebdomadaire (§retour du 10/09/2026) : même case pleine que les autres statuts (tous
-   pareil), simplement grise et centrée — en vue Semaine seulement (colonnes assez larges), vue Mois
-   inchangée (~30 colonnes déjà étroites, un tiret suffit, voir renderPlanningStatusCell). */
-.planning-shift-off {
-  background: var(--color-muted-soft);
-  align-items: center;
-  text-align: center;
-}
-.planning-shift-off .planning-shift-caption {
-  color: var(--color-text-muted);
-  text-align: center;
-}
-/* §retour Betty du 09/09/2026 ("enlève les icônes, rends les horaires plus jolies") : la légende
-   (horaires ou titre du congé) remplace désormais l'icône (voir renderPlanningStatusCell) — elle
-   reprend donc la même couleur d'accent que la carte plutôt qu'un simple gris, pour rester la seule
-   information visuelle du jour. */
-.planning-shift-caption {
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.3;
-}
-.planning-shift-subtext {
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 1.3;
-  opacity: 0.85;
-}
-.planning-shift-leave .planning-shift-caption {
-  color: var(--color-success);
-}
-.planning-shift-remote .planning-shift-caption {
-  color: var(--color-primary);
-}
-.planning-shift-office .planning-shift-caption {
-  color: var(--color-info);
-}
-/* Petit repère d'icône en coin de carte (§demande du 10/09/2026, référence Combo) : discret, jamais
-   la seule information (le texte de la légende reste la source principale), même couleur que la
-   légende via currentColor. */
-.planning-shift-corner-icon {
-  position: absolute;
-  bottom: 4px;
-  right: 6px;
-  opacity: 0.55;
-  line-height: 0;
-}
-.planning-shift-corner-icon svg {
-  width: 11px;
-  height: 11px;
-  display: block;
-}
-.planning-shift-leave .planning-shift-corner-icon {
-  color: var(--color-success);
-}
-.planning-shift-remote .planning-shift-corner-icon {
-  color: var(--color-primary);
-}
-.planning-shift-office .planning-shift-corner-icon {
-  color: var(--color-info);
-}
-/* Vue Mois (~30 colonnes déjà étroites) : icône seule, recentrée (le reste de la carte est aligné à
-   gauche par défaut, voir plus haut) — voir renderPlanningStatusCell. */
-.planning-shift-icon-only {
-  align-items: center;
-  padding: 4px;
-}
-.planning-shift-icon {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-}
-/* Compteurs sous le nom du salarié (§demande du 10/09/2026) : heures hebdomadaires contractuelles
-   (employee.horairesHebdo) et solde de repos compensateur (getReposCompensateurSolde) — les deux
-   SEULS compteurs de la référence ayant un vrai équivalent existant dans Nexus, voir
-   renderPlanningEmployeeBadges. */
-.planning-employee-badges {
-  display: flex;
-  gap: 4px;
-  margin-top: 4px;
-  flex-wrap: wrap;
-}
-.planning-employee-badge {
-  font-size: 10.5px;
-  font-weight: 700;
-  padding: 1px 7px;
-  border-radius: 999px;
-  background: var(--color-muted-soft);
-  color: var(--color-text-muted);
-}
-.planning-employee-badge-rcr {
-  background: var(--color-primary-soft);
-  color: var(--color-primary-text);
-}
-
-/* §retour Betty du 10/09/2026 ("fais le même planning pour le planning télétravail dans congés et
-   absences") : même STRUCTURE de carte que la grille de quarts (.poste-shift-card plus bas — carte
-   flottante avec marge, ombre, coins arrondis, accent gauche) plutôt que le remplissage bord à bord
-   de .planning-shift-card (partagé par le Calendrier et les anciens onglets Semaine/Mois du
-   Planning, jamais touchés ici — voir renderTeletravailPlanning, app.js). Betty a explicitement
-   demandé de GARDER les trois couleurs sémantiques par statut (fond .planning-shift-office/-remote/
-   -leave, inchangé) : seule la FORME de la carte change, jamais sa couleur en une teinte unique
-   comme sur la grille de quarts (qui n'a qu'un seul statut possible par case, contrairement à ce
-   planning-ci) — d'où une portée scopée à ce seul écran via .teletravail-planning-card, plutôt qu'une
-   modification de .planning-shift-card lui-même. */
-.teletravail-planning-card .planning-shift-card {
-  position: absolute;
-  inset: 4px;
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--color-border);
-}
-.teletravail-planning-card .planning-shift-leave {
-  border-left: 3px solid var(--color-success);
-}
-.teletravail-planning-card .planning-shift-remote {
-  border-left: 3px solid var(--color-primary);
-}
-.teletravail-planning-card .planning-shift-office {
-  border-left: 3px solid var(--color-info);
-}
-.teletravail-planning-card .planning-shift-off {
-  border-left: 3px solid var(--color-border);
-}
-
-/* ---------------------------------------------------------------------
-   Planning par postes (§demande Betty du 10/09/2026) — écran distinct inspiré d'une maquette
-   envoyée, MAIS identité Nexus (bleu marine + or), jamais la palette de la référence (confirmé avant
-   de commencer) : les cases de quart réutilisent .planning-shift-card/.planning-shift-caption/
-   .planning-shift-subtext déjà en place pour le Planning (même "cadrillage", même remplissage de
-   bord à bord — voir plus haut), une seule teinte or/marine pour tous les groupes, jamais une
-   couleur par service comme dans la référence. §correctif du 10/09/2026 ("il faut que ce soit le
-   service à cet endroit") : le regroupement, inspiré par la référence, se fait par SERVICE (déjà
-   existant sur la fiche salarié) et non plus par "Position" (retirée) — les groupes se gèrent donc
-   depuis Paramètres > Services, plus de "⋯" ni de menu dédié ici.
-   --------------------------------------------------------------------- */
-/* §retour Betty du 10/09/2026 ("enlève tous les boutons, fais juste le design du planning [...],
-   pas ce qu'il y a autour") : plus de panneau de filtres ni de barre d'outils — retiré avec le reste
-   des styles qui ne servaient qu'à ça (.poste-layout/.poste-filters-panel/.poste-btn-pill/
-   .poste-checkbox-row/...). Ne reste que la grille elle-même. */
-.poste-group-header-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-/* §retour Betty du 10/09/2026 ("ça doit être exactement ça sauf que c'est en bleu et doré") : carte
-   FLOTTANTE avec marge (pas un remplissage bord à bord comme .planning-shift-card, utilisé lui pour
-   le Planning principal après le retour "cadrillage" du 10/09/2026 — les deux écrans n'ont pas à se
-   ressembler entre eux, chacun suit sa propre référence) — fond blanc, accent gauche or, coins
-   arrondis, légère ombre, TROIS lignes (horaire, position, pause) comme la maquette. Le fond
-   légèrement teinté de la case elle-même (.poste-grid-card) rejoue le fond menthe de la référence
-   avec un ton neutre de l'appli plutôt qu'une nouvelle couleur. */
-.poste-grid-card {
-  background: var(--color-bg);
-}
-.poste-shift-card {
-  position: absolute;
-  inset: 4px;
-  box-sizing: border-box;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-left: 3px solid var(--color-gold);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-sm);
-  padding: 6px 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  text-align: left;
-  cursor: pointer;
-  /* §retour Betty du 13/09/2026 : cette carte n'a jamais eu de vrai glisser-déposer (un clic ouvre
-     juste la modale de modification, voir bindPlanningPostesEvents) — sans ce garde-fou, un clic
-     avec un léger mouvement de souris sélectionne le texte de la carte, et le navigateur en profite
-     pour lancer SON PROPRE glisser natif de cette sélection : une carte fantôme semi-transparente
-     qui suit le curseur et se superpose à la carte d'origine. Même correctif que .photo-crop-stage
-     img plus bas dans ce fichier, pour la même raison. */
-  user-select: none;
-  -webkit-user-drag: none;
-}
-.poste-shift-time {
-  font-weight: 700;
-  font-size: 12.5px;
-  color: var(--color-text);
-}
-.poste-shift-position {
-  font-size: 11px;
-  color: var(--color-text-muted);
-}
-.poste-shift-pause {
-  font-size: 10.5px;
-  color: var(--color-text-muted);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.poste-shift-pause svg {
-  width: 9px;
-  height: 9px;
-}
-
-/* §demande Betty du 11/09/2026 (Pointeuse QR, "dire dans le planning que l'employé est bien
-   présent") : confirmation réelle (pointage scanné), distincte du quart simplement PRÉVU — vert
-   plutôt que le gris neutre du reste de la carte, jamais confondue avec l'horaire planifié.
-   Utilisée seulement quand la carte n'a rien d'autre à montrer (pas de quart planifié) — voir
-   .poste-shift-pointage-dot ci-dessous pour la carte avec un quart, trop étroite pour une ligne
-   texte de plus. */
-.poste-shift-pointage {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--color-success);
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  margin-top: 2px;
-}
-.poste-shift-pointage svg {
-  width: 9px;
-  height: 9px;
-}
-.poste-shift-pointage-only {
-  justify-content: center;
-  align-items: center;
-}
-/* L'heure elle-même, sous "Pointé" — ligne séparée plutôt qu'un seul texte "Pointé 08:52 → 17:03"
-   qui débordait de la case en se coupant au milieu (correctif visuel du 14/09/2026) : deux lignes
-   courtes et prévisibles, jamais un retour à la ligne au hasard en plein milieu de l'heure. */
-.poste-shift-pointage-heures {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--color-success);
-  text-align: center;
-  line-height: 1.3;
-}
-/* §correctif visuel du 14/09/2026 : une carte AVEC un quart planifié (horaire + service, déjà 2
-   lignes dans une case de hauteur fixe) n'a plus de place pour une ligne de texte en plus — ce
-   simple point vert (au survol : l'heure exacte, voir title) confirme le pointage sans jamais
-   ajouter de ligne, donc sans jamais pouvoir déborder de la carte. */
-.poste-shift-pointage-dot {
-  display: inline-flex;
-  vertical-align: middle;
-  margin-left: 3px;
-  color: var(--color-success);
-  cursor: help;
-}
-.poste-shift-pointage-dot svg {
-  width: 9px;
-  height: 9px;
-  display: block;
-}
-
-/* §retour Betty du 10/09/2026 ("vérifie que ça correspond bien à l'image") : la référence ne montre
-   AUCUN "+" visible dans ses cases vides (juste une case nue) — invisible par défaut, révélé au
-   survol plutôt que retiré (reste cliquable/trouvable, juste pas une pointillée en permanence comme
-   avant). Remplit toute la case comme la carte occupée (mêmes marges). */
-.poste-shift-add {
-  position: absolute;
-  inset: 4px;
-  border: 1px dashed var(--color-border);
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--color-text-muted);
-  font-size: 16px;
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.12s ease;
-}
-.poste-shift-add:hover {
-  opacity: 1;
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-  background: var(--color-primary-soft);
-}
-
-/* §retour Betty du 10/09/2026 (3e envoi de la même référence, "ça doit ressembler à ça") : texte
-   simple sous le nom, comme la maquette — pas un badge/pilule grisé (.planning-employee-badge, gardé
-   tel quel pour le Planning principal, jamais demandé à changer là-bas). */
-.poste-employee-hours {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--color-primary-text);
-  margin-top: 2px;
-}
-
-.poste-budget-row td {
-  background: var(--color-gold-soft);
-  border-top: 2px solid var(--color-gold);
-  font-weight: 700;
-}
-
-/* ---------------------------------------------------------------------
-   Pointeuse QR (§demande Betty du 11/09/2026)
-   --------------------------------------------------------------------- */
-.pointage-today-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  padding: 20px;
-}
-.pointage-today-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
-  font-size: 14px;
-}
-.pointage-today-status svg {
-  color: var(--color-success);
-  flex-shrink: 0;
-}
-
-/* Fenêtre caméra (openPointageScanModal) : carrée, coins arrondis, la vidéo remplit tout l'espace
-   (object-fit:cover, même patron que .avatar) plutôt que déformée ou avec des bandes vides. */
-.pointage-scan-stage {
-  width: 100%;
-  max-width: 320px;
-  aspect-ratio: 1;
-  margin: 0 auto;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  background: #000;
-}
-.pointage-scan-stage video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* Colonne Total alignée à droite, comme la référence (le reste du Planning n'a jamais eu cette
-   demande, cette règle reste donc scopée à l'écran Postes). */
-.poste-grid-card th:last-child,
-.poste-grid-card .planning-total-cell {
-  text-align: right;
-}
-
-/* Sprint SIRH premium §3 : "modification par glisser-déposer" du Planning (Semaine/Mois) */
-.planning-cell[draggable='true'] {
-  cursor: grab;
-}
-.planning-cell-dragging {
-  opacity: 0.4;
-}
-.planning-cell-drop-target {
-  outline: 2px dashed var(--color-primary);
-  outline-offset: -2px;
-}
-
-.planning-summary-row td {
-  background: var(--color-muted-soft);
-  font-size: 13px;
-  border-top: 2px solid var(--color-border);
-}
-
-/* §demande Betty du 09/09/2026 ("calendrier des absences") : chaque type de congé garde SA PROPRE
-   couleur déjà configurée (Paramètres > Types d'absences, type.couleur, appliquée en style inline),
-   le télétravail garde l'accent marine unique déjà utilisé partout ailleurs pour lui (jamais une
-   nouvelle couleur par service/poste).
-   §retour Betty du 09/09/2026, en plusieurs temps : "fais des cases", puis "des cases pour chaque
-   jour" (bordure collapsée trop discrète → `border-spacing`, chaque jour séparé par un vrai espace),
-   puis "ne fais pas une ligne remplie, juste les cases" (chaque jour en case individuelle), puis
-   enfin "remets la ligne [...] mais fais des cases différentes pour mieux voir le début et la fin" —
-   dernier état : une seule barre continue par absence (colspan, voir computeAbsenceCalendarSegments/
-   renderAbsenceCalendarRow), avec le quantième affiché en gras à chaque extrémité pour lever toute
-   ambiguïté sur la date exacte de début/fin. */
-/* §retour Betty du 09/09/2026 ("fais les cases un peu moins grandes") : padding/min-width réduits
-   d'un cran (8px 6px/34px → 6px 4px/26px) — juste assez pour resserrer la grille, sans revenir à la
-   bordure collapsée quasi invisible du tout premier essai. */
-.absence-cal-table {
-  border-collapse: separate;
-  border-spacing: 2px;
-}
-.absence-cal-table th,
-.absence-cal-table td {
-  padding: 6px 4px;
-  min-width: 26px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-}
-.absence-cal-table th:first-child,
-.absence-cal-table td:first-child {
-  padding: 12px 18px;
-  min-width: 0;
-}
-.absence-cal-table th.weekend,
-.absence-cal-cell.weekend {
-  background: var(--color-muted-soft);
-}
-.absence-cal-table th.today {
-  color: var(--color-primary-text);
-  font-weight: 700;
-}
-.absence-cal-cell.today {
-  box-shadow: inset 0 0 0 1px var(--color-primary-soft);
-}
-/* §retour Betty du 09/09/2026 ("même hauteur que les autres cases vides") : `height: 100%` sur la
-   barre ne suffit pas — dans une cellule de tableau, la hauteur d'un enfant en pourcentage ne se
-   résout pas de façon fiable contre la hauteur "auto" de la cellule (elle reste calée sur sa propre
-   hauteur de contenu, ~15px, flottant minuscule dans une case pourtant haute de 91px) : constaté au
-   pixel près en testant, pas juste une supposition. Positionner la barre en `absolute` sur toute la
-   case (`inset: 0`) contourne ce problème : elle se cale alors sur la hauteur RÉELLE de la case
-   (celle-ci passée en `position: relative`, padding retiré puisque la barre colorée occupe tout
-   l'espace), identique aux cases vides voisines. */
-.absence-cal-bar-cell {
-  border-color: transparent !important;
-  padding: 0 !important;
-  position: relative;
-}
-.absence-cal-bar {
-  position: absolute;
-  inset: 0;
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 0 6px;
-}
-.absence-cal-bar-label {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  flex: 1;
-  text-align: center;
-}
-.absence-cal-bar-edge {
-  flex-shrink: 0;
-  font-weight: 700;
-  opacity: 0.9;
-}
-.absence-cal-bar-telework {
-  background: var(--color-primary);
-}
-.absence-cal-bar-pending {
-  opacity: 0.55;
-  background-image: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.35) 0 6px, transparent 6px 12px);
-}
-
-.absence-cal-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  margin-bottom: 12px;
-}
-.absence-cal-legend-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--color-text-muted);
-}
-.absence-cal-legend-swatch {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
-}
-.absence-cal-legend-telework {
-  background: var(--color-primary);
-}
-
-/* §demande Betty du 09/09/2026 : avatar + total hebdomadaire, comme le modèle Agendrix (photo/
-   initiales à gauche du nom, colonne "Total" à droite de la semaine) — même avatar déjà utilisé
-   partout ailleurs dans l'appli (renderAvatar), même calcul que le total de service (computeDailyHours). */
-.planning-employee-cell {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-/* §correctif visuel du 14/09/2026 : sans white-space:nowrap, le nom du salarié (ex. "Julien
-   Moreau") se coupait en deux lignes dans cette colonne — le tableau du planning a déjà assez de
-   colonnes de jours pour que l'algorithme de mise en page (table-layout:auto) préfère rétrécir
-   cette colonne texte plutôt que d'élargir le tableau, alors même que .table-card/.table-scroll
-   permettent déjà de défiler horizontalement (voir le même correctif sur .table-nowrap). */
-.planning-employee-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  white-space: nowrap;
-}
-.planning-total-cell {
-  white-space: nowrap;
-}
-
-/* §demande Betty du 09/09/2026 : bandeau plein (au lieu d'un simple fond gris discret) pour chaque
-   groupe de service, comme les bandes colorées du modèle Agendrix — une seule teinte (marine) pour
-   tous les services plutôt qu'une couleur différente par service, qui contreviendrait à la palette
-   de l'appli. */
-.planning-service-header td {
-  background: var(--color-primary);
-  color: #fff;
-  font-weight: 700;
-  font-size: 13px;
-  text-align: left;
-  padding: 10px 22px;
-}
-.planning-service-header .text-muted {
-  color: rgba(255, 255, 255, 0.75);
-}
-
-/* §4 (reprise) : grilles Planning/Horaires/Télétravail — beaucoup de colonnes (jours d'un mois) et
- * potentiellement beaucoup de lignes (salariés) ; sans repère fixe, on perd de vue à qui/quel jour
- * correspond une cellule dès qu'on scrolle.
- * §correctif retour Betty du 16/09/2026 ("les jours du haut du calendrier/planning bougent quand je
- * descends la page, il doit rester fixe") : `max-height: 70vh; overflow: auto;` bornait la carte
- * pour que `position: sticky` s'y accroche — mais UNIQUEMENT quand le contenu dépasse réellement
- * ces 70vh (peu de salariés/un grand écran = jamais dépassé). Dans ce cas la carte n'est jamais
- * elle-même défilée : le sticky n'a rien à quoi s'accrocher et la carte entière (en-tête compris)
- * défile alors normalement avec le reste de la PAGE, exactement le symptôme décrit. Retiré : le
- * sticky s'accroche maintenant à la page elle-même (comme #topbar juste au-dessus, déjà sticky de
- * la même façon) — fonctionne quel que soit le nombre de salariés ou la taille de l'écran.
- * Volontairement plus AUCUN overflow ici (même `overflow-x` seul suffirait à recréer le problème :
- * la spécification CSS force alors overflow-y à 'auto' aussi dès que l'un des deux axes n'est pas
- * 'visible', ce qui rétablirait exactement le même souci). Une grille plus large que l'écran fait
- * donc défiler la PAGE entière horizontalement plutôt que la seule carte — la barre latérale,
- * `position: fixed`, reste de toute façon à sa place quel que soit le sens du défilement.
- * Cette carte a aussi la classe .table-card, qui pose SON PROPRE `overflow-x: auto` (utile pour les
- * tableaux denses ordinaires, voir plus haut) — repris ici en `visible` explicitement, sinon la
- * même spécification qui force overflow-y à 'auto' dès qu'un seul axe n'est pas 'visible' recréerait
- * le problème par ce biais, sans toucher au reste des tableaux qui utilisent .table-card ailleurs. */
-.planning-scroll-card {
-  overflow-x: visible;
-}
-/* §audit du 17/09/2026 : sur téléphone (largeur réelle, pas seulement redimensionnée), le tableau
-   Planning/Calendrier équipe est plus large que l'écran quel que soit l'effectif affiché (beaucoup
-   de colonnes jour) — avec overflow-x: visible ci-dessus, ce débordement n'était plus contenu dans
-   la carte et poussait TOUTE la page (jusqu'à 500-600px de trop, sidebar et topbar compris). Sous
-   860px, on réautorise le défilement horizontal contenu à cette carte : l'en-tête ne reste alors
-   fixe que par rapport à la carte (pas toute la page) pendant un défilement vertical, un compromis
-   largement préférable à une page entière qui déborde sur le côté. */
-@media (max-width: 860px) {
-  .planning-scroll-card {
-    overflow-x: auto;
-  }
-}
-
-.planning-scroll-card .planning-table thead th {
-  position: sticky;
-  /* Juste sous #topbar (lui-même sticky top:0 au-dessus) — jamais 0, sinon les deux se superposent. */
-  top: var(--topbar-height);
-  background: var(--color-surface);
-  z-index: 3;
-}
-
-.planning-scroll-card .planning-table th:first-child,
-.planning-scroll-card .planning-table td:first-child {
-  position: sticky;
-  left: 0;
-  background: var(--color-surface);
-  z-index: 2;
-}
-
-/* La cellule d'angle (coin haut-gauche) doit rester au-dessus des deux autres groupes de cellules sticky. */
-.planning-scroll-card .planning-table thead th:first-child {
-  z-index: 4;
-}
-
-/* Sans ça, les lignes de regroupement par service (bandeau marine) laisseraient transparaître le
- * fond de carte par défaut à travers la première colonne sticky, cassant le bandeau en deux teintes. */
-.planning-scroll-card .planning-service-header td:first-child {
-  background: var(--color-primary);
-}
-
-/* §refonte planning du 04/09/2026 : sous-groupe équipe au sein d'un service (voir
- * groupEmployeesByServiceAndEquipe, app.js) — même principe que .planning-service-header mais en
- * retrait et sans fond plein, pour rester clairement subordonné au service au-dessus. */
-.planning-equipe-header td {
-  font-weight: 600;
-  font-size: 12px;
-  text-align: left;
-  padding-top: 8px;
-  padding-left: 22px;
-  color: var(--color-text-muted, var(--color-muted));
-}
-.planning-scroll-card .planning-equipe-header td:first-child {
-  background: var(--color-surface);
-}
-.planning-scroll-card .planning-summary-row td:first-child {
-  background: var(--color-muted-soft);
-}
-
-/* ---------------------------------------------------------------------
-   Dashboard — graphiques SVG faits maison et listes pratiques
-   --------------------------------------------------------------------- */
-
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-/* ---------------------------------------------------------------------
-   Paramètres > Abonnement — offres Stripe
-   --------------------------------------------------------------------- */
-
-.abonnement-summary-card {
-  position: relative;
-  overflow: hidden;
-}
-.abonnement-summary-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-.abonnement-summary-icon {
-  flex-shrink: 0;
-  width: 52px;
-  height: 52px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 26px;
-  border-radius: var(--radius-lg);
-  background: var(--color-chip-bg);
-  color: var(--color-primary-text);
-}
-.abonnement-summary-icon svg {
-  width: 26px;
-  height: 26px;
-  display: block;
-}
-
-.abonnement-jauge {
-  margin-top: 16px;
-}
-.abonnement-jauge-label {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  font-size: 13px;
-  color: var(--color-text-muted);
-  margin-bottom: 6px;
-}
-.abonnement-jauge-label strong {
-  color: var(--color-text);
-  font-size: 14px;
-}
-.abonnement-jauge-bar {
-  height: 8px;
-  border-radius: 999px;
-  background: var(--color-muted-soft);
-  overflow: hidden;
-}
-.abonnement-jauge-fill {
-  height: 100%;
-  border-radius: 999px;
-  background: var(--color-primary);
-  transition: width 0.2s ease;
-}
-
-.offres-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-  align-items: stretch;
-}
-
-/* Compositeur à la carte (page Tarifs) — voir LANDING_ALACARTE_MODULES/computeAlacarteTotal
-   (app.js) : liste de cases à cocher à gauche, total qui se recalcule en direct dans une carte
-   collante à droite (comme le prix reste visible en scrollant la liste des modules sur un écran
-   qui en compte 12). Empile en une colonne sous 860px (voir media query). */
-.alacarte-builder {
-  display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: 24px;
-  max-width: 900px;
-  margin: 0 auto;
-  align-items: start;
-}
-.alacarte-modules {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.alacarte-module {
-  padding: 12px 14px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  transition: background-color 0.15s ease;
-}
-.alacarte-module:hover {
-  background: var(--color-muted-soft);
-}
-.alacarte-module-main {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-}
-.alacarte-module-checkbox {
-  width: 17px;
-  height: 17px;
-  accent-color: var(--landing-gold-500);
-  flex-shrink: 0;
-}
-.alacarte-module-name {
-  flex: 1;
-  font-weight: 600;
-  font-size: 14px;
-}
-.alacarte-module-price {
-  font-size: 12.5px;
-  color: var(--color-text-muted);
-  white-space: nowrap;
-}
-/* Module "déclarant" (Notes de frais, comme Lucca) : effectif propre, distinct du curseur de
-   salariés global — sous-ligne dépliée sous la case à cocher plutôt qu'un second curseur en haut
-   de page, pour rester à l'endroit où ce chiffre s'applique concrètement. */
-.alacarte-module-unit-count {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 10px 0 0 29px;
-  font-size: 12.5px;
-  color: var(--color-text-muted);
-}
-.alacarte-module-unit-count input {
-  width: 70px;
-  padding: 4px 8px;
-  font-size: 13px;
-}
-/* Pas de trait/liseré (retour explicite du 21/08/2026) — un voile or plutôt qu'un contour, pour
-   distinguer cette carte "prix final" du reste sans y ajouter une bordure. */
-.alacarte-total-card {
-  position: sticky;
-  top: 90px;
-  background: linear-gradient(135deg, var(--color-surface), var(--color-gold-soft) 320%);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: 22px 20px;
-  text-align: center;
-  box-shadow: var(--shadow-md);
-}
-.alacarte-total-label {
-  font-size: 12.5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--color-text-muted);
-}
-.alacarte-discount-note {
-  margin: 4px 0 0;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--landing-gold-500);
-  min-height: 1em;
-}
-.alacarte-total-card strong {
-  display: block;
-  font-size: 30px;
-  margin: 8px 0;
-}
-@media (max-width: 860px) {
-  .alacarte-builder {
-    grid-template-columns: 1fr;
-  }
-  .alacarte-total-card {
-    position: static;
-  }
-}
-
-/* Comparaison volontairement générique ("la plupart des SIRH du marché"), pas de concurrent nommé
-   — trois avantages réels de Nexus (tout inclus, support inclus, sans engagement) plutôt qu'une
-   liste exhaustive façon Bizneo (7 concurrents) qu'il faudrait maintenir à jour indéfiniment. */
 .landing-compare-table-wrap {
   max-width: 720px;
   margin: 40px auto 0;
@@ -3605,254 +1038,6 @@ textarea.input {
   }
 }
 
-.offre-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 24px 18px;
-  text-align: center;
-  background: var(--color-surface);
-  box-shadow: var(--shadow-sm);
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
-}
-.offre-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.offre-card-active {
-  border-color: var(--color-primary);
-  background: var(--color-primary-soft);
-}
-.offre-card-recommandee {
-  border-color: var(--color-primary);
-  box-shadow: var(--shadow-md);
-}
-
-.offre-card-ribbon {
-  position: absolute;
-  top: -1px;
-  right: 16px;
-  background: var(--color-primary);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  padding: 4px 10px;
-  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
-}
-
-/* Badge dynamique du curseur "Combien de salariés ?" (landing uniquement — voir
-   bindLandingEmployeeSlider) : présent dans le DOM sur les deux écrans qui réutilisent
-   renderOffreCard, mais masqué par défaut, donc totalement inerte dans l'appli connectée. */
-.offre-card-match-badge {
-  display: none;
-  position: absolute;
-  top: -1px;
-  left: 16px;
-  background: var(--landing-gold-500);
-  color: #221704;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  padding: 4px 10px;
-  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
-}
-.landing-page .offre-card-match {
-  border-color: var(--landing-gold-500);
-  box-shadow:
-    0 0 0 2px var(--landing-gold-500),
-    var(--shadow-md);
-}
-.landing-page .offre-card-match .offre-card-match-badge {
-  display: block;
-}
-.landing-page .offre-card-match .offre-card-icon {
-  background: var(--landing-gold-soft);
-  color: var(--landing-navy-900);
-}
-
-.offre-card-icon {
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-sm);
-  background: var(--color-chip-bg);
-  color: var(--color-primary-text);
-  margin-bottom: 10px;
-}
-.offre-card-icon svg {
-  width: 22px;
-  height: 22px;
-  display: block;
-}
-
-.offre-card h3 {
-  font-size: 16px;
-  margin-bottom: 4px;
-}
-
-.offre-card-accroche {
-  font-size: 12px;
-  margin-bottom: 14px;
-  min-height: 32px;
-}
-
-.offre-prix {
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 2px;
-}
-.offre-prix .text-muted {
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.offre-card-mensualise {
-  font-size: 12px;
-  margin-bottom: 14px;
-}
-
-.offre-card-condition {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
-  background: var(--color-muted-soft);
-  margin-top: auto;
-}
-
-.chart-card {
-  display: flex;
-  flex-direction: column;
-}
-.chart-subtitle {
-  margin-top: -8px;
-  margin-bottom: 10px;
-}
-
-.chart-svg {
-  width: 100%;
-  height: auto;
-  display: block;
-  overflow: visible;
-}
-.chart-donut {
-  max-width: 200px;
-  margin: 0 auto;
-}
-
-.chart-label,
-.chart-value,
-.chart-axis-label {
-  font-size: 13px;
-  fill: var(--color-text-muted);
-  font-family: var(--font-sans);
-}
-
-.chart-value {
-  fill: var(--color-text);
-  font-weight: 600;
-}
-
-.chart-donut-total {
-  font-size: 24px;
-  font-weight: 500;
-  fill: var(--color-text);
-  font-family: var(--font-serif);
-}
-
-.chart-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 18px;
-  justify-content: center;
-  margin-top: 14px;
-  font-size: 11px;
-  color: var(--color-text-muted);
-  /* Petites capitales (§refonte "traits fins" du 01/09/2026) : approximation via majuscules +
-     espacement des lettres — plus fiable d'une police à l'autre que font-variant: small-caps, qui
-     dépend du support de petites capitales réelles dans la police système du visiteur. */
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  font-weight: 600;
-}
-
-.chart-legend-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.chart-legend-swatch {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
-}
-
-.mini-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.mini-list-item {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--color-border);
-  font-size: 14px;
-}
-
-.mini-list-item:last-child {
-  border-bottom: none;
-}
-
-.mini-list-group-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-text-muted);
-  margin: 10px 0 2px;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-}
-.mini-list-group-label:first-child {
-  margin-top: 0;
-}
-.mini-list-group-sub {
-  font-weight: 500;
-  text-transform: none;
-  letter-spacing: normal;
-  padding-left: 12px;
-  font-size: 12.5px;
-}
-
-/* §refonte "chargement unifié" du 01/09/2026 : remplace les "Chargement..." en texte brut par un
-   effet de balayage, cohérent partout (une seule animation, voir renderSkeletonLines, app.js). */
-.skeleton-lines {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.skeleton-line {
-  height: 14px;
-  border-radius: var(--radius-sm);
-  background: linear-gradient(90deg, var(--color-muted-soft) 25%, var(--color-border-soft) 37%, var(--color-muted-soft) 63%);
-  background-size: 400% 100%;
-  animation: skeleton-shimmer 1.4s ease infinite;
-}
 @keyframes skeleton-shimmer {
   0% {
     background-position: 100% 50%;
@@ -3861,88 +1046,13 @@ textarea.input {
     background-position: 0% 50%;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .skeleton-line {
-    animation: none;
-    background-position: 50% 50%;
-  }
-}
 
-/* §refonte "avatars discrets" du 01/09/2026 : remplace la liste "Présence aujourd'hui" (noms +
-   badge texte) par des avatars ronds avec un anneau d'état — même code couleur que les badges
-   (success/warning/info/muted, voir getTodayPresenceStatus), jamais une nouvelle palette. */
-.presence-avatars {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-.presence-avatar-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  width: 60px;
-}
-.avatar-ring {
-  display: inline-flex;
-  padding: 2px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-}
-.avatar-ring-success {
-  border-color: var(--color-success);
-}
-.avatar-ring-warning {
-  border-color: var(--color-warning);
-}
-.avatar-ring-info {
-  border-color: var(--color-info);
-}
-.avatar-ring-muted {
-  border-color: var(--color-border);
-}
-.presence-avatar-name {
-  font-size: 11px;
-  color: var(--color-text-muted);
-  text-align: center;
-  max-width: 60px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Checklists d'intégration/de départ (fiche salarié) */
 .checklist {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.checklist-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 4px;
-  border-bottom: 1px solid var(--color-border);
-  font-size: 14px;
-  cursor: pointer;
-}
-.checklist-item:last-child {
-  border-bottom: none;
-}
-.checklist-item input[type='checkbox'] {
-  flex-shrink: 0;
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-}
-
-.checklist-label-done {
-  color: var(--color-text-muted);
-  text-decoration: line-through;
-}
-
-/* Sprint SIRH premium §7 : centre d'action du tableau de bord */
 .action-center-list {
   display: flex;
   flex-direction: column;
@@ -3989,558 +1099,10 @@ textarea.input {
   color: var(--color-text-muted);
 }
 
-/* Sprint SIRH premium §11 : timeline "Historique" d'une demande (congé/télétravail/note de frais) */
-.timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.timeline-item {
-  position: relative;
-  padding: 8px 0 8px 20px;
-  border-left: 2px solid var(--color-border);
-}
-
-.timeline-item::before {
-  content: '';
-  position: absolute;
-  left: -5px;
-  top: 13px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--color-primary);
-}
-
-.timeline-item:last-child {
-  border-left-color: transparent;
-}
-.timeline-date {
-  font-size: 12px;
-}
-.timeline-label {
-  font-size: 14px;
-  margin-top: 2px;
-}
-
-/* ---------------------------------------------------------------------
-   Tickets support (Phase 2 sprint amélioration RH, §16-17) — fil de discussion salarié ↔ BERTOLIS
-   --------------------------------------------------------------------- */
-
-.ticket-row {
-  cursor: pointer;
-}
-.ticket-row:hover {
-  background: var(--color-muted-soft);
-}
-
-/* ---------------------------------------------------------------------
-   Boîte à idées — "Vitrine Idées" (roadmap différenciation, 31/08/2026) : board par statut plutôt
-   qu'une liste plate, pour un suivi visible de la proposition à la livraison.
-   --------------------------------------------------------------------- */
-
-.idees-board {
-  display: flex;
-  gap: 14px;
-  overflow-x: auto;
-  padding-bottom: 6px;
-}
-
-.idees-column {
-  flex: 1 1 220px;
-  min-width: 220px;
-  background: var(--color-muted-soft);
-  border-radius: var(--radius-md);
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.idees-column-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-weight: 600;
-  font-size: 13px;
-}
-
-.idee-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: 10px 12px;
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-}
-
-.idee-card:hover {
-  border-color: var(--color-primary);
-}
-
-.idee-card-title {
-  font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 8px;
-}
-
-.idee-card-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 12px;
-}
-
-@media (max-width: 860px) {
-  .idees-column {
-    min-width: 200px;
-  }
-}
-
-/* ---------------------------------------------------------------------
-   Boussole (roadmap différenciation #2, 01/09/2026) — même convention de bulles qu'un fil de
-   discussion classique (voir .ticket-comment un peu plus bas) : soi-même à droite, la réponse à gauche.
-   --------------------------------------------------------------------- */
-
-.boussole-messages {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-height: 420px;
-  overflow-y: auto;
-  padding: 4px 2px;
-  margin-bottom: 12px;
-}
-
-.boussole-message {
-  display: flex;
-}
-.boussole-message-user {
-  justify-content: flex-end;
-}
-.boussole-message-assistant {
-  justify-content: flex-start;
-}
-
-.boussole-message-bubble {
-  max-width: 80%;
-  padding: 10px 14px;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  white-space: pre-wrap;
-}
-
-.boussole-message-user .boussole-message-bubble {
-  background: var(--color-primary-soft);
-}
-.boussole-message-assistant .boussole-message-bubble {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-}
-
-.boussole-form {
-  display: flex;
-  gap: 8px;
-}
-.boussole-form .input {
-  flex: 1;
-}
-
-.ticket-thread {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-.ticket-comment {
-  max-width: 80%;
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-}
-
-/* Le salarié à gauche, BERTOLIS à droite — même convention visuelle qu'une messagerie classique,
-   pour distinguer les deux parties du fil sans avoir à relire "auteur" à chaque ligne. */
-.ticket-comment-salarie {
-  align-self: flex-start;
-}
-.ticket-comment-bertolis {
-  align-self: flex-end;
-  background: var(--color-primary-soft);
-}
-
-.ticket-comment-meta {
-  font-size: 12px;
-  color: var(--color-text-muted);
-  margin-bottom: 4px;
-}
-.ticket-comment-body {
-  font-size: 14px;
-  white-space: pre-wrap;
-}
-
-.ticket-comment-form {
-  display: flex;
-  gap: 8px;
-  align-items: flex-start;
-}
-.ticket-comment-form textarea {
-  flex: 1;
-  resize: vertical;
-}
-
-/* ---------------------------------------------------------------------
-   Organigramme — arbre hiérarchique en CSS pur (lignes de connexion via ::before/::after)
-   --------------------------------------------------------------------- */
-
-.org-chart-card {
-  overflow-x: auto;
-  padding: 32px 24px;
-}
-
-.org-tree,
-.org-tree ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-}
-
-.org-tree {
-  justify-content: center;
-  width: max-content;
-  min-width: 100%;
-}
-
-.org-tree ul {
-  padding-top: 32px;
-  position: relative;
-}
-
-.org-tree li {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  padding: 0 14px;
-}
-
-/* Trait vertical de chaque enfant remontant vers la ligne horizontale de la fratrie */
-.org-tree ul li::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 50%;
-  height: 32px;
-  border-left: 2px solid var(--color-border);
-}
-
-/* Trait horizontal reliant les enfants entre eux (absent s'il n'y a qu'un seul enfant) */
-.org-tree ul li:not(:only-child)::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  height: 0;
-  border-top: 2px solid var(--color-border);
-}
-
-.org-tree ul li:not(:only-child):first-child::after {
-  left: 50%;
-  right: 0;
-}
-.org-tree ul li:not(:only-child):last-child::after {
-  left: 0;
-  right: 50%;
-}
-.org-tree ul li:not(:only-child):not(:first-child):not(:last-child)::after {
-  left: 0;
-  right: 100%;
-  width: 100%;
-}
-.org-tree ul li:only-child::before {
-  display: none;
-}
-
-.org-node {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: 12px 16px;
-  min-width: 150px;
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  z-index: 1;
-}
-
-.org-node:hover {
-  border-color: var(--color-primary);
-  box-shadow: var(--shadow-md);
-}
-.org-node .avatar {
-  width: 40px;
-  height: 40px;
-}
-.org-node-name {
-  font-weight: 600;
-  font-size: 13px;
-  text-align: center;
-  margin-top: 2px;
-}
-.org-node-poste {
-  font-size: 11px;
-  color: var(--color-text-muted);
-  text-align: center;
-}
-.org-node-poste-manquant {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  color: var(--color-warning);
-  font-weight: 600;
-}
-
-/* §12 : replier/déplier les branches — petit bouton en coin, ne doit pas interférer avec le clic
-   sur le nœud (qui ouvre la fiche du salarié) : voir evt.stopPropagation() dans bindOrganigrammeEvents. */
-.org-node-toggle {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 20px;
-  height: 20px;
-  padding: 0;
-  border: none;
-  border-radius: var(--radius-sm);
-  background: var(--color-muted-soft);
-  color: var(--color-text-muted);
-  font-size: 10px;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-.org-node-toggle:hover {
-  background: var(--color-border);
-}
-
-.org-node-service {
-  font-size: 10px;
-  color: var(--color-primary);
-  font-weight: 600;
-  text-align: center;
-  letter-spacing: 0.02em;
-}
-
-/* §retour Betty du 23/09/2026 ("l'organigramme ne montre ni les services ni les équipes") : cadre
-   autour d'une fratrie qui partage le même service (voir renderOrgSiblings, app.js) — jamais une
-   couleur différente par service (règle de palette bleu marine + or déjà actée sur les autres
-   écrans, voir KPI/graphiques), et un cadre reste net à l'impression en noir et blanc contrairement
-   à une teinte qui peut disparaître au tri. */
-/* §correctif : .org-tree li a une spécificité plus élevée (classe + type) que .org-service-frame
-   seul (classe) et gagnait sur son padding (0 14px, aucune place réservée pour l'étiquette en haut,
-   qui se retrouvait alors superposée aux cartes) — .org-tree li.org-service-frame égalise. */
-.org-tree li.org-service-frame {
-  border: 1.5px dashed var(--color-primary);
-  border-radius: var(--radius-md);
-  padding: 28px 14px 10px;
-  margin-top: 10px;
-  background: color-mix(in srgb, var(--color-primary) 4%, transparent);
-}
-.org-service-frame-label {
-  position: absolute;
-  top: 6px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--color-primary);
-  background: var(--color-surface);
-  padding: 1px 8px;
-  border: 1px solid var(--color-primary);
-  border-radius: var(--radius-sm);
-  white-space: nowrap;
-}
-.org-service-frame > ul {
-  padding-top: 10px;
-}
-/* À l'intérieur d'un cadre, les cartes ne sont pas les enfants d'UN manager précis (le cadre les
-   regroupe par service, pas par hiérarchie) — jamais de trait de connexion individuel vers un point
-   invisible en haut du cadre, seul le trait du cadre lui-même (vers son propre manager) reste. */
-.org-service-frame > ul > li::before,
-.org-service-frame > ul > li:not(:only-child)::after {
-  display: none;
-}
-
-@media print {
-  .org-service-frame {
-    background: none;
-    border-style: solid;
-  }
-}
-
-/* ---------------------------------------------------------------------
-   Notifications (topbar)
-   --------------------------------------------------------------------- */
-
-.notif-wrapper {
-  position: relative;
-}
-
-.notif-bell,
-#btn-help {
-  position: relative;
-  font-size: 18px;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-}
-
-.notif-bell:hover,
-#btn-help:hover {
-  background: var(--color-muted-soft);
-}
-
-.notif-badge {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  background: var(--color-danger);
-  color: white;
-  font-size: 10px;
-  font-weight: 700;
-  min-width: 16px;
-  height: 16px;
-  border-radius: 999px;
-  align-items: center;
-  justify-content: center;
-  padding: 0 3px;
-  line-height: 1;
-}
-
-.notif-panel {
-  position: absolute;
-  top: calc(100% + 10px);
-  right: 0;
-  width: 360px;
-  max-height: 420px;
-  overflow-y: auto;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  z-index: 40;
-  display: none;
-}
-
-/* §refonte "micro-interaction unique" du 01/09/2026 : réutilise EXACTEMENT le même fondu que les
-   modales (@keyframes modal-in) — un seul effet net, cohérent sur toute l'appli, plutôt qu'une
-   animation différente par type de popover (notification/menu utilisateur/filtres). */
-.notif-panel.open {
-  display: block;
-  animation: modal-in 0.15s ease;
-}
-
-.notif-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px 0;
-}
-
-.notif-tabs {
-  border-bottom: none;
-  margin-bottom: 0;
-}
-.notif-tabs .tab {
-  padding: 8px 10px;
-  font-size: 13px;
-}
-
-.notif-list {
-  padding: 4px 0;
-}
-
-/* §amélioration du 09/09/2026 : en-tête de groupe par jour relatif (Aujourd'hui/Hier/...), voir
-   getNotifDayGroupLabel (app.js) — repère de balayage rapide, pas un élément cliquable. */
-.notif-day-group {
-  padding: 8px 14px 4px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--color-text-muted);
-}
-
-.notif-item {
-  display: flex;
-  gap: 10px;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--color-border);
-  align-items: flex-start;
-}
-
-.notif-item:last-child {
-  border-bottom: none;
-}
-.notif-item.unread {
-  background: var(--color-primary-soft);
-}
-.notif-icon {
-  font-size: 16px;
-  margin-top: 2px;
-  flex-shrink: 0;
-}
-.notif-icon svg {
-  width: 16px;
-  height: 16px;
-  display: block;
-}
-.notif-body {
-  flex: 1;
-  cursor: pointer;
-}
-.notif-title {
-  font-weight: 600;
-  font-size: 13px;
-}
-.notif-message {
-  font-size: 12px;
-  color: var(--color-text-muted);
-  margin-top: 2px;
-}
-.notif-date {
-  font-size: 11px;
-  color: var(--color-text-muted);
-  margin-top: 4px;
-}
-.notif-actions .btn-icon {
-  font-size: 14px;
-}
-
-/* ---------------------------------------------------------------------
-   Menu utilisateur (topbar) — rôle, mot de passe, déconnexion
-   --------------------------------------------------------------------- */
-
 .user-menu-wrapper {
   position: relative;
 }
 
-/* §retour Betty du 10/09/2026 ("c'est pas bien cadré [...] modifie ça") : #btn-user-menu est un
-   <button> natif — sans ce reset, le padding/bordure par défaut du navigateur (jamais un problème
-   tant que le contenu n'était que des initiales, centrées par le display:flex d'.avatar-initials)
-   réduit la place réellement disponible pour la photo une fois affichée en <img> (voir
-   renderUserMenuButton, app.js), qui garde elle sa taille pleine de 36px — l'image déborde alors du
-   cercle du bouton, visuellement décalée plutôt que parfaitement centrée. Ce reset s'applique dans
-   les DEUX cas (initiales ou photo), sans avoir besoin d'y penser côté JS. */
 #btn-user-menu {
   padding: 0;
   border: none;
@@ -4570,65 +1132,6 @@ textarea.input {
   animation: modal-in 0.15s ease;
 }
 
-/* Sélecteur de poste(s) du formulaire public de candidature (§demande 18/08/2026) — même patron que
-   .notif-panel/.user-menu-panel : bouton statique + panneau qui se déplie juste dessous. */
-.poste-dropdown {
-  position: relative;
-}
-
-.poste-dropdown-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  width: 100%;
-  cursor: pointer;
-  text-align: left;
-  color: var(--color-text);
-}
-
-.poste-dropdown-arrow {
-  color: var(--color-text-muted);
-  flex-shrink: 0;
-}
-
-.poste-dropdown-panel {
-  display: none;
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  right: 0;
-  max-height: 240px;
-  overflow-y: auto;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  z-index: 20;
-  padding: 6px;
-}
-
-.poste-dropdown-panel.open {
-  display: block;
-}
-
-.poste-dropdown-option {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: var(--radius-sm);
-  font-weight: 400;
-  cursor: pointer;
-}
-
-.poste-dropdown-option:hover {
-  background: var(--color-muted-soft);
-}
-.poste-dropdown-option span:nth-child(2) {
-  flex: 1;
-}
-
 .user-menu-header {
   padding: 14px;
   border-bottom: 1px solid var(--color-border);
@@ -4642,7 +1145,6 @@ textarea.input {
   font-size: 14px;
 }
 
-/* §refonte "mode sombre" du 01/09/2026 : réglage manuel Système/Clair/Sombre, menu utilisateur. */
 .theme-toggle-group {
   display: flex;
   gap: 4px;
@@ -4681,128 +1183,12 @@ textarea.input {
   background: var(--color-muted-soft);
 }
 
-/* Bascule multi-entreprise (menu utilisateur, demande du 21/08/2026) — même patron visuel que
-   .user-menu-item pour les lignes de compte, avec un mini avatar et deux lignes de texte. */
-.user-menu-section-label {
-  padding: 10px 14px 2px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--color-text-muted);
-}
-
 .user-menu-divider {
   border-top: 1px solid var(--color-border);
   margin: 4px 0;
 }
 
-.user-menu-account-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  text-align: left;
-  background: none;
-  border: none;
-  padding: 8px 14px;
-  cursor: pointer;
-}
-
-.user-menu-account-row:hover {
-  background: var(--color-muted-soft);
-}
-.user-menu-account-row:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-
-/* §correctif audit du 23/08/2026 (2.8) : bouton "retirer ce compte" — voir renderUserMenuPanel. */
-.user-menu-account-wrap {
-  display: flex;
-  align-items: center;
-}
-.user-menu-account-wrap .user-menu-account-row {
-  flex: 1;
-  min-width: 0;
-}
-.user-menu-account-remove {
-  flex-shrink: 0;
-  margin-right: 8px;
-  width: 24px;
-  height: 24px;
-}
-
-.user-menu-account-avatar {
-  width: 26px;
-  height: 26px;
-  font-size: 11px;
-}
-
-.user-menu-account-info {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  gap: 1px;
-}
-
-.user-menu-account-name {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--color-text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.user-menu-account-detail {
-  font-size: 11.5px;
-  color: var(--color-text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* §sprint refonte UX : patron générique de popover, dérivé de .notif-panel/.user-menu-panel — pour
-   ne plus avoir un système de "petit panneau flottant" différent à chaque nouvel usage (filtres
-   calendrier, ajout rapide depuis une case). */
-.dropdown-wrapper {
-  position: relative;
-  display: inline-block;
-}
-
-.dropdown-panel {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  width: 280px;
-  max-height: 360px;
-  overflow-y: auto;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  z-index: 40;
-  display: none;
-}
-
-.dropdown-panel.open {
-  display: block;
-  animation: modal-in 0.15s ease;
-}
-.dropdown-panel.align-left {
-  right: auto;
-  left: 0;
-}
-
-/* ---------------------------------------------------------------------
-   Écran de connexion
-   --------------------------------------------------------------------- */
-
-/* #candidature-root (page publique du QR "Embauche") partage volontairement ce même habillage
-   centré — même famille d'écran ("formulaire seul, sans chrome applicatif") que la connexion. */
-#login-root,
-#candidature-root {
+#login-root {
   min-height: 100vh;
   align-items: center;
   justify-content: center;
@@ -4853,68 +1239,11 @@ textarea.input {
   border-radius: var(--radius-sm);
 }
 
-.login-oauth-divider {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 16px 0;
-  color: var(--color-text-muted);
-  font-size: 12px;
-}
-.login-oauth-divider::before,
-.login-oauth-divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--color-border);
-}
-.login-oauth-buttons {
-  display: flex;
-  flex-direction: row;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-.login-oauth-btn {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 9px 10px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-text);
-  font-size: 13.5px;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    background-color 0.15s ease,
-    box-shadow 0.15s ease;
-}
-.login-oauth-btn:hover {
-  background: var(--color-muted-soft);
-}
-.login-oauth-btn svg {
-  flex-shrink: 0;
-}
-
-/* ---------------------------------------------------------------------
-   Page d'accueil publique (landing) — bleu marine/or repris du logo,
-   volontairement fixes (pas de variante sombre/claire) : c'est l'identité
-   visuelle de la marque, pas un écran applicatif.
-   --------------------------------------------------------------------- */
-
 #landing-root {
   min-height: 100vh;
   background: var(--color-bg);
 }
 
-/* §refonte typographique du 01/09/2026 : Fraunces (titres/chiffres clés, --font-serif) auto-hébergée
-   pour la même raison que Manrope juste en dessous — un premier essai avait chargé cette police
-   depuis Google Fonts (CDN externe), incohérent avec le choix déjà fait ici de ne jamais envoyer
-   l'IP des visiteurs à Google. Un seul poids (500, le seul réellement utilisé) plutôt que toute la
-   police variable. */
 @font-face {
   font-family: 'Fraunces';
   font-style: normal;
@@ -4923,9 +1252,6 @@ textarea.input {
   src: url('fonts/fraunces-500.woff2') format('woff2');
 }
 
-/* Police de marque de la landing, auto-hébergée (fichiers dans /fonts) plutôt que chargée depuis
-   Google Fonts — évite d'envoyer l'IP des visiteurs à Google à chaque visite, cohérent avec les
-   mentions RGPD de la page. N'affecte que .landing-page, pas l'appli connectée. */
 @font-face {
   font-family: 'Manrope';
   font-style: normal;
@@ -5004,10 +1330,6 @@ textarea.input {
   gap: 22px;
 }
 
-/* §retour Betty du 17/09/2026 : "tu vas enlever le panneau déroulant et tu vas juste les alignés"
-   puis "sur téléphone laisse le panneau déroulant" — alignés en permanence à partir d'une largeur
-   d'écran normale (flex-wrap laisse les liens passer à la ligne plutôt que déborder), mais sous
-   480px (voir plus bas) redevient un panneau cachable derrière un déclencheur ☰, comme avant. */
 .landing-nav-menu {
   position: relative;
 }
@@ -5076,7 +1398,7 @@ textarea.input {
   color: #fff;
   padding: 64px 32px 72px;
 }
-/* Lueur douce purement décorative — profondeur "premium" façon SaaS haut de gamme, sans image. */
+
 .landing-hero::before {
   content: '';
   position: absolute;
@@ -5132,14 +1454,6 @@ textarea.input {
   justify-content: center;
 }
 
-/* §refonte "capture d'écran réelle" du 01/09/2026 : remplace le mockup HTML (chiffres/noms inventés)
-   par une vraie capture du produit — "l'interface réelle dès le premier scroll", pas une illustration
-   générique. Même traitement (cadre arrondi, ombre portée) que l'ancien .landing-mock-card. */
-/* §correctif du 02/09/2026 : height: auto manquant — les attributs HTML width="1280" height="760"
-   (ajoutés pour réserver l'espace et éviter un saut de mise en page pendant le chargement) devenaient
-   la hauteur EFFECTIVEMENT appliquée dès que la largeur passait en pourcentage, écrasant le ratio
-   réel de l'image (1280x760, ~1.68:1) en un rendu étiré verticalement (mesuré : 546x760 affiché au
-   lieu de 546x324, hauteur bloquée à la valeur brute de l'attribut). */
 .landing-hero-screenshot {
   width: 100%;
   height: auto;
@@ -5148,8 +1462,7 @@ textarea.input {
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
   display: block;
 }
-/* §retour Betty du 17/09/2026 : voir openScreenshotLightbox (app.js) — juste un indice visuel que
-   l'image s'agrandit au clic, jamais un style différent par module. */
+
 .landing-hero-screenshot-zoomable {
   cursor: zoom-in;
 }
@@ -5176,44 +1489,6 @@ textarea.input {
   background: var(--color-surface);
   box-shadow: var(--shadow-md);
 }
-.landing-mock-card {
-  width: 100%;
-  max-width: 420px;
-  background: #fff;
-  color: var(--color-text);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
-  padding: 20px;
-}
-.landing-mock-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-.landing-mock-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--color-border);
-}
-.landing-mock-title {
-  margin-left: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-text-muted);
-}
-
-.landing-mock-carousel {
-  position: relative;
-}
-.landing-mock-slide {
-  display: none;
-}
-.landing-mock-slide.active {
-  display: block;
-  animation: landing-mock-fade 0.4s ease;
-}
 @keyframes landing-mock-fade {
   from {
     opacity: 0;
@@ -5223,71 +1498,6 @@ textarea.input {
     opacity: 1;
     transform: translateY(0);
   }
-}
-.landing-mock-dots {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 16px;
-}
-.landing-carousel-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  border: none;
-  padding: 0;
-  background: rgba(255, 255, 255, 0.3);
-  cursor: pointer;
-  transition:
-    background-color 0.15s ease,
-    transform 0.15s ease;
-}
-.landing-carousel-dot:hover {
-  background: rgba(255, 255, 255, 0.5);
-}
-.landing-carousel-dot.active {
-  background: var(--landing-gold-500);
-  transform: scale(1.2);
-}
-@media (prefers-reduced-motion: reduce) {
-  .landing-mock-slide.active {
-    animation: none;
-  }
-}
-.landing-mock-kpis {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 14px;
-}
-.landing-mock-kpi {
-  background: var(--color-muted-soft);
-  border-radius: var(--radius-sm);
-  padding: 10px;
-  text-align: center;
-}
-.landing-mock-kpi strong {
-  display: block;
-  font-size: 18px;
-  font-family: var(--font-serif);
-  font-weight: 500;
-}
-.landing-mock-kpi span {
-  font-size: 11px;
-  color: var(--color-text-muted);
-}
-.landing-mock-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 10px;
-  border-radius: var(--radius-sm);
-  background: var(--color-muted-soft);
-  margin-bottom: 8px;
-  font-size: 13px;
-}
-.landing-mock-row .badge {
-  margin-left: auto;
 }
 
 .landing-section {
@@ -5314,8 +1524,7 @@ textarea.input {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 16px;
 }
-/* §retour Betty du 17/09/2026 ("dans les fonctionnalités ajoute de la couleur") : liseré et icône
-   dorés, jamais une couleur différente par carte (§règle de palette bleu marine + or). */
+
 .landing-feature-card {
   text-align: left;
   cursor: pointer;
@@ -5340,15 +1549,6 @@ textarea.input {
   color: var(--color-primary);
 }
 
-/* Page de fonctionnalité (#fonctionnalite-N) : fond clair volontairement DIFFÉRENT du dégradé marine
-   de la hero d'accueil (.landing-hero) — sans ce contraste, cliquer sur une carte "En savoir plus"
-   donnait l'impression de rester sur la même page (même bandeau bleu marine partout). Réutilise
-   .landing-hero-inner/.landing-hero-text/.landing-hero-mock pour la mise en page (texte à gauche,
-   maquette à droite), mais définit son propre fond/couleurs plutôt que d'étendre .landing-hero. */
-/* §retour Betty du 17/09/2026 : "je parlais quand on clique sur une fonctionnalité la page" —
-   halo doré derrière le badge/titre (radial-gradient superposé au fond existant, pas remplacé) pour
-   que la page d'une fonctionnalité soit plus colorée dès l'entrée, sans devenir une couleur par
-   module (toujours le même or, §règle de palette). */
 .feature-page-hero {
   position: relative;
   overflow: hidden;
@@ -5387,10 +1587,6 @@ textarea.input {
 .feature-page-icon-badge svg {
   width: 22px;
   height: 22px;
-}
-.feature-page-list {
-  max-width: 900px;
-  margin: 0 auto;
 }
 
 .feature-audience-grid {
@@ -5445,30 +1641,6 @@ textarea.input {
   margin: 0;
   font-size: 13px;
 }
-
-.feature-detail-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 14px 24px;
-}
-.feature-detail-list li {
-  font-size: 13.5px;
-  color: var(--color-text);
-  line-height: 1.5;
-  padding-left: 22px;
-  position: relative;
-}
-.feature-detail-list li::before {
-  content: '✓';
-  position: absolute;
-  left: 0;
-  top: 0;
-  color: var(--landing-gold-500);
-  font-weight: 700;
-}
 .landing-feature-icon {
   width: 44px;
   height: 44px;
@@ -5494,9 +1666,6 @@ textarea.input {
   color: var(--color-text-muted);
 }
 
-/* Bandeau de chiffres juste sous la hero — des faits vérifiables sur le produit (nombre de modules,
-   prix unique, zéro ressaisie), pas des statistiques d'usage inventées : Nexus est un nouveau produit
-   sans historique client permettant d'afficher honnêtement un "70% de temps gagné" à la PayFit. */
 .landing-stats-band {
   max-width: 1140px;
   margin: 0 auto;
@@ -5506,14 +1675,7 @@ textarea.input {
   gap: 24px;
   border-bottom: 1px solid var(--color-border);
 }
-/* Dégradé de texte (§passe couleur du 21/08/2026) — réservé aux GROS chiffres mis en avant (chiffres
-   clés, prix total du simulateur). Utilise --color-primary/--color-primary-hover (PAS les jetons
-   --landing-navy-* figés) : ces sections de la landing, hors bandeau hero, suivent bien le thème
-   clair/sombre du visiteur via --color-bg (contrairement au hero, toujours sur fond marine fixe) —
-   un dégradé en navy figé y serait resté d'un navy bien trop sombre, quasi illisible, sur le fond
-   presque noir du mode sombre. `color` sert de repli pour les navigateurs sans support de
-   background-clip:text (ignorent alors le dégradé, gardent juste ce ton plein, déjà correct dans
-   les deux thèmes puisque --color-primary l'est aussi). */
+
 .landing-gradient-number {
   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
   -webkit-background-clip: text;
@@ -5544,102 +1706,6 @@ textarea.input {
     padding: 28px 20px;
     gap: 20px;
   }
-}
-
-.landing-employee-slider {
-  max-width: 420px;
-  margin: 0 auto 28px;
-  text-align: center;
-}
-.landing-employee-slider label {
-  display: block;
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--color-text-muted);
-  margin-bottom: 10px;
-}
-.landing-employee-slider-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-.landing-employee-slider-hint {
-  margin: 10px 0 0;
-  font-size: 12.5px;
-}
-.landing-employee-slider-row input[type='range'] {
-  flex: 1;
-  height: 6px;
-  border-radius: 3px;
-  background: var(--color-border);
-  accent-color: var(--landing-gold-500);
-  cursor: pointer;
-}
-.landing-employee-count-value {
-  flex-shrink: 0;
-  min-width: 84px;
-  font-weight: 700;
-  font-size: 14px;
-  color: var(--color-primary);
-}
-
-.landing-simulator-card {
-  max-width: 640px;
-  margin: 0 auto;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  padding: 28px 26px;
-}
-.landing-simulator-inputs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 22px;
-}
-.landing-simulator-field label {
-  display: block;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--color-text-muted);
-  margin-bottom: 6px;
-}
-.landing-simulator-field input {
-  width: 100%;
-}
-.landing-simulator-results {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  text-align: center;
-  padding: 18px 0;
-  border-top: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
-}
-.landing-simulator-result {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.landing-simulator-result strong {
-  font-size: 20px;
-}
-.landing-simulator-result span {
-  font-size: 12px;
-  color: var(--color-text-muted);
-}
-.landing-simulator-note {
-  font-size: 12px;
-  color: var(--color-text-muted);
-  margin: 16px 0 0;
-  text-align: center;
-}
-
-.landing-pricing-toggle {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 28px;
 }
 
 .landing-section-alt {
@@ -5760,16 +1826,6 @@ textarea.input {
   text-align: left;
   width: 100%;
 }
-.landing-step-inline-icon {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-.landing-step-inline-icon svg {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-}
 .landing-steps li {
   display: flex;
   align-items: flex-start;
@@ -5778,10 +1834,7 @@ textarea.input {
   font-size: 13.5px;
   color: var(--color-text);
 }
-/* Tout le texte d'une étape (y compris le <strong> imbriqué) doit rester UN SEUL bloc flex — sans
-   ce wrapper, chaque <strong> devient lui-même un flex item séparé (les éléments inline ne sont
-   pas fusionnés dans la boîte anonyme comme le texte brut), ce qui fragmentait la phrase avec des
-   espaces disproportionnés et un retour à la ligne incohérent entre les morceaux. */
+
 .landing-step-text {
   flex: 1;
   min-width: 0;
@@ -5801,11 +1854,6 @@ textarea.input {
   margin-top: 1px;
 }
 
-/* Boutons — polish visuel propre à la landing (lift + ombre au survol), sans toucher .btn de
-   l'appli connectée (outil de travail, pas une page marketing : pas le même objectif de design). */
-/* "Profondeur douce" façon SaaS premium (Stripe/Linear/PayFit) : une fine bordure interne (inset)
-   + une ombre ambiante très diffuse au repos déjà, pas seulement au survol — évite l'effet plat
-   des boutons standards de l'appli, réservé ici à la landing (voir commentaire plus haut). */
 .landing-page .btn {
   border-radius: 12px;
   transition:
@@ -5969,37 +2017,6 @@ textarea.input {
   color: var(--color-text-muted);
 }
 
-.landing-sticky-cta {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 25;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: var(--landing-navy-900);
-  color: #fff;
-  padding: 12px 16px;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  opacity: 0;
-  transform: translateY(12px);
-  pointer-events: none;
-  transition:
-    opacity 0.25s ease,
-    transform 0.25s ease;
-}
-.landing-sticky-cta.landing-sticky-cta-visible {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-.landing-sticky-cta span {
-  font-size: 13px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
 @media (max-width: 860px) {
   .feature-page-back-full {
     display: none;
@@ -6024,9 +2041,6 @@ textarea.input {
   }
   .landing-section {
     padding: 48px 20px;
-  }
-  .landing-mock-card {
-    max-width: 340px;
   }
   .landing-install-grid {
     grid-template-columns: 1fr;
@@ -6056,18 +2070,7 @@ textarea.input {
   .landing-topbar {
     padding: 10px 12px;
   }
-  .landing-sticky-cta {
-    left: 16px;
-    right: 16px;
-    bottom: 16px;
-    justify-content: space-between;
-  }
-  .landing-sticky-cta span {
-    display: none;
-  }
-  /* Marque + (bouton retour sur une page de fonctionnalité) + déclencheur du menu à gauche, "Se
-     connecter" + "Créer mon entreprise" à droite — resserré plutôt que masqué, tous les boutons
-     restent visibles et accessibles en un tap sur les plus petits écrans. */
+
   .landing-topbar-left {
     gap: 6px;
   }
@@ -6092,9 +2095,6 @@ textarea.input {
     display: inline;
   }
 
-  /* §retour Betty du 17/09/2026 : "sur téléphone laisse le paneau déroulant" — redevient un
-     déclencheur ☰ qui ouvre/ferme un panneau, comme avant le passage aux liens alignés (toujours
-     alignés au-dessus de 480px, voir la règle de base plus haut dans ce fichier). */
   .landing-nav-menu-trigger {
     display: inline-flex;
     align-items: center;
@@ -6134,18 +2134,7 @@ textarea.input {
   }
 }
 
-/* ---------------------------------------------------------------------
-   Responsive
-   --------------------------------------------------------------------- */
-
 @media (max-width: 860px) {
-  /* §demande 17/08/2026, révisée deux fois le même jour (l'utilisateur veut le bouton "☰"
-     directement à gauche de la barre de recherche, dans la topbar elle-même — pas une barre du bas,
-     pas un carré flottant en haut à gauche). Le bouton est déplacé dans le DOM à l'intérieur de
-     #topbar (voir index.html, juste avant .topbar-search) : il devient un item normal de la même
-     ligne flex, alignement et hauteur garantis sans calcul de position séparé. #sidebar ne sert
-     plus que d'ancre invisible pour #sidebar-nav (voir bindGlobalEvents, app.js, pour
-     l'ouverture/fermeture — classe .open). */
   #sidebar-nav-pinned {
     display: none;
   }
@@ -6166,8 +2155,7 @@ textarea.input {
     display: none;
     flex-direction: column;
     position: fixed;
-    /* env(safe-area-inset-top) : sur un iPhone, le panneau doit s'ouvrir sous l'encoche/île
-       dynamique, pas dessous. Nécessite viewport-fit=cover (index.html), sinon vaut 0. */
+
     top: calc(var(--topbar-height) + env(safe-area-inset-top));
     left: 14px;
     min-width: 260px;
@@ -6202,8 +2190,7 @@ textarea.input {
     font-size: 14px;
     white-space: normal;
   }
-  .logo-text,
-  .nav-soon {
+  .logo-text {
     display: none;
   }
   .mobile-nav-toggle {
@@ -6231,19 +2218,10 @@ textarea.input {
   #view-root {
     padding: 16px;
   }
-  /* Demande du 21/08/2026 : 2 colonnes plutôt qu'une seule pleine largeur, pour moins défiler sur
-     une grille de nombreuses cartes KPI (jusqu'à 15 sur le tableau de bord RH/Propriétaire) — forcé en
-     dur plutôt que de compter sur auto-fit/minmax, qui retombait sur une seule colonne à cette
-     largeur malgré la place suffisante mesurée. */
+
   .kpi-grid {
     grid-template-columns: 1fr 1fr;
     gap: 8px;
-  }
-  .calendar-cell {
-    height: 84px;
-  }
-  .calendar-weekday {
-    font-size: 10px;
   }
   #topbar {
     padding: 0 14px;
@@ -6252,16 +2230,11 @@ textarea.input {
   .topbar-search {
     max-width: none;
   }
-  /* flex-wrap: wrap est maintenant la règle de base (voir .detail-header ci-dessus, plus haut dans
-     ce fichier) — ne reste ici que ce qui est vraiment spécifique au mobile. */
+
   .detail-header-actions {
     width: 100%;
   }
-  /* Sur mobile, .tabs (Congés/Télétravail...) défilait horizontalement sans aucun indice visuel
-     qu'il y avait "plus à droite" — un simple tap avec un léger mouvement du doigt faisait glisser
-     toute la rangée au lieu d'appuyer sur l'onglet visé (retour utilisateur : "je peux bouger les
-     boutons"). Passer à la ligne plutôt que défiler élimine cette ambiguïté tap/scroll, correct pour
-     un petit nombre d'onglets. */
+
   .tabs {
     flex-wrap: wrap;
     overflow-x: visible;
@@ -6270,50 +2243,13 @@ textarea.input {
     padding: 8px 12px;
     font-size: 13px;
   }
-  /* §demande 18/08/2026 : Paramètres a 12+ onglets — même en passant à la ligne, ça fait "un tas de
-     boutons au même endroit" sur un petit écran. Remplacé par un simple menu déroulant, natif et
-     compact, uniquement sous ce seuil (desktop garde la rangée d'onglets habituelle). */
-  .parametres-tabs-desktop {
-    display: none;
-  }
-  .parametres-tab-select {
-    display: block;
-  }
+
   #toast-root {
     bottom: calc(env(safe-area-inset-bottom) + 16px);
-  }
-  /* right:-8px avec une largeur proche de 100vw dépassait du bord gauche de l'écran dès que la
-     cloche n'était pas collée tout au bord droit (ex. iPhone SE : jusqu'à 20px hors écran).
-     position:fixed + left/right ancrés à la fenêtre (pas au petit wrapper de la cloche, qui rendait
-     un simple left/right en absolute inutilisable) garantit une marge de 14px des deux côtés quel
-     que soit l'endroit où la cloche se trouve dans la topbar. */
-  .notif-panel {
-    position: fixed;
-    top: calc(var(--topbar-height) + 8px);
-    left: 14px;
-    right: 14px;
-    width: auto;
   }
 }
 
 @media (max-width: 480px) {
-  /* Sous ce seuil, l'espace disponible (~270px après sidebar + marges) est inférieur
-     aux minimums de colonne de ces grilles : on repasse en une seule colonne plutôt
-     que de laisser le contenu déborder du conteneur. .kpi-grid gardée à part (demande du
-     21/08/2026) : ses cartes (juste un nombre + une icône + un court libellé) restent lisibles
-     bien plus étroites que les grilles ci-dessous (champs de formulaire, tableaux), donc 2
-     colonnes plutôt qu'une seule pleine largeur — voir sa propre règle plus haut. */
-  .dashboard-grid,
-  .detail-grid,
-  .detail-grid-cards,
-  .settings-lists-grid {
-    grid-template-columns: 1fr;
-  }
-
-  /* Sur un téléphone, .topbar-user (thème + aide + notifs + compte) prenait à elle seule ~186px
-     sur les ~275px disponibles, ne laissant qu'une barre de recherche d'à peine 80px de large.
-     Resserre l'espacement (la zone tactile agrandie de .btn-icon::before, inset:-10px, reste bien
-     assez grande même avec un espacement réduit) pour rendre la recherche réellement utilisable. */
   .topbar-user {
     gap: 6px;
   }
@@ -6321,14 +2257,6 @@ textarea.input {
     padding: 2px;
   }
 }
-
-/* ---------------------------------------------------------------------
-   Dark mode — suit le système par défaut, ou le réglage manuel Système/
-   Clair/Sombre du menu utilisateur (data-theme, voir applyThemePreference
-   dans app.js). MÊMES valeurs dans les deux blocs ci-dessous : le premier
-   suit l'OS (sauf choix explicite "Clair"), le second force "Sombre" même
-   si l'OS est en clair — à garder synchronisés si l'un des deux change.
-   --------------------------------------------------------------------- */
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
@@ -6340,19 +2268,11 @@ textarea.input {
     --color-text: #f2f3f5;
     --color-text-muted: #9aa0ab;
     --color-text-strong: var(--color-text);
-    /* §refonte identité 20/08/2026 : la teinte marine claire suffit en fond de bouton en mode clair
-       (contraste énorme avec le texte blanc), mais en mode sombre elle se confond presque avec les
-       cartes (--color-surface, elle-même déjà très sombre — mesuré : à peine 1.1:1 de différence).
-       Une teinte plus claire ici fait vraiment "ressortir" un bouton d'une carte, tout en restant
-       dans la même famille de bleu marine (même teinte, juste plus clair) plutôt qu'un bleu
-       quelconque. */
+
     --color-primary: #4a72ad;
     --color-primary-hover: #3a5a8f;
     --color-primary-soft: #192134;
-    /* Même repère que --color-primary-soft ci-dessus, mais poussé plus loin puisque rien n'est écrit
-       DESSUS (pure puce d'icône) : peut se permettre de ressortir plus nettement de la carte sans
-       faire chuter de contraste de texte. Mesuré : 1.46:1 face à --color-surface (bien perceptible)
-       contre 1.03:1 pour --color-primary-soft. */
+
     --color-chip-bg: #2f4972;
     --color-muted-soft: #23262e;
     --color-success-soft: #0f2a1c;
@@ -6364,10 +2284,6 @@ textarea.input {
     --color-info-text: #60a5fa;
   }
 
-  /* §refonte accent unique du 01/09/2026 : plus de règle dédiée ici pour .avatar-color-0..6 (plus
-     haut) — utilise déjà --color-primary-soft/--color-primary-text, redéfinies ci-dessus pour le mode
-     sombre. .tag-color-* (catégories de contrat) garde en revanche ses propres teintes sombres,
-     contraste texte vérifié ≥4.5:1. */
   :root:not([data-theme='light']) .tag-color-0 {
     background: #3a2f1c;
     color: #d8b98a;
@@ -6386,7 +2302,6 @@ textarea.input {
   }
 }
 
-/* Choix manuel "Sombre" : mêmes valeurs, appliquées sans condition de préférence système. */
 :root[data-theme='dark'] {
   --color-bg: #14161a;
   --color-surface: #1c1f26;
@@ -6426,115 +2341,12 @@ textarea.input {
   color: #d6a3a3;
 }
 
-/* ---------------------------------------------------------------------
-   Impression — n'imprime que le contenu marqué .print-area (notes de frais,
-   fiche salarié, attestation de congé)
-   --------------------------------------------------------------------- */
-
-.print-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  margin-bottom: 8px;
-  border-bottom: 2px solid var(--color-primary);
-  padding-bottom: 14px;
-}
-
-.print-header h1 {
-  margin-bottom: 4px;
-}
-
-/* §retour Betty du 18/09/2026 (point 7) : logo + identité de l'entreprise d'un côté, "Fait à ...,
-   le ..." de l'autre (lieu et date ensemble, sur leur propre ligne, jamais mélangés avec autre
-   chose) — voir renderPrintDocumentHeader (app.js), modèle repris du registre du personnel. */
-.print-header-identity {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.print-logo {
-  max-width: 56px;
-  max-height: 56px;
-  border-radius: var(--radius-sm);
-  object-fit: contain;
-}
-.print-lieu-date {
-  font-size: 13px;
-  color: var(--color-text-muted);
-  white-space: nowrap;
-  margin-top: 2px;
-}
-
-/* Le titre reste DÉTACHÉ de l'en-tête (jamais coincé dans le même bloc bordé que le logo/la date) —
-   son propre espace, pour respirer avant que le corps du document ne commence. */
-.print-title {
-  margin: 22px 0 18px;
-}
-
-.print-document h3 {
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--color-text-muted);
-  margin: 20px 0 8px;
-}
-
-.print-attestation-text {
-  line-height: 1.9;
-  margin: 22px 0;
-  font-size: 15px;
-}
-
-.print-signature {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-top: 60px;
-  font-size: 13px;
-  color: var(--color-text-muted);
-}
-
-.print-signature-line {
-  border-top: 1px solid var(--color-border);
-  padding-top: 6px;
-  min-width: 160px;
-  text-align: center;
-}
-
 @media print {
-  /* §retour Betty du 18/09/2026 (point 7) : l'ancienne technique (visibility:hidden sur tout le
-     reste + .print-area en position:absolute) laissait chaque élément caché occuper SA PLACE dans
-     la mise en page (visibility:hidden ne retire jamais du flux, contrairement à display:none) —
-     le navigateur paginait donc sur la hauteur du document ENTIER (sidebar, topbar, cartes du
-     tableau de bord...), avec la vraie zone imprimable, positionnée en absolu, répétée à l'identique
-     sur chacune des pages "fantômes" ainsi générées (le "certificat de travail en 6 pages
-     identiques et vides" qu'elle a signalé). display:none retire réellement du flux : :has()
-     cache tout élément qui ne contient PAS .print-area nulle part en dessous de lui, à N'IMPORTE
-     QUEL niveau d'imbrication, sans avoir à lister chaque conteneur (modale, écran Paramètres...)
-     un par un.
-     §retour Betty du 19/09/2026 (point 4) : elle a reconstaté EXACTEMENT le même défaut sur la
-     fiche salarié après ce correctif — la cause la plus probable est un poste sans support de
-     :has() (Chrome 105+/Firefox 121+/Safari 15.4+ seulement) : un sélecteur non supporté invalide
-     TOUTE la règle (jamais une dégradation partielle), ce qui fait réapparaître le bug d'origine à
-     l'identique sans qu'aucune autre régression ne l'explique. isolatePrintAreaForPrinting()
-     (app.js, beforeprint/afterprint — supportés depuis IE10/Firefox 6) fait donc désormais le même
-     travail en JS, sans dépendre d'aucune fonctionnalité CSS récente : cette règle reste posée en
-     secours (double sécurité), mais n'est plus la seule ligne de défense. */
   body *:not(:has(.print-area)):not(.print-area):not(.print-area *) {
     display: none !important;
   }
-  /* Le chemin d'ancêtres restant (ex. #modal-root > .modal > .modal-body) garde son display normal
-     (jamais forcé) mais perd tout ce qui, à ce niveau-là, contraignait la zone imprimable à la
-     taille de l'écran (modale plafonnée à 90vh avec défilement interne, position fixe...) —
-     sans ce reset, un document un peu long resterait invisible au-delà du cadre de la modale.
-     #main-column/#app-shell couvrent le seul cas où .print-area n'est PAS dans une modale (registre
-     du personnel version Paramètres, rendu directement dans #view-root) : sans ce reset, la marge
-     gauche réservée à la barre latérale (déjà masquée par la règle ci-dessus, mais sa marge reste)
-     gaspillerait la largeur de la page à l'impression. */
+
   .modal,
-  .modal-body,
   #modal-root {
     position: static !important;
     inset: auto !important;
@@ -6550,128 +2362,18 @@ textarea.input {
     min-height: 0 !important;
     margin-left: 0 !important;
   }
-  .print-area {
-    padding: 24px;
-  }
-  /* Le voile de couleur de .card (voir plus haut) n'a pas sa place sur un document imprimé — gaspille
-     de l'encre couleur pour un simple conteneur, jamais pensé comme un vrai repère ici. */
+
   .card {
     background: white;
     box-shadow: none;
   }
 }
 
-/* §retour Betty du 22/09/2026 ("je préfère cette présentation dans les catégories de salariés...
-   fais la même chose pour les postes, les conventions, les types de contrats, les forfaits, les
-   catégories de documents, les checklists... des lignes moins hautes... l'ascenseur quand on peut
-   afficher 7 lignes") : présentation commune à toutes les listes de référence, en remplacement des
-   pastilles qui déroulaient la liste entière sans hauteur maîtrisée (183 conventions collectives
-   occupaient plusieurs écrans à elles seules). Voir renderSettingsListCard/renderPostesCard. */
-.settings-list-card {
-  display: flex;
-  flex-direction: column;
-}
-.settings-list-header {
-  padding: 16px 16px 0;
-  align-items: flex-start;
-  gap: 12px;
-}
-.settings-list-header h2 {
-  margin-bottom: 2px;
-}
-.settings-list-header .text-muted {
-  font-size: 12px;
-  margin: 0;
-}
-
-/* 7 lignes visibles, l'ascenseur prend le relais au-delà : chaque carte garde la même hauteur quel
-   que soit le nombre d'éléments, une liste de 4 forfaits comme une liste de 183 conventions. */
-.settings-list-scroll {
-  max-height: calc(7 * 37px);
-  overflow-y: auto;
-  margin-top: 10px;
-  border-top: 1px solid var(--color-border);
-}
-
-/* Lignes volontairement plus courtes que .table standard : ces listes n'ont qu'un libellé et une
-   action, jamais le contenu dense d'un tableau de salariés. */
-.table-settings-list td,
-.table-settings-list th {
-  padding: 8px 16px;
-  font-size: 13px;
-}
-.table-settings-list thead th {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: var(--color-surface);
-}
-.settings-list-valeur {
-  width: 100%;
-}
-.settings-list-action {
-  text-align: right;
-  white-space: nowrap;
-}
-.settings-list-vide {
-  padding: 14px 16px 16px;
-  margin: 0;
-}
-.settings-list-add {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-  padding: 12px 16px 0;
-  margin: 0;
-}
-.settings-list-add .input {
-  flex: 1 1 180px;
-}
 .input-sm {
   padding: 5px 8px;
   font-size: 13px;
 }
 
-/* §retour Betty du 22/09/2026 ("on voit qu'il y a beaucoup d'espace perdu... on ne voit que deux
-   cartouches alors qu'on pourrait facilement en voir plus") : les onglets de Paramètres empilaient
-   leurs cartes d'options sur toute la largeur, une par ligne, alors que chacune ne contient que
-   deux ou trois champs. Sur un écran large, deux cartes remplissaient déjà la hauteur visible.
-   Même grille que .settings-lists-grid : autant de colonnes que la largeur permet, repli naturel
-   en une seule colonne sur écran étroit, sans media query. Une carte qui porte un vrai tableau
-   (jours fériés, fermetures) reste sur toute la largeur via .settings-card-wide. */
-.settings-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-  gap: 16px;
-  align-items: start;
-}
-.settings-cards-grid > .card {
-  margin-bottom: 0;
-}
-.settings-card-wide {
-  grid-column: 1 / -1;
-}
-
-/* §retour Betty du 22/09/2026 : la carte de candidature porte désormais deux actions (avancer d'une
-   étape, supprimer) au lieu d'une seule. */
-.candidature-card-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 8px;
-  flex-wrap: wrap;
-}
-
-/* §retour Betty du 22/09/2026 ("de préférence en général je pense plus en paysage") : l'application
-   n'avait aucune règle @page, donc tout s'imprimait au format par défaut du navigateur, A4 portrait.
-   Un organigramme est large par nature : il y était coupé à droite dès le deuxième niveau.
-   Les pages nommées permettent de choisir l'orientation document par document, au lieu d'imposer le
-   paysage à une attestation ou à un certificat, qui sont des colonnes de texte. Prise en charge à
-   partir de Chrome et Edge 85 et de Firefox 110 ; un navigateur plus ancien retombe simplement sur
-   le portrait, et la mise à l'échelle (isolatePrintAreaForPrinting, app.js) évite malgré tout que
-   l'arbre soit coupé. */
 @page {
   size: A4 portrait;
   margin: 14mm;
@@ -6679,7 +2381,4 @@ textarea.input {
 @page paysage {
   size: A4 landscape;
   margin: 10mm;
-}
-.print-landscape {
-  page: paysage;
 }

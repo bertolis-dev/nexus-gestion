@@ -16,8 +16,8 @@
  * cahier des charges pour limiter la responsabilité de BERTOLIS) : ce contrôle est fait en base.
  */
 
-import { divRound, sum, vatFromHt } from './money.js';
-import { fixedAssets, assetsCrossCheck } from './assets.js';
+import { divRound, sum, vatFromHt } from './money.js?v=702f5da';
+import { fixedAssets, assetsCrossCheck } from './assets.js?v=702f5da';
 
 /** Nom d'un exercice : « 2026 », ou « 2025-2026 » s'il est à cheval sur deux années civiles. */
 export function fiscalYearLabel(fy) {

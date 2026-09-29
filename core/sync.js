@@ -516,4 +516,4 @@ export function applySyncResult(ws, op, result) {
 export function isDivergence(error) {
   return Boolean(error?.divergence || error?.code === '23505');
 }
-import { DEFAULT_BANK_ACCOUNT } from './bank.js';
+import { DEFAULT_BANK_ACCOUNT } from './bank.js?v=702f5da';

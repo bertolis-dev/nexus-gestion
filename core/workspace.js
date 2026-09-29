@@ -4,20 +4,20 @@
  * Sans DOM ni stockage : l'interface (app/) le sérialise, les tests l'utilisent tel quel.
  */
 
-import { buildChart, categoryById } from './pcg.js';
-import { Ledger } from './ledger.js';
-import { InvoiceBook, clientAux, lineHt } from './invoices.js';
-import { purchaseEntry, findDuplicates } from './purchases.js';
-import { mergeTransactions, suggestMatches, settlementEntry, directEntry, DEFAULT_BANK_ACCOUNT } from './bank.js';
+import { buildChart, categoryById } from './pcg.js?v=702f5da';
+import { Ledger } from './ledger.js?v=702f5da';
+import { InvoiceBook, clientAux, lineHt } from './invoices.js?v=702f5da';
+import { purchaseEntry, findDuplicates } from './purchases.js?v=702f5da';
+import { mergeTransactions, suggestMatches, settlementEntry, directEntry, DEFAULT_BANK_ACCOUNT } from './bank.js?v=702f5da';
 export { DEFAULT_BANK_ACCOUNT };
-import { isOnReceipt, creditsOf, originalOf, groupBalance, receiptTargets } from './receipts.js';
-import { divRound, splitTtc, sum } from './money.js';
-import { openingEntry } from './fecimport.js';
-import { creditTargetsAsset } from './assets.js';
-import { addDays, nextFiscalYear } from './dates.js';
-import { prepareCa3, prepareCa12, ca12Advances, liquidationEntry } from './vatreturn.js';
-import { LIFECYCLE } from './lifecycle.js';
-import { declarationPeriods, urssafDeclaration, urssafDeadline, estimateContributions, thresholdStatus, vatFranchiseMessage, ACTIVITY_TYPES } from './micro.js';
+import { isOnReceipt, creditsOf, originalOf, groupBalance, receiptTargets } from './receipts.js?v=702f5da';
+import { divRound, splitTtc, sum } from './money.js?v=702f5da';
+import { openingEntry } from './fecimport.js?v=702f5da';
+import { creditTargetsAsset } from './assets.js?v=702f5da';
+import { addDays, nextFiscalYear } from './dates.js?v=702f5da';
+import { prepareCa3, prepareCa12, ca12Advances, liquidationEntry } from './vatreturn.js?v=702f5da';
+import { LIFECYCLE } from './lifecycle.js?v=702f5da';
+import { declarationPeriods, urssafDeclaration, urssafDeadline, estimateContributions, thresholdStatus, vatFranchiseMessage, ACTIVITY_TYPES } from './micro.js?v=702f5da';
 import {
   inventoryEntry,
   depreciationEntry,
@@ -29,8 +29,8 @@ import {
   allocationEntry,
   balanceSheet,
   fiscalYearMonths,
-} from './closing.js';
-import { validateTemplate, dueOccurrences, periodLabel } from './recurring.js';
+} from './closing.js?v=702f5da';
+import { validateTemplate, dueOccurrences, periodLabel } from './recurring.js?v=702f5da';
 
 /** Entrées d'argent sans facture de vente, proposées en langage courant. */
 export const INCOME_CATEGORIES = [
@@ -561,9 +561,15 @@ export class Workspace {
     return [...sales, ...buys, ...refunds];
   }
 
-  suggestionsFor(txId) {
+  suggestionsFor(txId, docs = this.openDocs()) {
     const tx = this.transactions.find((t) => t.id === txId);
-    return suggestMatches(tx, this.openDocs());
+    return suggestMatches(tx, docs);
+  }
+
+  /** Propositions pour plusieurs mouvements : pièces ouvertes calculées une seule fois. */
+  suggestionsForMany(txIds) {
+    const docs = this.openDocs();
+    return new Map(txIds.map((id) => [id, this.suggestionsFor(id, docs)]));
   }
 
   /**

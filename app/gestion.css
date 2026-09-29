@@ -25,6 +25,23 @@
 .onboarding-steps span.done {
   background: var(--landing-gold-500);
 }
+/* Groupe de boutons radio : fieldset sans cadre, légende présentée comme une étiquette de champ. */
+.choice-group {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.choice-group > legend {
+  padding: 0;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
 .choice-cards {
   display: grid;
   gap: 10px;
@@ -440,4 +457,164 @@
 .boot-failure h1 {
   margin: 0 0 12px;
   font-size: 22px;
+}
+
+/* ---------------------------------------------------------------------
+   Contrastes WCAG AA (lot 4 de l'audit) : chaque couleur de texte atteint 4,5:1 sur son fond, en
+   thème clair et sombre (mesuré par e2e/accessibilite.e2e.mjs). Palette inchangée : marine et or,
+   seules les nuances trop claires sont assombries (clair) ou éclaircies (sombre).
+   --------------------------------------------------------------------- */
+:root {
+  --color-text-muted: #5b6270; /* 5,3:1 sur le fond des badges, 5,7:1 sur le fond de page */
+  --color-success: #15803d; /* 4,8:1 sur le fond des badges « Payée » */
+  --toast-bg: #1a1d24;
+}
+:root[data-theme='dark'] {
+  --color-success: #4ade80;
+  --color-warning: #fbbf24;
+  --toast-bg: #2a2f3a;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --color-success: #4ade80;
+    --color-warning: #fbbf24;
+    --toast-bg: #2a2f3a;
+  }
+}
+/* Notification : fond sombre et texte blanc dans les deux thèmes (le fond reprenait la couleur du
+   texte, donc blanc sur blanc en thème sombre). */
+.toast {
+  background: var(--toast-bg);
+  color: #fff;
+}
+.toast-error {
+  background: #b91c1c;
+}
+/* Comparatif du site public : colonne Nexus lisible en thème sombre. */
+.landing-compare-table thead th:nth-child(2),
+.landing-compare-table tbody td:nth-child(2) {
+  color: var(--color-primary-text, var(--color-primary));
+}
+/* Facture sur téléphone : le tableau défile dans la feuille blanche au lieu de déborder sur le fond. */
+.invoice-sheet {
+  overflow-x: auto;
+}
+@media (max-width: 860px) {
+  .invoice-sheet .table th,
+  .invoice-sheet .table td {
+    padding: 8px 10px;
+  }
+}
+
+/* Lien d'évitement : invisible jusqu'à ce qu'il reçoive le focus clavier. */
+.skip-link {
+  position: absolute;
+  left: 8px;
+  top: -48px;
+  z-index: 1000;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--landing-navy-700);
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+}
+.skip-link:focus {
+  top: 8px;
+}
+/* Titre qui reçoit le focus à chaque écran : pas de cadre à la souris, cadre visible au clavier. */
+#view-root h1:focus {
+  outline: none;
+}
+#view-root h1:focus-visible,
+tr[data-href]:focus-visible,
+.search-result-item:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+/* Cibles tactiles d'au moins 24 px (WCAG 2.5.8). */
+.btn-icon,
+.btn-sm,
+.btn-link,
+.theme-toggle-btn {
+  min-height: 24px;
+  min-width: 24px;
+}
+/* Banque : pagination des mouvements à justifier. */
+.bank-pager {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px 16px;
+  font-size: 13.5px;
+  color: var(--color-text-muted);
+}
+.bank-pager span {
+  margin-right: auto;
+}
+
+/* Sous 720 px : tableaux en cartes (lignes de facture, déclarations URSSAF). Chaque cellule reprend
+   le titre de sa colonne (data-label) ; plus aucun défilement horizontal. */
+@media (max-width: 720px) {
+  .cards-mobile thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+  .cards-mobile,
+  .cards-mobile tbody {
+    display: block;
+    width: 100%;
+  }
+  .cards-mobile tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .cards-mobile td {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: auto !important;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    text-align: left;
+  }
+  .cards-mobile td[data-label]::before {
+    content: attr(data-label);
+    font-size: 12px;
+    color: var(--color-text-muted);
+  }
+  .cards-mobile .cards-full {
+    grid-column: 1 / -1;
+  }
+  .cards-mobile .cards-action {
+    grid-column: 1 / -1;
+    align-items: flex-end;
+  }
+  .cards-mobile .cards-action:empty {
+    display: none;
+  }
+  .cards-mobile td > .badge {
+    align-self: flex-start;
+  }
+  /* La zone défilante des tableaux (hauteur bornée) masquerait les cartes suivantes. */
+  .table-scroll:has(> .cards-mobile) {
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+/* Point de check-list sans écran associé : présenté comme une information, pas comme un lien. */
+.action-center-static {
+  cursor: default;
+}
+.action-center-static:hover {
+  background: none;
 }

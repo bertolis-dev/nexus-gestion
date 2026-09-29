@@ -9,11 +9,11 @@
  * nombre d'écritures validées), l'état est rechargé depuis la base, qui fait foi.
  */
 
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
-import { stateFromRows } from '../core/sync.js';
-import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, OUTBOX_PREFIX } from '../core/outbox.js';
-import { ACCOUNTS } from '../core/pcg.js';
-import { mfaState, canRemoveFactor } from '../core/mfa.js';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js?v=702f5da';
+import { stateFromRows } from '../core/sync.js?v=702f5da';
+import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, OUTBOX_PREFIX } from '../core/outbox.js?v=702f5da';
+import { ACCOUNTS } from '../core/pcg.js?v=702f5da';
+import { mfaState, canRemoveFactor } from '../core/mfa.js?v=702f5da';
 
 // supabase-js (copie locale, app/vendor/) n'est chargé qu'en mode connecté : la démonstration et
 // le site public ne téléchargent pas ces 220 Ko.
@@ -21,7 +21,7 @@ let client = null;
 const authListeners = [];
 async function connect() {
   if (!client) {
-    const { createClient } = await import('./vendor/supabase.js');
+    const { createClient } = await import('./vendor/supabase.js?v=702f5da');
     client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     for (const cb of authListeners) client.auth.onAuthStateChange(cb);
   }
@@ -49,7 +49,7 @@ const AUTH_MESSAGES = [
   [/Password should be at least/i, 'Le mot de passe doit contenir au moins 8 caractères.'],
   [/rate limit|too many/i, 'Trop de tentatives : patientez quelques minutes avant de réessayer.'],
   [/Invalid TOTP code|invalid.*code/i, 'Code incorrect : vérifiez l’heure de votre téléphone et saisissez le code affiché.'],
-  [/Failed to fetch|NetworkError/i, 'Connexion impossible : vérifiez votre accès à internet.'],
+  [/Failed to fetch|NetworkError|Load failed|fetch failed/i, 'Connexion impossible : vérifiez votre accès à internet. La démonstration reste disponible.'],
 ];
 export function friendly(error) {
   const msg = error?.message || String(error);
@@ -89,10 +89,23 @@ export async function updatePassword(password) {
   const supabase = await connect();
   return check(await supabase.auth.updateUser({ password }));
 }
+/** Au-delà, la base est considérée comme injoignable (le renouvellement de session réessaie sinon longtemps). */
+export const SESSION_TIMEOUT_MS = 8000;
+export const UNREACHABLE_MESSAGE =
+  'Le service Nexus Gestion est momentanément injoignable : vérifiez votre connexion ou réessayez dans quelques minutes. La démonstration reste disponible.';
+
 export async function currentSession() {
   if (!client && !mayHaveSession()) return null;
   const supabase = await connect();
-  return check(await supabase.auth.getSession()).session;
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(UNREACHABLE_MESSAGE)), SESSION_TIMEOUT_MS);
+  });
+  try {
+    return check(await Promise.race([supabase.auth.getSession(), timeout])).session;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 export function onAuthChange(cb) {
   const listener = (event, session) => cb(event, session);

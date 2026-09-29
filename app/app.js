@@ -20,32 +20,39 @@ const URL_AUTH_ERROR = (() => {
   return `Le lien n'a pas pu être validé (${params.get('error_description') || code}). Demandez un nouvel e-mail ci-dessous.`;
 })();
 
-import { Workspace, INCOME_CATEGORIES, OUTFLOW_CATEGORIES, MAX_BANK_ACCOUNTS } from '../core/workspace.js';
-import { EXPENSE_CATEGORIES, buildChart } from '../core/pcg.js';
-import { parseFec, openingBalanceFromFec } from '../core/fecimport.js';
-import { formatEuros, parseEuros, formatDecimalComma } from '../core/money.js';
-import { computeTotals, checkInvoice, InvoiceError, isValidSiren, isVatExempt, lineHt, VAT_RATES_BP, issuerName } from '../core/invoices.js';
-import { parseBankCsv, reconciliationStatement } from '../core/bank.js';
-import { importStatement, decodeStatement } from '../core/bank-import.js';
-import { trialBalance, generalLedger, exportFEC, checkFEC, journalReport, encodeLatin9 } from '../core/reports.js';
-import { JOURNALS, Ledger } from '../core/ledger.js';
-import { receiptsBook, ACTIVITY_TYPES, CIPAV_PROFESSIONS, ESTIMATE_MISSING_LABELS } from '../core/micro.js';
-import { buildCii, checkEn16931, ciiFileName } from '../core/einvoice.js';
-import { trialBalanceCsv, generalLedgerCsv, journalsCsv } from '../core/exports.js';
-import { fixedAssets } from '../core/assets.js';
-import { FREQUENCIES, nextDate } from '../core/recurring.js';
-import { justificationRows } from '../core/vatreturn.js';
-import { readIncomingInvoice, purchaseLinesFrom } from '../core/einvoice-in.js';
-import { LIFECYCLE, nextStatuses } from '../core/lifecycle.js';
-import { closingChecklist, incomeStatement, balanceSheet, INVENTORY_TYPES, fiscalYearLabel, allocationProposal } from '../core/closing.js';
-import { ledgerStateFromRows, applySyncResult } from '../core/sync.js';
-import { toCsv } from '../core/exports.js';
-import { ICONS } from './icons.js';
-import { todayParis, addDays, firstFiscalYear } from '../core/dates.js';
-import * as cloud from './cloud.js';
-import { FEATURE_PAGES, featureBySlug } from './features.js';
+import { Workspace, INCOME_CATEGORIES, OUTFLOW_CATEGORIES, MAX_BANK_ACCOUNTS } from '../core/workspace.js?v=702f5da';
+import { EXPENSE_CATEGORIES, buildChart, usualVatRate } from '../core/pcg.js?v=702f5da';
+import { parseFec, openingBalanceFromFec } from '../core/fecimport.js?v=702f5da';
+import { formatEuros, parseEuros, formatDecimalComma } from '../core/money.js?v=702f5da';
+import { computeTotals, checkInvoice, InvoiceError, isValidSiren, isVatExempt, lineHt, VAT_RATES_BP, issuerName } from '../core/invoices.js?v=702f5da';
+import { parseBankCsv, reconciliationStatement } from '../core/bank.js?v=702f5da';
+import { importStatement, decodeStatement } from '../core/bank-import.js?v=702f5da';
+import { trialBalance, generalLedger, exportFEC, checkFEC, journalReport, encodeLatin9 } from '../core/reports.js?v=702f5da';
+import { JOURNALS, Ledger } from '../core/ledger.js?v=702f5da';
+import { receiptsBook, ACTIVITY_TYPES, CIPAV_PROFESSIONS, ESTIMATE_MISSING_LABELS } from '../core/micro.js?v=702f5da';
+import { buildCii, checkEn16931, ciiFileName } from '../core/einvoice.js?v=702f5da';
+import { trialBalanceCsv, generalLedgerCsv, journalsCsv } from '../core/exports.js?v=702f5da';
+import { fixedAssets } from '../core/assets.js?v=702f5da';
+import { FREQUENCIES, nextDate } from '../core/recurring.js?v=702f5da';
+import { justificationRows } from '../core/vatreturn.js?v=702f5da';
+import { readIncomingInvoice, purchaseLinesFrom } from '../core/einvoice-in.js?v=702f5da';
+import { LIFECYCLE, nextStatuses } from '../core/lifecycle.js?v=702f5da';
+import { closingChecklist, incomeStatement, balanceSheet, INVENTORY_TYPES, fiscalYearLabel, allocationProposal } from '../core/closing.js?v=702f5da';
+import { ledgerStateFromRows, applySyncResult } from '../core/sync.js?v=702f5da';
+import { toCsv } from '../core/exports.js?v=702f5da';
+import { ICONS } from './icons.js?v=702f5da';
+import { todayParis, addDays, firstFiscalYear } from '../core/dates.js?v=702f5da';
+import * as cloud from './cloud.js?v=702f5da';
+import { raw, html, opt, field, choiceGroup } from './html.js?v=702f5da';
+import { getDemo, setDemo, removeDemo } from './demo-store.js?v=702f5da';
 
-const DEMO_KEY = 'nexus_gestion_demo_v1';
+// Accès à la démonstration enregistrée (tests de bout en bout, captures d'écran) : données locales seulement.
+window.nexusDemoStore = { get: getDemo, set: setDemo, remove: removeDemo };
+// Pages « Fonctionnalités » du site public (50 Ko) : chargées seulement quand le site public s'affiche.
+let features = null;
+const loadFeatures = async () => (features ??= await import('./features.js?v=702f5da'));
+const featureBySlug = (slug) => features?.featureBySlug(slug);
+
 const PREFS_KEY = 'nexus_gestion_prefs';
 const THEME_KEY = 'nexus_theme'; // même clé que Nexus RH : le choix de thème suit l'utilisateur d'une appli à l'autre
 const CONTACT_EMAIL = 'contact@bertolis.fr';
@@ -83,28 +90,14 @@ const pct = (bp) => `${(bp / 100).toLocaleString('fr-FR')} %`;
 
 // ------------------------------------------------------------------ gabarits (échappement par défaut)
 
-class Raw {
-  constructor(s) {
-    this.s = s;
-  }
-}
-const raw = (s) => new Raw(s);
-const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-const fmt = (v) => (v instanceof Raw ? v.s : Array.isArray(v) ? v.map(fmt).join('') : v == null || v === false ? '' : esc(String(v)));
-function html(strings, ...vals) {
-  return raw(strings.reduce((acc, s, i) => acc + s + (i < vals.length ? fmt(vals[i]) : ''), ''));
-}
-const opt = (value, label, selected) => html`<option value="${value}" ${selected ? raw('selected') : ''}>${label}</option>`;
 /** Même rendu que icon() de Nexus RH. */
 const icon = (name, size = 16) => raw(`<span class="icon-inline" style="width:${size}px;height:${size}px;">${ICONS[name]}</span>`);
-const LOGO = raw('<span class="logo-mark"><img class="logo-icon" src="logo.png" alt="Nexus"></span>');
+const LOGO = raw('<span class="logo-mark"><img class="logo-icon" src="logo.webp" alt="Nexus" width="32" height="32"></span>');
 const brand = html`${LOGO} Nexus <span class="brand-suffix">Gestion</span>`;
 const badge = (text, kind = 'muted') => html`<span class="badge badge-${kind}">${text}</span>`;
-function field(label, control, { id, hint } = {}) {
-  return html`<div class="form-field">
-    ${label ? html`<label ${id ? raw(`for="${id}"`) : ''}>${label}</label>` : ''}${control}${hint ? html`<p class="form-hint">${hint}</p>` : ''}
-  </div>`;
-}
+/** Terme comptable en mode avancé, langage courant en mode standard (§5 du cahier des charges). */
+const term = (plain, expert) => (ui.mode === 'avance' ? expert : plain);
+
 const viewHeader = (title, subtitle, actions) =>
   html`<div class="view-header ${actions ? 'view-header-row' : ''}">
     <div>
@@ -142,9 +135,9 @@ function setTheme(value) {
   else document.documentElement.setAttribute('data-theme', value);
 }
 
-function loadDemo() {
+async function loadDemo() {
   try {
-    const data = JSON.parse(localStorage.getItem(DEMO_KEY) || 'null');
+    const data = await getDemo();
     if (!data) return false;
     ws = new Workspace({ company: data.company, state: data });
     ui.demo = true;
@@ -154,15 +147,15 @@ function loadDemo() {
   }
 }
 
+/** Version des données, incrémentée à chaque modification : invalide les calculs mémorisés. */
+let dataVersion = 0;
+
 /** Après chaque action : envoi en base (mode connecté) ou enregistrement local (démonstration). */
 function save() {
+  dataVersion++;
   savePrefs();
   if (ui.demo) {
-    try {
-      localStorage.setItem(DEMO_KEY, JSON.stringify(ws.toJSON()));
-    } catch {
-      toast('Enregistrement local impossible (stockage plein ou bloqué).', true);
-    }
+    setDemo(ws.toJSON()).catch(() => toast('Enregistrement local impossible (stockage plein ou bloqué).', true));
     return;
   }
   const next = JSON.parse(JSON.stringify(ws));
@@ -347,6 +340,10 @@ function render() {
     $('login-root').innerHTML = viewAuth().s;
     return;
   }
+  if (!features) {
+    loadFeatures().then(() => render());
+    return;
+  }
   show('landing-root');
   const slug = featureSlug();
   document.title = slug ? `${featureBySlug(slug).title} · Nexus Gestion` : LANDING_TITLE;
@@ -355,8 +352,6 @@ function render() {
 const LANDING_TITLE = document.title;
 
 // ------------------------------------------------------------------ site public (même gabarit que Nexus RH)
-
-const LANDING_FEATURES = FEATURE_PAGES;
 
 /** Installeur Windows : toujours la dernière version publiée (voir desktop/ et scripts/deploy.mjs). */
 const DESKTOP_APP_DOWNLOAD_URL = 'https://github.com/bertolis-dev/nexus-gestion/releases/latest/download/Nexus-Gestion-Setup.exe';
@@ -467,10 +462,10 @@ function viewLanding() {
             <span>${icon('globe', 14)} Données hébergées à Paris · Conforme RGPD</span>
           </div>
         </div>
-        <div class="landing-hero-mock" aria-hidden="true">
+        <div class="landing-hero-mock">
           <img
             class="landing-hero-screenshot"
-            src="landing-screenshot.png"
+            src="landing-screenshot.webp"
             alt="Tableau de bord Nexus Gestion : trésorerie, créances clients, liste À faire"
             width="1280"
             height="760"
@@ -501,7 +496,7 @@ function viewLanding() {
         <p>Pensé pour les dirigeants qui ne sont pas comptables : chaque écran parle votre langue, pas celle du plan comptable.</p>
       </div>
       <div class="landing-features-grid">
-        ${LANDING_FEATURES.map(
+        ${features.FEATURE_PAGES.map(
           (f) =>
             html`<a
               class="card landing-feature-card"
@@ -654,7 +649,9 @@ function viewLanding() {
 /** Slug de la page « Fonctionnalité » demandée dans l'adresse (#fonctionnalite/banque), sinon null. */
 function featureSlug() {
   const m = /^#fonctionnalite\/([a-z-]+)$/.exec(location.hash);
-  return m && featureBySlug(m[1]) ? m[1] : null;
+  if (!m) return null;
+  // Avant chargement des pages, l'adresse suffit ; ensuite, le slug doit exister.
+  return !features || featureBySlug(m[1]) ? m[1] : null;
 }
 
 /** Vraie page par fonctionnalité (adresse partageable, retour du navigateur), même gabarit que Nexus RH,
@@ -861,7 +858,7 @@ function viewAuth() {
           required
           minlength="${autocomplete === 'new-password' ? 8 : 1}"
           autocomplete="${autocomplete}"
-        /><button type="button" class="btn-icon password-toggle" data-action="toggle-password" tabindex="-1" aria-label="Afficher le mot de passe">
+        /><button type="button" class="btn-icon password-toggle" data-action="toggle-password" aria-label="Afficher le mot de passe" aria-pressed="false">
           ${icon('eye', 14)}
         </button>
       </div>`,
@@ -1001,10 +998,14 @@ function viewOnboarding() {
   } else if (step === 2) {
     body = html`<h1>Quelques questions simples</h1>
       <p class="text-muted">Vos réponses suffisent à déterminer votre régime et votre plan comptable.</p>
-      ${data.legalForm === 'EI' ? field('Êtes-vous micro-entrepreneur (auto-entrepreneur) ?', html`<div class="choice-cards">${choice('micro', 'oui', 'Oui')}${choice('micro', 'non', 'Non, au régime réel')}</div>`) : ''}
-      ${field('Facturez-vous la TVA à vos clients ?', html`<div class="choice-cards">${choice('chargesVat', 'oui', 'Oui')}${choice('chargesVat', 'non', 'Non (franchise en base)')}</div>`, { hint: 'Si vos factures portent la mention « TVA non applicable, art. 293 B du CGI », répondez non.' })}
-      ${data.chargesVat === 'oui' ? field('Déclarez-vous la TVA chaque mois ou une fois par an ?', html`<div class="choice-cards">${choice('vatFrequency', 'mensuelle', 'Chaque mois (CA3)')}${choice('vatFrequency', 'annuelle', 'Une fois par an (CA12)')}</div>`) : ''}
-      ${field('Vendez-vous des biens, des services ou les deux ?', html`<div class="choice-cards">${choice('nature', 'biens', 'Des biens')}${choice('nature', 'services', 'Des services')}${choice('nature', 'mixte', 'Les deux')}</div>`)}
+      ${data.legalForm === 'EI' ? choiceGroup('Êtes-vous micro-entrepreneur (auto-entrepreneur) ?', html`<div class="choice-cards">${choice('micro', 'oui', 'Oui')}${choice('micro', 'non', 'Non, au régime réel')}</div>`) : ''}
+      ${choiceGroup(
+        'Facturez-vous la TVA à vos clients ?',
+        html`${html`<div class="choice-cards">${choice('chargesVat', 'oui', 'Oui')}${choice('chargesVat', 'non', 'Non (franchise en base)')}</div>`}
+          <p class="form-hint">${'Si vos factures portent la mention « TVA non applicable, art. 293 B du CGI », répondez non.'}</p>`,
+      )}
+      ${data.chargesVat === 'oui' ? choiceGroup('Déclarez-vous la TVA chaque mois ou une fois par an ?', html`<div class="choice-cards">${choice('vatFrequency', 'mensuelle', 'Chaque mois (CA3)')}${choice('vatFrequency', 'annuelle', 'Une fois par an (CA12)')}</div>`) : ''}
+      ${choiceGroup('Vendez-vous des biens, des services ou les deux ?', html`<div class="choice-cards">${choice('nature', 'biens', 'Des biens')}${choice('nature', 'services', 'Des services')}${choice('nature', 'mixte', 'Les deux')}</div>`)}
       ${field('Date de fin de votre exercice comptable', html`<input class="input" id="ob-fy" type="date" data-ob="fyEnd" value="${data.fyEnd}" style="max-width:220px" />`, { id: 'ob-fy', hint: 'Le plus souvent le 31 décembre.' })}
       ${field('Date de début d’activité (entreprise créée cette année)', html`<input class="input" id="ob-start" type="date" data-ob="activityStart" value="${data.activityStart || ''}" style="max-width:220px" />`, { id: 'ob-start', hint: 'Facultatif : le premier exercice court alors de cette date à la date de fin (24 mois au plus).' })}
       ${errBox}${nav()}`;
@@ -1352,6 +1353,8 @@ function navItems() {
   ];
   if (ui.mode === 'avance' && !isMicro())
     items.push({ section: 'Expert' }, { key: 'compta', label: 'Comptabilité', icon: 'chart' }, { key: 'cloture', label: 'Clôture', icon: 'lock' });
+  // Mode standard : la clôture reste accessible, en langage courant.
+  else if (!isMicro()) items.push({ key: 'cloture', label: 'Préparer ma clôture', icon: 'lock' });
   return items;
 }
 
@@ -1369,7 +1372,8 @@ function renderApp() {
   const { name, arg } = route();
   const shell = $('app-shell');
   if (!shell.dataset.ready) {
-    shell.innerHTML = html` <aside id="sidebar">
+    shell.innerHTML = html` <a class="skip-link" href="#view-root">Aller au contenu</a>
+      <aside id="sidebar">
         <div class="sidebar-logo">
           ${LOGO}<span class="logo-text">Nexus <span class="brand-suffix">Gestion</span></span>
         </div>
@@ -1388,13 +1392,26 @@ function renderApp() {
               class="input"
               placeholder="Rechercher une facture, un client, une dépense... (Ctrl+K)"
               autocomplete="off"
+              role="combobox"
+              aria-label="Rechercher une facture, un client, une dépense"
+              aria-autocomplete="list"
+              aria-expanded="false"
+              aria-controls="global-search-results"
             />
-            <div id="global-search-results" class="search-results"></div>
+            <div id="global-search-results" class="search-results" role="listbox" aria-label="Résultats de recherche"></div>
           </div>
           <div class="topbar-user">
             <button class="btn-icon" data-action="reload" title="Recharger la page">${raw(ICONS.refresh)}</button>
             <div class="user-menu-wrapper">
-              <button class="avatar avatar-initials" id="btn-user-menu" data-action="user-menu" title="Mon compte"></button>
+              <button
+                class="avatar avatar-initials"
+                id="btn-user-menu"
+                data-action="user-menu"
+                title="Mon compte"
+                aria-haspopup="true"
+                aria-expanded="false"
+                aria-controls="user-menu-panel"
+              ></button>
               <div id="user-menu-panel" class="user-menu-panel"></div>
             </div>
           </div>
@@ -1406,7 +1423,7 @@ function renderApp() {
   $('sidebar-nav').innerHTML = html`${navItems().map((item) =>
     item.section
       ? html`<div class="nav-section-label">${item.section}</div>`
-      : html`<button class="nav-item ${name === item.key ? 'active' : ''}" data-href="#/${item.key}" aria-label="${item.label}">
+      : html`<button class="nav-item ${name === item.key ? 'active' : ''}" data-href="#/${item.key}" ${name === item.key ? raw('aria-current="page"') : ''}>
           <span class="nav-icon">${raw(ICONS[item.icon])}</span><span class="nav-label">${item.label}</span>
         </button>`,
   )}`.s;
@@ -1434,6 +1451,89 @@ function renderApp() {
       ${ui.demo ? 'Quitter la démonstration' : 'Se déconnecter'}
     </button>`.s;
   $('view-root').innerHTML = routes[name](arg).s;
+  focusableScrollRegions($('view-root'));
+  enhanceKeyboard($('view-root'));
+  markInvalidFields($('view-root'));
+  announceScreen(`${name}/${arg || ''}`);
+  // La mise en page (polices, barre latérale) peut encore changer : second passage à l'image suivante.
+  requestAnimationFrame(() => focusableScrollRegions($('view-root')));
+}
+
+/** Champ du formulaire de facture visé par un problème de conformité (sélecteur), s'il est affiché. */
+function issueTarget(fieldName, d) {
+  if (!fieldName) return null;
+  if (fieldName.startsWith('client.')) return `[name="${d.clientId === '__new' ? 'newClient' : 'clientEdit'}.${fieldName.slice(7)}"]`;
+  if (fieldName === 'issueDate' || fieldName === 'dueDate') return `[name="${fieldName}"]`;
+  if (fieldName === 'lines') return '[name="lines.0.label"]';
+  return null;
+}
+
+/** Problème du récapitulatif : lien vers le champ à corriger (ou vers les Paramètres pour l'entreprise). */
+function issueLink(issue, d) {
+  if (issue.field?.startsWith('company.')) return html`<a href="#/parametres">${issue.message}</a>`;
+  const target = issueTarget(issue.field, d);
+  return target ? html`<a href="#" data-focus="${target}">${issue.message}</a>` : issue.message;
+}
+
+/** Champs signalés en erreur (aria-invalid), reliés au récapitulatif qui explique quoi corriger. */
+function markInvalidFields(root) {
+  for (const a of root.querySelectorAll('#invoice-issues a[data-focus]')) {
+    const input = root.querySelector(a.dataset.focus);
+    if (!input) continue;
+    input.setAttribute('aria-invalid', 'true');
+    input.setAttribute('aria-describedby', [input.getAttribute('aria-describedby'), 'invoice-issues'].filter(Boolean).join(' '));
+  }
+}
+
+/**
+ * Titre de l'onglet du navigateur = titre de l'écran ; à chaque changement d'écran (pas à chaque
+ * rafraîchissement), le focus va sur ce titre pour que les lecteurs d'écran l'annoncent.
+ */
+function announceScreen(key) {
+  const h1 = $('view-root').querySelector('h1');
+  if (!h1) return;
+  document.title = `${h1.textContent.trim()} · Nexus Gestion`;
+  const issues = $('invoice-issues');
+  if (issues && ui.draft?.focusIssues) {
+    ui.draft.focusIssues = false;
+    ui.lastScreen = key;
+    issues.focus();
+    return;
+  }
+  // Même écran : on ne déplace le focus que s'il a été perdu (élément remplacé par le rendu).
+  const lost = !document.activeElement || document.activeElement === document.body;
+  if (ui.lastScreen === key && !lost) return;
+  ui.lastScreen = key;
+  h1.tabIndex = -1;
+  h1.focus({ preventScroll: true });
+}
+
+/** Onglets annoncés comme tels ; lignes de tableau cliquables atteignables au clavier. */
+function enhanceKeyboard(root) {
+  for (const list of root.querySelectorAll('.tabs')) {
+    list.setAttribute('role', 'tablist');
+    for (const tab of list.querySelectorAll('button.tab')) {
+      tab.setAttribute('role', 'tab');
+      tab.setAttribute('aria-selected', String(tab.classList.contains('active')));
+    }
+  }
+  for (const row of root.querySelectorAll('tr[data-href]')) row.tabIndex = 0;
+}
+
+/**
+ * Tableau plus large que l'écran (téléphone) : la zone qui défile doit être atteignable au clavier
+ * et annoncée (WCAG 2.1.1). Appelé après chaque rendu.
+ */
+function focusableScrollRegions(root) {
+  for (const el of root.querySelectorAll('.table-card, .table-scroll, .tabs, .invoice-sheet')) {
+    const s = getComputedStyle(el);
+    const scrolls =
+      (el.scrollWidth > el.clientWidth + 1 && /auto|scroll/.test(s.overflowX)) || (el.scrollHeight > el.clientHeight + 1 && /auto|scroll/.test(s.overflowY));
+    if (!scrolls || el.querySelector('a[href], button, input, select, textarea, [tabindex]')) continue;
+    el.tabIndex = 0;
+    el.setAttribute('role', 'region');
+    el.setAttribute('aria-label', el.querySelector('h2, h3, caption')?.textContent.trim() || 'Tableau');
+  }
 }
 
 // ------------------------------------------------------------------ recherche globale (barre du haut)
@@ -1865,10 +1965,10 @@ function viewInvoiceForm(arg) {
     <form class="card" data-form="invoice" novalidate style="display:flex;flex-direction:column;gap:16px">
       ${
         d.issues?.length
-          ? html`<div class="issues-box">
+          ? html`<div class="issues-box" id="invoice-issues" role="alert" tabindex="-1">
               <strong>Pour émettre cette facture, complétez :</strong>
               <ul>
-                ${d.issues.map((i) => html`<li>${i.message}</li>`)}
+                ${d.issues.map((i) => html`<li>${issueLink(i, d)}</li>`)}
               </ul>
             </div>`
           : ''
@@ -1925,7 +2025,7 @@ function viewInvoiceForm(arg) {
       <div class="form-section">
         <h3 class="form-subsection-title">Lignes</h3>
         <div class="table-scroll">
-          <table class="table lines-table">
+          <table class="table lines-table cards-mobile">
             <thead>
               <tr>
                 <th style="width:38%">Désignation</th>
@@ -1940,26 +2040,49 @@ function viewInvoiceForm(arg) {
               ${d.lines.map(
                 (l, i) =>
                   html`<tr>
-                    <td><input class="input" name="lines.${i}.label" value="${l.label}" placeholder="Ex. : Accompagnement mars" /></td>
-                    <td style="width:80px"><input class="input" name="lines.${i}.qty" inputmode="decimal" value="${String(l.qty).replace('.', ',')}" /></td>
-                    <td style="width:130px">
-                      <input class="input" name="lines.${i}.priceText" inputmode="decimal" value="${l.priceText}" placeholder="0,00" />
+                    <td class="cards-full" data-label="Désignation">
+                      <input
+                        class="input"
+                        name="lines.${i}.label"
+                        aria-label="Désignation, ligne ${i + 1}"
+                        value="${l.label}"
+                        placeholder="Ex. : Accompagnement mars"
+                      />
+                    </td>
+                    <td style="width:80px" data-label="Quantité">
+                      <input
+                        class="input"
+                        name="lines.${i}.qty"
+                        aria-label="Quantité, ligne ${i + 1}"
+                        inputmode="decimal"
+                        value="${String(l.qty).replace('.', ',')}"
+                      />
+                    </td>
+                    <td style="width:130px" data-label="Prix unitaire HT">
+                      <input
+                        class="input"
+                        name="lines.${i}.priceText"
+                        aria-label="Prix unitaire HT, ligne ${i + 1}"
+                        inputmode="decimal"
+                        value="${l.priceText}"
+                        placeholder="0,00"
+                      />
                     </td>
                     ${
                       franchise
                         ? ''
-                        : html`<td style="width:100px">
-                            <select class="input" name="lines.${i}.vatRateBp">
+                        : html`<td style="width:100px" data-label="TVA">
+                            <select class="input" name="lines.${i}.vatRateBp" aria-label="TVA, ligne ${i + 1}">
                               ${VAT_RATES_BP.map((r) => opt(r, pct(r), l.vatRateBp === r))}
                             </select>
                           </td>`
                     }
-                    <td style="width:120px">
-                      <select class="input" name="lines.${i}.nature">
+                    <td style="width:120px" data-label="Nature">
+                      <select class="input" name="lines.${i}.nature" aria-label="Nature, ligne ${i + 1}">
                         ${opt('services', 'Service', l.nature === 'services')}${opt('biens', 'Bien', l.nature === 'biens')}
                       </select>
                     </td>
-                    <td style="width:44px">
+                    <td style="width:44px" class="cards-action">
                       ${d.lines.length > 1 ? html`<button type="button" class="btn-icon" data-action="line-remove" data-index="${i}" aria-label="Supprimer la ligne">${raw(ICONS.close)}</button>` : ''}
                     </td>
                   </tr>`,
@@ -2024,7 +2147,8 @@ function persistDraft() {
   const data = draftInvoiceData();
   if (d.clientId === '__new') {
     if (!data.client.name?.trim()) {
-      d.issues = [{ message: 'Le nom du client est manquant.' }];
+      d.issues = [{ message: 'Le nom du client est manquant.', field: 'client.name' }];
+      d.focusIssues = true;
       return null;
     }
     const client = ws.saveClient(data.client);
@@ -2209,7 +2333,9 @@ function viewExpenses() {
   const list = [...ws.purchases].reverse();
   const tabs = html`<div class="tabs" style="margin-bottom:14px">
     <button class="tab ${ui.expensesTab === 'immobilisations' ? '' : 'active'}" data-action="expenses-tab" data-tab="depenses">Dépenses</button>
-    <button class="tab ${ui.expensesTab === 'immobilisations' ? 'active' : ''}" data-action="expenses-tab" data-tab="immobilisations">Immobilisations</button>
+    <button class="tab ${ui.expensesTab === 'immobilisations' ? 'active' : ''}" data-action="expenses-tab" data-tab="immobilisations">
+      ${term('Équipements', 'Immobilisations')}
+    </button>
   </div>`;
   if (ui.expensesTab === 'immobilisations') return html`${viewHeader('Dépenses', 'Vos équipements durables et leur amortissement.')}${tabs}${viewAssets()}`;
   return html` ${viewHeader('Dépenses', 'Ajoutez vos factures d’achat : la catégorie suffit, Nexus fait le reste.', html`<label class="btn btn-secondary" style="margin:0">${icon('upload', 14)} Importer une facture électronique (XML)<input type="file" accept=".xml,application/xml,text/xml" data-action="einvoice-in-file" hidden /></label>`)}
@@ -2424,6 +2550,103 @@ async function attachReceipt(purchase, file) {
 /** Nature d'une pièce proposée au rapprochement, en langage courant. */
 const DOC_KIND_LABELS = { invoice: 'Facture', purchase: 'Dépense', 'purchase-credit': 'Avoir fournisseur', credit: 'Remboursement de l’avoir' };
 
+/** Mouvements affichés par page sur l'écran Banque. */
+const BANK_PAGE_SIZE = 25;
+
+/** Listes de catégories (dépense / recette), construites une seule fois. */
+const categoryOptionsCache = new Map();
+function categoryOptions(outflow) {
+  if (!categoryOptionsCache.has(outflow)) {
+    categoryOptionsCache.set(
+      outflow,
+      outflow
+        ? html`<optgroup label="Dépenses">${EXPENSE_CATEGORIES.map((c) => opt(c.id, c.label))}</optgroup>
+            <optgroup label="Autres sorties d’argent">${OUTFLOW_CATEGORIES.map((c) => opt(c.id, c.label))}</optgroup>`
+        : html`${INCOME_CATEGORIES.map((c) => opt(c.id, c.label))}`,
+    );
+  }
+  return categoryOptionsCache.get(outflow);
+}
+
+/** Propositions de rapprochement mémorisées tant que les données ne changent pas (voir save()). */
+let suggestionsCache = { version: -1, map: new Map() };
+function bankSuggestions(txs) {
+  if (suggestionsCache.version !== dataVersion) suggestionsCache = { version: dataVersion, map: new Map() };
+  const missing = txs.filter((t) => !suggestionsCache.map.has(t.id)).map((t) => t.id);
+  if (missing.length) for (const [id, s] of ws.suggestionsForMany(missing)) suggestionsCache.map.set(id, s);
+  return suggestionsCache.map;
+}
+
+/** Carte « À justifier » : une page de mouvements, avec pagination. */
+function bankOpenCard(open) {
+  const pages = Math.max(1, Math.ceil(open.length / BANK_PAGE_SIZE));
+  ui.bankPage = Math.min(Math.max(0, ui.bankPage || 0), pages - 1);
+  const from = ui.bankPage * BANK_PAGE_SIZE;
+  const visible = open.slice(from, from + BANK_PAGE_SIZE);
+  const suggestions = bankSuggestions(visible);
+  const franchise = ws.company.vatRegime === 'franchise';
+  const pager =
+    open.length > BANK_PAGE_SIZE
+      ? html`<div class="bank-pager">
+          <span>Mouvements ${from + 1} à ${from + visible.length} sur ${open.length}</span>
+          <button class="btn btn-secondary btn-sm" data-action="bank-page" data-index="-1" ${ui.bankPage === 0 ? raw('disabled') : ''}>Précédents</button>
+          <button class="btn btn-secondary btn-sm" data-action="bank-page" data-index="1" ${ui.bankPage >= pages - 1 ? raw('disabled') : ''}>Suivants</button>
+        </div>`
+      : '';
+  return html`<h2 style="padding:16px 16px 0">À justifier (${open.length})</h2>
+    ${pager}
+    ${
+      open.length
+        ? html`<table class="table bank-open-table">
+            <tbody>
+              ${visible.map((t) => {
+                const sugg = (suggestions.get(t.id) || []).slice(0, 2);
+                return html`<tr>
+                  <td style="width:110px">${frDate(t.date)}</td>
+                  <td>
+                    <strong>${t.label}</strong>
+                    ${sugg.map(
+                      (s, si) =>
+                        html`<div class="match-suggestion">
+                          <span
+                            >${s.docs.map((d) => `${DOC_KIND_LABELS[d.kind] || 'Dépense'} ${d.number} — ${d.partyName} (${eur(d.outstanding)})`).join(' + ')}<br /><span
+                              class="match-reasons"
+                              >${s.reasons.join(', ')} · confiance ${s.score} %</span
+                            ></span
+                          ><button class="btn btn-primary btn-sm" data-action="tx-match" data-id="${t.id}" data-index="${si}">Associer</button>
+                        </div>`,
+                    )}
+                    <div class="tx-actions">
+                      <select class="input input-sm" data-cat="${t.id}" aria-label="Catégorie">
+                        ${opt('', sugg.length ? 'Ou choisir une catégorie…' : 'Choisir une catégorie…', true)}${categoryOptions(t.amount < 0)}
+                      </select>
+                      ${
+                        t.amount < 0 && !franchise
+                          ? html`<select class="input input-sm" data-vat="${t.id}" aria-label="TVA" style="min-width:110px;flex:0">
+                              ${VAT_RATES_BP.map((r) => opt(r, `TVA ${pct(r)}`, r === 0))}
+                            </select>`
+                          : ''
+                      }
+                      ${t.amount < 0 ? html`<label><input type="checkbox" data-receipt="${t.id}" />J'ai la facture</label>` : ''}
+                      <button class="btn btn-secondary btn-sm" data-action="tx-categorize" data-id="${t.id}">Valider</button>
+                      <button class="btn-link" data-action="tx-ignore" data-id="${t.id}" title="Mouvement déjà comptabilisé par ailleurs">Ignorer</button>
+                    </div>
+                  </td>
+                  <td class="num" style="width:120px"><strong>${eur(t.amount)}</strong></td>
+                </tr>`;
+              })}
+            </tbody>
+          </table>`
+        : html`<div class="empty-state">
+            <div class="empty-icon">${raw(ICONS.card)}</div>
+            <p class="text-muted">
+              ${ws.transactions.length ? 'Toutes vos transactions sont justifiées.' : 'Importez votre premier relevé bancaire pour commencer.'}
+            </p>
+          </div>`
+    }
+    ${pager}`;
+}
+
 function viewBank() {
   const account = currentBankAccount();
   const mine = ws.transactions.filter((t) => (t.accountId || 'default') === account.id);
@@ -2435,70 +2658,11 @@ function viewBank() {
       stmt = reconciliationStatement(ws.ledger, ws.transactions, { date: today(), statementBalance: parseEuros(ui.statementBalance), account });
     } catch {}
   }
-  const franchise = ws.company.vatRegime === 'franchise';
   return html` ${viewHeader('Banque', 'Associez chaque mouvement à une facture, ou choisissez une catégorie.', html`<label class="btn btn-primary" style="margin:0">${icon('upload', 14)} Importer un relevé (CSV, OFX, CAMT.053, QIF)<input type="file" accept=".csv,.ofx,.qfx,.xml,.qif,.txt" data-action="bank-file" hidden /></label>`)}
     ${bankAccountsBar()} ${bankImportReport()}
-    <div class="card table-card">
-      <h2 style="padding:16px 16px 0">À justifier (${open.length})</h2>
-      ${
-        open.length
-          ? html`<table class="table bank-open-table">
-              <tbody>
-                ${open.map((t) => {
-                  const sugg = ws.suggestionsFor(t.id).slice(0, 2);
-                  const cats = t.amount < 0 ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
-                  const others = t.amount < 0 ? OUTFLOW_CATEGORIES : [];
-                  return html`<tr>
-                    <td style="width:110px">${frDate(t.date)}</td>
-                    <td>
-                      <strong>${t.label}</strong>
-                      ${sugg.map(
-                        (s, si) =>
-                          html`<div class="match-suggestion">
-                            <span
-                              >${s.docs.map((d) => `${DOC_KIND_LABELS[d.kind] || 'Dépense'} ${d.number} — ${d.partyName} (${eur(d.outstanding)})`).join(' + ')}<br /><span
-                                class="match-reasons"
-                                >${s.reasons.join(', ')} · confiance ${s.score} %</span
-                              ></span
-                            ><button class="btn btn-primary btn-sm" data-action="tx-match" data-id="${t.id}" data-index="${si}">Associer</button>
-                          </div>`,
-                      )}
-                      <div class="tx-actions">
-                        <select class="input input-sm" data-cat="${t.id}" aria-label="Catégorie">
-                          ${opt('', sugg.length ? 'Ou choisir une catégorie…' : 'Choisir une catégorie…', true)}${
-                            others.length
-                              ? html`<optgroup label="Dépenses">${cats.map((c) => opt(c.id, c.label))}</optgroup>
-                                  <optgroup label="Autres sorties d’argent">${others.map((c) => opt(c.id, c.label))}</optgroup>`
-                              : cats.map((c) => opt(c.id, c.label))
-                          }
-                        </select>
-                        ${
-                          t.amount < 0 && !franchise
-                            ? html`<select class="input input-sm" data-vat="${t.id}" aria-label="TVA" style="min-width:110px;flex:0">
-                                ${VAT_RATES_BP.map((r) => opt(r, `TVA ${pct(r)}`, r === 0))}
-                              </select>`
-                            : ''
-                        }
-                        ${t.amount < 0 ? html`<label><input type="checkbox" data-receipt="${t.id}" />J'ai la facture</label>` : ''}
-                        <button class="btn btn-secondary btn-sm" data-action="tx-categorize" data-id="${t.id}">Valider</button>
-                        <button class="btn-link" data-action="tx-ignore" data-id="${t.id}" title="Mouvement déjà comptabilisé par ailleurs">Ignorer</button>
-                      </div>
-                    </td>
-                    <td class="num" style="width:120px"><strong>${eur(t.amount)}</strong></td>
-                  </tr>`;
-                })}
-              </tbody>
-            </table>`
-          : html`<div class="empty-state">
-              <div class="empty-icon">${raw(ICONS.card)}</div>
-              <p class="text-muted">
-                ${ws.transactions.length ? 'Toutes vos transactions sont justifiées.' : 'Importez votre premier relevé bancaire pour commencer.'}
-              </p>
-            </div>`
-      }
-    </div>
+    <div class="card table-card" id="bank-open">${bankOpenCard(open)}</div>
     <div class="card">
-      <h2>État de rapprochement</h2>
+      <h2>${term('Votre solde bancaire est-il juste ?', 'État de rapprochement')}</h2>
       ${field("Solde affiché par votre banque aujourd'hui", html`<input class="input" data-statement value="${ui.statementBalance}" inputmode="decimal" placeholder="0,00" style="max-width:240px" />`)}
       ${
         stmt
@@ -2630,63 +2794,38 @@ function bankImportReport() {
 // ------------------------------------------------------------------ TVA (§3.6)
 
 function viewVat(arg) {
-  // Lien depuis « À faire » : #/tva/AAAA-MM-JJ ouvre directement la période concernée.
-  if (/^\d{4}-\d{2}-\d{2}$/.test(arg || '')) ui.vatPeriod = arg;
+  // Lien depuis « À faire » : #/tva/AAAA-MM-JJ ouvre la période concernée, une seule fois (les onglets
+  // restent ensuite utilisables).
+  if (/^\d{4}-\d{2}-\d{2}$/.test(arg || '') && ui.vatLink !== arg) {
+    ui.vatLink = arg;
+    ui.vatPeriod = arg;
+  }
   if (ws.company.vatRegime === 'franchise') {
     return html`${viewHeader('TVA', 'Vous êtes en franchise en base : vous ne facturez pas de TVA.')}${franchiseBanner()}
       <div class="card">${thresholdCard()}</div>`;
   }
-  const fy = ws.company.fiscalYear;
-  const months = [];
-  let [y, m] = fy.start.split('-').map(Number);
-  for (let i = 0; i < 12; i++) {
-    const from = `${y}-${String(m).padStart(2, '0')}-01`;
-    if (from > today()) break;
-    const to = new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10);
-    months.push({ from, to, label: new Date(`${from}T00:00:00`).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }), ...ws.vatDue({ from, to }) });
-    if (++m > 12) {
-      m = 1;
-      y++;
-    }
-  }
-  if (ws.company.vatRegime === 'reel-normal') {
-    const quarterly = ws.company.vatPeriodicity === 'trimestrielle';
-    return viewCa3(
-      ws.vatPeriods().map((p) => ({
-        ...p,
-        label: quarterly ? p.label : new Date(`${p.from}T00:00:00`).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }),
-      })),
-    );
-  }
   if (ws.company.vatRegime === 'reel-simplifie') return viewCa12();
-  return html` ${viewHeader('TVA', `${ws.company.vatRegime === 'reel-normal' ? 'Déclaration mensuelle (CA3).' : 'Déclaration annuelle (CA12) avec acomptes.'} La télétransmission arrive avec la prochaine version.`)}
-    <div class="notice-gold" style="margin-bottom:14px">
-      Comment lire ce tableau : la <strong>TVA collectée</strong> est celle que vous avez facturée et encaissée ; la <strong>TVA déductible</strong> est celle
-      payée sur vos achats. Vous reversez la différence. Exemple : 200 € collectés − 50 € déductibles = 150 € à payer.
-    </div>
-    <div class="card table-card">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Période</th>
-            <th class="num">TVA collectée</th>
-            <th class="num">TVA déductible</th>
-            <th class="num">À payer (ou crédit)</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${months.reverse().map(
-            (r) =>
-              html`<tr>
-                <td style="text-transform:capitalize">${r.label}</td>
-                <td class="num">${eur(r.collected)}</td>
-                <td class="num">${eur(r.deductible)}</td>
-                <td class="num"><strong>${eur(r.net)}</strong></td>
-              </tr>`,
-          )}
-        </tbody>
-      </table>
-    </div>`;
+  const quarterly = ws.company.vatPeriodicity === 'trimestrielle';
+  return viewCa3(
+    ws.vatPeriods().map((p) => ({
+      ...p,
+      label: quarterly ? p.label : new Date(`${p.from}T00:00:00`).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }),
+    })),
+  );
+}
+
+/** Encadré pour le non-comptable : comment se calcule la TVA à reverser. */
+const vatExplainer = () =>
+  html`<div class="notice-gold" style="margin-bottom:14px">
+    Comment lire ces montants : la <strong>TVA due</strong> est celle que vous avez facturée à vos clients ; la <strong>TVA récupérable</strong> est celle payée
+    sur vos achats. Vous reversez la différence. Exemple : 200 € dus − 50 € récupérables = 150 € à payer.
+  </div>`;
+
+/** « À payer avant le JJ/MM », « Crédit de TVA » ou « Rien à payer ». */
+function vatDueLabel(toPay, credit, deadline) {
+  if (toPay > 0) return `À payer avant le ${deadline.slice(8, 10)}/${deadline.slice(5, 7)}`;
+  if (credit > 0) return 'Crédit de TVA : rien à payer';
+  return 'Rien à payer';
 }
 
 /** Régime simplifié : déclaration annuelle CA12 et acomptes de juillet et décembre. */
@@ -2730,6 +2869,7 @@ function viewCa12() {
         <div class="kpi-label">CA12 ${fy.start.slice(0, 4)}</div>
       </div>
     </div>
+    ${vatExplainer()}
     ${
       !record && ca12.warnings.length
         ? html`<div class="notice-gold" style="margin-bottom:14px">
@@ -2807,6 +2947,8 @@ function viewCa3(months) {
   const boxes = record ? record.boxes : ca3.boxes;
   const shown = CA3_ROWS.filter(([k]) => boxes[k] || ['01', '16', '23', '28'].includes(k));
   const strong = new Set(['16', '23', '25', '28']);
+  // Numéros de case du formulaire officiel : utiles à l'expert-comptable, du bruit pour le dirigeant.
+  const advanced = ui.mode === 'avance';
   return html` ${header}
     <div class="tabs" style="margin-bottom:14px;flex-wrap:wrap">
       ${closed.map((mo) => html`<button class="tab ${mo.from === selected.from ? 'active' : ''}" data-action="vat-period" data-from="${mo.from}" style="text-transform:capitalize">${mo.label}${declared.has(mo.from) ? ' ✓' : ''}</button>`)}
@@ -2815,7 +2957,10 @@ function viewCa3(months) {
       <div class="kpi-card kpi-card-hero">
         <div class="kpi-icon">${raw(ICONS.percent)}</div>
         <div class="kpi-value">${eur(boxes['28'] || -(boxes['25'] || 0))}</div>
-        <div class="kpi-label">${boxes['28'] ? 'TVA à payer' : 'Crédit de TVA'} — ${selected.label}</div>
+        <div class="kpi-label">
+          ${record ? (boxes['28'] ? 'TVA payée' : 'Crédit de TVA') : vatDueLabel(boxes['28'] || 0, boxes['25'] || 0, ws.vatDeadline(selected))} —
+          ${selected.label}
+        </div>
       </div>
       <div class="kpi-card">
         <div class="kpi-icon">${raw(ICONS.receipt)}</div>
@@ -2843,11 +2988,12 @@ function viewCa3(months) {
           </div>`
         : ''
     }
+    ${vatExplainer()}
     <div class="card table-card">
       <table class="table">
         <thead>
           <tr>
-            <th>Case</th>
+            ${advanced ? html`<th>Case</th>` : ''}
             <th>Libellé</th>
             <th class="num">Montant</th>
           </tr>
@@ -2856,7 +3002,7 @@ function viewCa3(months) {
           ${shown.map(
             ([k, label]) =>
               html`<tr>
-                <td class="mono">${k.replace('-base', '').replace('-taxe', '')}</td>
+                ${advanced ? html`<td class="mono">${k.replace('-base', '').replace('-taxe', '')}</td>` : ''}
                 <td>${strong.has(k) ? html`<strong>${label}</strong>` : label}</td>
                 <td class="num">${strong.has(k) ? html`<strong>${eur(boxes[k] || 0)}</strong>` : eur(boxes[k] || 0)}</td>
               </tr>`,
@@ -2879,7 +3025,7 @@ function viewCa3(months) {
               <table class="table">
                 <thead>
                   <tr>
-                    <th>Case</th>
+                    ${advanced ? html`<th>Case</th>` : ''}
                     <th>Facture</th>
                     <th>Client</th>
                     <th>Exigible le</th>
@@ -2891,7 +3037,7 @@ function viewCa3(months) {
                   ${ca3.justification.map(
                     (j) =>
                       html`<tr>
-                        <td class="mono">${j.line}</td>
+                        ${advanced ? html`<td class="mono">${j.line}</td>` : ''}
                         <td class="mono">${j.number}</td>
                         <td>${j.client}</td>
                         <td>${frDate(j.date)} <span class="text-muted" style="font-size:12px">(${j.reason})</span></td>
@@ -2939,7 +3085,7 @@ function urssafCard(year) {
         >
       </div>
       <div class="table-scroll">
-        <table class="table">
+        <table class="table urssaf-table cards-mobile">
           <thead>
             <tr>
               <th>Période</th>
@@ -2955,15 +3101,15 @@ function urssafCard(year) {
             ${periods.map(
               (p) =>
                 html`<tr>
-                  <td>${p.label}</td>
-                  <td class="num"><strong>${eur(p.turnover)}</strong></td>
-                  <td>${frDate(p.deadline)}</td>
-                  <td>
+                  <td class="cards-full" data-label="Période"><strong>${p.label}</strong></td>
+                  <td class="num" data-label="Chiffre d'affaires encaissé"><strong>${eur(p.turnover)}</strong></td>
+                  <td data-label="Échéance">${frDate(p.deadline)}</td>
+                  <td data-label="État">
                     ${badge(...URSSAF_STATUS[p.status])}${p.record?.paidAt ? html` <span class="text-muted" style="font-size:12px">le ${frDate(p.record.paidAt)}</span>` : ''}
                   </td>
-                  <td class="num text-muted">${eur(p.estimate.total)}</td>
-                  <td class="num">${p.record ? eur(p.record.contributions) : ''}</td>
-                  <td class="num">
+                  <td class="num text-muted" data-label="Cotisations estimées">${eur(p.estimate.total)}</td>
+                  <td class="num" data-label="Cotisations URSSAF">${p.record ? eur(p.record.contributions) : '—'}</td>
+                  <td class="num cards-action">
                     ${p.status === 'a-declarer' || p.status === 'en-retard' ? html`<button class="btn btn-primary btn-sm" data-action="urssaf-declare-open" data-from="${p.from}">Déclarer</button>` : ''}
                   </td>
                 </tr>`,
@@ -3346,11 +3492,6 @@ function statementTable(title, rows, total, totalLabel) {
 }
 
 function viewClosing() {
-  if (ui.mode !== 'avance')
-    return html`<div class="empty-state">
-      <p>Activez le mode avancé dans les paramètres.</p>
-      <button class="btn btn-primary" data-href="#/parametres">Paramètres</button>
-    </div>`;
   const fy = ws.company.fiscalYear;
   const checklist = closingChecklist(ws, { today: today() });
   const inventory = ws.ledger.entries.filter((e) => e.source?.kind === 'inventory');
@@ -3382,13 +3523,18 @@ function viewClosing() {
     <div class="card action-center no-print">
       <h2>1. Check-list</h2>
       <div class="action-center-list">
-        ${checklist.map(
-          (i) =>
-            html`<button type="button" class="action-center-item" ${i.view ? raw(`data-href="#/${i.view}"`) : ''}>
-              <span class="action-center-icon">${raw(ICONS[i.ok ? 'checkCircle' : 'warningTriangle'])}</span>
-              <span class="action-center-label">${i.label} — <span class="text-muted">${i.detail}</span></span>
-              <span class="action-center-arrow">${i.view ? '→' : ''}</span>
-            </button>`,
+        ${checklist.map((i) =>
+          // Point sans écran associé : simple information, pas un bouton qui ne mène nulle part.
+          i.view
+            ? html`<button type="button" class="action-center-item" data-href="#/${i.view}">
+                <span class="action-center-icon">${raw(ICONS[i.ok ? 'checkCircle' : 'warningTriangle'])}</span>
+                <span class="action-center-label">${i.label} — <span class="text-muted">${i.detail}</span></span>
+                <span class="action-center-arrow">→</span>
+              </button>`
+            : html`<div class="action-center-item action-center-static">
+                <span class="action-center-icon">${raw(ICONS[i.ok ? 'checkCircle' : 'warningTriangle'])}</span>
+                <span class="action-center-label">${i.label} — <span class="text-muted">${i.detail}</span></span>
+              </div>`,
         )}
       </div>
     </div>
@@ -3584,9 +3730,9 @@ function allocationCard() {
       ei
         ? ''
         : html`<div class="form-grid">
-            ${result > 0 ? input('legalReserve', 'Réserve légale', `Minimum : ${eur(legalReserveMin)} (5 % du bénéfice, jusqu'à 10 % du capital).`) : ''}
+            ${result > 0 ? input('legalReserve', term('Mise en réserve obligatoire', 'Réserve légale'), `Minimum : ${eur(legalReserveMin)} (5 % du bénéfice, jusqu'à 10 % du capital).`) : ''}
             ${result > 0 ? input('otherReserves', 'Autres réserves') : ''} ${result > 0 ? input('dividends', 'Dividendes') : ''}
-            ${input('retained', 'Report à nouveau', result < 0 ? 'Une perte est reportée : elle viendra en déduction des bénéfices futurs.' : '')}
+            ${input('retained', term('Gardé pour les années suivantes', 'Report à nouveau'), result < 0 ? 'Une perte est reportée : elle viendra en déduction des bénéfices futurs.' : '')}
           </div>`
     }
     <div><button class="btn btn-primary" data-action="allocate-result">Enregistrer l'affectation</button></div>
@@ -3760,7 +3906,7 @@ function viewAssets() {
     return html`<div class="card">
       <div class="empty-state">
         <div class="empty-icon">${raw(ICONS.package)}</div>
-        <h3>Aucune immobilisation</h3>
+        <h3>${term('Aucun équipement', 'Aucune immobilisation')}</h3>
         <p class="text-muted">
           Un équipement acheté plus de 500 € HT (ordinateur, mobilier…) est inscrit ici automatiquement quand vous enregistrez la dépense.
         </p>
@@ -3809,7 +3955,13 @@ function viewAssets() {
                   <td>${frDate(a.date)}</td>
                   <td class="num">${eur(a.cost)}</td>
                   <td>
-                    <select class="input input-sm" data-action="asset-years" data-id="${a.id}" style="width:auto">
+                    <select
+                      class="input input-sm"
+                      data-action="asset-years"
+                      data-id="${a.id}"
+                      aria-label="Durée d’amortissement de ${a.label}"
+                      style="width:auto"
+                    >
                       ${[1, 2, 3, 4, 5, 6, 7, 8, 10, 15, 20].map((n) => opt(n, `${n} an${n > 1 ? 's' : ''}`, a.years === n))}
                     </select>
                   </td>
@@ -4049,7 +4201,7 @@ document.addEventListener('input', (e) => {
     const box = $('global-search-results');
     box.innerHTML = html`${results.map(
       (r) =>
-        html`<div class="search-result-item" data-href="${r.href}">
+        html`<div class="search-result-item" role="option" tabindex="-1" aria-selected="false" data-href="${r.href}">
           <span class="search-result-icon">${raw(ICONS[r.icon])}</span>
           <div>
             <div class="search-result-label">${r.label}</div>
@@ -4058,6 +4210,7 @@ document.addEventListener('input', (e) => {
         </div>`,
     )}${el.value.trim().length >= 2 && !results.length ? html`<div class="search-result-item"><div class="search-result-sublabel">Aucun résultat</div></div>` : ''}`.s;
     box.classList.toggle('open', el.value.trim().length >= 2);
+    el.setAttribute('aria-expanded', String(box.classList.contains('open')));
     return;
   }
   const form = el.closest('form[data-form="invoice"]');
@@ -4081,9 +4234,17 @@ document.addEventListener('input', (e) => {
 document.addEventListener('change', async (e) => {
   const el = e.target;
   if (el.dataset.statement !== undefined) return render();
+  if (el.dataset.cat !== undefined) {
+    const tx = ws.transactions.find((t) => t.id === el.dataset.cat);
+    const rate = tx && usualVatRate(el.value, tx.date);
+    const vat = document.querySelector(`[data-vat="${CSS.escape(el.dataset.cat)}"]`);
+    if (vat && rate !== null && rate !== undefined) vat.value = String(rate);
+    return;
+  }
   if (el.dataset.bankAccount !== undefined) {
     ui.bankAccountId = el.value;
     ui.statementBalance = '';
+    ui.bankPage = 0;
     return render();
   }
   if (el.dataset.urssafFrequency !== undefined) {
@@ -4172,8 +4333,57 @@ document.addEventListener('change', async (e) => {
   }
 });
 
+/** Ferme les menus ouverts (menu du compte, recherche, menu mobile) ; renvoie vrai si l'un l'était. */
+function closeMenus() {
+  let closed = false;
+  const panel = $('user-menu-panel');
+  if (panel?.classList.contains('open')) {
+    panel.classList.remove('open');
+    $('btn-user-menu')?.setAttribute('aria-expanded', 'false');
+    $('btn-user-menu')?.focus();
+    closed = true;
+  }
+  const results = $('global-search-results');
+  if (results?.children.length) {
+    results.innerHTML = '';
+    results.classList.remove('open');
+    $('global-search-input')?.setAttribute('aria-expanded', 'false');
+    $('global-search-input')?.focus();
+    closed = true;
+  }
+  for (const id of ['sidebar-nav', 'landing-nav-links']) {
+    if ($(id)?.classList.contains('open')) {
+      $(id).classList.remove('open');
+      $('btn-mobile-nav-toggle')?.setAttribute('aria-expanded', 'false');
+      closed = true;
+    }
+  }
+  return closed;
+}
+
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && $('modal-root')?.classList.contains('open')) return closeLightbox();
+  if (e.key === 'Escape' && closeMenus()) return;
+  // Ligne de tableau ou résultat de recherche : Entrée (ou Espace) l'ouvre.
+  const target = e.target.closest?.('tr[data-href], .search-result-item[data-href]');
+  if (target && (e.key === 'Enter' || e.key === ' ') && e.target === target) {
+    e.preventDefault();
+    location.hash = target.dataset.href;
+    $('global-search-results')?.classList.remove('open');
+    return;
+  }
+  // Recherche : flèches pour parcourir les résultats.
+  if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && e.target.closest?.('.topbar-search')) {
+    const options = [...document.querySelectorAll('#global-search-results [role="option"]')];
+    if (!options.length) return;
+    e.preventDefault();
+    const i = options.indexOf(document.activeElement);
+    const next = options[e.key === 'ArrowDown' ? Math.min(i + 1, options.length - 1) : i - 1];
+    if (next) next.focus();
+    else $('global-search-input').focus();
+    for (const o of options) o.setAttribute('aria-selected', String(o === next));
+    return;
+  }
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k' && $('global-search-input')?.offsetParent) {
     e.preventDefault();
     $('global-search-input').focus();
@@ -4366,11 +4576,30 @@ document.addEventListener('submit', async (e) => {
 
 document.addEventListener('click', async (e) => {
   // Menus déroulants : fermeture au clic extérieur (même comportement que Nexus RH).
-  if (!e.target.closest('.user-menu-wrapper')) $('user-menu-panel')?.classList.remove('open');
+  if (!e.target.closest('.user-menu-wrapper')) {
+    $('user-menu-panel')?.classList.remove('open');
+    $('btn-user-menu')?.setAttribute('aria-expanded', 'false');
+  }
   if (!e.target.closest('.topbar-search')) $('global-search-results')?.classList.remove('open');
   if (!e.target.closest('.landing-nav-menu')) $('landing-nav-links')?.classList.remove('open');
 
   if (e.target.id === 'modal-root') return closeLightbox();
+  const focusLink = e.target.closest('a[data-focus]');
+  if (focusLink) {
+    e.preventDefault();
+    document.querySelector(focusLink.dataset.focus)?.focus();
+    return;
+  }
+  // Lien d'évitement : le focus va au titre de l'écran (le # sert au routage).
+  if (e.target.closest('.skip-link')) {
+    e.preventDefault();
+    const h1 = $('view-root')?.querySelector('h1');
+    if (h1) {
+      h1.tabIndex = -1;
+      h1.focus();
+    }
+    return;
+  }
   const nav = e.target.closest('[data-href]');
   if (nav) {
     location.hash = nav.dataset.href;
@@ -4412,6 +4641,8 @@ document.addEventListener('click', async (e) => {
     case 'toggle-password': {
       const input = el.parentElement.querySelector('input');
       input.type = input.type === 'password' ? 'text' : 'password';
+      el.setAttribute('aria-pressed', String(input.type === 'text'));
+      el.setAttribute('aria-label', input.type === 'text' ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
       return;
     }
     case 'landing-menu':
@@ -4434,8 +4665,11 @@ document.addEventListener('click', async (e) => {
       el.setAttribute('aria-expanded', String(open));
       return;
     }
-    case 'user-menu':
-      return $('user-menu-panel').classList.toggle('open');
+    case 'user-menu': {
+      const open = $('user-menu-panel').classList.toggle('open');
+      el.setAttribute('aria-expanded', String(open));
+      return;
+    }
     case 'theme':
       setTheme(el.dataset.value);
       return renderApp();
@@ -4487,7 +4721,7 @@ document.addEventListener('click', async (e) => {
       } catch (err) {
         if (err instanceof InvoiceError && err.issues.length) {
           if (ui.draft) {
-            Object.assign(ui.draft, { issues: err.issues, key: `modifier-${inv.id}`, savedId: inv.id });
+            Object.assign(ui.draft, { issues: err.issues, focusIssues: true, key: `modifier-${inv.id}`, savedId: inv.id });
             location.hash = `#/ventes/modifier-${inv.id}`;
           }
           render();
@@ -4530,10 +4764,11 @@ document.addEventListener('click', async (e) => {
       ui.pendingPurchase = null;
       return render();
     case 'tx-match': {
-      const s = ws.suggestionsFor(id)[Number(index)];
+      const s = (suggestionsCache.version === dataVersion && suggestionsCache.map.get(id)) || ws.suggestionsFor(id);
+      const chosen = s[Number(index)];
       ws.matchTransaction(
         id,
-        s.docs.map((doc, i) => ({ doc, amount: s.amounts[i] })),
+        chosen.docs.map((doc, i) => ({ doc, amount: chosen.amounts[i] })),
       );
       save();
       render();
@@ -4794,6 +5029,10 @@ document.addEventListener('click', async (e) => {
       }
       return;
     }
+    case 'bank-page':
+      ui.bankPage = (ui.bankPage || 0) + Number(index);
+      render();
+      return $('bank-open')?.scrollIntoView({ block: 'start' });
     case 'bank-account-new':
       ui.addingBank = true;
       return render();
@@ -4898,7 +5137,7 @@ document.addEventListener('click', async (e) => {
     case 'backup':
       return download(`nexus-gestion-${today()}.json`, JSON.stringify(ws.toJSON(), null, 2), 'application/json');
     case 'demo-exit':
-      localStorage.removeItem(DEMO_KEY);
+      removeDemo();
       ws = null;
       ui.demo = false;
       ui.screen = 'landing';
@@ -4964,7 +5203,7 @@ async function boot() {
       return seedDemo();
     } else if (featureSlug()) {
       ui.screen = 'landing';
-    } else if (loadDemo()) {
+    } else if (await loadDemo()) {
       ui.screen = 'app';
     } else if (URL_AUTH_ERROR || params.has('desktop')) {
       ui.screen = 'login';

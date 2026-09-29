@@ -165,6 +165,55 @@ export const EXPENSE_CATEGORIES = [
   { id: 'logiciel-achat', label: 'Logiciel acheté (licence définitive)', account: '205000', vatDeductiblePct: 100, fixedAsset: true },
 ];
 
+/**
+ * Taux de TVA habituel par catégorie de dépense, proposé par défaut quand un mouvement bancaire est
+ * catégorisé (l'utilisateur peut le changer). null : pas de taux habituel sûr (exonéré ou taxé selon
+ * le cas), aucun taux n'est proposé. Paramètre daté, à valider par l'expert-comptable
+ * (docs/regles-a-valider.md).
+ */
+export const USUAL_VAT_RATES_2026 = {
+  year: 2026,
+  validation: 'à valider par l’expert-comptable',
+  rates: {
+    marchandises: null,
+    matieres: 2000,
+    'sous-traitance': 2000,
+    energie: null, // électricité et gaz 20 %, eau 5,5 %
+    'petit-materiel': 2000,
+    fournitures: 2000,
+    'carburant-vu': 2000,
+    'carburant-vp': 2000,
+    loyer: null, // exonéré, ou 20 % si le bailleur a opté pour la TVA
+    'location-materiel': 2000,
+    'location-voiture': 2000,
+    entretien: 2000,
+    'entretien-voiture': 2000,
+    assurance: 0, // exonérée
+    formation: null, // souvent exonérée (organisme de formation), sinon 20 %
+    honoraires: 2000,
+    publicite: 2000,
+    cadeaux: 2000,
+    deplacements: 1000, // transport de voyageurs
+    hotel: 1000,
+    repas: 1000, // restauration sur place (boissons alcoolisées à 20 %)
+    telecom: 2000,
+    banque: null, // commissions souvent exonérées, certaines taxées
+    logiciel: 2000,
+    impots: 0, // hors champ
+    'materiel-info': 2000,
+    mobilier: 2000,
+    'logiciel-achat': 2000,
+  },
+};
+const USUAL_VAT_RATES = [USUAL_VAT_RATES_2026];
+
+/** Taux habituel à la date donnée (dernier barème connu pour cette année ou avant), ou null. */
+export function usualVatRate(categoryId, date) {
+  const year = Number(String(date).slice(0, 4));
+  const table = USUAL_VAT_RATES.filter((t) => t.year <= year).at(-1) || USUAL_VAT_RATES[0];
+  return table.rates[categoryId] ?? null;
+}
+
 export const REVENUE_ACCOUNT_BY_NATURE = {
   services: '706000',
   biens: '707000',
