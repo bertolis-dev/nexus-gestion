@@ -10,7 +10,7 @@
  * antérieures, ce qui garantit que la numérotation reste chronologique.
  */
 
-import { assertCents, sum } from './money.js?v=702f5da';
+import { assertCents, sum } from './money.js?v=e64ad2c';
 
 export const JOURNALS = {
   VE: 'Ventes',

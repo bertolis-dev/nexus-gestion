@@ -11,10 +11,18 @@
  *   friendly(error) → message ; onStatus(status) ; onResult(op, result).
  */
 
-import { planSync, isDivergence } from './sync.js?v=702f5da';
+import { planSync, isDivergence } from './sync.js?v=e64ad2c';
 
 const DIVERGENCE_MESSAGE = 'Des modifications ont été enregistrées ailleurs (autre appareil ou autre onglet) : rechargez les données depuis la base.';
 const directLock = (_name, fn) => fn();
+
+/**
+ * Version du format de la file enregistrée : { v, ops }. Version 1 (avant numérotation) : un simple
+ * tableau d'opérations, repris tel quel. Une file écrite par une version plus récente de
+ * l'application (autre onglet déjà mis à jour) n'est ni envoyée ni réécrite.
+ */
+export const OUTBOX_SCHEMA_VERSION = 2;
+const NEWER_MESSAGE = 'Des modifications en attente viennent d’une version plus récente de Nexus Gestion : rechargez la page.';
 
 export class Outbox {
   constructor({ key, run, storage, lock = directLock, friendly = (e) => e?.message || String(e), onStatus = () => {}, onResult = () => {} }) {
@@ -25,16 +33,21 @@ export class Outbox {
   }
 
   #load() {
+    let saved;
     try {
-      return JSON.parse(this.storage.getItem(this.key) || '[]');
+      saved = JSON.parse(this.storage.getItem(this.key) || '[]');
     } catch {
       return [];
     }
+    if (Array.isArray(saved)) return saved;
+    this.newer = saved?.v > OUTBOX_SCHEMA_VERSION;
+    return Array.isArray(saved?.ops) ? saved.ops : [];
   }
 
   #persist() {
+    if (this.newer) return;
     try {
-      this.storage.setItem(this.key, JSON.stringify(this.queue));
+      this.storage.setItem(this.key, JSON.stringify({ v: OUTBOX_SCHEMA_VERSION, ops: this.queue }));
     } catch {
       // Stockage plein : la file reste en mémoire, l'envoi continue.
     }
@@ -54,6 +67,12 @@ export class Outbox {
 
   async flush() {
     if (this.running) return;
+    this.queue = this.#load();
+    if (this.newer) {
+      this.error = NEWER_MESSAGE;
+      this.onStatus({ pending: this.queue.length, error: NEWER_MESSAGE, divergence: true });
+      return;
+    }
     this.running = true;
     this.error = null;
     this.onStatus({ pending: this.queue.length, error: null });

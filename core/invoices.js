@@ -4,11 +4,12 @@
  * la seule correction possible est l'avoir lié.
  */
 
-import { assertCents, divRound, sum, vatFromHt } from './money.js?v=702f5da';
-import { REVENUE_ACCOUNT_BY_NATURE } from './pcg.js?v=702f5da';
-import { LIFECYCLE } from './lifecycle.js?v=702f5da';
-import { tradeZone } from './countries.js?v=702f5da';
-import { creditsOf, originalOf, groupBalance } from './receipts.js?v=702f5da';
+import { assertCents, divRound, sum, vatFromHt } from './money.js?v=e64ad2c';
+import { REVENUE_ACCOUNT_BY_NATURE } from './pcg.js?v=e64ad2c';
+import { LIFECYCLE } from './lifecycle.js?v=e64ad2c';
+import { tradeZone } from './countries.js?v=e64ad2c';
+import { creditsOf, originalOf, groupBalance } from './receipts.js?v=e64ad2c';
+import { addDays } from './dates.js?v=e64ad2c';
 
 export const VAT_RATES_BP = [2000, 1000, 550, 210, 0];
 
@@ -32,6 +33,18 @@ export function isValidSiren(siren) {
     total += d;
   }
   return total % 10 === 0;
+}
+
+/** Validité proposée d'un devis (usage commercial, modifiable sur chaque devis). */
+export const QUOTE_VALIDITY_DAYS = 30;
+
+/**
+ * Échéance proposée à la création : délai de paiement de l'entreprise (30 jours par défaut) pour une
+ * facture, validité pour un devis, paiement à réception pour une facture d'acompte.
+ */
+export function defaultDueDate({ type = 'invoice', issueDate, paymentTermsDays }) {
+  const days = type === 'quote' ? QUOTE_VALIDITY_DAYS : type === 'deposit' ? 0 : paymentTermsDays || 30;
+  return addDays(issueDate, days);
 }
 
 export function lineHt(line) {

@@ -3,8 +3,8 @@
  * TVA non déductible appliquée automatiquement, détection des immobilisations et des doublons.
  */
 
-import { divRound, sum, vatFromHt } from './money.js?v=702f5da';
-import { categoryById } from './pcg.js?v=702f5da';
+import { divRound, sum, vatFromHt } from './money.js?v=e64ad2c';
+import { categoryById } from './pcg.js?v=e64ad2c';
 
 export const FIXED_ASSET_THRESHOLD_HT = 50000; // 500 € HT, paramétrable par structure
 

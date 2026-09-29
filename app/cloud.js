@@ -9,11 +9,11 @@
  * nombre d'écritures validées), l'état est rechargé depuis la base, qui fait foi.
  */
 
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js?v=702f5da';
-import { stateFromRows } from '../core/sync.js?v=702f5da';
-import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, OUTBOX_PREFIX } from '../core/outbox.js?v=702f5da';
-import { ACCOUNTS } from '../core/pcg.js?v=702f5da';
-import { mfaState, canRemoveFactor } from '../core/mfa.js?v=702f5da';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js?v=e64ad2c';
+import { stateFromRows } from '../core/sync.js?v=e64ad2c';
+import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, OUTBOX_PREFIX } from '../core/outbox.js?v=e64ad2c';
+import { ACCOUNTS } from '../core/pcg.js?v=e64ad2c';
+import { mfaState, canRemoveFactor } from '../core/mfa.js?v=e64ad2c';
 
 // supabase-js (copie locale, app/vendor/) n'est chargé qu'en mode connecté : la démonstration et
 // le site public ne téléchargent pas ces 220 Ko.
@@ -21,7 +21,7 @@ let client = null;
 const authListeners = [];
 async function connect() {
   if (!client) {
-    const { createClient } = await import('./vendor/supabase.js?v=702f5da');
+    const { createClient } = await import('./vendor/supabase.js?v=e64ad2c');
     client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     for (const cb of authListeners) client.auth.onAuthStateChange(cb);
   }
