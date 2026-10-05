@@ -2,16 +2,26 @@
  * Écran « micro ».
  */
 
-import { toCsv } from '../../core/exports.js?v=e64ad2c';
-import { receiptsBook } from '../../core/micro.js?v=e64ad2c';
-import { formatDecimalComma, parseEuros } from '../../core/money.js?v=e64ad2c';
-import { render } from '../render.js?v=e64ad2c';
-import { frDate, today, ui, ws } from '../state.js?v=e64ad2c';
-import { download, save, toast } from '../store.js?v=e64ad2c';
-import { microReceipts } from '../views/micro.js?v=e64ad2c';
+import { toCsv } from '../../core/exports.js?v=ab27222';
+import { receiptsBook } from '../../core/micro.js?v=ab27222';
+import { formatDecimalComma, parseEuros } from '../../core/money.js?v=ab27222';
+import { render } from '../render.js?v=ab27222';
+import { frDate, today, ui, ws } from '../state.js?v=ab27222';
+import { download, save, toast } from '../store.js?v=ab27222';
+import { microReceipts } from '../views/micro.js?v=ab27222';
+import { urssafLinkActions } from '../views/urssaf-link.js?v=ab27222';
 
 /** Actions « micro » : data-action → fonction. */
 export const actionsTable = {
+  ...Object.fromEntries(
+    Object.entries(urssafLinkActions).map(([name, fn]) => [
+      name,
+      async (ctx) => {
+        await fn(ctx);
+        render();
+      },
+    ]),
+  ),
   'urssaf-declare-open': async ({ el }) => {
     ui.urssafDeclare = el.dataset.from;
     return render();

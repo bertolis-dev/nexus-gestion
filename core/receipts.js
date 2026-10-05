@@ -10,8 +10,8 @@
  * facture non encaissée, il réduit la TVA restant en attente.
  */
 
-import { divRound, sum } from './money.js?v=e64ad2c';
-import { vatByNature } from './invoices.js?v=e64ad2c';
+import { divRound, sum } from './money.js?v=ab27222';
+import { vatByNature } from './invoices.js?v=ab27222';
 
 /** TVA exigible à l'encaissement (et non à la facturation) ? Un avoir suit la facture qu'il corrige. */
 export function isOnReceipt(inv) {

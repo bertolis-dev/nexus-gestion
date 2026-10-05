@@ -2,12 +2,13 @@
  * Écran « home ».
  */
 
-import { html, raw } from '../html.js?v=e64ad2c';
-import { ICONS } from '../icons.js?v=e64ad2c';
-import { isMicro } from '../render.js?v=e64ad2c';
-import { eur, today, ui, ws } from '../state.js?v=e64ad2c';
-import { allocationCard } from './closing.js?v=e64ad2c';
-import { franchiseBanner } from './micro.js?v=e64ad2c';
+import { html, raw } from '../html.js?v=ab27222';
+import { ICONS } from '../icons.js?v=ab27222';
+import { isMicro } from '../render.js?v=ab27222';
+import { eur, today, ui, ws } from '../state.js?v=ab27222';
+import { allocationCard } from './closing.js?v=ab27222';
+import { franchiseBanner } from './micro.js?v=ab27222';
+import { forecastCard } from './forecast.js?v=ab27222';
 
 // ------------------------------------------------------------------ accueil
 
@@ -55,5 +56,6 @@ export function viewHome() {
             </div>`
           : html`<p class="text-muted">Tout est à jour. Rien à faire pour le moment.</p>`
       }
-    </div>`;
+    </div>
+    ${forecastCard()}`;
 }

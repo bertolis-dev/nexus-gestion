@@ -2,13 +2,32 @@
  * Écran « settings ».
  */
 
-import * as cloud from '../cloud.js?v=e64ad2c';
-import { render } from '../render.js?v=e64ad2c';
-import { cloudState, frDate, today, ui } from '../state.js?v=e64ad2c';
-import { toast } from '../store.js?v=e64ad2c';
+import * as cloud from '../cloud.js?v=ab27222';
+import { render } from '../render.js?v=ab27222';
+import { cloudState, frDate, today, ui, ws } from '../state.js?v=ab27222';
+import { save, toast } from '../store.js?v=ab27222';
+import { forgetRule } from '../../core/categorization.js?v=ab27222';
 
 /** Actions « settings » : data-action → fonction. */
 export const actionsTable = {
+  'reminder-templates-reset': async () => {
+    delete ws.company.reminderTemplates;
+    save();
+    render();
+    toast('Modèles de Nexus rétablis.');
+  },
+  'category-rule-forget': async ({ id, index }) => {
+    ws.company.categoryRules = forgetRule(ws.company.categoryRules, id, index);
+    save();
+    render();
+    toast('Règle oubliée.');
+  },
+  'logo-remove': async () => {
+    delete ws.company.logo;
+    save();
+    render();
+    toast('Logo retiré.');
+  },
   'invite-member': async () => {
     const email = document.querySelector('[data-invite-email]').value.trim();
     const role = document.querySelector('[data-invite-role]').value;

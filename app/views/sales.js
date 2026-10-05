@@ -2,16 +2,18 @@
  * Écran « sales ».
  */
 
-import { VAT_RATES_BP, checkInvoice, computeTotals, isVatExempt, issuerName, lineHt } from '../../core/invoices.js?v=e64ad2c';
-import { FREQUENCIES, nextDate } from '../../core/recurring.js?v=e64ad2c';
-import { field, html, opt, raw } from '../html.js?v=e64ad2c';
-import { ICONS } from '../icons.js?v=e64ad2c';
-import { eur, frDate, pct, today, ui, ws } from '../state.js?v=e64ad2c';
-import { save, toast } from '../store.js?v=e64ad2c';
-import { isUnconfirmed } from '../sync-ui.js?v=e64ad2c';
-import { badge, viewHeader } from '../ui/common.js?v=e64ad2c';
-import { lifecycleCard } from './expenses.js?v=e64ad2c';
-import { viewInvoiceForm } from './invoice-form.js?v=e64ad2c';
+import { VAT_RATES_BP, checkInvoice, computeTotals, isVatExempt, issuerName, lineHt } from '../../core/invoices.js?v=ab27222';
+import { FREQUENCIES, nextDate } from '../../core/recurring.js?v=ab27222';
+import { field, html, opt, raw } from '../html.js?v=ab27222';
+import { ICONS } from '../icons.js?v=ab27222';
+import { eur, frDate, pct, today, ui, ws } from '../state.js?v=ab27222';
+import { save, toast } from '../store.js?v=ab27222';
+import { isUnconfirmed } from '../sync-ui.js?v=ab27222';
+import { badge, viewHeader } from '../ui/common.js?v=ab27222';
+import { lifecycleCard } from './expenses.js?v=ab27222';
+import { viewInvoiceForm } from './invoice-form.js?v=ab27222';
+import { depositCard } from './deposit.js?v=ab27222';
+import { REMINDER_STEPS, dueReminderLevel, reminderMessage } from '../../core/reminders.js?v=ab27222';
 
 // ------------------------------------------------------------------ factures (§3.2, §3.5)
 
@@ -76,6 +78,7 @@ export function viewSales(arg) {
       <button class="tab ${quotesTab ? 'active' : ''}" data-action="sales-tab" data-tab="devis">Devis</button>
       <button class="tab" data-action="sales-tab" data-tab="recurrentes">Récurrentes</button>
     </div>
+    ${quotesTab ? '' : depositCard()}
     <div class="card table-card">
       ${
         docs.length
@@ -260,10 +263,14 @@ export function viewInvoice(id) {
   const issues = issued ? [] : checkInvoice(inv, ws.company);
   const payments = ws.book.payments[inv.id] || [];
   const c = inv.client;
-  const mailto =
-    c.email && issued && outstanding > 0
-      ? `mailto:${encodeURIComponent(c.email)}?subject=${encodeURIComponent(`Facture ${inv.number} en attente de règlement`)}&body=${encodeURIComponent(`Bonjour,\n\nSauf erreur de notre part, la facture ${inv.number} du ${frDate(inv.issueDate)}, d'un montant de ${eur(outstanding)}, arrivée à échéance le ${frDate(inv.dueDate)}, reste à régler.\n\nMerci de procéder au règlement dans les meilleurs délais.\n\nCordialement,\n${ws.company.name}`)}`
-      : '';
+  // Relance : niveau proposé (J+3, J+15, J+30), sinon le suivant ; modèle de l'entreprise (Paramètres).
+  const history = issued ? ws.reminderHistory(inv.id) : [];
+  const lateDays = Math.floor((Date.parse(today()) - Date.parse(inv.dueDate)) / 86400000);
+  const reminderLevel = dueReminderLevel(lateDays, history) || Math.min(3, Math.max(0, ...history.map((h) => h.level)) + 1);
+  const reminder = c.email && issued && outstanding > 0 ? reminderMessage(ws, inv.id, reminderLevel, today()) : null;
+  const mailto = reminder
+    ? `mailto:${encodeURIComponent(reminder.to)}?subject=${encodeURIComponent(reminder.subject)}&body=${encodeURIComponent(reminder.body)}`
+    : '';
   const quote = inv.type === 'quote';
   // Mode connecté : le numéro n'est définitif qu'une fois attribué par la base.
   const unconfirmed = issued && isUnconfirmed(inv);
@@ -284,13 +291,19 @@ export function viewInvoice(id) {
   const actions = html` ${!issued ? html`<button class="btn btn-primary" data-action="invoice-issue-existing" data-id="${inv.id}">Émettre</button><button class="btn btn-secondary" data-href="#/ventes/modifier-${inv.id}">Modifier</button><button class="btn btn-secondary" data-action="invoice-delete" data-id="${inv.id}">Supprimer</button>` : ''}
   ${quote && issued && !invoicedFrom ? html`<button class="btn btn-gold" data-action="quote-convert" data-id="${inv.id}">Transformer en facture</button>` : ''}
   ${issued && !unconfirmed ? html`<button class="btn btn-secondary" data-action="print">Imprimer / PDF</button>` : ''}
-  ${issued && !quote && !unconfirmed ? html`<button class="btn btn-secondary" data-action="einvoice" data-id="${inv.id}">Facture électronique (XML)</button>` : ''}
-  ${mailto && !quote && !unconfirmed ? html`<a class="btn btn-gold" href="${mailto}">Relancer le client</a>` : ''}
+  ${issued && !quote && !unconfirmed ? html`<button class="btn btn-primary" data-action="invoice-send" data-id="${inv.id}">Envoyer au client</button><button class="btn btn-secondary" data-action="invoice-pdf" data-id="${inv.id}">Télécharger la facture (PDF)</button><button class="btn btn-secondary" data-action="einvoice" data-id="${inv.id}">Facture électronique (XML)</button>` : ''}
+  ${mailto && !quote && !unconfirmed ? html`<a class="btn btn-gold" href="${mailto}" data-action="reminder-send" data-id="${inv.id}" data-index="${reminderLevel}">Relancer le client</a>` : ''}
   ${issued && inv.type !== 'credit' && !quote ? html`<button class="btn btn-secondary" data-action="credit-note" data-id="${inv.id}">Créer un avoir</button>` : ''}`;
+  const historyNote = history.length
+    ? html`<p class="text-muted no-print" style="margin:-6px 0 14px">
+        Relances envoyées : ${history.map((h) => `${REMINDER_STEPS[h.level - 1]?.label.toLowerCase() || 'relance'} le ${frDate(h.date)}`).join(', ')}.
+      </p>`
+    : '';
   return html` <div class="no-print">
       <button class="btn-link" data-href="#/ventes">← Retour aux factures</button
       >${viewHeader(unconfirmed ? `${quote ? 'Devis' : 'Facture'} en cours d’émission` : inv.number || (quote ? 'Brouillon de devis' : 'Brouillon de facture'), subtitle, actions)}
     </div>
+    ${historyNote}
     ${
       issues.length
         ? html`<div class="issues-box no-print" style="margin-bottom:14px">

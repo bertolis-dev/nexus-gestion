@@ -3,16 +3,16 @@
  */
 
 /** Table de toutes les actions (clics sur un élément data-action), réparties par domaine. */
-import { actionsTable as site } from './site.js?v=e64ad2c';
-import { actionsTable as shell } from './shell.js?v=e64ad2c';
-import { actionsTable as sales } from './sales.js?v=e64ad2c';
-import { actionsTable as expenses } from './expenses.js?v=e64ad2c';
-import { actionsTable as bank } from './bank.js?v=e64ad2c';
-import { actionsTable as compta } from './compta.js?v=e64ad2c';
-import { actionsTable as vat } from './vat.js?v=e64ad2c';
-import { actionsTable as closing } from './closing.js?v=e64ad2c';
-import { actionsTable as micro } from './micro.js?v=e64ad2c';
-import { actionsTable as settings } from './settings.js?v=e64ad2c';
+import { actionsTable as site } from './site.js?v=ab27222';
+import { actionsTable as shell } from './shell.js?v=ab27222';
+import { actionsTable as sales } from './sales.js?v=ab27222';
+import { actionsTable as expenses } from './expenses.js?v=ab27222';
+import { actionsTable as bank } from './bank.js?v=ab27222';
+import { actionsTable as compta } from './compta.js?v=ab27222';
+import { actionsTable as vat } from './vat.js?v=ab27222';
+import { actionsTable as closing } from './closing.js?v=ab27222';
+import { actionsTable as micro } from './micro.js?v=ab27222';
+import { actionsTable as settings } from './settings.js?v=ab27222';
 
 const ACTIONS = { ...site, ...shell, ...sales, ...expenses, ...bank, ...compta, ...vat, ...closing, ...micro, ...settings };
 

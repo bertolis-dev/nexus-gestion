@@ -2,23 +2,24 @@
  * Événements du document : saisie, changement, clavier, formulaires, clics, navigation.
  */
 
-import { readIncomingInvoice } from '../../core/einvoice-in.js?v=e64ad2c';
-import { isValidSiren } from '../../core/invoices.js?v=e64ad2c';
-import { parseEuros } from '../../core/money.js?v=e64ad2c';
-import { usualVatRate } from '../../core/pcg.js?v=e64ad2c';
-import * as cloud from '../cloud.js?v=e64ad2c';
-import { html, raw } from '../html.js?v=e64ad2c';
-import { ICONS } from '../icons.js?v=e64ad2c';
-import { $, render, searchResults } from '../render.js?v=e64ad2c';
-import { closeLightbox, featureSlug } from '../site/landing.js?v=e64ad2c';
-import { cloudState, ui, ws } from '../state.js?v=e64ad2c';
-import { save, savePrefs, toast } from '../store.js?v=e64ad2c';
-import { afterSignIn } from '../sync-ui.js?v=e64ad2c';
-import { currentBankAccount, importBankFile } from '../views/bank.js?v=e64ad2c';
-import { attachReceipt } from '../views/expenses.js?v=e64ad2c';
-import { totalsBlock } from '../views/invoice-form.js?v=e64ad2c';
-import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=e64ad2c';
-import { runAction } from './index.js?v=e64ad2c';
+import { isValidSiren } from '../../core/invoices.js?v=ab27222';
+import { parseEuros } from '../../core/money.js?v=ab27222';
+import { usualVatRate } from '../../core/pcg.js?v=ab27222';
+import * as cloud from '../cloud.js?v=ab27222';
+import { html, raw } from '../html.js?v=ab27222';
+import { ICONS } from '../icons.js?v=ab27222';
+import { $, render, searchResults } from '../render.js?v=ab27222';
+import { closeLightbox, featureSlug } from '../site/landing.js?v=ab27222';
+import { cloudState, ui, ws } from '../state.js?v=ab27222';
+import { save, savePrefs, toast } from '../store.js?v=ab27222';
+import { afterSignIn } from '../sync-ui.js?v=ab27222';
+import { currentBankAccount, importBankFile } from '../views/bank.js?v=ab27222';
+import { attachReceipt } from '../views/expenses.js?v=ab27222';
+import { totalsBlock } from '../views/invoice-form.js?v=ab27222';
+import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=ab27222';
+import { runAction } from './index.js?v=ab27222';
+import { readReceivedInvoices } from '../received-invoices.js?v=ab27222';
+import { urssafLinkSubmit } from '../views/urssaf-link.js?v=ab27222';
 
 // ------------------------------------------------------------------ évènements
 
@@ -86,6 +87,11 @@ document.addEventListener('change', async (e) => {
     if (vat && rate !== null && rate !== undefined) vat.value = String(rate);
     return;
   }
+  if (el.dataset.paPlatform !== undefined) {
+    ws.company.paPlatform = el.value || undefined;
+    save();
+    return render();
+  }
   if (el.dataset.bankAccount !== undefined) {
     ui.bankAccountId = el.value;
     ui.statementBalance = '';
@@ -114,6 +120,20 @@ document.addEventListener('change', async (e) => {
     }
     return render();
   }
+  if (el.dataset.action === 'logo-file' && el.files[0]) {
+    const file = el.files[0];
+    if (!['image/png', 'image/jpeg'].includes(file.type)) return toast('Choisissez une image PNG ou JPEG.', true);
+    if (file.size > 200 * 1024) return toast('Image trop lourde : 200 Ko au plus (réduisez-la, par exemple à 400 px de large).', true);
+    const reader = new FileReader();
+    reader.onload = () => {
+      ws.company.logo = reader.result;
+      save();
+      render();
+      toast('Logo enregistré : il figure en tête de vos factures PDF.');
+    };
+    reader.readAsDataURL(file);
+    return;
+  }
   if (el.dataset.action === 'bank-file' && el.files[0]) {
     try {
       const result = await importBankFile(el.files[0], currentBankAccount().id);
@@ -131,13 +151,13 @@ document.addEventListener('change', async (e) => {
     }
     return;
   }
-  if (el.dataset.action === 'einvoice-in-file' && el.files[0]) {
-    try {
-      const inv = readIncomingInvoice(await el.files[0].text(), { ownSiren: ws.company.siren });
-      ui.pendingEinvoice = { inv, file: el.files[0] };
+  if (el.dataset.action === 'einvoice-in-file' && el.files.length) {
+    const { invoices, errors } = await readReceivedInvoices([...el.files], ws.company.siren);
+    for (const e of errors) toast(e, true);
+    if (invoices.length) {
+      [ui.pendingEinvoice, ...ui.pendingEinvoices] = invoices;
       ui.expensesTab = 'depenses';
-    } catch (err) {
-      toast(err.message, true);
+      if (invoices.length > 1) toast(`${invoices.length} factures reçues à vérifier, une par une.`);
     }
     return render();
   }
@@ -320,6 +340,16 @@ document.addEventListener('submit', async (e) => {
     render();
     return toast('Paramètres enregistrés.');
   }
+  if (kind === 'reminder-templates') {
+    ws.company.reminderTemplates = [0, 1, 2].map((i) => ({ subject: (f[`subject${i}`] || '').trim(), body: (f[`body${i}`] || '').trim() }));
+    save();
+    render();
+    return toast('Modèles de relance enregistrés.');
+  }
+  if (kind === 'urssaf-link-siret' || kind === 'urssaf-link-account') {
+    if (await urssafLinkSubmit(kind, f)) save();
+    return render();
+  }
   if (kind === 'micro') {
     if (f.acreStart && f.acreEnd && f.acreEnd < f.acreStart)
       return toast('La fin de l’ACRE doit être postérieure à son début : vérifiez les dates sur votre attestation URSSAF.', true);
@@ -328,6 +358,7 @@ document.addEventListener('submit', async (e) => {
       microActivity: f.microActivity,
       taxRegime: f.microActivity === 'bnc' ? 'micro-bnc' : 'micro-bic',
       retraite: f.retraite === 'cipav' ? 'cipav' : 'general',
+      activityStart: f.activityStart || null,
       acreStart: f.acreStart || null,
       acreEnd: f.acreEnd || null,
       artisan: fd.has('artisan'),

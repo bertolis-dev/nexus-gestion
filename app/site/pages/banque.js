@@ -36,6 +36,10 @@ export default {
       text: 'Un client règle trois factures en un seul virement ? Nexus retrouve la combinaison. Il paie la moitié ? Le paiement partiel est enregistré et le reste dû reste suivi sur la facture.',
     },
     {
+      title: 'Nexus retient vos choix',
+      text: 'Quand vous catégorisez un prélèvement (Orange → Téléphone, TVA 20 %), Nexus le retient et le propose pour les suivants du même fournisseur. Vous validez toujours ; les règles se consultent et s’oublient dans les Paramètres.',
+    },
+    {
       title: 'Une catégorie pour tout le reste',
       text: 'Frais bancaires, billet de train, paiement de la TVA, acompte d’impôt, apport personnel : choisissez la catégorie dans une liste en français, indiquez le taux de TVA et si vous avez la facture. L’écriture est passée pour vous.',
     },

@@ -4,18 +4,18 @@
  * Sans DOM ni stockage : l'interface (app/) le sérialise, les tests l'utilisent tel quel.
  */
 
-import { buildChart, categoryById } from './pcg.js?v=e64ad2c';
-import { Ledger } from './ledger.js?v=e64ad2c';
-import { InvoiceBook, clientAux } from './invoices.js?v=e64ad2c';
-import { purchaseEntry, findDuplicates } from './purchases.js?v=e64ad2c';
-import { mergeTransactions, suggestMatches, settlementEntry, directEntry, DEFAULT_BANK_ACCOUNT } from './bank.js?v=e64ad2c';
+import { buildChart, categoryById } from './pcg.js?v=ab27222';
+import { Ledger } from './ledger.js?v=ab27222';
+import { InvoiceBook, clientAux } from './invoices.js?v=ab27222';
+import { purchaseEntry, findDuplicates } from './purchases.js?v=ab27222';
+import { mergeTransactions, suggestMatches, settlementEntry, directEntry, DEFAULT_BANK_ACCOUNT } from './bank.js?v=ab27222';
 export { DEFAULT_BANK_ACCOUNT };
-import { isOnReceipt, creditsOf, originalOf, groupBalance, receiptTargets } from './receipts.js?v=e64ad2c';
-import { divRound, splitTtc, sum } from './money.js?v=e64ad2c';
-import { openingEntry } from './fecimport.js?v=e64ad2c';
-import { creditTargetsAsset } from './assets.js?v=e64ad2c';
-import { LIFECYCLE } from './lifecycle.js?v=e64ad2c';
-import { SCHEMA_VERSION, migrateState } from './schema.js?v=e64ad2c';
+import { isOnReceipt, creditsOf, originalOf, groupBalance, receiptTargets } from './receipts.js?v=ab27222';
+import { divRound, splitTtc, sum } from './money.js?v=ab27222';
+import { openingEntry } from './fecimport.js?v=ab27222';
+import { creditTargetsAsset } from './assets.js?v=ab27222';
+import { LIFECYCLE } from './lifecycle.js?v=ab27222';
+import { SCHEMA_VERSION, migrateState } from './schema.js?v=ab27222';
 
 /** Entrées d'argent sans facture de vente, proposées en langage courant. */
 export const INCOME_CATEGORIES = [
@@ -58,10 +58,13 @@ export function combineEstimates(list) {
 
 export const MAX_BANK_ACCOUNTS = 10;
 
-import { recurringMethods } from './workspace/recurring.js?v=e64ad2c';
-import { vatMethods } from './workspace/vat.js?v=e64ad2c';
-import { closingMethods } from './workspace/closing.js?v=e64ad2c';
-import { microMethods } from './workspace/micro.js?v=e64ad2c';
+import { recurringMethods } from './workspace/recurring.js?v=ab27222';
+import { vatMethods } from './workspace/vat.js?v=ab27222';
+import { closingMethods } from './workspace/closing.js?v=ab27222';
+import { microMethods } from './workspace/micro.js?v=ab27222';
+import { depositMethods } from './deposit.js?v=ab27222';
+import { categorizationMethods, learnRule } from './categorization.js?v=ab27222';
+import { reminderMethods } from './reminders.js?v=ab27222';
 
 export class Workspace {
   constructor({ company, state: saved = {}, now, newId } = {}) {
@@ -486,6 +489,8 @@ export class Workspace {
   categorizeTransaction(txId, { categoryId, vatRateBp = 0, hasReceipt = false }) {
     const tx = this.transactions.find((t) => t.id === txId);
     if (!tx || tx.status !== 'open') throw new Error('Transaction déjà traitée');
+    // Choix retenu pour les prochains mouvements semblables (annulé avec l'opération si elle échoue).
+    this.company.categoryRules = learnRule(this.company.categoryRules, tx, { categoryId, vatRateBp });
     const income = INCOME_CATEGORIES.find((c) => c.id === categoryId) || OUTFLOW_CATEGORIES.find((c) => c.id === categoryId);
     if (income) {
       const e = this.ledger.addDraft(directEntry(tx, { account: income.account, missingReceipt: false, bankAccount: this.bankGlOf(tx) }));
@@ -551,7 +556,7 @@ export class Workspace {
 }
 
 // Méthodes réparties par domaine (même `this`, même API) : voir core/workspace/.
-for (const methods of [recurringMethods, vatMethods, closingMethods, microMethods]) {
+for (const methods of [recurringMethods, vatMethods, closingMethods, microMethods, depositMethods, categorizationMethods, reminderMethods]) {
   Object.defineProperties(Workspace.prototype, Object.getOwnPropertyDescriptors(methods));
 }
 
@@ -577,6 +582,8 @@ for (const name of [
   'allocateResult',
   'closeYear',
   'recordUrssafDeclaration',
+  'markDeposited',
+  'recordReminder',
 ]) {
   const original = Workspace.prototype[name];
   if (typeof original !== 'function') throw new Error(`Workspace.${name} introuvable`);

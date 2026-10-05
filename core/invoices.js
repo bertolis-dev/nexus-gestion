@@ -4,12 +4,12 @@
  * la seule correction possible est l'avoir lié.
  */
 
-import { assertCents, divRound, sum, vatFromHt } from './money.js?v=e64ad2c';
-import { REVENUE_ACCOUNT_BY_NATURE } from './pcg.js?v=e64ad2c';
-import { LIFECYCLE } from './lifecycle.js?v=e64ad2c';
-import { tradeZone } from './countries.js?v=e64ad2c';
-import { creditsOf, originalOf, groupBalance } from './receipts.js?v=e64ad2c';
-import { addDays } from './dates.js?v=e64ad2c';
+import { assertCents, divRound, sum, vatFromHt } from './money.js?v=ab27222';
+import { REVENUE_ACCOUNT_BY_NATURE } from './pcg.js?v=ab27222';
+import { LIFECYCLE } from './lifecycle.js?v=ab27222';
+import { tradeZone } from './countries.js?v=ab27222';
+import { creditsOf, originalOf, groupBalance } from './receipts.js?v=ab27222';
+import { addDays } from './dates.js?v=ab27222';
 
 export const VAT_RATES_BP = [2000, 1000, 550, 210, 0];
 
@@ -283,7 +283,7 @@ export class InvoiceBook {
       ...draft,
       status: 'issued',
       number: `${key}-${String(n).padStart(4, '0')}`,
-      issuer: structuredClone(this.company),
+      issuer: structuredClone({ ...this.company, logo: undefined, categoryRules: undefined, reminders: undefined, reminderTemplates: undefined }),
       operationNature: operationNature(draft.lines),
       mentions: legalMentions(draft, this.company),
       totals,

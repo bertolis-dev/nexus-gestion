@@ -2,12 +2,12 @@
  * Écran « expenses ».
  */
 
-import { purchaseLinesFrom } from '../../core/einvoice-in.js?v=e64ad2c';
-import * as cloud from '../cloud.js?v=e64ad2c';
-import { render } from '../render.js?v=e64ad2c';
-import { eur, ui, ws } from '../state.js?v=e64ad2c';
-import { save, toast } from '../store.js?v=e64ad2c';
-import { attachReceipt } from '../views/expenses.js?v=e64ad2c';
+import { purchaseLinesFrom } from '../../core/einvoice-in.js?v=ab27222';
+import * as cloud from '../cloud.js?v=ab27222';
+import { render } from '../render.js?v=ab27222';
+import { eur, ui, ws } from '../state.js?v=ab27222';
+import { save, toast } from '../store.js?v=ab27222';
+import { attachReceipt } from '../views/expenses.js?v=ab27222';
 
 /** Actions « expenses » : data-action → fonction. */
 export const actionsTable = {
@@ -45,7 +45,7 @@ export const actionsTable = {
       ui.pendingEinvoice.duplicates = res.duplicates;
       return render();
     }
-    ui.pendingEinvoice = null;
+    ui.pendingEinvoice = ui.pendingEinvoices.shift() || null;
     save();
     render();
     if (res.purchase.totalTtc !== inv.totalTtc)
@@ -58,7 +58,7 @@ export const actionsTable = {
     return;
   },
   'einvoice-in-cancel': async () => {
-    ui.pendingEinvoice = null;
+    ui.pendingEinvoice = ui.pendingEinvoices.shift() || null;
     return render();
   },
   'receipt-open': async ({ el }) => {

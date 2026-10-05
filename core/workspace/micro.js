@@ -3,18 +3,23 @@
  * Méthodes installées sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { divRound, sum } from '../money.js?v=e64ad2c';
-import { lineHt } from '../invoices.js?v=e64ad2c';
+import { divRound, sum } from '../money.js?v=ab27222';
+import { lineHt } from '../invoices.js?v=ab27222';
 import {
   ACTIVITY_TYPES,
+  acreReminder,
+  cfeReminder,
   declarationPeriods,
   estimateContributions,
+  incomeDeclaration,
+  incomeDeclarationReminder,
   thresholdStatus,
   urssafDeadline,
   urssafDeclaration,
   vatFranchiseMessage,
-} from '../micro.js?v=e64ad2c';
-import { combineEstimates } from '../workspace.js?v=e64ad2c';
+} from '../micro.js?v=ab27222';
+import { combineEstimates } from '../workspace.js?v=ab27222';
+import { dueReminderLevel } from '../reminders.js?v=ab27222';
 
 export const microMethods = {
   /** Liste « À faire » classée par urgence (§5). */
@@ -143,9 +148,16 @@ export const microMethods = {
     const year = Number(today.slice(0, 4));
     const periods = [...this.urssafPeriods(year - 1, today), ...this.urssafPeriods(year, today)];
     const pending = periods.find((p) => p.status === 'en-retard' || p.status === 'a-declarer');
-    if (!pending) return [];
+    const options = this.microOptions();
+    const reminders = [
+      cfeReminder({ today, activityStart: this.company.activityStart || null }),
+      acreReminder({ today, acreEnd: options.acreEnd }),
+      incomeDeclarationReminder({ today, declaration: incomeDeclaration(this.microReceipts(), year - 1) }),
+    ].filter(Boolean);
+    if (!pending) return reminders;
     const fr = (d) => d.split('-').reverse().join('/');
     return [
+      ...reminders,
       {
         urgency: pending.status === 'en-retard' ? 3 : 2,
         kind: 'urssaf',
@@ -163,13 +175,16 @@ export const microMethods = {
     const open = this.transactions.filter((t) => t.status === 'open');
     if (open.length) items.push({ urgency: 2, kind: 'bank', view: 'banque', text: `${open.length} transaction${open.length > 1 ? 's' : ''} à justifier` });
     const late = this.receivables(today).filter((r) => r.outstanding > 0 && r.lateDays > 0);
+    // Relance proposée à J+3, J+15 et J+30 (core/reminders.js) ; une relance envoyée ne revient pas.
     for (const r of late) {
+      const level = dueReminderLevel(r.lateDays, this.reminderHistory(r.invoice.id));
+      if (!level) continue;
       items.push({
-        urgency: r.lateDays > 30 ? 3 : 2,
+        urgency: level === 3 ? 3 : 2,
         kind: 'late',
         view: 'ventes',
         id: r.invoice.id,
-        text: `Relancer ${r.invoice.client.name} — facture ${r.invoice.number} en retard de ${r.lateDays} j`,
+        text: `Relancer ${r.invoice.client.name} — facture ${r.invoice.number} en retard de ${r.lateDays} j (relance n° ${level})`,
       });
     }
     const drafts = this.book.invoices.filter((i) => i.status === 'draft' && i.type !== 'quote');

@@ -2,13 +2,62 @@
  * Écran « settings ».
  */
 
-import { field, html, opt, raw } from '../html.js?v=e64ad2c';
-import { isMicro } from '../render.js?v=e64ad2c';
-import { ui, ws } from '../state.js?v=e64ad2c';
-import { viewHeader } from '../ui/common.js?v=e64ad2c';
-import { membersCard, microSettingsCard, openingPreview, securityCard } from './onboarding.js?v=e64ad2c';
+import { field, html, opt, raw } from '../html.js?v=ab27222';
+import { isMicro } from '../render.js?v=ab27222';
+import { ui, ws } from '../state.js?v=ab27222';
+import { viewHeader } from '../ui/common.js?v=ab27222';
+import { membersCard, microSettingsCard, openingPreview, securityCard } from './onboarding.js?v=ab27222';
+import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=ab27222';
+import { INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=ab27222';
+import { DEFAULT_TEMPLATES, REMINDER_STEPS } from '../../core/reminders.js?v=ab27222';
 
 // ------------------------------------------------------------------ paramètres
+
+/** Modèles des trois relances (J+3, J+15, J+30), modifiables ; variables entre accolades. */
+function reminderTemplatesCard() {
+  const custom = ws.company.reminderTemplates || [];
+  return html`<form class="card" data-form="reminder-templates" style="display:flex;flex-direction:column;gap:12px">
+    <h2>Modèles de relance</h2>
+    <p class="text-muted" style="margin:0">Variables : {client}, {numero}, {montant} (reste dû), {date}, {echeance}, {jours} (de retard), {entreprise}.</p>
+    ${REMINDER_STEPS.map((s, i) => {
+      const t = custom[i]?.subject ? custom[i] : DEFAULT_TEMPLATES[i];
+      return html`<fieldset class="choice-group">
+        <legend>${s.label} (${s.days} jours après l’échéance)</legend>
+        ${field('Objet', html`<input class="input" name="subject${i}" value="${t.subject}" />`)}
+        ${field('Message', html`<textarea class="input" name="body${i}" rows="6">${t.body}</textarea>`)}
+      </fieldset>`;
+    })}
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-primary" type="submit">Enregistrer les modèles</button>
+      ${custom.length ? html`<button class="btn btn-secondary" type="button" data-action="reminder-templates-reset">Revenir aux modèles de Nexus</button>` : ''}
+    </div>
+  </form>`;
+}
+
+/** Règles de catégorisation apprises en banque, supprimables une à une. */
+function categoryRulesCard() {
+  const rules = ws.company.categoryRules || [];
+  if (!rules.length) return '';
+  const label = (id) => [...EXPENSE_CATEGORIES, ...INCOME_CATEGORIES, ...OUTFLOW_CATEGORIES].find((c) => c.id === id)?.label || id;
+  return html`<div class="card table-card">
+    <h2 style="padding:16px 16px 0">Catégories retenues en banque</h2>
+    <p class="text-muted" style="padding:0 16px;margin:0">Nexus les propose pour les mouvements semblables ; vous validez toujours.</p>
+    <table class="table">
+      <tbody>
+        ${rules.map(
+          (r) =>
+            html`<tr>
+              <td>« ${r.key} » (${r.direction === 'out' ? 'dépense' : 'recette'})</td>
+              <td>${label(r.categoryId)}${r.direction === 'out' ? ` · TVA ${r.vatRateBp / 100} %` : ''}</td>
+              <td class="num">
+                <button class="btn btn-secondary btn-sm" data-action="category-rule-forget" data-id="${r.key}" data-index="${r.direction}">Oublier</button>
+              </td>
+            </tr>`,
+        )}
+      </tbody>
+    </table>
+  </div>`;
+}
 
 export function viewSettings() {
   const c = ws.company;
@@ -56,7 +105,17 @@ export function viewSettings() {
       >
       <div><button class="btn btn-primary" type="submit">Enregistrer</button></div>
     </form>
-    ${isMicro() ? microSettingsCard() : ''}
+    <div class="card" style="display:flex;flex-direction:column;gap:10px">
+      <h2>Logo sur vos factures</h2>
+      ${
+        c.logo
+          ? html`<img src="${c.logo}" alt="Logo actuel de l’entreprise" style="max-height:56px;max-width:180px;object-fit:contain;align-self:flex-start" />
+              <div><button class="btn btn-secondary btn-sm" data-action="logo-remove">Retirer le logo</button></div>`
+          : html`<p class="text-muted" style="margin:0">Aucun logo : le nom de votre entreprise figure seul en tête de vos factures.</p>`
+      }
+      ${field('Choisir une image (PNG ou JPEG, 200 Ko au plus)', html`<input class="input" type="file" accept="image/png,image/jpeg" data-action="logo-file" />`)}
+    </div>
+    ${reminderTemplatesCard()} ${categoryRulesCard()} ${isMicro() ? microSettingsCard() : ''}
     <div class="card" style="display:flex;flex-direction:column;gap:10px">
       <h2>Affichage</h2>
       <label class="form-field-checkbox" style="display:flex;gap:8px;align-items:center"

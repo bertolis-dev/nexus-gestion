@@ -36,6 +36,10 @@ export default {
       text: 'Chaque facture émise se télécharge en XML au format CII, conforme à la norme européenne EN 16931 : le format que les plateformes agréées échangeront. La transmission directe par une plateforme agréée arrive avec la prochaine version, avant l’échéance de septembre 2027.',
     },
     {
+      title: 'PDF Factur-X, envoyé en un clic',
+      text: 'Le PDF de la facture, à votre logo, contient aussi la version électronique : c’est le format Factur-X, lisible par votre client comme par son logiciel (PDF/A-3, vérifié avec les outils officiels de validation). « Envoyer au client » prépare le PDF et le message ; sur téléphone, le PDF part directement par votre messagerie.',
+    },
+    {
       title: 'Avoirs et factures d’acompte',
       text: 'Un avoir se crée en un clic depuis la facture qu’il corrige, et la référence de la facture d’origine y figure automatiquement. Pour un gros projet, émettez une facture d’acompte : elle sera déduite automatiquement de la facture finale.',
     },
@@ -53,7 +57,7 @@ export default {
     'Cliquez sur « Créer une facture » et choisissez un client, ou créez-le sur place (nom, SIREN, adresse et e-mail de facturation).',
     'Ajoutez vos lignes : désignation, quantité, prix hors taxes, taux de TVA et nature (bien ou service). Les totaux se mettent à jour en direct.',
     'Cliquez sur « Émettre » : si une mention manque, Nexus vous la signale ; sinon la facture reçoit son numéro définitif.',
-    'Imprimez-la, enregistrez-la en PDF ou téléchargez la version électronique (XML). L’écriture comptable est déjà passée.',
+    'Envoyez-la au client, téléchargez le PDF Factur-X ou la version électronique (XML). L’écriture comptable est déjà passée.',
   ],
   audience: [
     { role: 'Artisans et commerçants', text: 'Des factures propres et conformes sans logiciel compliqué, même sur le chantier ou en boutique.' },
@@ -70,7 +74,7 @@ export default {
     },
     {
       q: 'Que se passe-t-il en septembre 2027 ?',
-      a: 'Les entreprises devront envoyer leurs factures par une plateforme agréée, au format électronique. Nexus produit déjà ce format et les nouvelles mentions ; le branchement à une plateforme agréée arrive avant l’échéance, sans action de votre part sur vos factures.',
+      a: 'Les entreprises devront envoyer leurs factures par une plateforme agréée, au format électronique. Nexus produit déjà ce format et les nouvelles mentions. Dès aujourd’hui, le mode « dépôt » prépare en un clic vos factures (PDF Factur-X) pour la plateforme agréée que vous utilisez, souvent gratuite avec votre banque ou votre logiciel (Qonto, Shine, Pennylane, Tiime…), et réimporte les factures que vous y recevez. La transmission automatique, sans dépôt, arrive ensuite.',
     },
     {
       q: 'Mon client est en Belgique, que dois-je faire ?',

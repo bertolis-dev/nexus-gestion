@@ -2,12 +2,13 @@
  * Écran « micro ».
  */
 
-import { ESTIMATE_MISSING_LABELS, receiptsBook } from '../../core/micro.js?v=e64ad2c';
-import { formatDecimalComma } from '../../core/money.js?v=e64ad2c';
-import { field, html, opt } from '../html.js?v=e64ad2c';
-import { isMicro } from '../render.js?v=e64ad2c';
-import { eur, frDate, today, ui, ws } from '../state.js?v=e64ad2c';
-import { badge, icon, viewHeader } from '../ui/common.js?v=e64ad2c';
+import { ESTIMATE_MISSING_LABELS, incomeDeclaration, receiptsBook } from '../../core/micro.js?v=ab27222';
+import { formatDecimalComma } from '../../core/money.js?v=ab27222';
+import { field, html, opt } from '../html.js?v=ab27222';
+import { isMicro } from '../render.js?v=ab27222';
+import { eur, frDate, today, ui, ws } from '../state.js?v=ab27222';
+import { badge, icon, viewHeader } from '../ui/common.js?v=ab27222';
+import { urssafLinkCard } from './urssaf-link.js?v=ab27222';
 
 // ------------------------------------------------------------------ micro-entrepreneur
 
@@ -79,7 +80,7 @@ export function urssafCard(year) {
       </p>
       ${open ? urssafDeclarePanel(open) : ''}
     </div>
-    ${setAsideCard(periods)}`;
+    ${setAsideCard(periods)} ${incomeDeclarationCard()}`;
 }
 
 /** Ce que l'estimation n'inclut pas faute de valeur validée, dit en une phrase. */
@@ -188,23 +189,36 @@ export function franchiseBanner() {
   </div>`;
 }
 
+/** Chiffre d'affaires de l'année précédente à reporter sur la déclaration de revenus (sans numéro de case). */
+function incomeDeclarationCard() {
+  const d = incomeDeclaration(ws.microReceipts(), Number(today().slice(0, 4)) - 1);
+  if (!d.total) return '';
+  return html`<div class="card" style="display:flex;flex-direction:column;gap:8px">
+    <h2>Pour votre déclaration de revenus ${d.year + 1}</h2>
+    <p class="text-muted" style="margin:0">
+      Chiffre d’affaires encaissé en ${d.year}, à reporter dans la déclaration complémentaire des revenus des professions non salariées (même avec le versement
+      libératoire). Vérifiez le cadre proposé par impots.gouv.fr selon votre activité.
+    </p>
+    <table class="table">
+      <tbody>
+        ${d.byActivity.map(
+          (a) =>
+            html`<tr>
+              <td>${a.label}</td>
+              <td class="num"><strong>${eur(a.amount)}</strong></td>
+            </tr>`,
+        )}
+      </tbody>
+    </table>
+  </div>`;
+}
+
 export function viewUrssaf() {
   const receipts = microReceipts();
   const year = Number(today().slice(0, 4));
   const book = receiptsBook(receipts, { from: `${year}-01-01`, to: `${year}-12-31` });
   return html` ${viewHeader('URSSAF et seuils', 'Le montant à déclarer est votre chiffre d’affaires encaissé sur la période.')} ${franchiseBanner()}
-    ${urssafCard(year)}
-    <div class="card notice-gold" style="display:flex;gap:14px;align-items:flex-start">
-      <span style="color:var(--landing-gold-500)">${icon('link', 22)}</span>
-      <div>
-        <h3 style="margin:0 0 4px">Relier mon compte URSSAF : bientôt disponible</h3>
-        <p style="margin:0;font-size:14px;line-height:1.6">
-          Nexus Gestion prépare son raccordement au service officiel de <strong>tierce déclaration</strong> de l'URSSAF. Vous pourrez alors autoriser Nexus en
-          un clic, puis déclarer et payer vos cotisations sans quitter l'application. Vos identifiants URSSAF ne nous seront jamais communiqués, et vous pourrez
-          retirer l'autorisation à tout moment.
-        </p>
-      </div>
-    </div>
+    ${urssafCard(year)} ${urssafLinkCard()}
     <div class="card">${thresholdCard()}</div>
     <div class="card table-card">
       <div class="view-header-row" style="display:flex;justify-content:space-between;align-items:center;padding:16px 16px 0">

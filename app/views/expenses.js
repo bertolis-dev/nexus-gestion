@@ -2,17 +2,17 @@
  * Écran « expenses ».
  */
 
-import { VAT_RATES_BP } from '../../core/invoices.js?v=e64ad2c';
-import { LIFECYCLE, nextStatuses } from '../../core/lifecycle.js?v=e64ad2c';
-import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=e64ad2c';
-import * as cloud from '../cloud.js?v=e64ad2c';
-import { field, html, opt, raw } from '../html.js?v=e64ad2c';
-import { ICONS } from '../icons.js?v=e64ad2c';
-import { render } from '../render.js?v=e64ad2c';
-import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=e64ad2c';
-import { toast } from '../store.js?v=e64ad2c';
-import { badge, icon, term, viewHeader } from '../ui/common.js?v=e64ad2c';
-import { viewAssets } from './assets.js?v=e64ad2c';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=ab27222';
+import { LIFECYCLE, nextStatuses } from '../../core/lifecycle.js?v=ab27222';
+import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=ab27222';
+import * as cloud from '../cloud.js?v=ab27222';
+import { field, html, opt, raw } from '../html.js?v=ab27222';
+import { ICONS } from '../icons.js?v=ab27222';
+import { render } from '../render.js?v=ab27222';
+import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=ab27222';
+import { toast } from '../store.js?v=ab27222';
+import { badge, icon, term, viewHeader } from '../ui/common.js?v=ab27222';
+import { viewAssets } from './assets.js?v=ab27222';
 
 // ------------------------------------------------------------------ dépenses (§3.3)
 
@@ -28,7 +28,7 @@ export function viewExpenses() {
     </button>
   </div>`;
   if (ui.expensesTab === 'immobilisations') return html`${viewHeader('Dépenses', 'Vos équipements durables et leur amortissement.')}${tabs}${viewAssets()}`;
-  return html` ${viewHeader('Dépenses', 'Ajoutez vos factures d’achat : la catégorie suffit, Nexus fait le reste.', html`<label class="btn btn-secondary" style="margin:0">${icon('upload', 14)} Importer une facture électronique (XML)<input type="file" accept=".xml,application/xml,text/xml" data-action="einvoice-in-file" hidden /></label>`)}
+  return html` ${viewHeader('Dépenses', 'Ajoutez vos factures d’achat : la catégorie suffit, Nexus fait le reste.', html`<label class="btn btn-secondary" style="margin:0">${icon('upload', 14)} Importer des factures reçues (XML, PDF Factur-X ou ZIP)<input type="file" accept=".xml,.pdf,.zip,application/xml,text/xml,application/pdf,application/zip" multiple data-action="einvoice-in-file" hidden /></label>`)}
     ${tabs} ${ui.pendingEinvoice ? einvoicePreview(ui.pendingEinvoice) : ''}
     <form class="card" data-form="purchase" style="display:flex;flex-direction:column;gap:14px">
       <h2>Ajouter une dépense</h2>

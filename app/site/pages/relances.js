@@ -3,7 +3,7 @@ export default {
   slug: 'relances',
   icon: 'bell',
   title: 'Relances clients',
-  text: 'Les factures en retard remontent dans votre liste « À faire » avec un e-mail de relance déjà rédigé.',
+  text: 'Rappel à 3 jours, relance à 15 jours, dernière relance à 30 jours : chaque étape remonte dans « À faire » avec l’e-mail déjà rédigé, et l’historique est conservé.',
   lead: 'Un retard de paiement sur deux vient d’un simple oubli. Nexus repère chaque facture échue, vous la signale au bon moment et prépare l’e-mail de relance : vous n’avez plus qu’à l’envoyer.',
   images: [
     {
@@ -23,8 +23,12 @@ export default {
       text: 'Dès le lendemain de l’échéance, la facture passe « En retard » et apparaît dans votre liste « À faire », avec le client, le numéro et le nombre de jours de retard.',
     },
     {
-      title: 'E-mail de relance prêt à envoyer',
-      text: 'Le bouton « Relancer le client » ouvre votre messagerie avec un e-mail courtois déjà rédigé : numéro, date, montant restant et échéance. Vous le relisez, l’ajustez si besoin et l’envoyez.',
+      title: 'Trois relances, au bon moment',
+      text: 'Un rappel courtois 3 jours après l’échéance, une relance à 15 jours, une dernière relance à 30 jours : « À faire » propose l’étape atteinte, une seule fois. « Relancer le client » ouvre votre messagerie avec l’e-mail du bon niveau (numéro, date, reste dû, jours de retard) ; la relance est ajoutée à l’historique de la facture.',
+    },
+    {
+      title: 'Vos propres modèles',
+      text: 'Les trois messages se modifient dans les Paramètres, avec des variables (client, numéro, montant, échéance, jours de retard) : vous gardez votre ton, Nexus remplit les détails.',
     },
     {
       title: 'Balance âgée des créances',

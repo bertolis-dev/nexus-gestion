@@ -2,17 +2,17 @@
  * Écran « bank ».
  */
 
-import { decodeStatement, importStatement } from '../../core/bank-import.js?v=e64ad2c';
-import { reconciliationStatement } from '../../core/bank.js?v=e64ad2c';
-import { VAT_RATES_BP } from '../../core/invoices.js?v=e64ad2c';
-import { parseEuros } from '../../core/money.js?v=e64ad2c';
-import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=e64ad2c';
-import { INCOME_CATEGORIES, MAX_BANK_ACCOUNTS, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=e64ad2c';
-import { field, html, opt, raw } from '../html.js?v=e64ad2c';
-import { ICONS } from '../icons.js?v=e64ad2c';
-import { eur, frDate, pct, today, ui, ws } from '../state.js?v=e64ad2c';
-import { dataVersion } from '../store.js?v=e64ad2c';
-import { badge, icon, term, viewHeader } from '../ui/common.js?v=e64ad2c';
+import { decodeStatement, importStatement } from '../../core/bank-import.js?v=ab27222';
+import { reconciliationStatement } from '../../core/bank.js?v=ab27222';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=ab27222';
+import { parseEuros } from '../../core/money.js?v=ab27222';
+import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=ab27222';
+import { INCOME_CATEGORIES, MAX_BANK_ACCOUNTS, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=ab27222';
+import { field, html, opt, raw } from '../html.js?v=ab27222';
+import { ICONS } from '../icons.js?v=ab27222';
+import { eur, frDate, pct, today, ui, ws } from '../state.js?v=ab27222';
+import { dataVersion } from '../store.js?v=ab27222';
+import { badge, icon, term, viewHeader } from '../ui/common.js?v=ab27222';
 
 // ------------------------------------------------------------------ banque (§3.4)
 
@@ -25,7 +25,15 @@ export const BANK_PAGE_SIZE = 25;
 /** Listes de catégories (dépense / recette), construites une seule fois. */
 export const categoryOptionsCache = new Map();
 
-export function categoryOptions(outflow) {
+export function categoryOptions(outflow, selected = null) {
+  // Catégorie proposée d'après les choix précédents : liste construite pour cette ligne.
+  if (selected) {
+    const mark = (list) => list.map((c) => opt(c.id, c.label, c.id === selected));
+    return outflow
+      ? html`<optgroup label="Dépenses">${mark(EXPENSE_CATEGORIES)}</optgroup>
+          <optgroup label="Autres sorties d’argent">${mark(OUTFLOW_CATEGORIES)}</optgroup>`
+      : html`${mark(INCOME_CATEGORIES)}`;
+  }
   if (!categoryOptionsCache.has(outflow)) {
     categoryOptionsCache.set(
       outflow,
@@ -72,6 +80,8 @@ export function bankOpenCard(open) {
             <tbody>
               ${visible.map((t) => {
                 const sugg = (suggestions.get(t.id) || []).slice(0, 2);
+                // Proposition apprise seulement quand aucune pièce ne correspond (une facture prime).
+                const learned = sugg.length ? null : ws.categorySuggestion(t.id);
                 return html`<tr>
                   <td style="width:110px">${frDate(t.date)}</td>
                   <td>
@@ -87,14 +97,15 @@ export function bankOpenCard(open) {
                           ><button class="btn btn-primary btn-sm" data-action="tx-match" data-id="${t.id}" data-index="${si}">Associer</button>
                         </div>`,
                     )}
+                    ${learned ? html`<p class="form-hint" style="margin:6px 0 0">Catégorie proposée d’après vos choix précédents (« ${learned.key} ») : vérifiez puis validez.</p>` : ''}
                     <div class="tx-actions">
                       <select class="input input-sm" data-cat="${t.id}" aria-label="Catégorie">
-                        ${opt('', sugg.length ? 'Ou choisir une catégorie…' : 'Choisir une catégorie…', true)}${categoryOptions(t.amount < 0)}
+                        ${opt('', sugg.length ? 'Ou choisir une catégorie…' : 'Choisir une catégorie…', !learned)}${categoryOptions(t.amount < 0, learned?.categoryId)}
                       </select>
                       ${
                         t.amount < 0 && !franchise
                           ? html`<select class="input input-sm" data-vat="${t.id}" aria-label="TVA" style="min-width:110px;flex:0">
-                              ${VAT_RATES_BP.map((r) => opt(r, `TVA ${pct(r)}`, r === 0))}
+                              ${VAT_RATES_BP.map((r) => opt(r, `TVA ${pct(r)}`, r === (learned ? learned.vatRateBp : 0)))}
                             </select>`
                           : ''
                       }

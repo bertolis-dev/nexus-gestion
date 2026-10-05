@@ -2,15 +2,19 @@
  * Écran « shell ».
  */
 
-import * as cloud from '../cloud.js?v=e64ad2c';
-import { removeDemo } from '../demo-store.js?v=e64ad2c';
-import { $, render, renderApp } from '../render.js?v=e64ad2c';
-import { cloudState, freshOnboarding, setWs, today, ui, ws } from '../state.js?v=e64ad2c';
-import { download, setTheme, toast } from '../store.js?v=e64ad2c';
-import { openStructure, openStructureAndShow } from '../sync-ui.js?v=e64ad2c';
+import * as cloud from '../cloud.js?v=ab27222';
+import { removeDemo } from '../demo-store.js?v=ab27222';
+import { $, render, renderApp } from '../render.js?v=ab27222';
+import { cloudState, freshOnboarding, setWs, today, ui, ws } from '../state.js?v=ab27222';
+import { download, setTheme, toast } from '../store.js?v=ab27222';
+import { openStructure, openStructureAndShow } from '../sync-ui.js?v=ab27222';
 
 /** Actions « shell » : data-action → fonction. */
 export const actionsTable = {
+  'forecast-toggle': async () => {
+    ui.forecastOpen = !ui.forecastOpen;
+    return render();
+  },
   'toggle-nav': async ({ el }) => {
     const open = $('sidebar-nav').classList.toggle('open');
     el.setAttribute('aria-expanded', String(open));

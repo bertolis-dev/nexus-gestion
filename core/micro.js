@@ -5,7 +5,7 @@
  * mise en service : la réforme de la franchise en base a été plusieurs fois modifiée en 2025.
  */
 
-import { divRound, sum } from './money.js?v=e64ad2c';
+import { divRound, sum } from './money.js?v=ab27222';
 
 export const THRESHOLDS_2026 = {
   // Franchise en base de TVA (CGI art. 293 B) — seuil de base / seuil majoré
@@ -273,4 +273,69 @@ export function vatFranchiseMessage(status, family, { year, previousYearOverBase
         ? `Votre chiffre d’affaires dépasse le seuil de ${eur(t.base)} (sans dépasser ${eur(t.majore)}) : vous restez en franchise cette année et l’an prochain. Si vous le dépassez encore l’an prochain, la franchise prendra fin le 1er janvier suivant.`
         : `Votre chiffre d’affaires dépasse le seuil de ${eur(t.base)} (sans dépasser ${eur(t.majore)}) : vous restez en franchise jusqu’au 31 décembre. Si votre chiffre d’affaires de l’an dernier dépassait déjà ce seuil, la franchise prend fin ${next} ; sinon, elle est maintenue un an de plus.`;
   return { level: previousYearOverBase === false ? 'alerte' : 'sortie', headline: 'Seuil de franchise de TVA dépassé.', consequence, regimeAfter, action };
+}
+
+// ---------------------------------------------------------------- rappels et déclaration de revenus
+
+/**
+ * Cotisation foncière des entreprises : paiement au 15 décembre, rappel à partir de la mi-novembre ;
+ * pas de CFE l'année de création. Paramètres datés, à valider par l'expert-comptable.
+ */
+export const CFE_2026 = { year: 2026, reminderFrom: '11-15', paymentDeadline: '12-15', firstYearExempt: true, validation: 'à valider par l’expert-comptable' };
+
+/**
+ * Déclaration annuelle des revenus : période de rappel (les dates limites varient selon le
+ * département). Paramètre daté, à valider par l'expert-comptable.
+ */
+export const INCOME_DECLARATION_2026 = { year: 2026, from: '04-10', to: '06-10', validation: 'à valider par l’expert-comptable' };
+
+const ddmm = (iso) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
+const plusDays = (iso, n) => new Date(Date.parse(`${iso}T00:00:00Z`) + n * 86400000).toISOString().slice(0, 10);
+
+/** Rappel CFE dans « À faire », ou null. */
+export function cfeReminder({ today, activityStart = null, params = CFE_2026 }) {
+  const year = today.slice(0, 4);
+  const deadline = `${year}-${params.paymentDeadline}`;
+  if (today < `${year}-${params.reminderFrom}` || today > deadline) return null;
+  if (params.firstYearExempt && activityStart && activityStart.slice(0, 4) === year) return null;
+  const note = activityStart ? '' : ' (sauf l’année de création)';
+  return {
+    urgency: 2,
+    kind: 'cfe',
+    view: 'urssaf',
+    text: `CFE à payer avant le ${ddmm(deadline)}${note} : avis dans votre espace professionnel impots.gouv.fr`,
+  };
+}
+
+/** Rappel de fin d'ACRE dans les 60 jours qui précèdent, ou null. */
+export function acreReminder({ today, acreEnd }) {
+  if (!acreEnd || today > acreEnd || plusDays(today, 60) < acreEnd) return null;
+  return {
+    urgency: 1,
+    kind: 'acre',
+    view: 'urssaf',
+    text: `Fin de votre ACRE le ${ddmm(acreEnd)} : vos cotisations passeront ensuite au taux normal, prévoyez-le`,
+  };
+}
+
+/** Chiffre d'affaires encaissé d'une année, par activité, à reporter sur la déclaration de revenus. */
+export function incomeDeclaration(receipts, year) {
+  const byActivity = new Map();
+  for (const r of receipts) if (r.date.startsWith(String(year))) byActivity.set(r.activity, (byActivity.get(r.activity) || 0) + r.amount);
+  const list = [...byActivity]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([activity, amount]) => ({ activity, label: ACTIVITY_TYPES[activity]?.label || activity, amount }));
+  return { year, byActivity: list, total: sum(list.map((a) => a.amount)) };
+}
+
+/** Rappel de la déclaration de revenus (avril à juin), ou null. */
+export function incomeDeclarationReminder({ today, declaration, params = INCOME_DECLARATION_2026 }) {
+  const year = today.slice(0, 4);
+  if (!declaration?.total || today < `${year}-${params.from}` || today > `${year}-${params.to}`) return null;
+  return {
+    urgency: 1,
+    kind: 'revenus',
+    view: 'urssaf',
+    text: `Déclaration de revenus : reportez votre chiffre d’affaires ${declaration.year} (détail dans « URSSAF et seuils »)`,
+  };
 }

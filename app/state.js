@@ -2,9 +2,9 @@
  * État partagé de l'interface : entreprise affichée, écran, mode connecté, formats d'affichage.
  */
 
-import { todayParis } from '../core/dates.js?v=e64ad2c';
-import { formatEuros } from '../core/money.js?v=e64ad2c';
-import { getDemo, removeDemo, setDemo } from './demo-store.js?v=e64ad2c';
+import { todayParis } from '../core/dates.js?v=ab27222';
+import { formatEuros } from '../core/money.js?v=ab27222';
+import { getDemo, removeDemo, setDemo } from './demo-store.js?v=ab27222';
 
 /**
  * Nexus Gestion — interface (lot 1).
@@ -68,6 +68,7 @@ export const ui = {
   expensesTab: 'depenses',
   statementBalance: '',
   faqOpen: null,
+  pendingEinvoices: [],
 };
 
 // Date du jour à Paris (et non en UTC : la veille entre minuit et 1 h ou 2 h du matin).

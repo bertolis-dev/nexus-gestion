@@ -2,21 +2,21 @@
  * Écran « onboarding ».
  */
 
-import { firstFiscalYear } from '../../core/dates.js?v=e64ad2c';
-import { openingBalanceFromFec, parseFec } from '../../core/fecimport.js?v=e64ad2c';
-import { isValidSiren } from '../../core/invoices.js?v=e64ad2c';
-import { ACTIVITY_TYPES, CIPAV_PROFESSIONS } from '../../core/micro.js?v=e64ad2c';
-import { buildChart } from '../../core/pcg.js?v=e64ad2c';
-import { Workspace } from '../../core/workspace.js?v=e64ad2c';
-import * as cloud from '../cloud.js?v=e64ad2c';
-import { lookupSiren } from '../company-lookup.js?v=e64ad2c';
-import { companyFromOnboarding } from '../../core/company.js?v=e64ad2c';
-import { choiceGroup, field, html, opt, raw } from '../html.js?v=e64ad2c';
-import { render } from '../render.js?v=e64ad2c';
-import { cloudState, eur, newId, setWs, ui, ws } from '../state.js?v=e64ad2c';
-import { save, toast } from '../store.js?v=e64ad2c';
-import { onSyncResult, onSyncStatus } from '../sync-ui.js?v=e64ad2c';
-import { badge, brand } from '../ui/common.js?v=e64ad2c';
+import { firstFiscalYear } from '../../core/dates.js?v=ab27222';
+import { openingBalanceFromFec, parseFec } from '../../core/fecimport.js?v=ab27222';
+import { isValidSiren } from '../../core/invoices.js?v=ab27222';
+import { ACTIVITY_TYPES, CIPAV_PROFESSIONS } from '../../core/micro.js?v=ab27222';
+import { buildChart } from '../../core/pcg.js?v=ab27222';
+import { Workspace } from '../../core/workspace.js?v=ab27222';
+import * as cloud from '../cloud.js?v=ab27222';
+import { lookupSiren } from '../company-lookup.js?v=ab27222';
+import { companyFromOnboarding } from '../../core/company.js?v=ab27222';
+import { choiceGroup, field, html, opt, raw } from '../html.js?v=ab27222';
+import { render } from '../render.js?v=ab27222';
+import { cloudState, eur, newId, setWs, ui, ws } from '../state.js?v=ab27222';
+import { save, toast } from '../store.js?v=ab27222';
+import { onSyncResult, onSyncStatus } from '../sync-ui.js?v=ab27222';
+import { badge, brand } from '../ui/common.js?v=ab27222';
 
 // ------------------------------------------------------------------ assistant d'installation (§3.1)
 
@@ -127,6 +127,7 @@ export function microSettingsCard() {
           CIPAV. ${cipav}`,
         },
       )}
+      ${field('Début d’activité', html`<input class="input" type="date" name="activityStart" value="${c.activityStart || ''}" />`, { hint: 'Sert aux rappels : pas de CFE l’année de création.' })}
       ${field('Début de l’ACRE (si vous en bénéficiez)', html`<input class="input" type="date" name="acreStart" value="${c.acreStart || ''}" />`, { hint: 'Aide à la création : cotisations réduites pendant les premiers trimestres.' })}
       ${field('Fin de l’ACRE', html`<input class="input" type="date" name="acreEnd" value="${c.acreEnd || ''}" />`, { hint: 'Indiquée sur votre attestation d’ACRE envoyée par l’URSSAF.' })}
     </div>
