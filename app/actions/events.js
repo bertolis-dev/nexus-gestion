@@ -2,24 +2,24 @@
  * Événements du document : saisie, changement, clavier, formulaires, clics, navigation.
  */
 
-import { isValidSiren } from '../../core/invoices.js?v=ab27222';
-import { parseEuros } from '../../core/money.js?v=ab27222';
-import { usualVatRate } from '../../core/pcg.js?v=ab27222';
-import * as cloud from '../cloud.js?v=ab27222';
-import { html, raw } from '../html.js?v=ab27222';
-import { ICONS } from '../icons.js?v=ab27222';
-import { $, render, searchResults } from '../render.js?v=ab27222';
-import { closeLightbox, featureSlug } from '../site/landing.js?v=ab27222';
-import { cloudState, ui, ws } from '../state.js?v=ab27222';
-import { save, savePrefs, toast } from '../store.js?v=ab27222';
-import { afterSignIn } from '../sync-ui.js?v=ab27222';
-import { currentBankAccount, importBankFile } from '../views/bank.js?v=ab27222';
-import { attachReceipt } from '../views/expenses.js?v=ab27222';
-import { totalsBlock } from '../views/invoice-form.js?v=ab27222';
-import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=ab27222';
-import { runAction } from './index.js?v=ab27222';
-import { readReceivedInvoices } from '../received-invoices.js?v=ab27222';
-import { urssafLinkSubmit } from '../views/urssaf-link.js?v=ab27222';
+import { isValidSiren } from '../../core/invoices.js?v=853fd83';
+import { parseEuros } from '../../core/money.js?v=853fd83';
+import { usualVatRate } from '../../core/pcg.js?v=853fd83';
+import * as cloud from '../cloud.js?v=853fd83';
+import { html, raw } from '../html.js?v=853fd83';
+import { ICONS } from '../icons.js?v=853fd83';
+import { $, render, searchResults } from '../render.js?v=853fd83';
+import { closeLightbox, featureSlug } from '../site/landing.js?v=853fd83';
+import { cloudState, ui, ws } from '../state.js?v=853fd83';
+import { save, savePrefs, toast } from '../store.js?v=853fd83';
+import { afterSignIn } from '../sync-ui.js?v=853fd83';
+import { currentBankAccount, importBankFile } from '../views/bank.js?v=853fd83';
+import { attachReceipt } from '../views/expenses.js?v=853fd83';
+import { totalsBlock } from '../views/invoice-form.js?v=853fd83';
+import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=853fd83';
+import { runAction } from './index.js?v=853fd83';
+import { readReceivedInvoices } from '../received-invoices.js?v=853fd83';
+import { urssafLinkSubmit } from '../views/urssaf-link.js?v=853fd83';
 
 // ------------------------------------------------------------------ évènements
 

@@ -2,18 +2,18 @@
  * Écran « sales ».
  */
 
-import { VAT_RATES_BP, checkInvoice, computeTotals, isVatExempt, issuerName, lineHt } from '../../core/invoices.js?v=ab27222';
-import { FREQUENCIES, nextDate } from '../../core/recurring.js?v=ab27222';
-import { field, html, opt, raw } from '../html.js?v=ab27222';
-import { ICONS } from '../icons.js?v=ab27222';
-import { eur, frDate, pct, today, ui, ws } from '../state.js?v=ab27222';
-import { save, toast } from '../store.js?v=ab27222';
-import { isUnconfirmed } from '../sync-ui.js?v=ab27222';
-import { badge, viewHeader } from '../ui/common.js?v=ab27222';
-import { lifecycleCard } from './expenses.js?v=ab27222';
-import { viewInvoiceForm } from './invoice-form.js?v=ab27222';
-import { depositCard } from './deposit.js?v=ab27222';
-import { REMINDER_STEPS, dueReminderLevel, reminderMessage } from '../../core/reminders.js?v=ab27222';
+import { VAT_RATES_BP, checkInvoice, computeTotals, isVatExempt, issuerName, lineHt } from '../../core/invoices.js?v=853fd83';
+import { FREQUENCIES, nextDate } from '../../core/recurring.js?v=853fd83';
+import { field, html, opt, raw } from '../html.js?v=853fd83';
+import { ICONS } from '../icons.js?v=853fd83';
+import { eur, frDate, pct, today, ui, ws } from '../state.js?v=853fd83';
+import { save, toast } from '../store.js?v=853fd83';
+import { isUnconfirmed } from '../sync-ui.js?v=853fd83';
+import { badge, viewHeader } from '../ui/common.js?v=853fd83';
+import { lifecycleCard } from './expenses.js?v=853fd83';
+import { viewInvoiceForm } from './invoice-form.js?v=853fd83';
+import { depositCard } from './deposit.js?v=853fd83';
+import { REMINDER_STEPS, dueReminderLevel, reminderMessage } from '../../core/reminders.js?v=853fd83';
 
 // ------------------------------------------------------------------ factures (§3.2, §3.5)
 

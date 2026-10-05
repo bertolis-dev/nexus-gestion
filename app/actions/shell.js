@@ -2,12 +2,12 @@
  * Écran « shell ».
  */
 
-import * as cloud from '../cloud.js?v=ab27222';
-import { removeDemo } from '../demo-store.js?v=ab27222';
-import { $, render, renderApp } from '../render.js?v=ab27222';
-import { cloudState, freshOnboarding, setWs, today, ui, ws } from '../state.js?v=ab27222';
-import { download, setTheme, toast } from '../store.js?v=ab27222';
-import { openStructure, openStructureAndShow } from '../sync-ui.js?v=ab27222';
+import * as cloud from '../cloud.js?v=853fd83';
+import { removeDemo } from '../demo-store.js?v=853fd83';
+import { $, render, renderApp } from '../render.js?v=853fd83';
+import { cloudState, freshOnboarding, setWs, today, ui, ws } from '../state.js?v=853fd83';
+import { download, setTheme, toast } from '../store.js?v=853fd83';
+import { openStructure, openStructureAndShow } from '../sync-ui.js?v=853fd83';
 
 /** Actions « shell » : data-action → fonction. */
 export const actionsTable = {

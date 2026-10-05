@@ -9,11 +9,11 @@
  * nombre d'écritures validées), l'état est rechargé depuis la base, qui fait foi.
  */
 
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js?v=ab27222';
-import { stateFromRows } from '../core/sync.js?v=ab27222';
-import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, OUTBOX_PREFIX } from '../core/outbox.js?v=ab27222';
-import { ACCOUNTS } from '../core/pcg.js?v=ab27222';
-import { mfaState, canRemoveFactor } from '../core/mfa.js?v=ab27222';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js?v=853fd83';
+import { stateFromRows } from '../core/sync.js?v=853fd83';
+import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, OUTBOX_PREFIX } from '../core/outbox.js?v=853fd83';
+import { ACCOUNTS } from '../core/pcg.js?v=853fd83';
+import { mfaState, canRemoveFactor } from '../core/mfa.js?v=853fd83';
 
 // supabase-js (copie locale, app/vendor/) n'est chargé qu'en mode connecté : la démonstration et
 // le site public ne téléchargent pas ces 220 Ko.
@@ -21,7 +21,7 @@ let client = null;
 const authListeners = [];
 async function connect() {
   if (!client) {
-    const { createClient } = await import('./vendor/supabase.js?v=ab27222');
+    const { createClient } = await import('./vendor/supabase.js?v=853fd83');
     client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     for (const cb of authListeners) client.auth.onAuthStateChange(cb);
   }
@@ -254,6 +254,11 @@ export async function inviteMember(structureId, email, role) {
 export async function removeMember(structureId, userId) {
   const supabase = await connect();
   return check(await supabase.rpc('remove_member', { p_structure: structureId, p_user: userId }));
+}
+/** Export complet de l'entreprise (RGPD), réservé au dirigeant (migration 0019). */
+export async function exportStructure(structureId) {
+  const supabase = await connect();
+  return check(await supabase.rpc('export_structure', { p_structure: structureId }));
 }
 export async function listMembers(structureId) {
   const supabase = await connect();

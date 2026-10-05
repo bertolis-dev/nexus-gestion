@@ -2,14 +2,14 @@
  * Écran « settings ».
  */
 
-import { field, html, opt, raw } from '../html.js?v=ab27222';
-import { isMicro } from '../render.js?v=ab27222';
-import { ui, ws } from '../state.js?v=ab27222';
-import { viewHeader } from '../ui/common.js?v=ab27222';
-import { membersCard, microSettingsCard, openingPreview, securityCard } from './onboarding.js?v=ab27222';
-import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=ab27222';
-import { INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=ab27222';
-import { DEFAULT_TEMPLATES, REMINDER_STEPS } from '../../core/reminders.js?v=ab27222';
+import { field, html, opt, raw } from '../html.js?v=853fd83';
+import { isMicro } from '../render.js?v=853fd83';
+import { ui, ws } from '../state.js?v=853fd83';
+import { viewHeader } from '../ui/common.js?v=853fd83';
+import { membersCard, microSettingsCard, openingPreview, securityCard } from './onboarding.js?v=853fd83';
+import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=853fd83';
+import { INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=853fd83';
+import { DEFAULT_TEMPLATES, REMINDER_STEPS } from '../../core/reminders.js?v=853fd83';
 
 // ------------------------------------------------------------------ paramètres
 
@@ -114,6 +114,14 @@ export function viewSettings() {
           : html`<p class="text-muted" style="margin:0">Aucun logo : le nom de votre entreprise figure seul en tête de vos factures.</p>`
       }
       ${field('Choisir une image (PNG ou JPEG, 200 Ko au plus)', html`<input class="input" type="file" accept="image/png,image/jpeg" data-action="logo-file" />`)}
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;gap:10px">
+      <h2>Mes données</h2>
+      <p class="text-muted" style="margin:0">
+        Téléchargez toutes les données de votre entreprise (comptabilité, factures, clients, banque, journal d’audit) dans un fichier JSON : elles vous
+        appartiennent et restent lisibles par tout autre logiciel.
+      </p>
+      <div><button class="btn btn-secondary" data-action="data-export">Exporter toutes mes données</button></div>
     </div>
     ${reminderTemplatesCard()} ${categoryRulesCard()} ${isMicro() ? microSettingsCard() : ''}
     <div class="card" style="display:flex;flex-direction:column;gap:10px">

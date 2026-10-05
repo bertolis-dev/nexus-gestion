@@ -2,17 +2,17 @@
  * Écran « expenses ».
  */
 
-import { VAT_RATES_BP } from '../../core/invoices.js?v=ab27222';
-import { LIFECYCLE, nextStatuses } from '../../core/lifecycle.js?v=ab27222';
-import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=ab27222';
-import * as cloud from '../cloud.js?v=ab27222';
-import { field, html, opt, raw } from '../html.js?v=ab27222';
-import { ICONS } from '../icons.js?v=ab27222';
-import { render } from '../render.js?v=ab27222';
-import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=ab27222';
-import { toast } from '../store.js?v=ab27222';
-import { badge, icon, term, viewHeader } from '../ui/common.js?v=ab27222';
-import { viewAssets } from './assets.js?v=ab27222';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=853fd83';
+import { LIFECYCLE, nextStatuses } from '../../core/lifecycle.js?v=853fd83';
+import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=853fd83';
+import * as cloud from '../cloud.js?v=853fd83';
+import { field, html, opt, raw } from '../html.js?v=853fd83';
+import { ICONS } from '../icons.js?v=853fd83';
+import { render } from '../render.js?v=853fd83';
+import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=853fd83';
+import { toast } from '../store.js?v=853fd83';
+import { badge, icon, term, viewHeader } from '../ui/common.js?v=853fd83';
+import { viewAssets } from './assets.js?v=853fd83';
 
 // ------------------------------------------------------------------ dépenses (§3.3)
 

@@ -7,7 +7,7 @@
  * scripts/validate-einvoice.mjs ; le navigateur lui passe les copies locales de app/vendor/.
  */
 
-import { issuerName } from './invoices.js?v=ab27222';
+import { issuerName } from './invoices.js?v=853fd83';
 
 export const FACTURX_FILE_NAME = 'factur-x.xml';
 const FX_NS = 'urn:factur-x:pdfa:CrossIndustryDocument:invoice:1p0#';
@@ -88,7 +88,9 @@ export async function buildFacturXPdf({ lib, fonts, icc, logo = null, invoice, x
   doc.registerFontkit(fontkit);
   const regular = await doc.embedFont(fonts.regular, { subset: true });
   const bold = await doc.embedFont(fonts.bold, { subset: true });
-  const logoImg = logo ? await (logo.type === 'jpg' ? doc.embedJpg(logo.bytes) : doc.embedPng(logo.bytes)) : null;
+  // Copie des octets : pdf-lib lit le tampon sous-jacent sans tenir compte d'un éventuel décalage (Buffer de Node).
+  const logoBytes = logo ? Uint8Array.from(logo.bytes) : null;
+  const logoImg = logo ? await (logo.type === 'jpg' ? doc.embedJpg(logoBytes) : doc.embedPng(logoBytes)) : null;
   const color = (c) => rgb(...c);
   const issuer = invoice.issuer || {};
   const client = invoice.client || {};
@@ -270,9 +272,7 @@ export async function buildFacturXPdf({ lib, fonts, icc, logo = null, invoice, x
   doc.setProducer('Nexus Gestion');
   doc.setCreationDate(now);
   doc.setModificationDate(now);
-  const xmp = new TextEncoder().encode(
-    facturXXmp({ title, author: issuerName(issuer), date: now, documentType: invoice.type === 'quote' ? 'INVOICE' : 'INVOICE' }),
-  );
+  const xmp = new TextEncoder().encode(facturXXmp({ title, author: issuerName(issuer), date: now }));
   const meta = ctx.stream(xmp, { Type: 'Metadata', Subtype: 'XML', Length: xmp.length });
   doc.catalog.set(PDFName.of('Metadata'), ctx.register(meta));
 

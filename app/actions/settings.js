@@ -2,14 +2,25 @@
  * Écran « settings ».
  */
 
-import * as cloud from '../cloud.js?v=ab27222';
-import { render } from '../render.js?v=ab27222';
-import { cloudState, frDate, today, ui, ws } from '../state.js?v=ab27222';
-import { save, toast } from '../store.js?v=ab27222';
-import { forgetRule } from '../../core/categorization.js?v=ab27222';
+import * as cloud from '../cloud.js?v=853fd83';
+import { render } from '../render.js?v=853fd83';
+import { cloudState, frDate, today, ui, ws } from '../state.js?v=853fd83';
+import { download, save, toast } from '../store.js?v=853fd83';
+import { forgetRule } from '../../core/categorization.js?v=853fd83';
 
 /** Actions « settings » : data-action → fonction. */
 export const actionsTable = {
+  'data-export': async () => {
+    try {
+      const data = ui.demo
+        ? { exported_at: new Date().toISOString(), format: 'Nexus Gestion — démonstration (JSON)', state: ws.toJSON() }
+        : await cloud.exportStructure(cloudState.meta.structureId);
+      download(`nexus-gestion-donnees-${today()}.json`, JSON.stringify(data, null, 2), 'application/json');
+      toast('Toutes vos données ont été téléchargées.');
+    } catch (err) {
+      toast(cloud.friendly(err), true);
+    }
+  },
   'reminder-templates-reset': async () => {
     delete ws.company.reminderTemplates;
     save();
