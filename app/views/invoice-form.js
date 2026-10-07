@@ -2,15 +2,15 @@
  * Écran « invoice-form ».
  */
 
-import { VAT_RATES_BP, computeTotals, defaultDueDate, isVatExempt } from '../../core/invoices.js?v=d485078';
-import { parseEuros } from '../../core/money.js?v=d485078';
-import { field, html, opt, raw } from '../html.js?v=d485078';
-import { ICONS } from '../icons.js?v=d485078';
-import { issueLink } from '../render.js?v=d485078';
-import { eur, pct, today, ui, ws } from '../state.js?v=d485078';
-import { save } from '../store.js?v=d485078';
-import { viewHeader } from '../ui/common.js?v=d485078';
-import { NEW_DOC_ROUTES } from './sales.js?v=d485078';
+import { VAT_RATES_BP, computeTotals, defaultDueDate, isVatExempt } from '../../core/invoices.js?v=c52829b';
+import { parseEuros } from '../../core/money.js?v=c52829b';
+import { field, html, opt, raw } from '../html.js?v=c52829b';
+import { ICONS } from '../icons.js?v=c52829b';
+import { issueLink } from '../render.js?v=c52829b';
+import { eur, pct, today, ui, ws } from '../state.js?v=c52829b';
+import { save } from '../store.js?v=c52829b';
+import { viewHeader } from '../ui/common.js?v=c52829b';
+import { NEW_DOC_ROUTES } from './sales.js?v=c52829b';
 
 export function emptyLine() {
   return {

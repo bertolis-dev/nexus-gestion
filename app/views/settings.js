@@ -2,14 +2,17 @@
  * Écran « settings ».
  */
 
-import { field, html, opt, raw } from '../html.js?v=d485078';
-import { isMicro } from '../render.js?v=d485078';
-import { ui, ws } from '../state.js?v=d485078';
-import { viewHeader } from '../ui/common.js?v=d485078';
-import { membersCard, microSettingsCard, openingPreview, securityCard } from './onboarding.js?v=d485078';
-import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=d485078';
-import { INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=d485078';
-import { DEFAULT_TEMPLATES, REMINDER_STEPS } from '../../core/reminders.js?v=d485078';
+import { field, html, opt, raw } from '../html.js?v=c52829b';
+import { isMicro } from '../render.js?v=c52829b';
+import { cloudState, ui, ws } from '../state.js?v=c52829b';
+import { ICONS } from '../icons.js?v=c52829b';
+import { badge, viewHeader } from '../ui/common.js?v=c52829b';
+import * as cloud from '../cloud.js?v=c52829b';
+import { render } from '../render.js?v=c52829b';
+import { membersCard, microSettingsCard, openingPreview, securityCard } from './onboarding.js?v=c52829b';
+import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=c52829b';
+import { INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=c52829b';
+import { DEFAULT_TEMPLATES, REMINDER_STEPS } from '../../core/reminders.js?v=c52829b';
 
 // ------------------------------------------------------------------ paramètres
 
@@ -32,6 +35,75 @@ function reminderTemplatesCard() {
       ${custom.length ? html`<button class="btn btn-secondary" type="button" data-action="reminder-templates-reset">Revenir aux modèles de Nexus</button>` : ''}
     </div>
   </form>`;
+}
+
+/** Envoi par e-mail (Brevo) : relances automatiques et derniers e-mails partis. */
+function emailCard() {
+  if (ui.demo)
+    return html`<div class="card">
+      <h2>Envoi par e-mail</h2>
+      <p class="text-muted" style="margin:0">En démonstration, aucun e-mail ne part : factures et relances s’ouvrent dans votre messagerie.</p>
+    </div>`;
+  if (!cloudState.emailReady)
+    return html`<div class="card">
+      <h2>Envoi par e-mail</h2>
+      <p class="text-muted" style="margin:0">
+        L’envoi direct par Nexus Gestion n’est pas encore en service : factures et relances s’ouvrent dans votre messagerie, prêtes à partir.
+      </p>
+    </div>`;
+  if (!ui.emails && cloudState.meta) {
+    ui.emails = { rows: [] };
+    cloud
+      .listEmails(cloudState.meta.structureId)
+      .then((rows) => {
+        ui.emails = { rows };
+        render();
+      })
+      .catch(() => {});
+  }
+  const rows = ui.emails?.rows || [];
+  const what = (e) => (e.kind === 'facture' ? 'Facture' : `${REMINDER_STEPS[e.level - 1]?.label || 'Relance'}${e.automatic ? ' (automatique)' : ''}`);
+  return html`<div class="card" style="display:flex;flex-direction:column;gap:12px">
+    <h2>Envoi par e-mail</h2>
+    <p class="text-muted" style="margin:0">
+      Factures et relances partent directement chez votre client, à l’adresse de sa fiche ; ses réponses arrivent dans votre boîte e-mail.
+    </p>
+    <label class="form-field-checkbox" style="display:flex;gap:8px;align-items:center"
+      ><input type="checkbox" data-action="auto-reminders" ${ws.company.autoReminders ? raw('checked') : ''} />Relancer automatiquement les factures impayées
+      (3, 15 puis 30 jours après l’échéance, chaque matin)</label
+    >
+    <p class="text-muted" style="margin:0;font-size:13px">
+      Ne sont pas relancées automatiquement : les factures sans adresse e-mail client, avec un avoir, en litige ou déjà encaissées. Vous pouvez toujours
+      relancer à la main depuis la facture.
+    </p>
+    ${
+      rows.length
+        ? html`<table class="table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Envoi</th>
+                <th>Destinataire</th>
+                <th>Résultat</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.map(
+                (e) =>
+                  html`<tr>
+                    <td>${new Date(e.sent_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}</td>
+                    <td>${what(e)} — ${e.subject}</td>
+                    <td>${e.recipient}</td>
+                    <td>
+                      ${e.status === 'envoye' ? badge('Envoyé', 'success') : html`${badge('Échec', 'danger')} <span class="text-muted">${e.detail}</span>`}
+                    </td>
+                  </tr>`,
+              )}
+            </tbody>
+          </table>`
+        : html`<p class="text-muted" style="margin:0">Aucun e-mail envoyé pour l’instant.</p>`
+    }
+  </div>`;
 }
 
 /** Règles de catégorisation apprises en banque, supprimables une à une. */
@@ -59,12 +131,54 @@ function categoryRulesCard() {
   </div>`;
 }
 
-export function viewSettings() {
+/** Une rubrique de Paramètres : groupe de la barre latérale, visibilité, contenu. */
+const SETTINGS_GROUPS = [
+  { key: 'entreprise', label: 'Entreprise' },
+  { key: 'facturation', label: 'Facturation et banque' },
+  { key: 'securite', label: 'Sécurité et données' },
+  { key: 'espace', label: 'Mon espace' },
+];
+
+const hasFecImport = () => ws.ledger.entries.some((e) => e.source?.kind === 'fec-import');
+
+const SETTINGS_TABS = [
+  { key: 'entreprise', label: 'Mon entreprise', group: 'entreprise', icon: 'building', visible: () => true, render: companyTab },
+  { key: 'micro', label: 'Micro-entreprise', group: 'entreprise', icon: 'scale', visible: () => isMicro(), render: () => microSettingsCard() },
+  { key: 'utilisateurs', label: 'Utilisateurs', group: 'entreprise', icon: 'people', visible: () => !ui.demo, render: () => membersCard() },
+  {
+    key: 'relances',
+    label: 'Relances clients',
+    group: 'facturation',
+    icon: 'bell',
+    visible: () => true,
+    render: () => html`${emailCard()}${reminderTemplatesCard()}`,
+  },
+  { key: 'banque', label: 'Catégories bancaires', group: 'facturation', icon: 'card', visible: () => true, render: bankTab },
+  { key: 'reprise', label: 'Reprise d’historique', group: 'facturation', icon: 'upload', visible: () => !hasFecImport(), render: openingTab },
+  {
+    key: 'securite',
+    label: 'Connexion et sécurité',
+    group: 'securite',
+    icon: 'shield',
+    visible: () => !ui.demo && Boolean(cloudState.session),
+    render: () => securityCard(),
+  },
+  { key: 'donnees', label: 'Mes données', group: 'securite', icon: 'archive', visible: () => true, render: dataTab },
+  { key: 'affichage', label: 'Affichage', group: 'espace', icon: 'eye', visible: () => true, render: displayTab },
+];
+
+/** Rubrique demandée dans l'adresse (#/parametres/relances), sinon « Mon entreprise ». */
+export function settingsTab(arg) {
+  const visible = SETTINGS_TABS.filter((t) => t.visible());
+  return visible.find((t) => t.key === arg) || visible[0];
+}
+
+function companyTab() {
   const c = ws.company;
   const locked = ws.identityLocked();
   const lockedHint = 'Figé : des factures ont été émises ou des écritures validées. Pour un changement de situation, contactez le support.';
-  return html` ${viewHeader('Paramètres', 'Informations imprimées sur vos factures et préférences d’affichage.')}
-    <form class="card" data-form="company" style="display:flex;flex-direction:column;gap:14px">
+  return html`<div class="settings-cards-grid">
+    <form class="card settings-card-wide" data-form="company" style="display:flex;flex-direction:column;gap:14px">
       <h2>Mon entreprise</h2>
       <div class="form-grid">
         ${field('Nom', html`<input class="input" name="name" value="${c.name}" />`)}
@@ -115,53 +229,92 @@ export function viewSettings() {
       }
       ${field('Choisir une image (PNG ou JPEG, 200 Ko au plus)', html`<input class="input" type="file" accept="image/png,image/jpeg" data-action="logo-file" />`)}
     </div>
-    <div class="card" style="display:flex;flex-direction:column;gap:10px">
-      <h2>Mes données</h2>
+  </div>`;
+}
+
+function bankTab() {
+  return (
+    categoryRulesCard() ||
+    html`<div class="card">
+      <h2>Catégories bancaires</h2>
       <p class="text-muted" style="margin:0">
-        Téléchargez toutes les données de votre entreprise (comptabilité, factures, clients, banque, journal d’audit) dans un fichier JSON : elles vous
-        appartiennent et restent lisibles par tout autre logiciel.
+        Aucune catégorie retenue pour l’instant. Quand vous catégorisez un mouvement en banque, Nexus le retient et le propose pour les mouvements semblables.
       </p>
-      <div><button class="btn btn-secondary" data-action="data-export">Exporter toutes mes données</button></div>
-    </div>
-    ${reminderTemplatesCard()} ${categoryRulesCard()} ${isMicro() ? microSettingsCard() : ''}
-    <div class="card" style="display:flex;flex-direction:column;gap:10px">
-      <h2>Affichage</h2>
-      <label class="form-field-checkbox" style="display:flex;gap:8px;align-items:center"
-        ><input type="checkbox" data-action="mode" ${ui.mode === 'avance' ? raw('checked') : ''} />Mode avancé : afficher la comptabilité (balance, grand livre,
-        journaux, FEC)</label
-      >
-    </div>
-    ${securityCard()} ${membersCard()}
+    </div>`
+  );
+}
+
+function openingTab() {
+  return html`<div class="card" style="display:flex;flex-direction:column;gap:10px">
+    <h2>Reprise d'historique</h2>
+    <p class="text-muted">Importez le FEC de l'exercice précédent : Nexus reprend les soldes de bilan, le résultat et la liste de vos clients.</p>
     ${
-      ws.ledger.entries.some((e) => e.source?.kind === 'fec-import')
-        ? ''
-        : html`<div class="card" style="display:flex;flex-direction:column;gap:10px">
-            <h2>Reprise d'historique</h2>
-            <p class="text-muted">Importez le FEC de l'exercice précédent : Nexus reprend les soldes de bilan, le résultat et la liste de vos clients.</p>
-            ${
-              ui.pendingOpening
-                ? html`${openingPreview(ui.pendingOpening.opening, ui.pendingOpening.fileName)}
-                    <div style="display:flex;gap:8px">
-                      <button class="btn btn-primary" data-action="opening-import">Importer ce bilan d'ouverture</button
-                      ><button class="btn btn-secondary" data-action="opening-cancel">Annuler</button>
-                    </div>`
-                : field(
-                    'Fichier des écritures comptables (FEC)',
-                    html`<input class="input" type="file" accept=".txt,.csv" data-action="settings-fec-file" style="max-width:420px" />`,
-                  )
-            }
-          </div>`
+      ui.pendingOpening
+        ? html`${openingPreview(ui.pendingOpening.opening, ui.pendingOpening.fileName)}
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-primary" data-action="opening-import">Importer ce bilan d'ouverture</button
+              ><button class="btn btn-secondary" data-action="opening-cancel">Annuler</button>
+            </div>`
+        : field(
+            'Fichier des écritures comptables (FEC)',
+            html`<input class="input" type="file" accept=".txt,.csv" data-action="settings-fec-file" style="max-width:420px" />`,
+          )
     }
-    <div class="card" style="display:flex;flex-direction:column;gap:10px">
-      <h2>Mes données</h2>
-      <p class="text-muted">
-        ${ui.demo ? 'Démonstration : ces données fictives restent dans ce navigateur.' : 'Vos données sont enregistrées en base (hébergement à Paris), accessibles uniquement avec votre mot de passe et votre code de vérification.'}
-      </p>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-secondary" data-action="backup">Télécharger une copie de mes données</button
-        ><button class="btn btn-secondary" data-action="${ui.demo ? 'demo-exit' : 'sign-out'}">
-          ${ui.demo ? 'Quitter la démonstration' : 'Se déconnecter'}
-        </button>
-      </div>
+  </div>`;
+}
+
+function dataTab() {
+  return html`<div class="card" style="display:flex;flex-direction:column;gap:10px">
+    <h2>Mes données</h2>
+    <p class="text-muted" style="margin:0">
+      ${ui.demo ? 'Démonstration : ces données fictives restent dans ce navigateur.' : 'Vos données sont enregistrées en base (hébergement à Paris), accessibles uniquement avec votre mot de passe et votre code de vérification.'}
+      Elles vous appartiennent : téléchargez-les à tout moment (comptabilité, factures, clients, banque, journal d’audit), dans un format lisible par tout autre
+      logiciel.
+    </p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-secondary" data-action="data-export">Exporter toutes mes données</button
+      ><button class="btn btn-secondary" data-action="backup">Télécharger une copie de sauvegarde</button
+      ><button class="btn btn-secondary" data-action="${ui.demo ? 'demo-exit' : 'sign-out'}">${ui.demo ? 'Quitter la démonstration' : 'Se déconnecter'}</button>
+    </div>
+  </div>`;
+}
+
+function displayTab() {
+  return html`<div class="card" style="display:flex;flex-direction:column;gap:10px">
+    <h2>Affichage</h2>
+    <label class="form-field-checkbox" style="display:flex;gap:8px;align-items:center"
+      ><input type="checkbox" data-action="mode" ${ui.mode === 'avance' ? raw('checked') : ''} />Mode avancé : afficher la comptabilité (balance, grand livre,
+      journaux, FEC)</label
+    >
+  </div>`;
+}
+
+/** Même présentation que les Paramètres de Nexus RH : barre latérale groupée, une rubrique à la fois. */
+export function viewSettings(arg) {
+  const active = settingsTab(arg);
+  const visible = SETTINGS_TABS.filter((t) => t.visible());
+  const sidebar = SETTINGS_GROUPS.map((g) => {
+    const tabs = visible.filter((t) => t.group === g.key);
+    if (!tabs.length) return '';
+    return html`<div class="nav-section-label">${g.label}</div>
+      ${tabs.map(
+        (t) =>
+          html`<button
+            type="button"
+            class="nav-item ${t === active ? 'active' : ''}"
+            data-href="#/parametres/${t.key}"
+            ${t === active ? raw('aria-current="page"') : ''}
+          >
+            <span class="nav-icon">${raw(ICONS[t.icon])}</span><span class="nav-label">${t.label}</span>
+          </button>`,
+      )}`;
+  });
+  return html`${viewHeader('Paramètres', 'Entreprise, facturation, sécurité et préférences d’affichage.')}
+    <div class="parametres-layout">
+      <nav class="parametres-sidebar-desktop" aria-label="Rubriques des paramètres">${sidebar}</nav>
+      <select class="input parametres-tab-select" data-action="settings-tab" aria-label="Rubrique des paramètres">
+        ${visible.map((t) => opt(t.key, t.label, t === active))}
+      </select>
+      <div class="parametres-content">${active.render()}</div>
     </div>`;
 }

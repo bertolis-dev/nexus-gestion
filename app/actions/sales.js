@@ -2,18 +2,20 @@
  * Écran « sales ».
  */
 
-import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=d485078';
-import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=d485078';
-import { LIFECYCLE } from '../../core/lifecycle.js?v=d485078';
-import { lookupSiren } from '../company-lookup.js?v=d485078';
-import { render } from '../render.js?v=d485078';
-import { eur, frDate, today, ui, ws } from '../state.js?v=d485078';
-import { download, save, toast } from '../store.js?v=d485078';
-import { isUnconfirmed } from '../sync-ui.js?v=d485078';
-import { emptyLine, persistDraft } from '../views/invoice-form.js?v=d485078';
-import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=d485078';
-import { depositCandidates } from '../../core/deposit.js?v=d485078';
-import { createZip } from '../../core/zip.js?v=d485078';
+import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=c52829b';
+import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=c52829b';
+import { LIFECYCLE } from '../../core/lifecycle.js?v=c52829b';
+import { lookupSiren } from '../company-lookup.js?v=c52829b';
+import { render } from '../render.js?v=c52829b';
+import * as cloud from '../cloud.js?v=c52829b';
+import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=c52829b';
+import { reminderMessage } from '../../core/reminders.js?v=c52829b';
+import { download, save, toast } from '../store.js?v=c52829b';
+import { isUnconfirmed } from '../sync-ui.js?v=c52829b';
+import { emptyLine, persistDraft } from '../views/invoice-form.js?v=c52829b';
+import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=c52829b';
+import { depositCandidates } from '../../core/deposit.js?v=c52829b';
+import { createZip } from '../../core/zip.js?v=c52829b';
 
 /** Actions « sales » : data-action → fonction. */
 export const actionsTable = {
@@ -117,6 +119,21 @@ export const actionsTable = {
     return render();
   },
   // Le lien mailto s'ouvre normalement ; la relance est ajoutée à l'historique de la facture.
+  'reminder-email': async ({ id, index }) => {
+    const level = Number(index);
+    const msg = reminderMessage(ws, id, level, today());
+    try {
+      const r = await cloud.sendReminderEmail(id, level, msg);
+      if (!r.ok) return toast(`La relance n’est pas partie : le service d’e-mails l’a refusée (${r.detail || 'raison inconnue'}).`, true);
+      ws.recordReminder(id, { level, date: today() });
+      save();
+      ui.emails = null;
+      render();
+      toast(`Relance envoyée par e-mail à ${r.recipient}.`);
+    } catch (err) {
+      toast(cloud.friendly(err), true);
+    }
+  },
   'reminder-send': async ({ id, index }) => {
     ws.recordReminder(id, { level: Number(index), date: today() });
     save();
@@ -143,6 +160,17 @@ export const actionsTable = {
     const name = pdfFileName(inv);
     const subject = `${inv.type === 'credit' ? 'Avoir' : 'Facture'} ${inv.number} — ${ws.company.name}`;
     const body = `Bonjour,\n\nVeuillez trouver ci-joint ${inv.type === 'credit' ? "l'avoir" : 'la facture'} ${inv.number} d'un montant de ${eur(inv.totals.netToPay ?? inv.totals.totalTtc)}${inv.type === 'credit' ? '' : `, à régler avant le ${frDate(inv.dueDate)}`}.\n\nCordialement,\n${ws.company.name}`;
+    // Envoi par Nexus Gestion (Brevo) : directement au client, PDF joint.
+    if (!ui.demo && cloudState.emailReady && inv.client?.email) {
+      try {
+        const r = await cloud.sendInvoiceEmail(inv.id, { subject, body, pdf, name });
+        if (!r.ok) return toast(`La facture n’est pas partie : le service d’e-mails l’a refusée (${r.detail || 'raison inconnue'}).`, true);
+        ui.emails = null;
+        return toast(`Facture envoyée par e-mail à ${r.recipient}, PDF joint.`);
+      } catch (err) {
+        return toast(cloud.friendly(err), true);
+      }
+    }
     const file = new File([pdf], name, { type: 'application/pdf' });
     // Téléphone et certains ordinateurs : partage natif avec le PDF joint.
     if (navigator.canShare?.({ files: [file] })) {

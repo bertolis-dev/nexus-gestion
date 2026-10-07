@@ -6,9 +6,9 @@
  * inclus (acomptes non gérés).
  */
 
-import { addDays } from './dates.js?v=d485078';
-import { dueOccurrences } from './recurring.js?v=d485078';
-import { computeTotals, isVatExempt } from './invoices.js?v=d485078';
+import { addDays } from './dates.js?v=c52829b';
+import { dueOccurrences } from './recurring.js?v=c52829b';
+import { computeTotals, isVatExempt } from './invoices.js?v=c52829b';
 
 /** Délai de paiement d'une dépense sans échéance connue (usage, à valider par l'expert-comptable). */
 export const DEFAULT_SUPPLIER_TERMS_DAYS = 30;

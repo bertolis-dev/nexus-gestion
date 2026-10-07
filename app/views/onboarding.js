@@ -2,21 +2,21 @@
  * Écran « onboarding ».
  */
 
-import { firstFiscalYear } from '../../core/dates.js?v=d485078';
-import { openingBalanceFromFec, parseFec } from '../../core/fecimport.js?v=d485078';
-import { isValidSiren } from '../../core/invoices.js?v=d485078';
-import { ACTIVITY_TYPES, CIPAV_PROFESSIONS } from '../../core/micro.js?v=d485078';
-import { buildChart } from '../../core/pcg.js?v=d485078';
-import { Workspace } from '../../core/workspace.js?v=d485078';
-import * as cloud from '../cloud.js?v=d485078';
-import { lookupSiren } from '../company-lookup.js?v=d485078';
-import { companyFromOnboarding } from '../../core/company.js?v=d485078';
-import { choiceGroup, field, html, opt, raw } from '../html.js?v=d485078';
-import { render } from '../render.js?v=d485078';
-import { cloudState, eur, newId, setWs, ui, ws } from '../state.js?v=d485078';
-import { save, toast } from '../store.js?v=d485078';
-import { onSyncResult, onSyncStatus } from '../sync-ui.js?v=d485078';
-import { badge, brand } from '../ui/common.js?v=d485078';
+import { firstFiscalYear } from '../../core/dates.js?v=c52829b';
+import { openingBalanceFromFec, parseFec } from '../../core/fecimport.js?v=c52829b';
+import { isValidSiren } from '../../core/invoices.js?v=c52829b';
+import { ACTIVITY_TYPES, CIPAV_PROFESSIONS } from '../../core/micro.js?v=c52829b';
+import { buildChart } from '../../core/pcg.js?v=c52829b';
+import { Workspace } from '../../core/workspace.js?v=c52829b';
+import * as cloud from '../cloud.js?v=c52829b';
+import { lookupSiren } from '../company-lookup.js?v=c52829b';
+import { companyFromOnboarding } from '../../core/company.js?v=c52829b';
+import { choiceGroup, field, html, opt, raw } from '../html.js?v=c52829b';
+import { render } from '../render.js?v=c52829b';
+import { cloudState, eur, newId, setWs, ui, ws } from '../state.js?v=c52829b';
+import { save, toast } from '../store.js?v=c52829b';
+import { onSyncResult, onSyncStatus } from '../sync-ui.js?v=c52829b';
+import { badge, brand } from '../ui/common.js?v=c52829b';
 
 // ------------------------------------------------------------------ assistant d'installation (§3.1)
 

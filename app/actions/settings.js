@@ -2,11 +2,11 @@
  * Écran « settings ».
  */
 
-import * as cloud from '../cloud.js?v=d485078';
-import { render } from '../render.js?v=d485078';
-import { cloudState, frDate, today, ui, ws } from '../state.js?v=d485078';
-import { download, save, toast } from '../store.js?v=d485078';
-import { forgetRule } from '../../core/categorization.js?v=d485078';
+import * as cloud from '../cloud.js?v=c52829b';
+import { render } from '../render.js?v=c52829b';
+import { cloudState, frDate, today, ui, ws } from '../state.js?v=c52829b';
+import { download, save, toast } from '../store.js?v=c52829b';
+import { forgetRule } from '../../core/categorization.js?v=c52829b';
 
 /** Actions « settings » : data-action → fonction. */
 export const actionsTable = {

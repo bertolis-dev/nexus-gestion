@@ -9,11 +9,11 @@
  * nombre d'écritures validées), l'état est rechargé depuis la base, qui fait foi.
  */
 
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js?v=d485078';
-import { stateFromRows, refusedUpdate } from '../core/sync.js?v=d485078';
-import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, pendingOutboxOps, OUTBOX_PREFIX } from '../core/outbox.js?v=d485078';
-import { ACCOUNTS } from '../core/pcg.js?v=d485078';
-import { mfaState, canRemoveFactor } from '../core/mfa.js?v=d485078';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js?v=c52829b';
+import { stateFromRows, refusedUpdate } from '../core/sync.js?v=c52829b';
+import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, pendingOutboxOps, OUTBOX_PREFIX } from '../core/outbox.js?v=c52829b';
+import { ACCOUNTS } from '../core/pcg.js?v=c52829b';
+import { mfaState, canRemoveFactor } from '../core/mfa.js?v=c52829b';
 
 // supabase-js (copie locale, app/vendor/) n'est chargé qu'en mode connecté : la démonstration et
 // le site public ne téléchargent pas ces 220 Ko.
@@ -21,11 +21,32 @@ let client = null;
 const authListeners = [];
 async function connect() {
   if (!client) {
-    const { createClient } = await import('./vendor/supabase.js?v=d485078');
-    client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const { createClient } = await import('./vendor/supabase.js?v=c52829b');
+    // Session gardée dans le navigateur et renouvelée automatiquement : on reste connecté d'une visite
+    // à l'autre, jusqu'à « Se déconnecter » (comme Nexus RH).
+    client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storage: window.localStorage },
+    });
     for (const cb of authListeners) client.auth.onAuthStateChange(cb);
   }
   return client;
+}
+
+/** Une session est enregistrée dans ce navigateur (l'utilisateur ne s'est pas déconnecté). */
+export function hasStoredSession() {
+  try {
+    return Object.keys(localStorage).some((k) => /^sb-.+-auth-token$/.test(k));
+  } catch {
+    return false;
+  }
+}
+
+/** Panne passagère (réseau, service lent) : la session n'est pas en cause, on réessaie. */
+export function isTransient(error) {
+  const msg = `${error?.name || ''} ${error?.message || error || ''}`;
+  return (
+    error?.message === UNREACHABLE_MESSAGE || /Retryable|Failed to fetch|NetworkError|Load failed|fetch failed|timeout|ERR_/i.test(msg) || error?.status >= 500
+  );
 }
 
 /** Une session (ou un retour de lien e-mail) peut exister : sinon, inutile de charger supabase-js. */
@@ -213,6 +234,8 @@ export async function loadStructure(structureId) {
     all(() => eq('documents')().order('uploaded_at')),
     all(() => eq('invoice_events')().order('position')),
   ]);
+  // Relances parties par e-mail (dont les relances automatiques du matin) : table absente avant 0022.
+  const emails = await all(() => eq('email_log', 'invoice_id, level, sent_at')().eq('kind', 'relance').eq('status', 'envoye')).catch(() => []);
   const primary = banks.find((b) => b.gl_account === '512000') || banks[0];
   const meta = { structureId, fiscalYearId: fiscalYear.id, bankAccountId: primary?.id };
   const state = stateFromRows({
@@ -228,6 +251,7 @@ export async function loadStructure(structureId) {
     transactions,
     recurring,
     events,
+    emails,
   });
   return { meta, state, documents };
 }
@@ -263,6 +287,47 @@ export async function removeMember(structureId, userId) {
   const supabase = await connect();
   return check(await supabase.rpc('remove_member', { p_structure: structureId, p_user: userId }));
 }
+// ------------------------------------------------------------------ e-mails (Brevo, migration 0022)
+
+/** L'envoi d'e-mails par Nexus Gestion est-il en service ? (sinon : messagerie de l'utilisateur) */
+export async function emailConfigured() {
+  try {
+    const supabase = await connect();
+    return Boolean(check(await supabase.rpc('email_configured')));
+  } catch {
+    return false;
+  }
+}
+/** Contenu binaire en base64, par morceaux (un PDF dépasse la taille d'argument de String.fromCharCode). */
+function toBase64(bytes) {
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+/** Facture envoyée au client de la facture, PDF joint ; renvoie { ok, recipient, detail }. */
+export async function sendInvoiceEmail(invoiceId, { subject, body, pdf, name }) {
+  const supabase = await connect();
+  return check(
+    await supabase.rpc('send_invoice_email', {
+      p_invoice: invoiceId,
+      p_subject: subject,
+      p_body: body,
+      p_pdf: toBase64(new Uint8Array(pdf)),
+      p_pdf_name: name,
+    }),
+  );
+}
+/** Relance envoyée au client de la facture ; renvoie { ok, recipient, detail }. */
+export async function sendReminderEmail(invoiceId, level, { subject, body }) {
+  const supabase = await connect();
+  return check(await supabase.rpc('send_reminder_email', { p_invoice: invoiceId, p_level: level, p_subject: subject, p_body: body }));
+}
+/** Derniers e-mails envoyés par l'entreprise (factures, relances manuelles et automatiques). */
+export async function listEmails(structureId) {
+  const supabase = await connect();
+  return check(await supabase.from('email_log').select('*').eq('structure_id', structureId).order('sent_at', { ascending: false }).limit(30));
+}
+
 /** Export complet de l'entreprise (RGPD), réservé au dirigeant (migration 0019). */
 export async function exportStructure(structureId) {
   const supabase = await connect();

@@ -10,7 +10,7 @@
   } catch (e) {}
 
   window.addEventListener('load', function () {
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); // installation hors connexion facultative (navigation privée, stockage plein…)
     if (window.__nexusBooted) return;
     var box = document.createElement('div');
     box.className = 'boot-failure';

@@ -2,24 +2,24 @@
  * Rendu général : choix de l’écran, cadre de l’application, recherche globale, repères d’accessibilité.
  */
 
-import { html, raw } from './html.js?v=d485078';
-import { ICONS } from './icons.js?v=d485078';
-import { featureBySlug, featureSlug, features, loadFeatures, viewFeature, viewLanding } from './site/landing.js?v=d485078';
-import { cloudState, eur, frDate, ui, ws } from './state.js?v=d485078';
-import { getTheme } from './store.js?v=d485078';
-import { syncStatusHtml } from './sync-ui.js?v=d485078';
-import { LOGO, badge, brand } from './ui/common.js?v=d485078';
-import { viewAuth, viewMfa, viewStructurePicker } from './views/auth.js?v=d485078';
-import { viewBank } from './views/bank.js?v=d485078';
-import { viewClosing } from './views/closing.js?v=d485078';
-import { viewCompta } from './views/compta.js?v=d485078';
-import { viewExpenses } from './views/expenses.js?v=d485078';
-import { viewHome } from './views/home.js?v=d485078';
-import { viewUrssaf } from './views/micro.js?v=d485078';
-import { viewOnboarding } from './views/onboarding.js?v=d485078';
-import { runRecurring, viewSales } from './views/sales.js?v=d485078';
-import { viewSettings } from './views/settings.js?v=d485078';
-import { viewVat } from './views/vat.js?v=d485078';
+import { html, raw } from './html.js?v=c52829b';
+import { ICONS } from './icons.js?v=c52829b';
+import { featureBySlug, featureSlug, features, loadFeatures, viewFeature, viewLanding } from './site/landing.js?v=c52829b';
+import { cloudState, eur, frDate, ui, ws } from './state.js?v=c52829b';
+import { getTheme } from './store.js?v=c52829b';
+import { syncStatusHtml } from './sync-ui.js?v=c52829b';
+import { LOGO, badge, brand } from './ui/common.js?v=c52829b';
+import { viewAuth, viewMfa, viewStructurePicker } from './views/auth.js?v=c52829b';
+import { viewBank } from './views/bank.js?v=c52829b';
+import { viewClosing } from './views/closing.js?v=c52829b';
+import { viewCompta } from './views/compta.js?v=c52829b';
+import { viewExpenses } from './views/expenses.js?v=c52829b';
+import { viewHome } from './views/home.js?v=c52829b';
+import { viewUrssaf } from './views/micro.js?v=c52829b';
+import { viewOnboarding } from './views/onboarding.js?v=c52829b';
+import { runRecurring, viewSales } from './views/sales.js?v=c52829b';
+import { viewSettings } from './views/settings.js?v=c52829b';
+import { viewVat } from './views/vat.js?v=c52829b';
 
 // ------------------------------------------------------------------ rendu général
 
@@ -36,7 +36,8 @@ export function render() {
     show('login-root');
     $('login-root').innerHTML = html`<div class="login-card">
       <div class="login-logo">${brand}</div>
-      <p class="text-muted">Chargement…</p>
+      <p class="text-muted" role="status">${ui.bootMessage || 'Chargement…'}</p>
+      ${ui.bootMessage ? html`<button type="button" class="btn btn-secondary" data-action="demo">Voir la démonstration en attendant</button>` : ''}
     </div>`.s;
     return;
   }

@@ -2,18 +2,18 @@
  * Écran « sales ».
  */
 
-import { VAT_RATES_BP, checkInvoice, computeTotals, isVatExempt, issuerName, lineHt } from '../../core/invoices.js?v=d485078';
-import { FREQUENCIES, nextDate } from '../../core/recurring.js?v=d485078';
-import { field, html, opt, raw } from '../html.js?v=d485078';
-import { ICONS } from '../icons.js?v=d485078';
-import { eur, frDate, pct, today, ui, ws } from '../state.js?v=d485078';
-import { save, toast } from '../store.js?v=d485078';
-import { isUnconfirmed } from '../sync-ui.js?v=d485078';
-import { badge, viewHeader } from '../ui/common.js?v=d485078';
-import { lifecycleCard } from './expenses.js?v=d485078';
-import { viewInvoiceForm } from './invoice-form.js?v=d485078';
-import { depositCard } from './deposit.js?v=d485078';
-import { REMINDER_STEPS, dueReminderLevel, reminderMessage } from '../../core/reminders.js?v=d485078';
+import { VAT_RATES_BP, checkInvoice, computeTotals, isVatExempt, issuerName, lineHt } from '../../core/invoices.js?v=c52829b';
+import { FREQUENCIES, nextDate } from '../../core/recurring.js?v=c52829b';
+import { field, html, opt, raw } from '../html.js?v=c52829b';
+import { ICONS } from '../icons.js?v=c52829b';
+import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=c52829b';
+import { save, toast } from '../store.js?v=c52829b';
+import { isUnconfirmed } from '../sync-ui.js?v=c52829b';
+import { badge, viewHeader } from '../ui/common.js?v=c52829b';
+import { lifecycleCard } from './expenses.js?v=c52829b';
+import { viewInvoiceForm } from './invoice-form.js?v=c52829b';
+import { depositCard } from './deposit.js?v=c52829b';
+import { REMINDER_STEPS, dueReminderLevel, reminderMessage } from '../../core/reminders.js?v=c52829b';
 
 // ------------------------------------------------------------------ factures (§3.2, §3.5)
 
@@ -292,7 +292,15 @@ export function viewInvoice(id) {
   ${quote && issued && !invoicedFrom ? html`<button class="btn btn-gold" data-action="quote-convert" data-id="${inv.id}">Transformer en facture</button>` : ''}
   ${issued && !unconfirmed ? html`<button class="btn btn-secondary" data-action="print">Imprimer / PDF</button>` : ''}
   ${issued && !quote && !unconfirmed ? html`<button class="btn btn-primary" data-action="invoice-send" data-id="${inv.id}">Envoyer au client</button><button class="btn btn-secondary" data-action="invoice-pdf" data-id="${inv.id}">Télécharger la facture (PDF)</button><button class="btn btn-secondary" data-action="einvoice" data-id="${inv.id}">Facture électronique (XML)</button>` : ''}
-  ${mailto && !quote && !unconfirmed ? html`<a class="btn btn-gold" href="${mailto}" data-action="reminder-send" data-id="${inv.id}" data-index="${reminderLevel}">Relancer le client</a>` : ''}
+  ${
+    mailto && !quote && !unconfirmed
+      ? !ui.demo && cloudState.emailReady
+        ? html`<button class="btn btn-gold" data-action="reminder-email" data-id="${inv.id}" data-index="${reminderLevel}">
+            Relancer le client par e-mail
+          </button>`
+        : html`<a class="btn btn-gold" href="${mailto}" data-action="reminder-send" data-id="${inv.id}" data-index="${reminderLevel}">Relancer le client</a>`
+      : ''
+  }
   ${issued && inv.type !== 'credit' && !quote ? html`<button class="btn btn-secondary" data-action="credit-note" data-id="${inv.id}">Créer un avoir</button>` : ''}`;
   const historyNote = history.length
     ? html`<p class="text-muted no-print" style="margin:-6px 0 14px">

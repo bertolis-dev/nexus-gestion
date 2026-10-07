@@ -2,17 +2,17 @@
  * Écran « bank ».
  */
 
-import { decodeStatement, importStatement } from '../../core/bank-import.js?v=d485078';
-import { reconciliationStatement } from '../../core/bank.js?v=d485078';
-import { VAT_RATES_BP } from '../../core/invoices.js?v=d485078';
-import { parseEuros } from '../../core/money.js?v=d485078';
-import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=d485078';
-import { INCOME_CATEGORIES, MAX_BANK_ACCOUNTS, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=d485078';
-import { field, html, opt, raw } from '../html.js?v=d485078';
-import { ICONS } from '../icons.js?v=d485078';
-import { eur, frDate, pct, today, ui, ws } from '../state.js?v=d485078';
-import { dataVersion } from '../store.js?v=d485078';
-import { badge, icon, term, viewHeader } from '../ui/common.js?v=d485078';
+import { decodeStatement, importStatement } from '../../core/bank-import.js?v=c52829b';
+import { reconciliationStatement } from '../../core/bank.js?v=c52829b';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=c52829b';
+import { parseEuros } from '../../core/money.js?v=c52829b';
+import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=c52829b';
+import { INCOME_CATEGORIES, MAX_BANK_ACCOUNTS, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=c52829b';
+import { field, html, opt, raw } from '../html.js?v=c52829b';
+import { ICONS } from '../icons.js?v=c52829b';
+import { eur, frDate, pct, today, ui, ws } from '../state.js?v=c52829b';
+import { dataVersion } from '../store.js?v=c52829b';
+import { badge, icon, term, viewHeader } from '../ui/common.js?v=c52829b';
 
 // ------------------------------------------------------------------ banque (§3.4)
 

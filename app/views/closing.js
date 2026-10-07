@@ -2,18 +2,18 @@
  * Écran « closing ».
  */
 
-import { INVENTORY_TYPES, allocationProposal, balanceSheet, closingChecklist, fiscalYearLabel, incomeStatement } from '../../core/closing.js?v=d485078';
-import { addDays } from '../../core/dates.js?v=d485078';
-import { VAT_RATES_BP } from '../../core/invoices.js?v=d485078';
-import { parseEuros } from '../../core/money.js?v=d485078';
-import * as cloud from '../cloud.js?v=d485078';
-import { field, html, opt, raw } from '../html.js?v=d485078';
-import { ICONS } from '../icons.js?v=d485078';
-import { render } from '../render.js?v=d485078';
-import { cloudState, eur, frDate, pct, setWs, today, ui, ws } from '../state.js?v=d485078';
-import { save, toast } from '../store.js?v=d485078';
-import { openStructure } from '../sync-ui.js?v=d485078';
-import { badge, term, viewHeader } from '../ui/common.js?v=d485078';
+import { INVENTORY_TYPES, allocationProposal, balanceSheet, closingChecklist, fiscalYearLabel, incomeStatement } from '../../core/closing.js?v=c52829b';
+import { addDays } from '../../core/dates.js?v=c52829b';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=c52829b';
+import { parseEuros } from '../../core/money.js?v=c52829b';
+import * as cloud from '../cloud.js?v=c52829b';
+import { field, html, opt, raw } from '../html.js?v=c52829b';
+import { ICONS } from '../icons.js?v=c52829b';
+import { render } from '../render.js?v=c52829b';
+import { cloudState, eur, frDate, pct, setWs, today, ui, ws } from '../state.js?v=c52829b';
+import { save, toast } from '../store.js?v=c52829b';
+import { openStructure } from '../sync-ui.js?v=c52829b';
+import { badge, term, viewHeader } from '../ui/common.js?v=c52829b';
 
 // ------------------------------------------------------------------ clôture de l'exercice (lot 3)
 
@@ -267,7 +267,7 @@ export function viewClosing() {
         La clôture détermine le résultat, valide définitivement toutes les écritures de l'exercice (plus aucune modification possible) et ouvre l'exercice
         suivant avec son bilan d'ouverture.
       </p>
-      ${!canClose ? html`<div class="notice-gold">Pour une société, la clôture est réalisée par votre expert-comptable : invitez-le depuis les <a href="#/parametres">paramètres</a>, il la validera depuis son propre accès.</div>` : ''}
+      ${!canClose ? html`<div class="notice-gold">Pour une société, la clôture est réalisée par votre expert-comptable : invitez-le depuis les <a href="#/parametres/utilisateurs">paramètres</a>, il la validera depuis son propre accès.</div>` : ''}
       ${ui.demo && society ? html`<p class="form-hint">Démonstration : dans l'application réelle, la clôture d'une société est réservée à l'expert-comptable invité.</p>` : ''}
       <div>
         <button class="btn btn-primary" data-action="close-year" ${canClose && today() > fy.end ? '' : raw('disabled')}>

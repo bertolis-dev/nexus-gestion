@@ -618,3 +618,76 @@ tr[data-href]:focus-visible,
 .action-center-static:hover {
   background: none;
 }
+
+/* Paramètres : même présentation que Nexus RH (style.css, retour Betty du 29/09/2026) — barre latérale
+   groupée par catégorie, une rubrique à la fois ; menu déroulant sous 860px. Réutilise .nav-item et
+   .nav-section-label de la barre principale. */
+.parametres-tab-select {
+  display: none;
+  margin-bottom: 18px;
+}
+.parametres-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 28px;
+}
+.parametres-sidebar-desktop {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 240px;
+  flex-shrink: 0;
+  padding-right: 20px;
+  border-right: 1px solid var(--color-border);
+}
+.parametres-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.parametres-content > .card {
+  margin-bottom: 0;
+}
+.settings-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+.settings-cards-grid > .card {
+  margin-bottom: 0;
+}
+.settings-card-wide {
+  grid-column: 1 / -1;
+}
+@media (max-width: 860px) {
+  .parametres-sidebar-desktop {
+    display: none;
+  }
+  .parametres-tab-select {
+    display: block;
+  }
+  .parametres-layout {
+    flex-direction: column;
+    gap: 0;
+  }
+  .settings-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* Titres de groupe sur le fond clair de la page (et non sur la barre marine) : or plus foncé pour
+   rester lisible (contraste AA) ; le thème sombre garde l'or habituel. */
+.parametres-sidebar-desktop .nav-section-label {
+  color: #8a6420;
+  opacity: 1;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .parametres-sidebar-desktop .nav-section-label {
+    color: var(--color-gold);
+  }
+}
+:root[data-theme='dark'] .parametres-sidebar-desktop .nav-section-label {
+  color: var(--color-gold);
+}

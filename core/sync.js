@@ -394,6 +394,14 @@ export function stateFromRows(r) {
     vatOnDebits: s.vat_on_debits,
     fiscalYear: { start: r.fiscalYear.start_date, end: r.fiscalYear.end_date },
   };
+  // Relances envoyées par e-mail depuis la base (journal email_log) : ajoutées à l'historique de la
+  // facture si ce niveau n'y figure pas déjà.
+  for (const e of r.emails || []) {
+    if (!e.invoice_id || !e.level) continue;
+    const history = company.reminders?.[e.invoice_id] || [];
+    if (history.some((h) => h.level === e.level)) continue;
+    company.reminders = { ...(company.reminders || {}), [e.invoice_id]: [...history, { level: e.level, date: parisDateOf(e.sent_at) }] };
+  }
 
   // Comptes bancaires : le compte en 512000 est le compte principal (« default » dans l'état local).
   const bankRows = r.bankAccounts || [];
@@ -543,4 +551,5 @@ export function refusedUpdate(op) {
     divergence: true,
   });
 }
-import { DEFAULT_BANK_ACCOUNT } from './bank.js?v=d485078';
+import { DEFAULT_BANK_ACCOUNT } from './bank.js?v=c52829b';
+import { parisDateOf } from './dates.js?v=c52829b';

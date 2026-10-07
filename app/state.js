@@ -2,9 +2,9 @@
  * État partagé de l'interface : entreprise affichée, écran, mode connecté, formats d'affichage.
  */
 
-import { todayParis } from '../core/dates.js?v=d485078';
-import { formatEuros } from '../core/money.js?v=d485078';
-import { getDemo, removeDemo, setDemo } from './demo-store.js?v=d485078';
+import { todayParis } from '../core/dates.js?v=c52829b';
+import { formatEuros } from '../core/money.js?v=c52829b';
+import { getDemo, removeDemo, setDemo } from './demo-store.js?v=c52829b';
 
 /**
  * Nexus Gestion — interface (lot 1).
@@ -46,7 +46,7 @@ export let ws = null;
 export const setWs = (next) => (ws = next);
 
 /** Mode connecté : structure en base, file d'envoi, dernier état envoyé. */
-export const cloudState = { session: null, meta: null, outbox: null, synced: null, documents: [], status: { pending: 0, error: null } };
+export const cloudState = { session: null, meta: null, outbox: null, synced: null, documents: [], emailReady: false, status: { pending: 0, error: null } };
 
 export const freshOnboarding = () => ({
   step: 1,

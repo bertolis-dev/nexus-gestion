@@ -2,24 +2,24 @@
  * Événements du document : saisie, changement, clavier, formulaires, clics, navigation.
  */
 
-import { isValidSiren } from '../../core/invoices.js?v=d485078';
-import { parseEuros } from '../../core/money.js?v=d485078';
-import { usualVatRate } from '../../core/pcg.js?v=d485078';
-import * as cloud from '../cloud.js?v=d485078';
-import { html, raw } from '../html.js?v=d485078';
-import { ICONS } from '../icons.js?v=d485078';
-import { $, render, searchResults } from '../render.js?v=d485078';
-import { closeLightbox, featureSlug } from '../site/landing.js?v=d485078';
-import { cloudState, ui, ws } from '../state.js?v=d485078';
-import { save, savePrefs, toast } from '../store.js?v=d485078';
-import { afterSignIn } from '../sync-ui.js?v=d485078';
-import { currentBankAccount, importBankFile } from '../views/bank.js?v=d485078';
-import { attachReceipt } from '../views/expenses.js?v=d485078';
-import { readPrice, totalsBlock } from '../views/invoice-form.js?v=d485078';
-import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=d485078';
-import { runAction } from './index.js?v=d485078';
-import { readReceivedInvoices } from '../received-invoices.js?v=d485078';
-import { urssafLinkSubmit } from '../views/urssaf-link.js?v=d485078';
+import { isValidSiren } from '../../core/invoices.js?v=c52829b';
+import { parseEuros } from '../../core/money.js?v=c52829b';
+import { usualVatRate } from '../../core/pcg.js?v=c52829b';
+import * as cloud from '../cloud.js?v=c52829b';
+import { html, raw } from '../html.js?v=c52829b';
+import { ICONS } from '../icons.js?v=c52829b';
+import { $, render, searchResults } from '../render.js?v=c52829b';
+import { closeLightbox, featureSlug } from '../site/landing.js?v=c52829b';
+import { cloudState, ui, ws } from '../state.js?v=c52829b';
+import { save, savePrefs, toast } from '../store.js?v=c52829b';
+import { afterSignIn } from '../sync-ui.js?v=c52829b';
+import { currentBankAccount, importBankFile } from '../views/bank.js?v=c52829b';
+import { attachReceipt } from '../views/expenses.js?v=c52829b';
+import { readPrice, totalsBlock } from '../views/invoice-form.js?v=c52829b';
+import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=c52829b';
+import { runAction } from './index.js?v=c52829b';
+import { readReceivedInvoices } from '../received-invoices.js?v=c52829b';
+import { urssafLinkSubmit } from '../views/urssaf-link.js?v=c52829b';
 
 // ------------------------------------------------------------------ évènements
 
@@ -189,6 +189,16 @@ document.addEventListener('change', async (e) => {
     const ids = ui.draft.depositIds;
     ui.draft.depositIds = el.checked ? [...ids, el.dataset.id] : ids.filter((x) => x !== el.dataset.id);
     $('totals').innerHTML = totalsBlock().s;
+    return;
+  }
+  if (el.dataset.action === 'auto-reminders') {
+    ws.company.autoReminders = el.checked;
+    save();
+    render();
+    return toast(el.checked ? 'Relances automatiques activées : chaque matin, les relances dues partent par e-mail.' : 'Relances automatiques désactivées.');
+  }
+  if (el.dataset.action === 'settings-tab') {
+    location.hash = `#/parametres/${el.value}`;
     return;
   }
   if (el.dataset.action === 'mode') {
