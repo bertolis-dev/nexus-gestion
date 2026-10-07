@@ -6,9 +6,9 @@
  * inclus (acomptes non gérés).
  */
 
-import { addDays } from './dates.js?v=853fd83';
-import { dueOccurrences } from './recurring.js?v=853fd83';
-import { computeTotals, isVatExempt } from './invoices.js?v=853fd83';
+import { addDays } from './dates.js?v=d485078';
+import { dueOccurrences } from './recurring.js?v=d485078';
+import { computeTotals, isVatExempt } from './invoices.js?v=d485078';
 
 /** Délai de paiement d'une dépense sans échéance connue (usage, à valider par l'expert-comptable). */
 export const DEFAULT_SUPPLIER_TERMS_DAYS = 30;
@@ -35,8 +35,14 @@ export function cashForecast(ws, today, { horizons = [30, 60, 90] } = {}) {
   }
   for (const p of ws.purchases) {
     const left = (p.totalTtc || 0) - (p.paid || 0);
+    // Un avoir fournisseur non encore remboursé est une rentrée d'argent.
     if (left > 0)
-      add(p.dueDate || addDays(p.date, DEFAULT_SUPPLIER_TERMS_DAYS), 'depense', `${p.supplier?.name || 'Dépense'}${p.number ? ` ${p.number}` : ''}`, -left);
+      add(
+        p.dueDate || addDays(p.date, DEFAULT_SUPPLIER_TERMS_DAYS),
+        'depense',
+        `${p.type === 'credit' ? 'Avoir ' : ''}${p.supplier?.name || 'Dépense'}${p.number ? ` ${p.number}` : ''}`,
+        p.type === 'credit' ? left : -left,
+      );
   }
 
   if (ws.company.vatRegime === 'reel-normal') {

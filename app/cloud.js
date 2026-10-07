@@ -9,11 +9,11 @@
  * nombre d'écritures validées), l'état est rechargé depuis la base, qui fait foi.
  */
 
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js?v=853fd83';
-import { stateFromRows } from '../core/sync.js?v=853fd83';
-import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, OUTBOX_PREFIX } from '../core/outbox.js?v=853fd83';
-import { ACCOUNTS } from '../core/pcg.js?v=853fd83';
-import { mfaState, canRemoveFactor } from '../core/mfa.js?v=853fd83';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js?v=d485078';
+import { stateFromRows, refusedUpdate } from '../core/sync.js?v=d485078';
+import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, pendingOutboxOps, OUTBOX_PREFIX } from '../core/outbox.js?v=d485078';
+import { ACCOUNTS } from '../core/pcg.js?v=d485078';
+import { mfaState, canRemoveFactor } from '../core/mfa.js?v=d485078';
 
 // supabase-js (copie locale, app/vendor/) n'est chargé qu'en mode connecté : la démonstration et
 // le site public ne téléchargent pas ces 220 Ko.
@@ -21,7 +21,7 @@ let client = null;
 const authListeners = [];
 async function connect() {
   if (!client) {
-    const { createClient } = await import('./vendor/supabase.js?v=853fd83');
+    const { createClient } = await import('./vendor/supabase.js?v=d485078');
     client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     for (const cb of authListeners) client.auth.onAuthStateChange(cb);
   }
@@ -76,6 +76,14 @@ export async function signOut() {
   const { error } = await supabase.auth.signOut();
   if (error) await supabase.auth.signOut({ scope: 'local' });
   purgeOutboxes(localStorage);
+}
+/** Modifications pas encore envoyées, toutes entreprises confondues (perdues si l'on se déconnecte). */
+export function pendingEverywhere() {
+  try {
+    return pendingOutboxOps(localStorage);
+  } catch {
+    return 0;
+  }
 }
 export async function resendConfirmation(email) {
   const supabase = await connect();
@@ -322,7 +330,12 @@ async function run(op) {
   if (op.kind === 'upsert') {
     return check(await supabase.from(op.table).upsert(op.rows, { onConflict: op.onConflict, ignoreDuplicates: Boolean(op.ignoreDuplicates) }));
   }
-  if (op.kind === 'update') return check(await supabase.from(op.table).update(op.values).match(op.match));
+  if (op.kind === 'update') {
+    // Une mise à jour refusée par les droits ne renvoie pas d'erreur, seulement 0 ligne : la signaler.
+    const rows = check(await supabase.from(op.table).update(op.values).match(op.match).select('id'));
+    if (!rows?.length) throw refusedUpdate(op);
+    return null;
+  }
   if (op.kind === 'delete') return check(await supabase.from(op.table).delete().match(op.match));
   const result = check(await supabase.rpc(op.fn, op.args));
   if (op.expect?.type === 'invoiceNumber' && result !== op.expect.value) {

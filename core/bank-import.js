@@ -13,7 +13,8 @@
  * compte|date|montant|libellé|rang pour le CSV), et un ré-import ne crée aucun doublon.
  */
 
-import { parseEuros } from './money.js?v=853fd83';
+import { parisDateOf } from './dates.js?v=d485078';
+import { parseEuros } from './money.js?v=d485078';
 
 // ------------------------------------------------------------------ outils
 
@@ -24,6 +25,20 @@ function fnv1a(str) {
     h = Math.imul(h, 0x01000193) >>> 0;
   }
   return h.toString(16).padStart(8, '0');
+}
+
+/**
+ * Identifiants d'une opération sans référence de la banque : empreinte 64 bits (deux FNV-1a de sens
+ * opposés). L'ancienne empreinte 32 bits (`legacyId`) faisait se confondre des opérations distinctes
+ * au-delà de quelques milliers ; elle sert encore à reconnaître les relevés déjà importés.
+ */
+function fingerprint(prefix, base) {
+  let h = 0x6c62272e;
+  for (let i = base.length - 1; i >= 0; i--) {
+    h ^= base.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return { id: `${prefix}-${fnv1a(base)}${h.toString(16).padStart(8, '0')}`, legacyId: `${prefix}-${fnv1a(base)}` };
 }
 
 /** Date d'un relevé → AAAA-MM-JJ ; refuse une date impossible (31/02). */
@@ -114,15 +129,15 @@ export function parseCsv(text, sep) {
   return records.filter((r) => r.fields.some((f) => f !== ''));
 }
 
-/** Séparateur le plus fréquent hors guillemets sur les premières lignes. */
-function detectSeparator(text) {
+/** Séparateurs candidats, du plus fréquent au moins fréquent (hors guillemets, premières lignes). */
+function separatorsByFrequency(text) {
   const sample = text
     .split(/\r?\n/)
     .slice(0, 30)
     .join('\n')
     .replace(/"[^"]*"/g, '');
   const count = (c) => sample.split(c).length - 1;
-  return [';', '\t', ','].reduce((best, c) => (count(c) > count(best) ? c : best), ';');
+  return [';', '\t', ','].sort((a, b) => count(b) - count(a));
 }
 
 // ------------------------------------------------------------------ colonnes et profils de banques
@@ -222,11 +237,8 @@ const looksHeaderless = (records) =>
 
 // ------------------------------------------------------------------ CSV
 
-function readCsv(text, accountId) {
-  const records = parseCsv(text, detectSeparator(text));
-  let headerAt = -1;
-  let cols = null;
-  let profile = null;
+/** Ligne d'en-tête parmi les premières lignes : [indice, colonnes, profil de banque] ou [-1]. */
+function findHeader(records) {
   for (let i = 0; i < Math.min(records.length, 15); i++) {
     const header = records[i].fields.map(normHeader);
     const raw = records[i].fields
@@ -239,11 +251,34 @@ function readCsv(text, accountId) {
       .join(';');
     const p = PROFILES.find((x) => x.match(header, raw)) || null;
     const c = resolveColumns(header, p);
-    if (usable(c)) {
-      [headerAt, cols, profile] = [i, c, p];
-      break;
-    }
+    if (usable(c)) return [i, c, p];
   }
+  return [-1, null, null];
+}
+
+/** Date « (UTC) » avec heure (Qonto) → date civile à Paris. */
+function utcToParisDate(s) {
+  const time = /[ T](\d{1,2}:\d{2}(?::\d{2})?)$/.exec(String(s).trim());
+  if (!time) return toIsoDate(s);
+  const [h, rest] = time[1].split(/:(.*)/);
+  return parisDateOf(`${toIsoDate(s)}T${h.padStart(2, '0')}:${rest.length === 2 ? `${rest}:00` : rest}Z`);
+}
+
+function readCsv(text, accountId) {
+  // Le séparateur le plus fréquent peut être celui des libellés (« DUPONT, JEAN, LOYER ») : on garde
+  // le premier qui fait apparaître un en-tête utilisable.
+  const separators = separatorsByFrequency(text);
+  let records;
+  let headerAt = -1;
+  let cols = null;
+  let profile = null;
+  for (const sep of separators) {
+    records = parseCsv(text, sep);
+    [headerAt, cols, profile] = findHeader(records);
+    if (headerAt >= 0) break;
+  }
+  if (headerAt < 0) records = parseCsv(text, separators[0]);
+  const utcDates = headerAt >= 0 && /utc/i.test(records[headerAt].fields[cols.date] || '');
   let rows;
   let bank = profile?.bank || null;
   if (headerAt < 0) {
@@ -288,7 +323,7 @@ function readCsv(text, accountId) {
       continue;
     }
     try {
-      const date = toIsoDate(row.date);
+      const date = utcDates ? utcToParisDate(row.date) : toIsoDate(row.date);
       let amount;
       if (row.amount) amount = parseEuros(row.amount);
       else if (row.debit || row.credit) amount = (row.credit ? Math.abs(parseEuros(row.credit)) : 0) - (row.debit ? Math.abs(parseEuros(row.debit)) : 0);
@@ -298,7 +333,7 @@ function readCsv(text, accountId) {
       const base = `${accountId}|${date}|${amount}|${label}`;
       const rank = (seen.get(base) || 0) + 1;
       seen.set(base, rank);
-      transactions.push({ id: `csv-${fnv1a(`${base}|${rank}`)}`, accountId, date, label, amount, status: 'open' });
+      transactions.push({ ...fingerprint('csv', `${base}|${rank}`), accountId, date, label, amount, status: 'open' });
     } catch (err) {
       errors.push({ line: row.line, message: err.message });
     }
@@ -308,20 +343,47 @@ function readCsv(text, accountId) {
 
 // ------------------------------------------------------------------ OFX
 
-/** OFX (SGML ou XML) : blocs <STMTTRN>, identifiant stable FITID. */
-export function parseOfx(text, { accountId = 'default' } = {}) {
+/**
+ * OFX (SGML ou XML) : blocs <STMTTRN>, identifiant FITID, unique pour un compte seulement (d'où le
+ * compte dans l'identifiant) ; à défaut de FITID, empreinte comme pour le CSV. Une ligne illisible
+ * est signalée sans faire échouer le reste du fichier.
+ */
+function readOfx(text, accountId) {
   const tag = (block, name) => {
     const m = new RegExp(`<${name}>([^<\\r\\n]*)`, 'i').exec(block);
     return m ? m[1].trim() : '';
   };
-  return [...text.matchAll(/<STMTTRN>([\s\S]*?)(?:<\/STMTTRN>|(?=<STMTTRN>)|(?=<\/BANKTRANLIST>))/gi)].map(([, b]) => ({
-    id: `ofx-${tag(b, 'FITID')}`,
-    accountId,
-    date: toIsoDate(tag(b, 'DTPOSTED')),
-    label: [tag(b, 'NAME'), tag(b, 'MEMO')].filter(Boolean).join(' '),
-    amount: parseEuros(tag(b, 'TRNAMT')),
-    status: 'open',
-  }));
+  const transactions = [];
+  const errors = [];
+  const seen = new Map();
+  for (const m of text.matchAll(/<STMTTRN>([\s\S]*?)(?:<\/STMTTRN>|(?=<STMTTRN>)|(?=<\/BANKTRANLIST>))/gi)) {
+    const b = m[1];
+    try {
+      const date = toIsoDate(tag(b, 'DTPOSTED'));
+      const amount = parseEuros(tag(b, 'TRNAMT'));
+      const label = [tag(b, 'NAME'), tag(b, 'MEMO')].filter(Boolean).join(' ');
+      const fitid = tag(b, 'FITID');
+      let ids;
+      if (fitid) ids = { id: `ofx-${accountId}-${fitid}`, legacyId: `ofx-${fitid}` };
+      else {
+        const base = `${accountId}|${date}|${amount}|${label}`;
+        const rank = (seen.get(base) || 0) + 1;
+        seen.set(base, rank);
+        ids = fingerprint('ofx', `${base}|${rank}`);
+      }
+      transactions.push({ ...ids, accountId, date, label, amount, status: 'open' });
+    } catch (err) {
+      errors.push({ line: text.slice(0, m.index).split('\n').length, message: err.message });
+    }
+  }
+  return { format: 'ofx', bank: null, transactions, errors, skipped: 0 };
+}
+
+/** OFX strict (démonstration, tests) : la moindre ligne illisible fait échouer. */
+export function parseOfx(text, { accountId = 'default' } = {}) {
+  const r = readOfx(text, accountId);
+  if (r.errors.length) throw new Error(r.errors[0].message);
+  return r.transactions;
 }
 
 // ------------------------------------------------------------------ CAMT.053 (ISO 20022)
@@ -388,15 +450,16 @@ function readCamt(text, accountId) {
       if (!label) throw new Error('Libellé manquant');
       // Référence de la banque : identifiant stable ; à défaut, empreinte comme pour le CSV.
       const ref = xmlFirst(entry, 'AcctSvcrRef');
-      let id;
-      if (ref) id = `camt-${ref}`;
+      // La référence n'est unique que pour un compte : le compte fait partie de l'identifiant.
+      let ids;
+      if (ref) ids = { id: `camt-${accountId}-${ref}`, legacyId: `camt-${ref}` };
       else {
         const base = `${accountId}|${date}|${amount}|${label}`;
         const rank = (seen.get(base) || 0) + 1;
         seen.set(base, rank);
-        id = `camt-${fnv1a(`${base}|${rank}`)}`;
+        ids = fingerprint('camt', `${base}|${rank}`);
       }
-      transactions.push({ id, accountId, date, label, amount, status: 'open' });
+      transactions.push({ ...ids, accountId, date, label, amount, status: 'open' });
     } catch (err) {
       errors.push({ line, message: err.message });
     }
@@ -428,7 +491,7 @@ function readQif(text, accountId) {
       const base = `${accountId}|${date}|${amount}|${label}`;
       const rank = (seen.get(base) || 0) + 1;
       seen.set(base, rank);
-      transactions.push({ id: `qif-${fnv1a(`${base}|${rank}`)}`, accountId, date, label, amount, status: 'open' });
+      transactions.push({ ...fingerprint('qif', `${base}|${rank}`), accountId, date, label, amount, status: 'open' });
     } catch (err) {
       errors.push({ line: start, message: err.message });
     }
@@ -457,7 +520,7 @@ function readQif(text, accountId) {
  */
 export function importStatement(text, { accountId = 'default' } = {}) {
   const t = String(text).replace(/^\uFEFF/, '');
-  if (/<OFX|<STMTTRN/i.test(t)) return { format: 'ofx', bank: null, transactions: parseOfx(t, { accountId }), errors: [], skipped: 0 };
+  if (/<OFX|<STMTTRN/i.test(t)) return readOfx(t, accountId);
   if (/camt\.053|<(?:[\w.-]+:)?BkToCstmrStmt/.test(t)) return readCamt(t, accountId);
   if (/^\s*!Type:/i.test(t)) return readQif(t, accountId);
   return readCsv(t, accountId);

@@ -2,12 +2,12 @@
  * Écran « shell ».
  */
 
-import * as cloud from '../cloud.js?v=853fd83';
-import { removeDemo } from '../demo-store.js?v=853fd83';
-import { $, render, renderApp } from '../render.js?v=853fd83';
-import { cloudState, freshOnboarding, setWs, today, ui, ws } from '../state.js?v=853fd83';
-import { download, setTheme, toast } from '../store.js?v=853fd83';
-import { openStructure, openStructureAndShow } from '../sync-ui.js?v=853fd83';
+import * as cloud from '../cloud.js?v=d485078';
+import { removeDemo } from '../demo-store.js?v=d485078';
+import { $, render, renderApp } from '../render.js?v=d485078';
+import { cloudState, freshOnboarding, setWs, today, ui, ws } from '../state.js?v=d485078';
+import { download, setTheme, toast } from '../store.js?v=d485078';
+import { openStructure, openStructureAndShow } from '../sync-ui.js?v=d485078';
 
 /** Actions « shell » : data-action → fonction. */
 export const actionsTable = {
@@ -63,7 +63,14 @@ export const actionsTable = {
     return render();
   },
   'sign-out': async () => {
-    if (cloudState.status.pending && !confirm('Des modifications ne sont pas encore enregistrées. Se déconnecter quand même ?')) return;
+    const pending = Math.max(cloudState.status.pending || 0, cloud.pendingEverywhere());
+    if (
+      pending &&
+      !confirm(
+        `${pending} modification(s) ne sont pas encore enregistrées (cette entreprise ou une autre). Se déconnecter les effacera de ce navigateur. Continuer ?`,
+      )
+    )
+      return;
     await cloud.signOut();
     Object.assign(cloudState, { session: null, meta: null, outbox: null, synced: null, status: { pending: 0, error: null } });
     setWs(null);

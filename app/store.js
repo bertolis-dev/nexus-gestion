@@ -2,9 +2,9 @@
  * Préférences, thème, enregistrement (démonstration ou base), notifications, erreurs inattendues.
  */
 
-import { Workspace } from '../core/workspace.js?v=853fd83';
-import { getDemo, setDemo } from './demo-store.js?v=853fd83';
-import { CONTACT_EMAIL, PREFS_KEY, THEME_KEY, cloudState, setWs, ui, ws } from './state.js?v=853fd83';
+import { Workspace } from '../core/workspace.js?v=d485078';
+import { getDemo, setDemo } from './demo-store.js?v=d485078';
+import { CONTACT_EMAIL, PREFS_KEY, THEME_KEY, cloudState, setWs, ui, ws } from './state.js?v=d485078';
 
 // ------------------------------------------------------------------ préférences, thème, stockage
 
@@ -59,6 +59,9 @@ export function save() {
   if (ui.demo) {
     setDemo(ws.toJSON()).catch(() => toast('Enregistrement local impossible (stockage plein ou bloqué).', true));
     return;
+  }
+  if (cloudState.outbox.hasNewer()) {
+    toast('Une version plus récente de Nexus Gestion est ouverte dans un autre onglet : rechargez cette page avant de continuer.', true);
   }
   const next = JSON.parse(JSON.stringify(ws));
   cloudState.outbox.push(cloudState.synced, next, cloudState.meta);

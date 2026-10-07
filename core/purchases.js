@@ -3,8 +3,14 @@
  * TVA non déductible appliquée automatiquement, détection des immobilisations et des doublons.
  */
 
-import { divRound, sum, vatFromHt } from './money.js?v=853fd83';
-import { categoryById } from './pcg.js?v=853fd83';
+import { divRound, splitTtc, sum, vatFromHt } from './money.js?v=d485078';
+import { categoryById } from './pcg.js?v=d485078';
+
+/** Ligne d'achat saisie TTC : HT et TVA dont la somme redonne exactement le TTC. */
+export function ttcLine(ttc, vatRateBp) {
+  const { ht, tva } = splitTtc(ttc, vatRateBp);
+  return { ht, vat: tva, vatRateBp };
+}
 
 export const FIXED_ASSET_THRESHOLD_HT = 50000; // 500 € HT, paramétrable par structure
 
@@ -29,7 +35,8 @@ export function purchaseEntry(p, company) {
 
   for (const l of p.lines) {
     const cat = categoryById(l.categoryId);
-    const vat = vatFromHt(l.ht, l.vatRateBp || 0);
+    // TVA imposée (dépense saisie TTC) : HT + TVA redonne exactement le montant tapé.
+    const vat = Number.isSafeInteger(l.vat) ? l.vat : vatFromHt(l.ht, l.vatRateBp || 0);
     let pct = franchise ? 0 : cat.vatDeductiblePct;
     if (cat.giftVatThreshold && p.giftBeneficiaries) {
       const perBeneficiaryTtc = divRound(l.ht + vat, p.giftBeneficiaries);

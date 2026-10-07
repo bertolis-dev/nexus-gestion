@@ -16,9 +16,9 @@
  * cahier des charges pour limiter la responsabilité de BERTOLIS) : ce contrôle est fait en base.
  */
 
-import { divRound, sum, vatFromHt } from './money.js?v=853fd83';
-import { fixedAssets, assetsCrossCheck } from './assets.js?v=853fd83';
-import { balancesOf } from './statements.js?v=853fd83';
+import { divRound, sum, vatFromHt } from './money.js?v=d485078';
+import { fixedAssets, assetsCrossCheck } from './assets.js?v=d485078';
+import { balancesOf } from './statements.js?v=d485078';
 
 /** Nom d'un exercice : « 2026 », ou « 2025-2026 » s'il est à cheval sur deux années civiles. */
 export function fiscalYearLabel(fy) {
@@ -204,7 +204,7 @@ export function depreciationEntry(ws) {
 }
 
 // États financiers (compte de résultat, bilan) : core/statements.js, réexportés ici.
-export { incomeStatement, balanceSheet, pnlRubric } from './statements.js?v=853fd83';
+export { incomeStatement, balanceSheet, pnlRubric } from './statements.js?v=d485078';
 
 // ------------------------------------------------------------------ impôt sur les sociétés
 
@@ -309,7 +309,8 @@ export function nextYearOpening(ledger, nextStart) {
           account: l.account,
           aux: l.aux,
           auxLabel: l.auxLabel || '',
-          label: `Report à nouveau ${l.entry.pieceRef || l.entry.label}`.trim(),
+          // Ligne déjà reportée : son libellé porte la référence de la pièce d'origine.
+          label: l.entry.source?.kind === 'opening' && l.label ? l.label : `Report à nouveau ${l.entry.pieceRef || l.entry.label}`.trim(),
           debit: l.debit,
           credit: l.credit,
         });
@@ -405,16 +406,20 @@ export function allocationEntry(ledger, company, { legalReserve = 0, otherReserv
   if (result < 0 && (legalReserve || otherReserves || dividends))
     throw new Error('Une perte ne se distribue pas : elle va en report à nouveau (ou sur le compte de l’exploitant).');
   const label = 'Affectation du résultat';
+  // 120 et 129 sont soldés en entier (deux résultats non affectés de signes opposés s'additionnent),
+  // puis le résultat net est réparti.
+  const profit = Math.max(0, -ledger.balanceOf('120'));
+  const loss = Math.max(0, ledger.balanceOf('129'));
   const lines = [];
+  if (profit) lines.push({ account: '120000', debit: profit, credit: 0, label });
+  if (loss) lines.push({ account: '129000', debit: 0, credit: loss, label });
   if (result > 0) {
-    lines.push({ account: '120000', debit: result, credit: 0, label });
     if (legalReserve) lines.push({ account: '106100', debit: 0, credit: legalReserve, label });
     if (otherReserves) lines.push({ account: '106800', debit: 0, credit: otherReserves, label });
     if (dividends) lines.push({ account: '457000', debit: 0, credit: dividends, label });
     if (retained) lines.push({ account: retained > 0 ? '110000' : '119000', debit: retained < 0 ? -retained : 0, credit: retained > 0 ? retained : 0, label });
     if (owner) lines.push({ account: '108000', debit: 0, credit: owner, label });
   } else {
-    lines.push({ account: '129000', debit: 0, credit: -result, label });
     if (retained) lines.push({ account: '119000', debit: -retained, credit: 0, label });
     if (owner) lines.push({ account: '108000', debit: -owner, credit: 0, label });
   }

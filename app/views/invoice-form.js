@@ -2,15 +2,15 @@
  * Écran « invoice-form ».
  */
 
-import { VAT_RATES_BP, computeTotals, defaultDueDate, isVatExempt } from '../../core/invoices.js?v=853fd83';
-import { parseEuros } from '../../core/money.js?v=853fd83';
-import { field, html, opt, raw } from '../html.js?v=853fd83';
-import { ICONS } from '../icons.js?v=853fd83';
-import { issueLink } from '../render.js?v=853fd83';
-import { eur, pct, today, ui, ws } from '../state.js?v=853fd83';
-import { save } from '../store.js?v=853fd83';
-import { viewHeader } from '../ui/common.js?v=853fd83';
-import { NEW_DOC_ROUTES } from './sales.js?v=853fd83';
+import { VAT_RATES_BP, computeTotals, defaultDueDate, isVatExempt } from '../../core/invoices.js?v=d485078';
+import { parseEuros } from '../../core/money.js?v=d485078';
+import { field, html, opt, raw } from '../html.js?v=d485078';
+import { ICONS } from '../icons.js?v=d485078';
+import { issueLink } from '../render.js?v=d485078';
+import { eur, pct, today, ui, ws } from '../state.js?v=d485078';
+import { save } from '../store.js?v=d485078';
+import { viewHeader } from '../ui/common.js?v=d485078';
+import { NEW_DOC_ROUTES } from './sales.js?v=d485078';
 
 export function emptyLine() {
   return {
@@ -28,7 +28,11 @@ export function startDraft(arg) {
     const inv = ws.book.get(arg.slice(9));
     ui.draft = {
       ...structuredClone(inv),
-      lines: inv.lines.map((l) => ({ ...l, priceText: (l.unitPrice / 100).toFixed(2).replace('.', ',') })),
+      // Un prix invalide (brouillon d'une version précédente) est repris à 0, à corriger.
+      lines: inv.lines.map((l) => {
+        const unitPrice = Number.isSafeInteger(l.unitPrice) ? l.unitPrice : 0;
+        return { ...l, unitPrice, priceText: (unitPrice / 100).toFixed(2).replace('.', ',') };
+      }),
       clientId: ws.clients.find((c) => c.code === inv.client.code)?.id || '',
       savedId: inv.id,
     };
@@ -63,6 +67,17 @@ export function draftAvailableDeposits() {
   const client = draftClient();
   if (d.type !== 'invoice' || !client?.code) return [];
   return ws.book.availableDeposits(client.code, { exceptId: d.savedId });
+}
+
+/** Prix saisi en centimes, 0 si vide, null s'il est illisible. */
+export function readPrice(text) {
+  if (!String(text ?? '').trim()) return 0;
+  try {
+    const cents = parseEuros(text);
+    return Number.isSafeInteger(cents) ? cents : null;
+  } catch {
+    return null;
+  }
 }
 
 export function draftInvoiceData() {
@@ -309,13 +324,18 @@ export function persistDraft() {
     }
     d.clientEdit = null;
   }
-  for (const l of d.lines) {
-    try {
-      l.unitPrice = l.priceText ? parseEuros(l.priceText) : 0;
-    } catch {
-      l.unitPrice = NaN;
-    }
+  const unreadable = [];
+  d.lines.forEach((l, i) => {
+    const price = readPrice(l.priceText);
+    if (price === null) unreadable.push({ message: `Ligne ${i + 1} : prix illisible « ${l.priceText} » (exemple : 1 234,56).`, field: `lines.${i}.unitPrice` });
+    l.unitPrice = price ?? 0;
     l.qty = Number(String(l.qty).replace(',', '.')) || 0;
+  });
+  // Rien n'est enregistré tant qu'un prix est illisible : la facture garderait un montant faux.
+  if (unreadable.length) {
+    d.issues = unreadable;
+    d.focusIssues = true;
+    return null;
   }
   const data = draftInvoiceData();
   if (d.clientId === '__new') {

@@ -20,10 +20,10 @@
  *   28 TVA nette due · 32 total à payer.
  */
 
-import { divRound, sum, vatFromHt } from './money.js?v=853fd83';
-import { isOnReceipt, originalOf, receiptEvents } from './receipts.js?v=853fd83';
-import { vatByNature } from './invoices.js?v=853fd83';
-import { tradeZone } from './countries.js?v=853fd83';
+import { divRound, sum, vatFromHt } from './money.js?v=d485078';
+import { isOnReceipt, originalOf, receiptEvents } from './receipts.js?v=d485078';
+import { vatByNature } from './invoices.js?v=d485078';
+import { tradeZone } from './countries.js?v=d485078';
 
 /**
  * Lignes de la CA3 par taux de TVA, par millésime du formulaire 3310-CA3 — À VALIDER PAR L'EXPERT-
@@ -48,12 +48,14 @@ function exigibleParts(inv, payments, period) {
   if (!onReceipt) return inPeriod(inv.issueDate, period) ? [{ num: 1, den: 1, date: inv.issueDate, reason: 'facturation' }] : [];
   // Les règlements portent sur le net à payer (acomptes déduits), base de la répartition.
   const due = inv.totals.netToPay;
-  return payments.filter((p) => inPeriod(p.date, period)).map((p) => ({ num: p.amount, den: due, date: p.date, reason: 'encaissement' }));
+  // Avoir : ses remboursements sont enregistrés en négatif ; le signe de l'avoir est appliqué ensuite.
+  const amount = (p) => (inv.type === 'credit' ? Math.abs(p.amount) : p.amount);
+  return payments.filter((p) => inPeriod(p.date, period)).map((p) => ({ num: amount(p), den: due, date: p.date, reason: 'encaissement' }));
 }
 
 /**
  * Prépare la CA3 d'une période à partir du Workspace (factures, paiements, dépenses, grand livre).
- * @param {import('./workspace.js?v=853fd83').Workspace} ws
+ * @param {import('./workspace.js?v=d485078').Workspace} ws
  * @param {{ from: string, to: string }} period
  * @param {{ previousCredit?: number }} opts crédit de TVA reporté de la déclaration précédente
  */

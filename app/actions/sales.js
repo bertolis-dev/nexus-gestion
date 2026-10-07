@@ -2,18 +2,18 @@
  * Écran « sales ».
  */
 
-import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=853fd83';
-import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=853fd83';
-import { LIFECYCLE } from '../../core/lifecycle.js?v=853fd83';
-import { lookupSiren } from '../company-lookup.js?v=853fd83';
-import { render } from '../render.js?v=853fd83';
-import { eur, frDate, today, ui, ws } from '../state.js?v=853fd83';
-import { download, save, toast } from '../store.js?v=853fd83';
-import { isUnconfirmed } from '../sync-ui.js?v=853fd83';
-import { emptyLine, persistDraft } from '../views/invoice-form.js?v=853fd83';
-import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=853fd83';
-import { depositCandidates } from '../../core/deposit.js?v=853fd83';
-import { createZip } from '../../core/zip.js?v=853fd83';
+import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=d485078';
+import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=d485078';
+import { LIFECYCLE } from '../../core/lifecycle.js?v=d485078';
+import { lookupSiren } from '../company-lookup.js?v=d485078';
+import { render } from '../render.js?v=d485078';
+import { eur, frDate, today, ui, ws } from '../state.js?v=d485078';
+import { download, save, toast } from '../store.js?v=d485078';
+import { isUnconfirmed } from '../sync-ui.js?v=d485078';
+import { emptyLine, persistDraft } from '../views/invoice-form.js?v=d485078';
+import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=d485078';
+import { depositCandidates } from '../../core/deposit.js?v=d485078';
+import { createZip } from '../../core/zip.js?v=d485078';
 
 /** Actions « sales » : data-action → fonction. */
 export const actionsTable = {

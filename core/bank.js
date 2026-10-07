@@ -4,13 +4,13 @@
  * Qonto, ou empreinte date|montant|libellé|rang pour le CSV), et un ré-import ne crée aucun doublon.
  */
 
-import { divRound, sum } from './money.js?v=853fd83';
+import { divRound, sum } from './money.js?v=d485078';
 
 /** Compte bancaire principal (512000), créé avec l'entreprise ; « default » le relie à sa ligne en base. */
 export const DEFAULT_BANK_ACCOUNT = { id: 'default', label: 'Compte principal', glAccount: '512000', provider: 'manual', ibanLast4: null };
 
 // Lecture des relevés (CSV, OFX…) : voir bank-import.js ; réexportée pour les appels existants.
-export { parseBankCsv, parseOfx } from './bank-import.js?v=853fd83';
+export { parseBankCsv, parseOfx } from './bank-import.js?v=d485078';
 
 const norm = (s) =>
   s
@@ -19,10 +19,20 @@ const norm = (s) =>
     .toLowerCase()
     .trim();
 
-/** Fusionne un import dans la liste existante sans doublon ; renvoie les transactions ajoutées. */
+/**
+ * Fusionne un import dans la liste existante sans doublon ; renvoie les transactions ajoutées.
+ * `legacyId` (identifiant des versions précédentes) reconnaît une opération déjà importée sur le
+ * même compte ; il n'est pas conservé.
+ */
 export function mergeTransactions(existing, incoming) {
-  const ids = new Set(existing.map((t) => t.id));
-  const added = incoming.filter((t) => !ids.has(t.id) && ids.add(t.id));
+  const byId = new Map(existing.map((t) => [t.id, t]));
+  const added = [];
+  for (const { legacyId, ...t } of incoming) {
+    const old = legacyId && byId.get(legacyId);
+    if (byId.has(t.id) || (old && (old.accountId || 'default') === (t.accountId || 'default'))) continue;
+    byId.set(t.id, t);
+    added.push(t);
+  }
   existing.push(...added);
   return added;
 }
@@ -55,7 +65,11 @@ export function suggestMatches(tx, openDocs, { maxGroup = 3 } = {}) {
     const t = tokens(d.partyName);
     return t.length && t.some((x) => labelTokens.has(x)) ? 20 : 0;
   };
-  const numberInLabel = (d) => d.number && label.replace(/[^a-z0-9]/g, '').includes(norm(d.number).replace(/[^a-z0-9]/g, ''));
+  // Un numéro trop court (« 12 », « - ») se retrouverait dans n'importe quel libellé : au moins 4 caractères.
+  const numberInLabel = (d) => {
+    const n = norm(d.number || '').replace(/[^a-z0-9]/g, '');
+    return n.length >= 4 && label.replace(/[^a-z0-9]/g, '').includes(n);
+  };
   const dateScore = (d) => Math.max(0, 10 - Math.floor(daysBetween(tx.date, d.dueDate || d.date) / 6));
 
   const out = [];

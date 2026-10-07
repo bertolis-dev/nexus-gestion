@@ -11,7 +11,7 @@
  *   friendly(error) → message ; onStatus(status) ; onResult(op, result).
  */
 
-import { planSync, isDivergence } from './sync.js?v=853fd83';
+import { planSync, isDivergence } from './sync.js?v=d485078';
 
 const DIVERGENCE_MESSAGE = 'Des modifications ont été enregistrées ailleurs (autre appareil ou autre onglet) : rechargez les données depuis la base.';
 const directLock = (_name, fn) => fn();
@@ -51,6 +51,12 @@ export class Outbox {
     } catch {
       // Stockage plein : la file reste en mémoire, l'envoi continue.
     }
+  }
+
+  /** File écrite par une version plus récente de l'application (autre onglet mis à jour) ? */
+  hasNewer() {
+    this.#load();
+    return Boolean(this.newer);
   }
 
   /** Ajoute les opérations qui mènent de `before` à `after`, puis lance l'envoi. */
@@ -153,6 +159,22 @@ export const OUTBOX_PREFIX = 'nexus_gestion_outbox_';
  * factures, écritures). Appelé à la déconnexion, pour qu'un ordinateur partagé n'en garde rien.
  * Renvoie le nombre de files effacées.
  */
+/** Nombre d'opérations en attente dans les files de toutes les entreprises de ce navigateur. */
+export function pendingOutboxOps(storage) {
+  let n = 0;
+  for (let i = 0; i < storage.length; i++) {
+    const k = storage.key(i);
+    if (!k?.startsWith(OUTBOX_PREFIX)) continue;
+    try {
+      const saved = JSON.parse(storage.getItem(k) || '[]');
+      n += (Array.isArray(saved) ? saved : saved?.ops || []).length;
+    } catch {
+      // File illisible : ignorée.
+    }
+  }
+  return n;
+}
+
 export function purgeOutboxes(storage) {
   const keys = [];
   for (let i = 0; i < storage.length; i++) {

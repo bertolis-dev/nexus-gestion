@@ -3,8 +3,8 @@
  * app/vendor/, 1,4 Mo) chargés seulement à la première facture téléchargée ou envoyée.
  */
 
-import { buildFacturXPdf } from '../core/facturx.js?v=853fd83';
-import { buildCii } from '../core/einvoice.js?v=853fd83';
+import { buildFacturXPdf } from '../core/facturx.js?v=d485078';
+import { buildCii } from '../core/einvoice.js?v=d485078';
 
 let assets = null;
 const bytes = async (url) => new Uint8Array(await (await fetch(url)).arrayBuffer());
@@ -12,7 +12,7 @@ const bytes = async (url) => new Uint8Array(await (await fetch(url)).arrayBuffer
 async function loadAssets() {
   if (!assets) {
     const [lib, regular, bold, icc] = await Promise.all([
-      import('./vendor/pdf-lib.js?v=853fd83'),
+      import('./vendor/pdf-lib.js?v=d485078'),
       bytes('vendor/fonts/manrope-400.ttf'),
       bytes('vendor/fonts/manrope-700.ttf'),
       bytes('vendor/srgb.icc'),

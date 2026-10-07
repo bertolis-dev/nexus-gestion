@@ -5,11 +5,11 @@
  * core/connectors/urssaf.js, même interface pour l'API).
  */
 
-import { accountNotFoundCauses, createManualConnector, URSSAF_CREATE_SPACE_URL } from '../../core/connectors/urssaf.js?v=853fd83';
-import { searchCompany } from '../company-lookup.js?v=853fd83';
-import { field, html, raw } from '../html.js?v=853fd83';
-import { today, ui, ws } from '../state.js?v=853fd83';
-import { icon } from '../ui/common.js?v=853fd83';
+import { accountNotFoundCauses, createManualConnector, URSSAF_CREATE_SPACE_URL } from '../../core/connectors/urssaf.js?v=d485078';
+import { searchCompany } from '../company-lookup.js?v=d485078';
+import { field, html, raw } from '../html.js?v=d485078';
+import { today, ui, ws } from '../state.js?v=d485078';
+import { icon } from '../ui/common.js?v=d485078';
 
 export const urssafConnector = createManualConnector({ lookupCompany: searchCompany });
 

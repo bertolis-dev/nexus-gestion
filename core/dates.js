@@ -8,6 +8,13 @@
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const PARIS = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' });
 
+/** Vraie date du calendrier au format « AAAA-MM-JJ » (refuse le 30 février ou le 31 avril). */
+export function isCalendarDate(s) {
+  if (!ISO_DATE.test(s || '')) return false;
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d)).toISOString().slice(0, 10) === s;
+}
+
 /** Date civile à Paris d'un instant (par défaut : maintenant). */
 export function todayParis(now = new Date()) {
   const p = Object.fromEntries(PARIS.formatToParts(now).map((x) => [x.type, x.value]));

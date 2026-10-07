@@ -11,9 +11,9 @@
  * L'aperçu est toujours montré au dirigeant (ou à son expert-comptable) avant import.
  */
 
-import { sum } from './money.js?v=853fd83';
+import { sum } from './money.js?v=d485078';
 
-const REQUIRED = ['JournalCode', 'EcritureNum', 'EcritureDate', 'CompteNum', 'CompteLib', 'Debit', 'Credit'];
+const REQUIRED = ['JournalCode', 'EcritureNum', 'EcritureDate', 'CompteNum', 'CompteLib'];
 
 function toCents(s) {
   const t = String(s ?? '')
@@ -35,7 +35,9 @@ export function parseFec(text) {
   if (rows.length < 2) throw new Error('Fichier vide ou illisible.');
   const sep = rows[0].includes('\t') ? '\t' : '|';
   const header = rows[0].split(sep).map((h) => h.trim());
-  const missing = REQUIRED.filter((c) => !header.includes(c));
+  // Montants : colonnes Débit et Crédit, ou variante « Montant + Sens » admise par l'administration.
+  const amounts = header.includes('Montant') && header.includes('Sens') && !header.includes('Debit') ? [] : ['Debit', 'Credit'];
+  const missing = [...REQUIRED, ...amounts].filter((c) => !header.includes(c));
   if (missing.length) throw new Error(`Ce fichier n'est pas un FEC : colonnes manquantes (${missing.join(', ')}).`);
   const idx = Object.fromEntries(header.map((h, i) => [h, i]));
   const hasSigned = 'Montant' in idx && 'Sens' in idx; // variante « Montant + Sens » admise par l'administration

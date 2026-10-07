@@ -4,12 +4,12 @@
  * la seule correction possible est l'avoir lié.
  */
 
-import { assertCents, divRound, sum, vatFromHt } from './money.js?v=853fd83';
-import { REVENUE_ACCOUNT_BY_NATURE } from './pcg.js?v=853fd83';
-import { LIFECYCLE } from './lifecycle.js?v=853fd83';
-import { tradeZone } from './countries.js?v=853fd83';
-import { creditsOf, originalOf, groupBalance } from './receipts.js?v=853fd83';
-import { addDays } from './dates.js?v=853fd83';
+import { assertCents, divRound, sum, vatFromHt } from './money.js?v=d485078';
+import { REVENUE_ACCOUNT_BY_NATURE } from './pcg.js?v=d485078';
+import { LIFECYCLE } from './lifecycle.js?v=d485078';
+import { tradeZone } from './countries.js?v=d485078';
+import { creditsOf, originalOf, groupBalance } from './receipts.js?v=d485078';
+import { addDays } from './dates.js?v=d485078';
 
 export const VAT_RATES_BP = [2000, 1000, 550, 210, 0];
 
@@ -154,6 +154,8 @@ export function checkInvoice(invoice, company) {
   (invoice.lines || []).forEach((l, i) => {
     need(l.label && l.label.trim(), `Ligne ${i + 1} : la désignation est vide.`, `lines.${i}.label`);
     need(Number(l.qty) > 0, `Ligne ${i + 1} : la quantité doit être positive.`, `lines.${i}.qty`);
+    // Le calcul se fait au millième : au-delà, la quantité imprimée et le montant ne concorderaient plus.
+    need(Number.isInteger(Math.round(Number(l.qty) * 1e6) / 1000), `Ligne ${i + 1} : la quantité accepte 3 décimales au plus.`, `lines.${i}.qty`);
     need(Number.isSafeInteger(l.unitPrice) && l.unitPrice >= 0, `Ligne ${i + 1} : le prix est invalide.`, `lines.${i}.unitPrice`);
     if (company.vatRegime !== 'franchise') {
       need(VAT_RATES_BP.includes(l.vatRateBp), `Ligne ${i + 1} : choisissez un taux de TVA.`, `lines.${i}.vatRateBp`);
@@ -289,7 +291,11 @@ export class InvoiceBook {
       totals,
     };
     if (issued.deposits?.length) this.#checkDeposits(issued);
-    if (ledger && issued.type !== 'quote') issued.entryId = ledger.addDraft(invoiceEntry(issued, this.company)).id;
+    if (ledger && issued.type !== 'quote') {
+      const creditOfDeposit =
+        issued.type === 'credit' && this.invoices.some((i) => i.type === 'deposit' && i.status === 'issued' && i.number === issued.creditOf);
+      issued.entryId = ledger.addDraft(invoiceEntry(issued, this.company, { creditOfDeposit })).id;
+    }
     this.counters[key] = n;
     this.invoices[idx] = deepFreeze(issued);
     return this.invoices[idx];
@@ -298,16 +304,20 @@ export class InvoiceBook {
   /** Acomptes déductibles : factures d'acompte émises pour ce client et pas encore déduites. */
   availableDeposits(clientCode, { exceptId } = {}) {
     const used = new Set(this.invoices.filter((i) => i.id !== exceptId).flatMap((i) => (i.deposits || []).map((d) => d.id)));
+    // Un acompte diminué par avoir n'est déductible que pour ce qu'il en reste ; annulé, il disparaît.
+    const credited = (dep, key) =>
+      sum(this.invoices.filter((c) => c.type === 'credit' && c.status === 'issued' && c.creditOf === dep.number).map((c) => c.totals[key]));
     return this.invoices
       .filter((i) => i.type === 'deposit' && i.status === 'issued' && i.client.code === clientCode && !used.has(i.id))
       .map((i) => ({
         id: i.id,
         number: i.number,
-        amountHt: i.totals.totalHt,
-        amountVat: i.totals.totalVat,
-        amountTtc: i.totals.totalTtc,
+        amountHt: i.totals.totalHt - credited(i, 'totalHt'),
+        amountVat: i.totals.totalVat - credited(i, 'totalVat'),
+        amountTtc: i.totals.totalTtc - credited(i, 'totalTtc'),
         vatAccount: saleVatAccount(i, i.issuer),
-      }));
+      }))
+      .filter((d) => d.amountTtc > 0);
   }
 
   #checkDeposits(inv) {
@@ -441,14 +451,15 @@ export function saleVatAccount(inv, company) {
  * TVA sur les prestations de services exigible à l'encaissement sauf option débits : elle transite
  * par 445800 et bascule en 445710 au paiement (bank.js, vatOnReceiptEntry).
  */
-export function invoiceEntry(inv, company) {
+export function invoiceEntry(inv, company, { creditOfDeposit = false } = {}) {
   const sign = inv.type === 'credit' ? -1 : 1;
   const aux = clientAux(inv.client);
   const label = `${DOCUMENT_LABELS[inv.type] || 'Facture'} ${inv.number} ${inv.client.name}`;
   const credits = new Map();
   const add = (account, amount) => amount && credits.set(account, (credits.get(account) || 0) + amount);
 
-  if (inv.type === 'deposit') {
+  // Facture d'acompte, ou avoir qui l'annule : l'acompte reçu (4191), pas du chiffre d'affaires.
+  if (inv.type === 'deposit' || creditOfDeposit) {
     add('419100', inv.totals.totalHt);
   } else {
     const byAccount = new Map();

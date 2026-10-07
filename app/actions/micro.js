@@ -2,14 +2,14 @@
  * Écran « micro ».
  */
 
-import { toCsv } from '../../core/exports.js?v=853fd83';
-import { receiptsBook } from '../../core/micro.js?v=853fd83';
-import { formatDecimalComma, parseEuros } from '../../core/money.js?v=853fd83';
-import { render } from '../render.js?v=853fd83';
-import { frDate, today, ui, ws } from '../state.js?v=853fd83';
-import { download, save, toast } from '../store.js?v=853fd83';
-import { microReceipts } from '../views/micro.js?v=853fd83';
-import { urssafLinkActions } from '../views/urssaf-link.js?v=853fd83';
+import { toCsv } from '../../core/exports.js?v=d485078';
+import { receiptsBook } from '../../core/micro.js?v=d485078';
+import { formatDecimalComma, parseEuros } from '../../core/money.js?v=d485078';
+import { render } from '../render.js?v=d485078';
+import { frDate, today, ui, ws } from '../state.js?v=d485078';
+import { download, save, toast } from '../store.js?v=d485078';
+import { microReceipts } from '../views/micro.js?v=d485078';
+import { urssafLinkActions } from '../views/urssaf-link.js?v=d485078';
 
 /** Actions « micro » : data-action → fonction. */
 export const actionsTable = {

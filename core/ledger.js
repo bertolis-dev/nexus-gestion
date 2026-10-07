@@ -10,7 +10,8 @@
  * antérieures, ce qui garantit que la numérotation reste chronologique.
  */
 
-import { assertCents, sum } from './money.js?v=853fd83';
+import { assertCents, sum } from './money.js?v=d485078';
+import { isCalendarDate } from './dates.js?v=d485078';
 
 export const JOURNALS = {
   VE: 'Ventes',
@@ -76,7 +77,7 @@ export class Ledger {
 
   #checkEntry(entry) {
     if (!JOURNALS[entry.journal]) throw new LedgerError(`Journal inconnu : ${entry.journal}`);
-    if (!ISO_DATE.test(entry.date)) throw new LedgerError(`Date invalide : ${entry.date}`);
+    if (!isCalendarDate(entry.date)) throw new LedgerError(`Date invalide : ${entry.date}`);
     if (entry.date < this.fiscalYear.start || entry.date > this.fiscalYear.end) {
       throw new LedgerError(`La date ${entry.date} est hors de l'exercice ouvert`);
     }
@@ -166,7 +167,7 @@ export class Ledger {
 
   /** Valide tous les brouillons datés jusqu'à `date` incluse, numérotés dans l'ordre chronologique. */
   validateThrough(date, { today = null } = {}) {
-    if (!ISO_DATE.test(date)) throw new LedgerError(`Date invalide : ${date}`);
+    if (!isCalendarDate(date)) throw new LedgerError(`Date invalide : ${date}`);
     // On ne valide définitivement que ce qui est déjà arrivé (une écriture future pourrait encore changer).
     if (today && date > today) throw new LedgerError(`Impossible de valider des écritures datées après aujourd’hui (${today.split('-').reverse().join('/')}).`);
     if (this.lockedThrough && date < this.lockedThrough) {

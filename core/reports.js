@@ -4,9 +4,9 @@
  * balance et FEC ».
  */
 
-import { formatDecimalComma, sum } from './money.js?v=853fd83';
-import { JOURNALS } from './ledger.js?v=853fd83';
-import { parisDateOf } from './dates.js?v=853fd83';
+import { formatDecimalComma, sum } from './money.js?v=d485078';
+import { JOURNALS } from './ledger.js?v=d485078';
+import { isCalendarDate, parisDateOf } from './dates.js?v=d485078';
 
 /** Balance générale : totaux débit/crédit et solde par compte, triés par numéro. */
 export function trialBalance(ledger, opts = {}) {
@@ -182,7 +182,7 @@ export function checkFEC(content) {
       return;
     }
     const [, , num, date, , , , , , , , debit, credit] = cols;
-    if (!/^\d{8}$/.test(date)) errors.push(`Ligne ${i + 2} : date invalide`);
+    if (!/^\d{8}$/.test(date) || !isCalendarDate(`${date.slice(0, 4)}-${date.slice(4, 6)}-${date.slice(6)}`)) errors.push(`Ligne ${i + 2} : date invalide`);
     if (date < prevDate) errors.push(`Ligne ${i + 2} : ordre chronologique non respecté`);
     prevDate = date;
     // Montants toujours à 2 décimales : retirer la virgule donne directement des centimes.

@@ -4,18 +4,18 @@
  * Sans DOM ni stockage : l'interface (app/) le sérialise, les tests l'utilisent tel quel.
  */
 
-import { buildChart, categoryById } from './pcg.js?v=853fd83';
-import { Ledger } from './ledger.js?v=853fd83';
-import { InvoiceBook, clientAux } from './invoices.js?v=853fd83';
-import { purchaseEntry, findDuplicates } from './purchases.js?v=853fd83';
-import { mergeTransactions, suggestMatches, settlementEntry, directEntry, DEFAULT_BANK_ACCOUNT } from './bank.js?v=853fd83';
+import { buildChart, categoryById } from './pcg.js?v=d485078';
+import { Ledger } from './ledger.js?v=d485078';
+import { InvoiceBook, clientAux } from './invoices.js?v=d485078';
+import { purchaseEntry, findDuplicates, ttcLine } from './purchases.js?v=d485078';
+import { mergeTransactions, suggestMatches, settlementEntry, directEntry, DEFAULT_BANK_ACCOUNT } from './bank.js?v=d485078';
 export { DEFAULT_BANK_ACCOUNT };
-import { isOnReceipt, creditsOf, originalOf, groupBalance, receiptTargets } from './receipts.js?v=853fd83';
-import { divRound, splitTtc, sum } from './money.js?v=853fd83';
-import { openingEntry } from './fecimport.js?v=853fd83';
-import { creditTargetsAsset } from './assets.js?v=853fd83';
-import { LIFECYCLE } from './lifecycle.js?v=853fd83';
-import { SCHEMA_VERSION, migrateState } from './schema.js?v=853fd83';
+import { isOnReceipt, creditsOf, originalOf, groupBalance, receiptTargets } from './receipts.js?v=d485078';
+import { divRound, splitTtc, sum } from './money.js?v=d485078';
+import { openingEntry } from './fecimport.js?v=d485078';
+import { creditTargetsAsset } from './assets.js?v=d485078';
+import { LIFECYCLE } from './lifecycle.js?v=d485078';
+import { SCHEMA_VERSION, migrateState } from './schema.js?v=d485078';
 
 /** Entrées d'argent sans facture de vente, proposées en langage courant. */
 export const INCOME_CATEGORIES = [
@@ -58,13 +58,13 @@ export function combineEstimates(list) {
 
 export const MAX_BANK_ACCOUNTS = 10;
 
-import { recurringMethods } from './workspace/recurring.js?v=853fd83';
-import { vatMethods } from './workspace/vat.js?v=853fd83';
-import { closingMethods } from './workspace/closing.js?v=853fd83';
-import { microMethods } from './workspace/micro.js?v=853fd83';
-import { depositMethods } from './deposit.js?v=853fd83';
-import { categorizationMethods, learnRule } from './categorization.js?v=853fd83';
-import { reminderMethods } from './reminders.js?v=853fd83';
+import { recurringMethods } from './workspace/recurring.js?v=d485078';
+import { vatMethods } from './workspace/vat.js?v=d485078';
+import { closingMethods } from './workspace/closing.js?v=d485078';
+import { microMethods } from './workspace/micro.js?v=d485078';
+import { depositMethods } from './deposit.js?v=d485078';
+import { categorizationMethods, learnRule } from './categorization.js?v=d485078';
+import { reminderMethods } from './reminders.js?v=d485078';
 
 export class Workspace {
   constructor({ company, state: saved = {}, now, newId } = {}) {
@@ -286,8 +286,8 @@ export class Workspace {
     // Fournisseur étranger (autoliquidation) : sa facture ne porte pas de TVA française, le montant
     // saisi est donc déjà le HT — la TVA due est calculée à part par purchaseEntry.
     const foreign = reverseCharge || (supplier.country || 'FR') !== 'FR';
-    const { ht } = foreign ? { ht: ttc } : splitTtc(ttc, vatRateBp);
-    return this.addPurchaseLines({ supplier, date, number, documentName, type, reverseCharge, lines: [{ categoryId, ht, vatRateBp }] }, { force });
+    const line = foreign ? { categoryId, ht: ttc, vatRateBp } : { categoryId, ...ttcLine(ttc, vatRateBp) };
+    return this.addPurchaseLines({ supplier, date, number, documentName, type, reverseCharge, lines: [line] }, { force });
   }
 
   /**
@@ -507,7 +507,7 @@ export class Workspace {
       const amount = Math.abs(tx.amount);
       const rate = hasReceipt ? vatRateBp : 0;
       const { purchase } = this.addPurchaseLines(
-        { supplier: { name: tx.label }, date: tx.date, lines: [{ categoryId, ht: splitTtc(amount, rate).ht, vatRateBp: rate }] },
+        { supplier: { name: tx.label }, date: tx.date, lines: [{ categoryId, ...ttcLine(amount, rate) }] },
         { force: true },
       );
       const doc = this.openDocs().find((d) => d.kind === 'purchase' && d.id === purchase.id);

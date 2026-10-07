@@ -2,14 +2,14 @@
  * Écran « settings ».
  */
 
-import { field, html, opt, raw } from '../html.js?v=853fd83';
-import { isMicro } from '../render.js?v=853fd83';
-import { ui, ws } from '../state.js?v=853fd83';
-import { viewHeader } from '../ui/common.js?v=853fd83';
-import { membersCard, microSettingsCard, openingPreview, securityCard } from './onboarding.js?v=853fd83';
-import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=853fd83';
-import { INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=853fd83';
-import { DEFAULT_TEMPLATES, REMINDER_STEPS } from '../../core/reminders.js?v=853fd83';
+import { field, html, opt, raw } from '../html.js?v=d485078';
+import { isMicro } from '../render.js?v=d485078';
+import { ui, ws } from '../state.js?v=d485078';
+import { viewHeader } from '../ui/common.js?v=d485078';
+import { membersCard, microSettingsCard, openingPreview, securityCard } from './onboarding.js?v=d485078';
+import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=d485078';
+import { INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=d485078';
+import { DEFAULT_TEMPLATES, REMINDER_STEPS } from '../../core/reminders.js?v=d485078';
 
 // ------------------------------------------------------------------ paramètres
 

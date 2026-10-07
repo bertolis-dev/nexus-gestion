@@ -30,6 +30,23 @@ export function companyRow(company) {
   };
 }
 
+/**
+ * Modifications de l'entreprise : colonnes de la fiche (mise à jour, dirigeant seulement) et réglages
+ * clé par clé (merge_structure_settings, migration 0021) — deux onglets qui changent des réglages
+ * différents ne s'écrasent plus, et l'expert peut enregistrer ses déclarations.
+ */
+function companyOps(before, after, meta) {
+  const { settings: bSettings = {}, ...bCols } = before ? companyRow(before) : { settings: {} };
+  const { settings: aSettings, ...aCols } = companyRow(after);
+  const ops = [];
+  if (!before || !same(bCols, aCols)) ops.push({ kind: 'update', table: 'structures', match: { id: meta.structureId }, values: aCols });
+  const set = Object.fromEntries(Object.entries(aSettings).filter(([k, v]) => !same(bSettings[k], v)));
+  const unset = Object.keys(bSettings).filter((k) => !(k in aSettings));
+  if (Object.keys(set).length || unset.length)
+    ops.push({ kind: 'rpc', fn: 'merge_structure_settings', args: { p_structure: meta.structureId, p_set: set, p_unset: unset } });
+  return ops;
+}
+
 export function entryPayload(e, meta) {
   return {
     id: e.id,
@@ -175,9 +192,7 @@ export function planSync(before, after, meta) {
   const ops = [];
   const b = before || {};
 
-  if (!same(b.company && companyRow(b.company), companyRow(after.company))) {
-    ops.push({ kind: 'update', table: 'structures', match: { id: meta.structureId }, values: companyRow(after.company) });
-  }
+  ops.push(...companyOps(b.company, after.company, meta));
 
   // Clients
   const bClients = byId(b.clients);
@@ -513,7 +528,19 @@ export function applySyncResult(ws, op, result) {
 }
 
 /** Erreur qui signale que la base a évolué ailleurs (autre appareil, autre onglet) : recharger. */
+/**
+ * Refus qui ne disparaîtra pas en réessayant : doublon (23505), règle métier levée par la base
+ * (P0001, ex. « Facture déjà émise » quand la réponse précédente s'est perdue) ou droits (42501).
+ * L'interface propose alors de recharger depuis la base, au lieu de bloquer la file indéfiniment.
+ */
 export function isDivergence(error) {
-  return Boolean(error?.divergence || error?.code === '23505');
+  return Boolean(error?.divergence || ['23505', 'P0001', '42501'].includes(error?.code));
 }
-import { DEFAULT_BANK_ACCOUNT } from './bank.js?v=853fd83';
+
+/** Mise à jour qui n'a touché aucune ligne : refusée par la base (droits) ou ligne disparue. */
+export function refusedUpdate(op) {
+  return Object.assign(new Error(`Modification refusée par la base (${op.table}) : droits insuffisants ou données modifiées ailleurs.`), {
+    divergence: true,
+  });
+}
+import { DEFAULT_BANK_ACCOUNT } from './bank.js?v=d485078';

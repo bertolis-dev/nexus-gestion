@@ -3,9 +3,9 @@
  * trésorerie passe sous zéro, détail des mouvements pris en compte.
  */
 
-import { cashForecast } from '../../core/forecast.js?v=853fd83';
-import { html } from '../html.js?v=853fd83';
-import { eur, frDate, today, ui, ws } from '../state.js?v=853fd83';
+import { cashForecast } from '../../core/forecast.js?v=d485078';
+import { html } from '../html.js?v=d485078';
+import { eur, frDate, today, ui, ws } from '../state.js?v=d485078';
 
 export function forecastCard() {
   const f = cashForecast(ws, today());

@@ -34,7 +34,7 @@ export function field(label, control, { id, hint } = {}) {
     controlId = existing || id || `f-auto-${++autoId}`;
     let attrs = existing ? m[2] : ` id="${controlId}"${m[2]}`;
     if (hint) attrs = ` aria-describedby="${controlId}-hint"${attrs}`;
-    body = body.replace(CONTROL, `<${m[1]}${attrs}>`);
+    body = body.replace(CONTROL, () => `<${m[1]}${attrs}>`); // fonction : « $ » de la valeur pris tel quel
   }
   const labelHtml = label ? html`<label ${controlId ? raw(`for="${controlId}"`) : ''}>${label}</label>` : '';
   const hintHtml = hint ? html`<p class="form-hint" ${controlId ? raw(`id="${controlId}-hint"`) : ''}>${hint}</p>` : '';

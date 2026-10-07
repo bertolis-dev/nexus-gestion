@@ -2,24 +2,24 @@
  * Événements du document : saisie, changement, clavier, formulaires, clics, navigation.
  */
 
-import { isValidSiren } from '../../core/invoices.js?v=853fd83';
-import { parseEuros } from '../../core/money.js?v=853fd83';
-import { usualVatRate } from '../../core/pcg.js?v=853fd83';
-import * as cloud from '../cloud.js?v=853fd83';
-import { html, raw } from '../html.js?v=853fd83';
-import { ICONS } from '../icons.js?v=853fd83';
-import { $, render, searchResults } from '../render.js?v=853fd83';
-import { closeLightbox, featureSlug } from '../site/landing.js?v=853fd83';
-import { cloudState, ui, ws } from '../state.js?v=853fd83';
-import { save, savePrefs, toast } from '../store.js?v=853fd83';
-import { afterSignIn } from '../sync-ui.js?v=853fd83';
-import { currentBankAccount, importBankFile } from '../views/bank.js?v=853fd83';
-import { attachReceipt } from '../views/expenses.js?v=853fd83';
-import { totalsBlock } from '../views/invoice-form.js?v=853fd83';
-import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=853fd83';
-import { runAction } from './index.js?v=853fd83';
-import { readReceivedInvoices } from '../received-invoices.js?v=853fd83';
-import { urssafLinkSubmit } from '../views/urssaf-link.js?v=853fd83';
+import { isValidSiren } from '../../core/invoices.js?v=d485078';
+import { parseEuros } from '../../core/money.js?v=d485078';
+import { usualVatRate } from '../../core/pcg.js?v=d485078';
+import * as cloud from '../cloud.js?v=d485078';
+import { html, raw } from '../html.js?v=d485078';
+import { ICONS } from '../icons.js?v=d485078';
+import { $, render, searchResults } from '../render.js?v=d485078';
+import { closeLightbox, featureSlug } from '../site/landing.js?v=d485078';
+import { cloudState, ui, ws } from '../state.js?v=d485078';
+import { save, savePrefs, toast } from '../store.js?v=d485078';
+import { afterSignIn } from '../sync-ui.js?v=d485078';
+import { currentBankAccount, importBankFile } from '../views/bank.js?v=d485078';
+import { attachReceipt } from '../views/expenses.js?v=d485078';
+import { readPrice, totalsBlock } from '../views/invoice-form.js?v=d485078';
+import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=d485078';
+import { runAction } from './index.js?v=d485078';
+import { readReceivedInvoices } from '../received-invoices.js?v=d485078';
+import { urssafLinkSubmit } from '../views/urssaf-link.js?v=d485078';
 
 // ------------------------------------------------------------------ évènements
 
@@ -66,11 +66,11 @@ document.addEventListener('input', (e) => {
     if (el.hasAttribute('data-rerender')) return render();
     const m = /^lines\.(\d+)\.priceText$/.exec(el.name);
     if (m) {
-      try {
-        ui.draft.lines[m[1]].unitPrice = el.value ? parseEuros(el.value) : 0;
-      } catch {
-        return;
-      }
+      // Prix illisible : champ signalé tout de suite, la ligne compte pour 0 dans le total affiché.
+      const price = readPrice(el.value);
+      ui.draft.lines[m[1]].unitPrice = price ?? 0;
+      if (price === null) el.setAttribute('aria-invalid', 'true');
+      else el.removeAttribute('aria-invalid');
     }
     if (/^lines\.\d+\.qty$/.test(el.name)) ui.draft.lines[el.name.split('.')[1]].qty = Number(el.value.replace(',', '.')) || 0;
     $('totals').innerHTML = totalsBlock().s;
