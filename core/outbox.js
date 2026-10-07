@@ -11,7 +11,7 @@
  *   friendly(error) → message ; onStatus(status) ; onResult(op, result).
  */
 
-import { planSync, isDivergence } from './sync.js?v=66361b9';
+import { planSync, isDivergence } from './sync.js?v=f9f52cc';
 
 const DIVERGENCE_MESSAGE = 'Des modifications ont été enregistrées ailleurs (autre appareil ou autre onglet) : rechargez les données depuis la base.';
 const directLock = (_name, fn) => fn();
@@ -101,8 +101,12 @@ export class Outbox {
         }
       });
     } catch (e) {
-      this.error = isDivergence(e) ? DIVERGENCE_MESSAGE : this.friendly(e);
-      this.onStatus({ pending: this.queue.length, error: this.error, divergence: isDivergence(e) });
+      // Refus motivé par la base (règle métier, droits) : son message dit quoi corriger ; seule une
+      // divergence sans motif (doublon, numéro différent) reçoit le message générique.
+      const refused = Boolean(e?.code) && e.code !== '23505' && isDivergence(e);
+      this.error = refused ? this.friendly(e) : isDivergence(e) ? DIVERGENCE_MESSAGE : this.friendly(e);
+      this.refusedOp = refused ? this.queue[0] : null;
+      this.onStatus({ pending: this.queue.length, error: this.error, divergence: isDivergence(e), refused });
       this.running = false;
       return;
     }
@@ -129,6 +133,20 @@ export class Outbox {
         .filter((op) => op.fn === 'issue_invoice')
         .map((op) => op.args.p_invoice),
     );
+  }
+
+  /** Retire de la file la seule opération refusée par la base ; les suivantes restent à envoyer. */
+  async skipRefused() {
+    const op = this.refusedOp;
+    if (!op) return false;
+    await this.lock(`${this.key}:file`, () => {
+      this.queue = this.#load();
+      if (JSON.stringify(this.queue[0]) === JSON.stringify(op)) this.queue.shift();
+      this.#persist();
+    });
+    this.refusedOp = null;
+    this.error = null;
+    return true;
   }
 
   /** Abandonne les opérations en attente (après rechargement depuis la base, qui fait foi). */

@@ -2,26 +2,26 @@
  * Événements du document : saisie, changement, clavier, formulaires, clics, navigation.
  */
 
-import { isValidSiren } from '../../core/invoices.js?v=66361b9';
-import { parseEuros } from '../../core/money.js?v=66361b9';
-import { usualVatRate } from '../../core/pcg.js?v=66361b9';
-import { findCatalogItem } from '../../core/catalog.js?v=66361b9';
-import * as cloud from '../cloud.js?v=66361b9';
-import { html, raw } from '../html.js?v=66361b9';
-import { ICONS } from '../icons.js?v=66361b9';
-import { $, render, searchResults } from '../render.js?v=66361b9';
-import { closeLightbox, featureSlug } from '../site/landing.js?v=66361b9';
-import { cloudState, ui, ws } from '../state.js?v=66361b9';
-import { save, savePrefs, toast } from '../store.js?v=66361b9';
-import { afterSignIn } from '../sync-ui.js?v=66361b9';
-import { currentBankAccount, importBankFile } from '../views/bank.js?v=66361b9';
-import { attachReceipt } from '../views/expenses.js?v=66361b9';
-import { readPrice, totalsBlock } from '../views/invoice-form.js?v=66361b9';
-import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=66361b9';
-import { runAction } from './index.js?v=66361b9';
-import { readReceivedInvoices } from '../received-invoices.js?v=66361b9';
-import { urssafLinkSubmit } from '../views/urssaf-link.js?v=66361b9';
-import { catalogSubmit } from './settings.js?v=66361b9';
+import { isValidSiren } from '../../core/invoices.js?v=f9f52cc';
+import { parseEuros } from '../../core/money.js?v=f9f52cc';
+import { usualVatRate } from '../../core/pcg.js?v=f9f52cc';
+import { findCatalogItem } from '../../core/catalog.js?v=f9f52cc';
+import * as cloud from '../cloud.js?v=f9f52cc';
+import { html, raw } from '../html.js?v=f9f52cc';
+import { ICONS } from '../icons.js?v=f9f52cc';
+import { $, render, searchResults } from '../render.js?v=f9f52cc';
+import { closeLightbox, featureSlug } from '../site/landing.js?v=f9f52cc';
+import { cloudState, ui, ws } from '../state.js?v=f9f52cc';
+import { save, savePrefs, toast } from '../store.js?v=f9f52cc';
+import { afterSignIn } from '../sync-ui.js?v=f9f52cc';
+import { currentBankAccount, importBankFile } from '../views/bank.js?v=f9f52cc';
+import { attachReceipt } from '../views/expenses.js?v=f9f52cc';
+import { readPrice, totalsBlock } from '../views/invoice-form.js?v=f9f52cc';
+import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=f9f52cc';
+import { runAction } from './index.js?v=f9f52cc';
+import { readReceivedInvoices } from '../received-invoices.js?v=f9f52cc';
+import { urssafLinkSubmit } from '../views/urssaf-link.js?v=f9f52cc';
+import { catalogSubmit } from './settings.js?v=f9f52cc';
 
 // ------------------------------------------------------------------ évènements
 
@@ -93,7 +93,7 @@ document.addEventListener('input', (e) => {
       else el.removeAttribute('aria-invalid');
     }
     const lab = /^lines\.(\d+)\.label$/.exec(el.name);
-    if (lab) fillFromCatalog(form, Number(lab[1]), el.value);
+    if (lab && (e.inputType === 'insertReplacementText' || !e.inputType || !ui.draft.lines[lab[1]].unitPrice)) fillFromCatalog(form, Number(lab[1]), el.value);
     if (/^lines\.\d+\.qty$/.test(el.name)) ui.draft.lines[el.name.split('.')[1]].qty = Number(el.value.replace(',', '.')) || 0;
     $('totals').innerHTML = totalsBlock().s;
   }

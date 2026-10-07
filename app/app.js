@@ -1,10 +1,10 @@
-import * as cloud from './cloud.js?v=66361b9';
-import { seedDemo } from './demo.js?v=66361b9';
-import { render } from './render.js?v=66361b9';
-import { featureSlug } from './site/landing.js?v=66361b9';
-import { URL_AUTH_ERROR, cloudState, ui } from './state.js?v=66361b9';
-import { loadDemo, loadPrefs } from './store.js?v=66361b9';
-import { afterSignIn } from './sync-ui.js?v=66361b9';
+import * as cloud from './cloud.js?v=f9f52cc';
+import { seedDemo } from './demo.js?v=f9f52cc';
+import { render } from './render.js?v=f9f52cc';
+import { featureSlug } from './site/landing.js?v=f9f52cc';
+import { URL_AUTH_ERROR, cloudState, ui } from './state.js?v=f9f52cc';
+import { loadDemo, loadPrefs } from './store.js?v=f9f52cc';
+import { afterSignIn } from './sync-ui.js?v=f9f52cc';
 // Modules à effets de bord : écouteurs d'événements du document, installation (PWA).
 import './actions/events.js';
 import './pwa.js';
@@ -42,6 +42,14 @@ async function resume(step) {
 
 async function boot() {
   loadPrefs();
+  // Branché avant toute reprise de session (même abandonnée pour la démonstration).
+  cloud.onAuthChange((event, session) => {
+    cloudState.session = session;
+    if (event === 'PASSWORD_RECOVERY') {
+      ui.auth = { view: 'new-password', error: '', info: '', busy: false };
+      render();
+    }
+  });
   const params = new URLSearchParams(location.search);
   try {
     cloudState.session = await resume(() => cloud.currentSession());
@@ -70,13 +78,6 @@ async function boot() {
   }
   ui.booting = false;
   render();
-  cloud.onAuthChange((event, session) => {
-    cloudState.session = session;
-    if (event === 'PASSWORD_RECOVERY') {
-      ui.auth = { view: 'new-password', error: '', info: '', busy: false };
-      render();
-    }
-  });
 }
 
 boot();

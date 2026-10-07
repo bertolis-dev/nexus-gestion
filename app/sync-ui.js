@@ -2,14 +2,14 @@
  * Mode connecté : ouverture d’une entreprise, file d’envoi, état de la synchronisation.
  */
 
-import { pickStructure } from '../core/company.js?v=66361b9';
-import { applySyncResult } from '../core/sync.js?v=66361b9';
-import { Workspace } from '../core/workspace.js?v=66361b9';
-import * as cloud from './cloud.js?v=66361b9';
-import { html } from './html.js?v=66361b9';
-import { render } from './render.js?v=66361b9';
-import { cloudState, newId, setWs, ui, ws } from './state.js?v=66361b9';
-import { toast } from './store.js?v=66361b9';
+import { pickStructure } from '../core/company.js?v=f9f52cc';
+import { applySyncResult } from '../core/sync.js?v=f9f52cc';
+import { Workspace } from '../core/workspace.js?v=f9f52cc';
+import * as cloud from './cloud.js?v=f9f52cc';
+import { html } from './html.js?v=f9f52cc';
+import { render } from './render.js?v=f9f52cc';
+import { cloudState, newId, setWs, ui, ws } from './state.js?v=f9f52cc';
+import { toast } from './store.js?v=f9f52cc';
 
 // ------------------------------------------------------------------ synchronisation
 
@@ -43,13 +43,16 @@ export function syncStatusHtml() {
     return html`<div id="sync-status" class="sync-status sync-error">
       Non enregistré : ${s.error}<br />
       <button class="btn btn-gold btn-sm" data-action="sync-retry">Réessayer</button>
-      ${s.divergence ? html` <button class="btn btn-secondary btn-sm" data-action="sync-reload">Recharger depuis la base</button>` : ''}
+      ${s.refused ? html` <button class="btn btn-secondary btn-sm" data-action="sync-skip">Écarter cette modification</button>` : ''}
+      ${s.divergence && !s.refused ? html` <button class="btn btn-secondary btn-sm" data-action="sync-reload">Recharger depuis la base</button>` : ''}
     </div>`;
   }
   return html`<div id="sync-status" class="sync-status">${s.pending ? `Enregistrement… (${s.pending})` : 'Toutes les modifications sont enregistrées'}</div>`;
 }
 
 export async function openStructure(structureId) {
+  ui.emails = null;
+  ui.members = null;
   const { meta, state, documents } = await cloud.loadStructure(structureId);
   cloudState.meta = meta;
   cloudState.documents = documents || [];

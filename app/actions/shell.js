@@ -2,12 +2,12 @@
  * Écran « shell ».
  */
 
-import * as cloud from '../cloud.js?v=66361b9';
-import { removeDemo } from '../demo-store.js?v=66361b9';
-import { $, render, renderApp } from '../render.js?v=66361b9';
-import { cloudState, freshOnboarding, setWs, today, ui, ws } from '../state.js?v=66361b9';
-import { download, setTheme, toast } from '../store.js?v=66361b9';
-import { openStructure, openStructureAndShow } from '../sync-ui.js?v=66361b9';
+import * as cloud from '../cloud.js?v=f9f52cc';
+import { removeDemo } from '../demo-store.js?v=f9f52cc';
+import { $, render, renderApp } from '../render.js?v=f9f52cc';
+import { cloudState, freshOnboarding, setWs, today, ui, ws } from '../state.js?v=f9f52cc';
+import { download, setTheme, toast } from '../store.js?v=f9f52cc';
+import { openStructure, openStructureAndShow } from '../sync-ui.js?v=f9f52cc';
 
 /** Actions « shell » : data-action → fonction. */
 export const actionsTable = {
@@ -56,6 +56,8 @@ export const actionsTable = {
   },
   'structure-switch': async () => {
     if (cloudState.status.pending && !confirm('Des modifications ne sont pas encore enregistrées. Changer d’entreprise quand même ?')) return;
+    ui.emails = null;
+    ui.members = null;
     setWs(null);
     ui.picking = true;
     ui.screen = 'login';
@@ -78,6 +80,7 @@ export const actionsTable = {
     // Rien de la session précédente ne reste affichable (membres, appareils).
     ui.security = null;
     ui.members = null;
+    ui.emails = null;
     ui.structures = null;
     ui.picking = false;
     ui.ob = freshOnboarding();
@@ -89,6 +92,17 @@ export const actionsTable = {
   },
   'sync-retry': async () => {
     return cloudState.outbox?.flush();
+  },
+  'sync-skip': async () => {
+    if (!confirm('Écarter cette modification refusée par la base ? Les autres modifications en attente seront enregistrées, puis les données rechargées.'))
+      return;
+    if (!(await cloudState.outbox.skipRefused())) return;
+    await cloudState.outbox.flush();
+    if (cloudState.outbox.error) return;
+    await openStructure(cloudState.meta.structureId);
+    cloudState.status = { pending: 0, error: null };
+    render();
+    return toast('Modification écartée, données rechargées depuis la base.');
   },
   'sync-reload': async () => {
     if (!confirm('Recharger depuis la base ? Les modifications non enregistrées de ce navigateur seront abandonnées.')) return;

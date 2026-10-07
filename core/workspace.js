@@ -4,18 +4,18 @@
  * Sans DOM ni stockage : l'interface (app/) le sérialise, les tests l'utilisent tel quel.
  */
 
-import { buildChart, categoryById } from './pcg.js?v=66361b9';
-import { Ledger } from './ledger.js?v=66361b9';
-import { InvoiceBook, clientAux } from './invoices.js?v=66361b9';
-import { purchaseEntry, findDuplicates, ttcLine } from './purchases.js?v=66361b9';
-import { mergeTransactions, suggestMatches, settlementEntry, directEntry, DEFAULT_BANK_ACCOUNT } from './bank.js?v=66361b9';
+import { buildChart, categoryById } from './pcg.js?v=f9f52cc';
+import { Ledger } from './ledger.js?v=f9f52cc';
+import { InvoiceBook, clientAux } from './invoices.js?v=f9f52cc';
+import { purchaseEntry, findDuplicates, ttcLine } from './purchases.js?v=f9f52cc';
+import { mergeTransactions, suggestMatches, settlementEntry, directEntry, DEFAULT_BANK_ACCOUNT } from './bank.js?v=f9f52cc';
 export { DEFAULT_BANK_ACCOUNT };
-import { isOnReceipt, creditsOf, originalOf, groupBalance, receiptTargets } from './receipts.js?v=66361b9';
-import { divRound, splitTtc, sum } from './money.js?v=66361b9';
-import { openingEntry } from './fecimport.js?v=66361b9';
-import { creditTargetsAsset } from './assets.js?v=66361b9';
-import { LIFECYCLE } from './lifecycle.js?v=66361b9';
-import { SCHEMA_VERSION, migrateState } from './schema.js?v=66361b9';
+import { isOnReceipt, creditsOf, originalOf, groupBalance, receiptTargets } from './receipts.js?v=f9f52cc';
+import { divRound, splitTtc, sum } from './money.js?v=f9f52cc';
+import { openingEntry } from './fecimport.js?v=f9f52cc';
+import { creditTargetsAsset } from './assets.js?v=f9f52cc';
+import { LIFECYCLE } from './lifecycle.js?v=f9f52cc';
+import { SCHEMA_VERSION, migrateState } from './schema.js?v=f9f52cc';
 
 /** Entrées d'argent sans facture de vente, proposées en langage courant. */
 export const INCOME_CATEGORIES = [
@@ -58,13 +58,13 @@ export function combineEstimates(list) {
 
 export const MAX_BANK_ACCOUNTS = 10;
 
-import { recurringMethods } from './workspace/recurring.js?v=66361b9';
-import { vatMethods } from './workspace/vat.js?v=66361b9';
-import { closingMethods } from './workspace/closing.js?v=66361b9';
-import { microMethods } from './workspace/micro.js?v=66361b9';
-import { depositMethods } from './deposit.js?v=66361b9';
-import { categorizationMethods, learnRule } from './categorization.js?v=66361b9';
-import { reminderMethods } from './reminders.js?v=66361b9';
+import { recurringMethods } from './workspace/recurring.js?v=f9f52cc';
+import { vatMethods } from './workspace/vat.js?v=f9f52cc';
+import { closingMethods } from './workspace/closing.js?v=f9f52cc';
+import { microMethods } from './workspace/micro.js?v=f9f52cc';
+import { depositMethods } from './deposit.js?v=f9f52cc';
+import { categorizationMethods, learnRule } from './categorization.js?v=f9f52cc';
+import { reminderMethods } from './reminders.js?v=f9f52cc';
 
 export class Workspace {
   constructor({ company, state: saved = {}, now, newId } = {}) {

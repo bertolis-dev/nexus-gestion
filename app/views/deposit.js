@@ -4,9 +4,9 @@
  * « Déposée ».
  */
 
-import { depositCandidates, PLATFORMS } from '../../core/deposit.js?v=66361b9';
-import { field, html, opt } from '../html.js?v=66361b9';
-import { ui, ws } from '../state.js?v=66361b9';
+import { depositCandidates, PLATFORMS } from '../../core/deposit.js?v=f9f52cc';
+import { field, html, opt } from '../html.js?v=f9f52cc';
+import { ui, ws } from '../state.js?v=f9f52cc';
 
 export function depositCard() {
   const todo = depositCandidates(ws.book);

@@ -833,3 +833,19 @@ tr[data-href]:focus-visible,
     grid-row: 2;
   }
 }
+
+/* Tableau large dans une carte : défile dans son conteneur, jamais la page (téléphone). */
+.table-scroll {
+  overflow-x: auto;
+}
+
+/* Groupe de réglages désactivable d'un bloc (réglages réservés au dirigeant). */
+.settings-fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}

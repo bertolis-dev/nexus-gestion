@@ -9,11 +9,11 @@
  * nombre d'écritures validées), l'état est rechargé depuis la base, qui fait foi.
  */
 
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js?v=66361b9';
-import { stateFromRows, refusedUpdate } from '../core/sync.js?v=66361b9';
-import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, pendingOutboxOps, OUTBOX_PREFIX } from '../core/outbox.js?v=66361b9';
-import { ACCOUNTS } from '../core/pcg.js?v=66361b9';
-import { mfaState, canRemoveFactor } from '../core/mfa.js?v=66361b9';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js?v=f9f52cc';
+import { stateFromRows, refusedUpdate } from '../core/sync.js?v=f9f52cc';
+import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, pendingOutboxOps, OUTBOX_PREFIX } from '../core/outbox.js?v=f9f52cc';
+import { ACCOUNTS } from '../core/pcg.js?v=f9f52cc';
+import { mfaState, canRemoveFactor } from '../core/mfa.js?v=f9f52cc';
 
 // supabase-js (copie locale, app/vendor/) n'est chargé qu'en mode connecté : la démonstration et
 // le site public ne téléchargent pas ces 220 Ko.
@@ -21,7 +21,7 @@ let client = null;
 const authListeners = [];
 async function connect() {
   if (!client) {
-    const { createClient } = await import('./vendor/supabase.js?v=66361b9');
+    const { createClient } = await import('./vendor/supabase.js?v=f9f52cc');
     // Session gardée dans le navigateur et renouvelée automatiquement : on reste connecté d'une visite
     // à l'autre, jusqu'à « Se déconnecter » (comme Nexus RH).
     client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -235,7 +235,10 @@ export async function loadStructure(structureId) {
     all(() => eq('invoice_events')().order('position')),
   ]);
   // Relances parties par e-mail (dont les relances automatiques du matin) : table absente avant 0022.
-  const emails = await all(() => eq('email_log', 'invoice_id, level, sent_at')().eq('kind', 'relance').eq('status', 'envoye')).catch(() => []);
+  const emails = await all(() => eq('email_log', 'invoice_id, level, sent_at')().eq('kind', 'relance').eq('status', 'envoye').order('sent_at')).catch((err) => {
+    if (['42P01', 'PGRST205'].includes(err?.code)) return [];
+    throw err;
+  });
   const primary = banks.find((b) => b.gl_account === '512000') || banks[0];
   const meta = { structureId, fiscalYearId: fiscalYear.id, bankAccountId: primary?.id };
   const state = stateFromRows({

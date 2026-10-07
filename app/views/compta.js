@@ -2,12 +2,12 @@
  * Écran « compta ».
  */
 
-import { JOURNALS } from '../../core/ledger.js?v=66361b9';
-import { generalLedger, journalReport, trialBalance } from '../../core/reports.js?v=66361b9';
-import { field, html, raw } from '../html.js?v=66361b9';
-import { eur, frDate, today, ui, ws } from '../state.js?v=66361b9';
-import { badge, viewHeader } from '../ui/common.js?v=66361b9';
-import { archivesView } from './archives.js?v=66361b9';
+import { JOURNALS } from '../../core/ledger.js?v=f9f52cc';
+import { generalLedger, journalReport, trialBalance } from '../../core/reports.js?v=f9f52cc';
+import { field, html, raw } from '../html.js?v=f9f52cc';
+import { eur, frDate, today, ui, ws } from '../state.js?v=f9f52cc';
+import { badge, viewHeader } from '../ui/common.js?v=f9f52cc';
+import { archivesView } from './archives.js?v=f9f52cc';
 
 // ------------------------------------------------------------------ comptabilité (mode avancé)
 
@@ -15,7 +15,7 @@ export function viewCompta() {
   if (ui.mode !== 'avance')
     return html`<div class="empty-state">
       <p>Activez le mode avancé dans les paramètres.</p>
-      <button class="btn btn-primary" data-href="#/parametres">Paramètres</button>
+      <button class="btn btn-primary" data-href="#/parametres/affichage">Paramètres</button>
     </div>`;
   const tab = ui.comptaTab;
   const tabs = [

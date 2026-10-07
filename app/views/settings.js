@@ -2,19 +2,19 @@
  * Écran « settings ».
  */
 
-import { field, html, opt, raw } from '../html.js?v=66361b9';
-import { isMicro } from '../render.js?v=66361b9';
-import { cloudState, eur, pct, ui, ws } from '../state.js?v=66361b9';
-import { VAT_RATES_BP } from '../../core/invoices.js?v=66361b9';
-import { ICONS } from '../icons.js?v=66361b9';
-import { badge, viewHeader } from '../ui/common.js?v=66361b9';
-import * as cloud from '../cloud.js?v=66361b9';
-import { render } from '../render.js?v=66361b9';
-import { membersCard, microSettingsCard, openingPreview, securityCard } from './onboarding.js?v=66361b9';
-import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=66361b9';
-import { normalizeIban } from '../../core/epc.js?v=66361b9';
-import { INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=66361b9';
-import { DEFAULT_TEMPLATES, REMINDER_STEPS } from '../../core/reminders.js?v=66361b9';
+import { field, html, opt, raw } from '../html.js?v=f9f52cc';
+import { isMicro } from '../render.js?v=f9f52cc';
+import { cloudState, eur, pct, ui, ws } from '../state.js?v=f9f52cc';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=f9f52cc';
+import { ICONS } from '../icons.js?v=f9f52cc';
+import { badge, viewHeader } from '../ui/common.js?v=f9f52cc';
+import * as cloud from '../cloud.js?v=f9f52cc';
+import { render } from '../render.js?v=f9f52cc';
+import { membersCard, microSettingsCard, openingPreview, securityCard } from './onboarding.js?v=f9f52cc';
+import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=f9f52cc';
+import { normalizeIban } from '../../core/epc.js?v=f9f52cc';
+import { INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=f9f52cc';
+import { DEFAULT_TEMPLATES, REMINDER_STEPS } from '../../core/reminders.js?v=f9f52cc';
 
 // ------------------------------------------------------------------ paramètres
 
@@ -54,11 +54,13 @@ function emailCard() {
       </p>
     </div>`;
   if (!ui.emails && cloudState.meta) {
-    ui.emails = { rows: [] };
+    const structureId = cloudState.meta.structureId;
+    ui.emails = { structureId, rows: [] };
     cloud
-      .listEmails(cloudState.meta.structureId)
+      .listEmails(structureId)
       .then((rows) => {
-        ui.emails = { rows };
+        if (ui.emails?.structureId !== structureId) return;
+        ui.emails = { structureId, rows };
         render();
       })
       .catch(() => {});
@@ -71,8 +73,8 @@ function emailCard() {
       Factures et relances partent directement chez votre client, à l’adresse de sa fiche ; ses réponses arrivent dans votre boîte e-mail.
     </p>
     <label class="form-field-checkbox" style="display:flex;gap:8px;align-items:center"
-      ><input type="checkbox" data-action="auto-reminders" ${ws.company.autoReminders ? raw('checked') : ''} />Relancer automatiquement les factures impayées
-      (3, 15 puis 30 jours après l’échéance, chaque matin)</label
+      ><input type="checkbox" data-action="auto-reminders" ${ws.company.autoReminders ? raw('checked') : ''} ${ownerOnly() ? raw('disabled') : ''} />Relancer
+      automatiquement les factures impayées (3, 15 puis 30 jours après l’échéance, chaque matin)</label
     >
     <p class="text-muted" style="margin:0;font-size:13px">
       Ne sont pas relancées automatiquement : les factures sans adresse e-mail client, avec un avoir, en litige ou déjà encaissées. Vous pouvez toujours
@@ -80,29 +82,31 @@ function emailCard() {
     </p>
     ${
       rows.length
-        ? html`<table class="table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Envoi</th>
-                <th>Destinataire</th>
-                <th>Résultat</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rows.map(
-                (e) =>
-                  html`<tr>
-                    <td>${new Date(e.sent_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}</td>
-                    <td>${what(e)} — ${e.subject}</td>
-                    <td>${e.recipient}</td>
-                    <td>
-                      ${e.status === 'envoye' ? badge('Envoyé', 'success') : html`${badge('Échec', 'danger')} <span class="text-muted">${e.detail}</span>`}
-                    </td>
-                  </tr>`,
-              )}
-            </tbody>
-          </table>`
+        ? html`<div class="table-scroll" tabindex="0" role="region" aria-label="Derniers e-mails envoyés">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Envoi</th>
+                  <th>Destinataire</th>
+                  <th>Résultat</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.map(
+                  (e) =>
+                    html`<tr>
+                      <td>${new Date(e.sent_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}</td>
+                      <td>${what(e)} — ${e.subject}</td>
+                      <td>${e.recipient}</td>
+                      <td>
+                        ${e.status === 'envoye' ? badge('Envoyé', 'success') : html`${badge('Échec', 'danger')} <span class="text-muted">${e.detail}</span>`}
+                      </td>
+                    </tr>`,
+                )}
+              </tbody>
+            </table>
+          </div>`
         : html`<p class="text-muted" style="margin:0">Aucun e-mail envoyé pour l’instant.</p>`
     }
   </div>`;
@@ -204,9 +208,22 @@ const SETTINGS_GROUPS = [
 
 const hasFecImport = () => ws.ledger.entries.some((e) => e.source?.kind === 'fec-import');
 
+/** Expert-comptable ou collaborateur : la fiche de l'entreprise reste au dirigeant (migration 0021). */
+const ownerOnly = () => !ui.demo && Boolean(cloudState.role) && cloudState.role !== 'dirigeant';
+const ownerNotice = () => (ownerOnly() ? html`<div class="notice-gold">Ces réglages sont modifiables par le dirigeant de l’entreprise uniquement.</div>` : '');
+
 const SETTINGS_TABS = [
   { key: 'entreprise', label: 'Mon entreprise', group: 'entreprise', icon: 'building', visible: () => true, render: companyTab },
-  { key: 'micro', label: 'Micro-entreprise', group: 'entreprise', icon: 'scale', visible: () => isMicro(), render: () => microSettingsCard() },
+  {
+    key: 'micro',
+    label: 'Micro-entreprise',
+    group: 'entreprise',
+    icon: 'scale',
+    visible: () => isMicro(),
+    render: () =>
+      html`${ownerNotice()}
+        <fieldset class="settings-fieldset" ${ownerOnly() ? raw('disabled') : ''}>${microSettingsCard()}</fieldset>`,
+  },
   { key: 'utilisateurs', label: 'Utilisateurs', group: 'entreprise', icon: 'people', visible: () => !ui.demo, render: () => membersCard() },
   {
     key: 'relances',
@@ -241,64 +258,67 @@ function companyTab() {
   const c = ws.company;
   const locked = ws.identityLocked();
   const lockedHint = 'Figé : des factures ont été émises ou des écritures validées. Pour un changement de situation, contactez le support.';
-  return html`<div class="settings-cards-grid">
-    <form class="card settings-card-wide" data-form="company" style="display:flex;flex-direction:column;gap:14px">
-      <h2>Mon entreprise</h2>
-      <div class="form-grid">
-        ${field('Nom', html`<input class="input" name="name" value="${c.name}" />`)}
-        ${field(
-          'SIREN',
-          html`<input class="input" name="siren" value="${c.siren}" inputmode="numeric" ${locked ? raw('readonly aria-readonly="true"') : ''} />`,
-          {
-            hint: locked ? lockedHint : '',
-          },
-        )}
-        ${field(
-          'Forme juridique',
-          html`<select class="input" name="legalForm" ${locked ? raw('disabled') : ''}>
-            ${['EI', 'EURL', 'SARL', 'SAS', 'SASU'].map((f) => opt(f, f, c.legalForm === f))}
-          </select>`,
-          { hint: locked ? lockedHint : '' },
-        )}
-        ${field('Capital social', html`<input class="input" name="capital" value="${c.capital || ''}" placeholder="Ex. : 1 000 €" />`, { hint: 'Obligatoire sur les factures d’une société.' })}
-        ${field('Immatriculation', html`<input class="input" name="registration" value="${c.registration || ''}" placeholder="Ex. : RCS Lyon, RM 69" />`, { hint: 'RCS (commerce) ou RM (artisanat) et ville du greffe : obligatoire sur les factures d’une société.' })}
-        ${field('Adresse', html`<input class="input" name="address" value="${c.address}" />`)}
-        ${field('N° de TVA intracommunautaire', html`<input class="input" name="vatNumber" value="${c.vatNumber || ''}" />`)}
-        ${field('IBAN (affiché sur les factures)', html`<input class="input" name="iban" value="${c.iban || ''}" />`, {
-          hint:
-            c.iban && !normalizeIban(c.iban)
-              ? 'IBAN invalide (clé de contrôle) : vérifiez-le, sinon le QR code de paiement n’apparaît pas sur vos factures.'
-              : 'Un QR code de paiement par virement est ajouté à vos factures.',
-        })}
-        ${field('Délai de paiement (jours)', html`<input class="input" name="paymentTermsDays" inputmode="numeric" value="${c.paymentTermsDays || 30}" />`)}
-      </div>
-      ${
-        c.vatRegime === 'reel-normal'
-          ? field(
-              'Déclaration de TVA',
-              html`<select class="input" name="vatPeriodicity" style="max-width:260px">
-                ${opt('mensuelle', 'Chaque mois', c.vatPeriodicity !== 'trimestrielle')}${opt('trimestrielle', 'Chaque trimestre', c.vatPeriodicity === 'trimestrielle')}
+  return html`${ownerNotice()}
+    <fieldset class="settings-fieldset" ${ownerOnly() ? raw('disabled') : ''}>
+      <div class="settings-cards-grid">
+        <form class="card settings-card-wide" data-form="company" style="display:flex;flex-direction:column;gap:14px">
+          <h2>Mon entreprise</h2>
+          <div class="form-grid">
+            ${field('Nom', html`<input class="input" name="name" value="${c.name}" />`)}
+            ${field(
+              'SIREN',
+              html`<input class="input" name="siren" value="${c.siren}" inputmode="numeric" ${locked ? raw('readonly aria-readonly="true"') : ''} />`,
+              {
+                hint: locked ? lockedHint : '',
+              },
+            )}
+            ${field(
+              'Forme juridique',
+              html`<select class="input" name="legalForm" ${locked ? raw('disabled') : ''}>
+                ${['EI', 'EURL', 'SARL', 'SAS', 'SASU'].map((f) => opt(f, f, c.legalForm === f))}
               </select>`,
-              { hint: 'Chaque trimestre : possible quand la TVA due sur l’année reste faible (à confirmer avec votre expert-comptable).' },
-            )
-          : ''
-      }
-      <label class="form-field-checkbox" style="display:flex;gap:8px;align-items:center"
-        ><input type="checkbox" name="vatOnDebits" ${c.vatOnDebits ? raw('checked') : ''} />J'ai opté pour le paiement de la TVA d'après les débits</label
-      >
-      <div><button class="btn btn-primary" type="submit">Enregistrer</button></div>
-    </form>
-    <div class="card" style="display:flex;flex-direction:column;gap:10px">
-      <h2>Logo sur vos factures</h2>
-      ${
-        c.logo
-          ? html`<img src="${c.logo}" alt="Logo actuel de l’entreprise" style="max-height:56px;max-width:180px;object-fit:contain;align-self:flex-start" />
-              <div><button class="btn btn-secondary btn-sm" data-action="logo-remove">Retirer le logo</button></div>`
-          : html`<p class="text-muted" style="margin:0">Aucun logo : le nom de votre entreprise figure seul en tête de vos factures.</p>`
-      }
-      ${field('Choisir une image (PNG ou JPEG, 200 Ko au plus)', html`<input class="input" type="file" accept="image/png,image/jpeg" data-action="logo-file" />`)}
-    </div>
-  </div>`;
+              { hint: locked ? lockedHint : '' },
+            )}
+            ${field('Capital social', html`<input class="input" name="capital" value="${c.capital || ''}" placeholder="Ex. : 1 000 €" />`, { hint: 'Obligatoire sur les factures d’une société.' })}
+            ${field('Immatriculation', html`<input class="input" name="registration" value="${c.registration || ''}" placeholder="Ex. : RCS Lyon, RM 69" />`, { hint: 'RCS (commerce) ou RM (artisanat) et ville du greffe : obligatoire sur les factures d’une société.' })}
+            ${field('Adresse', html`<input class="input" name="address" value="${c.address}" />`)}
+            ${field('N° de TVA intracommunautaire', html`<input class="input" name="vatNumber" value="${c.vatNumber || ''}" />`)}
+            ${field('IBAN (affiché sur les factures)', html`<input class="input" name="iban" value="${c.iban || ''}" />`, {
+              hint:
+                c.iban && !normalizeIban(c.iban)
+                  ? 'IBAN invalide (clé de contrôle) : vérifiez-le, sinon le QR code de paiement n’apparaît pas sur vos factures.'
+                  : 'Un QR code de paiement par virement est ajouté à vos factures.',
+            })}
+            ${field('Délai de paiement (jours)', html`<input class="input" name="paymentTermsDays" inputmode="numeric" value="${c.paymentTermsDays || 30}" />`)}
+          </div>
+          ${
+            c.vatRegime === 'reel-normal'
+              ? field(
+                  'Déclaration de TVA',
+                  html`<select class="input" name="vatPeriodicity" style="max-width:260px">
+                    ${opt('mensuelle', 'Chaque mois', c.vatPeriodicity !== 'trimestrielle')}${opt('trimestrielle', 'Chaque trimestre', c.vatPeriodicity === 'trimestrielle')}
+                  </select>`,
+                  { hint: 'Chaque trimestre : possible quand la TVA due sur l’année reste faible (à confirmer avec votre expert-comptable).' },
+                )
+              : ''
+          }
+          <label class="form-field-checkbox" style="display:flex;gap:8px;align-items:center"
+            ><input type="checkbox" name="vatOnDebits" ${c.vatOnDebits ? raw('checked') : ''} />J'ai opté pour le paiement de la TVA d'après les débits</label
+          >
+          <div><button class="btn btn-primary" type="submit">Enregistrer</button></div>
+        </form>
+        <div class="card" style="display:flex;flex-direction:column;gap:10px">
+          <h2>Logo sur vos factures</h2>
+          ${
+            c.logo
+              ? html`<img src="${c.logo}" alt="Logo actuel de l’entreprise" style="max-height:56px;max-width:180px;object-fit:contain;align-self:flex-start" />
+                  <div><button class="btn btn-secondary btn-sm" data-action="logo-remove">Retirer le logo</button></div>`
+              : html`<p class="text-muted" style="margin:0">Aucun logo : le nom de votre entreprise figure seul en tête de vos factures.</p>`
+          }
+          ${field('Choisir une image (PNG ou JPEG, 200 Ko au plus)', html`<input class="input" type="file" accept="image/png,image/jpeg" data-action="logo-file" />`)}
+        </div>
+      </div>
+    </fieldset>`;
 }
 
 function bankTab() {

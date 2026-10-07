@@ -15,6 +15,8 @@ export function shiftMonth(month, delta) {
 
 const signedHt = (inv) => (inv.type === 'credit' ? -1 : 1) * (inv.totals?.totalHt || 0);
 const counted = (inv) => inv.status === 'issued' && ['invoice', 'deposit', 'credit'].includes(inv.type) && inv.issueDate;
+/** Acompte (et avoir sur acompte) : pas de chiffre d'affaires, la facture finale le reprend en entier. */
+const isDepositDoc = (inv, depositNumbers) => inv.type === 'deposit' || (inv.type === 'credit' && depositNumbers.has(inv.creditOf));
 
 /**
  * @param {object[]} invoices factures du carnet (ws.book.invoices)
@@ -28,7 +30,8 @@ export function salesStats(invoices, payments, today) {
   const byClient = new Map();
   const firstMonth = months[0];
   const previousFirst = shiftMonth(firstMonth, -12);
-  for (const inv of invoices.filter(counted)) {
+  const depositNumbers = new Set(invoices.filter((i) => i.type === 'deposit').map((i) => i.number));
+  for (const inv of invoices.filter((i) => counted(i) && !isDepositDoc(i, depositNumbers))) {
     const m = monthOf(inv.issueDate);
     byMonth.set(m, (byMonth.get(m) || 0) + signedHt(inv));
     if (m >= firstMonth && m <= current) {

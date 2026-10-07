@@ -7,7 +7,7 @@
  * scripts/validate-einvoice.mjs ; le navigateur lui passe les copies locales de app/vendor/.
  */
 
-import { issuerName } from './invoices.js?v=66361b9';
+import { issuerName } from './invoices.js?v=f9f52cc';
 
 export const FACTURX_FILE_NAME = 'factur-x.xml';
 const FX_NS = 'urn:factur-x:pdfa:CrossIndustryDocument:invoice:1p0#';

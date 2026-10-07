@@ -2,20 +2,60 @@
  * Écran « sales ».
  */
 
-import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=66361b9';
-import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=66361b9';
-import { LIFECYCLE } from '../../core/lifecycle.js?v=66361b9';
-import { lookupSiren } from '../company-lookup.js?v=66361b9';
-import { render } from '../render.js?v=66361b9';
-import * as cloud from '../cloud.js?v=66361b9';
-import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=66361b9';
-import { reminderMessage } from '../../core/reminders.js?v=66361b9';
-import { download, save, toast } from '../store.js?v=66361b9';
-import { isUnconfirmed } from '../sync-ui.js?v=66361b9';
-import { emptyLine, persistDraft } from '../views/invoice-form.js?v=66361b9';
-import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=66361b9';
-import { depositCandidates } from '../../core/deposit.js?v=66361b9';
-import { createZip } from '../../core/zip.js?v=66361b9';
+import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=f9f52cc';
+import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=f9f52cc';
+import { LIFECYCLE } from '../../core/lifecycle.js?v=f9f52cc';
+import { lookupSiren } from '../company-lookup.js?v=f9f52cc';
+import { render } from '../render.js?v=f9f52cc';
+import * as cloud from '../cloud.js?v=f9f52cc';
+import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=f9f52cc';
+import { reminderMessage } from '../../core/reminders.js?v=f9f52cc';
+import { download, save, toast } from '../store.js?v=f9f52cc';
+import { isUnconfirmed } from '../sync-ui.js?v=f9f52cc';
+import { emptyLine, persistDraft } from '../views/invoice-form.js?v=f9f52cc';
+import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=f9f52cc';
+import { depositCandidates } from '../../core/deposit.js?v=f9f52cc';
+import { createZip } from '../../core/zip.js?v=f9f52cc';
+
+/** Envoi de la facture : par Nexus (Brevo) si en service, sinon partage ou messagerie. */
+async function sendInvoice(id) {
+  const inv = ws.book.get(id);
+  let pdf;
+  try {
+    pdf = await invoicePdf(inv, ws.company, { outstanding: ws.book.outstanding(inv) });
+  } catch (err) {
+    return toast(`PDF impossible : ${err.message}`, true);
+  }
+  const name = pdfFileName(inv);
+  const subject = `${inv.type === 'credit' ? 'Avoir' : 'Facture'} ${inv.number} — ${ws.company.name}`;
+  const body = `Bonjour,\n\nVeuillez trouver ci-joint ${inv.type === 'credit' ? "l'avoir" : 'la facture'} ${inv.number} d'un montant de ${eur(inv.totals.netToPay ?? inv.totals.totalTtc)}${inv.type === 'credit' ? '' : `, à régler avant le ${frDate(inv.dueDate)}`}.\n\nCordialement,\n${ws.company.name}`;
+  // Envoi par Nexus Gestion (Brevo) : directement au client, PDF joint.
+  if (!ui.demo && cloudState.emailReady && inv.client?.email) {
+    try {
+      const r = await cloud.sendInvoiceEmail(inv.id, { subject, body, pdf, name });
+      if (!r.ok) return toast(`La facture n’est pas partie : le service d’e-mails l’a refusée (${r.detail || 'raison inconnue'}).`, true);
+      ui.emails = null;
+      return toast(`Facture envoyée par e-mail à ${r.recipient}, PDF joint.`);
+    } catch (err) {
+      return toast(cloud.friendly(err), true);
+    }
+  }
+  const file = new File([pdf], name, { type: 'application/pdf' });
+  // Téléphone et certains ordinateurs : partage natif avec le PDF joint.
+  if (navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: subject, text: body });
+      return toast('Facture partagée.');
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+    }
+  }
+  // Sinon : PDF téléchargé, puis message préparé dans la messagerie (la pièce jointe s'ajoute à la main).
+  download(name, pdf, 'application/pdf');
+  const to = inv.client?.email ? encodeURIComponent(inv.client.email) : '';
+  location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  toast(`${name} est téléchargé : joignez-le au message qui s’ouvre.`);
+}
 
 /** Actions « sales » : data-action → fonction. */
 export const actionsTable = {
@@ -120,8 +160,10 @@ export const actionsTable = {
   },
   // Le lien mailto s'ouvre normalement ; la relance est ajoutée à l'historique de la facture.
   'reminder-email': async ({ id, index }) => {
+    if (ui.sending) return;
     const level = Number(index);
     const msg = reminderMessage(ws, id, level, today());
+    ui.sending = true;
     try {
       const r = await cloud.sendReminderEmail(id, level, msg);
       if (!r.ok) return toast(`La relance n’est pas partie : le service d’e-mails l’a refusée (${r.detail || 'raison inconnue'}).`, true);
@@ -132,6 +174,8 @@ export const actionsTable = {
       toast(`Relance envoyée par e-mail à ${r.recipient}.`);
     } catch (err) {
       toast(cloud.friendly(err), true);
+    } finally {
+      ui.sending = false;
     }
   },
   'reminder-send': async ({ id, index }) => {
@@ -142,7 +186,7 @@ export const actionsTable = {
   'invoice-pdf': async ({ id }) => {
     const inv = ws.book.get(id);
     try {
-      const pdf = await invoicePdf(inv, ws.company);
+      const pdf = await invoicePdf(inv, ws.company, { outstanding: ws.book.outstanding(inv) });
       download(pdfFileName(inv), pdf, 'application/pdf');
       toast('Facture PDF téléchargée (Factur-X : la facture électronique est jointe au PDF).');
     } catch (err) {
@@ -150,42 +194,13 @@ export const actionsTable = {
     }
   },
   'invoice-send': async ({ id }) => {
-    const inv = ws.book.get(id);
-    let pdf;
+    if (ui.sending) return;
+    ui.sending = true;
     try {
-      pdf = await invoicePdf(inv, ws.company);
-    } catch (err) {
-      return toast(`PDF impossible : ${err.message}`, true);
+      await sendInvoice(id);
+    } finally {
+      ui.sending = false;
     }
-    const name = pdfFileName(inv);
-    const subject = `${inv.type === 'credit' ? 'Avoir' : 'Facture'} ${inv.number} — ${ws.company.name}`;
-    const body = `Bonjour,\n\nVeuillez trouver ci-joint ${inv.type === 'credit' ? "l'avoir" : 'la facture'} ${inv.number} d'un montant de ${eur(inv.totals.netToPay ?? inv.totals.totalTtc)}${inv.type === 'credit' ? '' : `, à régler avant le ${frDate(inv.dueDate)}`}.\n\nCordialement,\n${ws.company.name}`;
-    // Envoi par Nexus Gestion (Brevo) : directement au client, PDF joint.
-    if (!ui.demo && cloudState.emailReady && inv.client?.email) {
-      try {
-        const r = await cloud.sendInvoiceEmail(inv.id, { subject, body, pdf, name });
-        if (!r.ok) return toast(`La facture n’est pas partie : le service d’e-mails l’a refusée (${r.detail || 'raison inconnue'}).`, true);
-        ui.emails = null;
-        return toast(`Facture envoyée par e-mail à ${r.recipient}, PDF joint.`);
-      } catch (err) {
-        return toast(cloud.friendly(err), true);
-      }
-    }
-    const file = new File([pdf], name, { type: 'application/pdf' });
-    // Téléphone et certains ordinateurs : partage natif avec le PDF joint.
-    if (navigator.canShare?.({ files: [file] })) {
-      try {
-        await navigator.share({ files: [file], title: subject, text: body });
-        return toast('Facture partagée.');
-      } catch (err) {
-        if (err.name === 'AbortError') return;
-      }
-    }
-    // Sinon : PDF téléchargé, puis message préparé dans la messagerie (la pièce jointe s'ajoute à la main).
-    download(name, pdf, 'application/pdf');
-    const to = inv.client?.email ? encodeURIComponent(inv.client.email) : '';
-    location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    toast(`${name} est téléchargé : joignez-le au message qui s’ouvre.`);
   },
   einvoice: async ({ id }) => {
     const inv = ws.book.get(id);
