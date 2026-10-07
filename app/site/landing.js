@@ -2,16 +2,16 @@
  * Site public : page d’accueil, pages Fonctionnalités, agrandissement des captures.
  */
 
-import { html, raw } from '../html.js?v=c52829b';
-import { ICONS } from '../icons.js?v=c52829b';
-import { $ } from '../render.js?v=c52829b';
-import { CONTACT_EMAIL, ui } from '../state.js?v=c52829b';
-import { brand, icon } from '../ui/common.js?v=c52829b';
+import { html, raw } from '../html.js?v=66361b9';
+import { ICONS } from '../icons.js?v=66361b9';
+import { $ } from '../render.js?v=66361b9';
+import { CONTACT_EMAIL, ui } from '../state.js?v=66361b9';
+import { brand, icon } from '../ui/common.js?v=66361b9';
 
 // Pages « Fonctionnalités » du site public (50 Ko) : chargées seulement quand le site public s'affiche.
 export let features = null;
 
-export const loadFeatures = async () => (features ??= await import('../features.js?v=c52829b'));
+export const loadFeatures = async () => (features ??= await import('../features.js?v=66361b9'));
 
 export const featureBySlug = (slug) => features?.featureBySlug(slug);
 
@@ -194,6 +194,54 @@ export function viewLanding() {
           <h3>C'est tenu</h3>
           <p class="text-muted">Factures, TVA, balance et FEC sont à jour en permanence. Votre liste « À faire » vous dit quoi faire et quand.</p>
         </div>
+      </div>
+    </section>
+
+    <section class="landing-section" id="landing-fiabilite">
+      <div class="landing-section-head">
+        <h2>Vos données ne se perdent pas</h2>
+        <p>Une comptabilité doit être juste et disponible, toujours. Nexus est construit pour ne rien perdre.</p>
+      </div>
+      <div class="landing-features-grid">
+        ${[
+          [
+            'archive',
+            'Sauvegarde chaque nuit',
+            'Une copie complète de votre comptabilité est faite toutes les nuits et conservée 30 jours, en plus des sauvegardes de l’hébergeur.',
+          ],
+          [
+            'shield',
+            'Double authentification',
+            'Mot de passe et code à usage unique sur votre téléphone, pour tout le monde : un mot de passe volé ne suffit pas.',
+          ],
+          [
+            'lock',
+            'Journal infalsifiable',
+            'Chaque modification est tracée dans un journal chaîné : impossible d’effacer ou de réécrire une opération sans que cela se voie.',
+          ],
+          [
+            'refresh',
+            'Rien ne s’écrase',
+            'Deux onglets, deux appareils, votre expert-comptable en même temps que vous : chaque modification arrive, dans l’ordre, sans écraser celle des autres.',
+          ],
+          [
+            'checkCircle',
+            'Vous restez connecté',
+            'Pas de déconnexion surprise : une coupure de réseau ne vous renvoie pas à l’écran de connexion, Nexus reprend tout seul.',
+          ],
+          [
+            'folder',
+            'Vos données vous appartiennent',
+            'Hébergées à Paris, exportables à tout moment en un clic (FEC et fichier complet), lisibles par n’importe quel autre logiciel.',
+          ],
+        ].map(
+          ([icon, title, text]) =>
+            html`<div class="card landing-feature-card">
+              <div class="landing-feature-icon">${raw(ICONS[icon])}</div>
+              <h3>${title}</h3>
+              <p>${text}</p>
+            </div>`,
+        )}
       </div>
     </section>
 

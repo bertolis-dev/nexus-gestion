@@ -2,9 +2,9 @@
  * Préférences, thème, enregistrement (démonstration ou base), notifications, erreurs inattendues.
  */
 
-import { Workspace } from '../core/workspace.js?v=c52829b';
-import { getDemo, setDemo } from './demo-store.js?v=c52829b';
-import { CONTACT_EMAIL, PREFS_KEY, THEME_KEY, cloudState, setWs, ui, ws } from './state.js?v=c52829b';
+import { Workspace } from '../core/workspace.js?v=66361b9';
+import { getDemo, setDemo } from './demo-store.js?v=66361b9';
+import { CONTACT_EMAIL, PREFS_KEY, THEME_KEY, cloudState, setWs, ui, ws } from './state.js?v=66361b9';
 
 // ------------------------------------------------------------------ préférences, thème, stockage
 

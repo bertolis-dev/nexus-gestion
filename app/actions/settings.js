@@ -2,11 +2,32 @@
  * Écran « settings ».
  */
 
-import * as cloud from '../cloud.js?v=c52829b';
-import { render } from '../render.js?v=c52829b';
-import { cloudState, frDate, today, ui, ws } from '../state.js?v=c52829b';
-import { download, save, toast } from '../store.js?v=c52829b';
-import { forgetRule } from '../../core/categorization.js?v=c52829b';
+import * as cloud from '../cloud.js?v=66361b9';
+import { render } from '../render.js?v=66361b9';
+import { cloudState, frDate, today, ui, ws } from '../state.js?v=66361b9';
+import { download, save, toast } from '../store.js?v=66361b9';
+import { forgetRule } from '../../core/categorization.js?v=66361b9';
+import { removeCatalogItem, saveCatalogItem } from '../../core/catalog.js?v=66361b9';
+import { readPrice } from '../views/invoice-form.js?v=66361b9';
+
+/** Ajout au catalogue (formulaire de Paramètres > Prestations et articles). */
+export function catalogSubmit(f, form) {
+  const unitPrice = readPrice(f.price);
+  try {
+    ws.company.catalog = saveCatalogItem(ws.company.catalog, {
+      label: f.label,
+      unitPrice: unitPrice ?? -1,
+      vatRateBp: ws.company.vatRegime === 'franchise' ? 0 : Number(f.vatRateBp),
+      nature: f.nature,
+    });
+  } catch (err) {
+    return toast(err.message, true);
+  }
+  save();
+  form.reset();
+  render();
+  toast(`« ${f.label.trim()} » ajouté au catalogue.`);
+}
 
 /** Actions « settings » : data-action → fonction. */
 export const actionsTable = {
@@ -20,6 +41,12 @@ export const actionsTable = {
     } catch (err) {
       toast(cloud.friendly(err), true);
     }
+  },
+  'catalog-remove': async ({ id }) => {
+    ws.company.catalog = removeCatalogItem(ws.company.catalog, id);
+    save();
+    render();
+    toast('Prestation retirée du catalogue.');
   },
   'reminder-templates-reset': async () => {
     delete ws.company.reminderTemplates;

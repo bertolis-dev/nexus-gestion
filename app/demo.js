@@ -2,12 +2,12 @@
  * Entreprise de démonstration.
  */
 
-import { parseBankCsv } from '../core/bank.js?v=c52829b';
-import { Workspace } from '../core/workspace.js?v=c52829b';
-import { vatNumberFromSiren } from '../core/company.js?v=c52829b';
-import { render } from './render.js?v=c52829b';
-import { frDate, setWs, today, ui, ws } from './state.js?v=c52829b';
-import { save, toast } from './store.js?v=c52829b';
+import { parseBankCsv } from '../core/bank.js?v=66361b9';
+import { Workspace } from '../core/workspace.js?v=66361b9';
+import { vatNumberFromSiren } from '../core/company.js?v=66361b9';
+import { render } from './render.js?v=66361b9';
+import { frDate, setWs, today, ui, ws } from './state.js?v=66361b9';
+import { save, toast } from './store.js?v=66361b9';
 
 // ------------------------------------------------------------------ démonstration
 
@@ -33,7 +33,7 @@ export function seedDemo() {
         defaultNature: 'services',
         fiscalYear: { start: d(1, 1), end: d(12, 31) },
         paymentTermsDays: 30,
-        iban: 'FR76 3000 4000 0500 0012 3456 789',
+        iban: 'FR76 3000 6000 0112 3456 7890 189',
       },
     }),
   );

@@ -2,20 +2,20 @@
  * Écran « sales ».
  */
 
-import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=c52829b';
-import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=c52829b';
-import { LIFECYCLE } from '../../core/lifecycle.js?v=c52829b';
-import { lookupSiren } from '../company-lookup.js?v=c52829b';
-import { render } from '../render.js?v=c52829b';
-import * as cloud from '../cloud.js?v=c52829b';
-import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=c52829b';
-import { reminderMessage } from '../../core/reminders.js?v=c52829b';
-import { download, save, toast } from '../store.js?v=c52829b';
-import { isUnconfirmed } from '../sync-ui.js?v=c52829b';
-import { emptyLine, persistDraft } from '../views/invoice-form.js?v=c52829b';
-import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=c52829b';
-import { depositCandidates } from '../../core/deposit.js?v=c52829b';
-import { createZip } from '../../core/zip.js?v=c52829b';
+import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=66361b9';
+import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=66361b9';
+import { LIFECYCLE } from '../../core/lifecycle.js?v=66361b9';
+import { lookupSiren } from '../company-lookup.js?v=66361b9';
+import { render } from '../render.js?v=66361b9';
+import * as cloud from '../cloud.js?v=66361b9';
+import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=66361b9';
+import { reminderMessage } from '../../core/reminders.js?v=66361b9';
+import { download, save, toast } from '../store.js?v=66361b9';
+import { isUnconfirmed } from '../sync-ui.js?v=66361b9';
+import { emptyLine, persistDraft } from '../views/invoice-form.js?v=66361b9';
+import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=66361b9';
+import { depositCandidates } from '../../core/deposit.js?v=66361b9';
+import { createZip } from '../../core/zip.js?v=66361b9';
 
 /** Actions « sales » : data-action → fonction. */
 export const actionsTable = {

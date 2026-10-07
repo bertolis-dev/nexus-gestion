@@ -2,24 +2,26 @@
  * Événements du document : saisie, changement, clavier, formulaires, clics, navigation.
  */
 
-import { isValidSiren } from '../../core/invoices.js?v=c52829b';
-import { parseEuros } from '../../core/money.js?v=c52829b';
-import { usualVatRate } from '../../core/pcg.js?v=c52829b';
-import * as cloud from '../cloud.js?v=c52829b';
-import { html, raw } from '../html.js?v=c52829b';
-import { ICONS } from '../icons.js?v=c52829b';
-import { $, render, searchResults } from '../render.js?v=c52829b';
-import { closeLightbox, featureSlug } from '../site/landing.js?v=c52829b';
-import { cloudState, ui, ws } from '../state.js?v=c52829b';
-import { save, savePrefs, toast } from '../store.js?v=c52829b';
-import { afterSignIn } from '../sync-ui.js?v=c52829b';
-import { currentBankAccount, importBankFile } from '../views/bank.js?v=c52829b';
-import { attachReceipt } from '../views/expenses.js?v=c52829b';
-import { readPrice, totalsBlock } from '../views/invoice-form.js?v=c52829b';
-import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=c52829b';
-import { runAction } from './index.js?v=c52829b';
-import { readReceivedInvoices } from '../received-invoices.js?v=c52829b';
-import { urssafLinkSubmit } from '../views/urssaf-link.js?v=c52829b';
+import { isValidSiren } from '../../core/invoices.js?v=66361b9';
+import { parseEuros } from '../../core/money.js?v=66361b9';
+import { usualVatRate } from '../../core/pcg.js?v=66361b9';
+import { findCatalogItem } from '../../core/catalog.js?v=66361b9';
+import * as cloud from '../cloud.js?v=66361b9';
+import { html, raw } from '../html.js?v=66361b9';
+import { ICONS } from '../icons.js?v=66361b9';
+import { $, render, searchResults } from '../render.js?v=66361b9';
+import { closeLightbox, featureSlug } from '../site/landing.js?v=66361b9';
+import { cloudState, ui, ws } from '../state.js?v=66361b9';
+import { save, savePrefs, toast } from '../store.js?v=66361b9';
+import { afterSignIn } from '../sync-ui.js?v=66361b9';
+import { currentBankAccount, importBankFile } from '../views/bank.js?v=66361b9';
+import { attachReceipt } from '../views/expenses.js?v=66361b9';
+import { readPrice, totalsBlock } from '../views/invoice-form.js?v=66361b9';
+import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=66361b9';
+import { runAction } from './index.js?v=66361b9';
+import { readReceivedInvoices } from '../received-invoices.js?v=66361b9';
+import { urssafLinkSubmit } from '../views/urssaf-link.js?v=66361b9';
+import { catalogSubmit } from './settings.js?v=66361b9';
 
 // ------------------------------------------------------------------ évènements
 
@@ -29,6 +31,24 @@ export function setPath(obj, path, value) {
   for (const k of keys.slice(0, -1)) o = o[k] ??= {};
   const last = keys.at(-1);
   o[last] = last === 'vatRateBp' ? Number(value) : value;
+}
+
+/** Désignation choisie dans le catalogue : prix, TVA et nature de la ligne remplis. */
+function fillFromCatalog(form, i, label) {
+  const item = findCatalogItem(ws.company.catalog, label);
+  if (!item) return;
+  const line = ui.draft.lines[i];
+  const priceText = (item.unitPrice / 100).toFixed(2).replace('.', ',');
+  Object.assign(line, { label: item.label, unitPrice: item.unitPrice, priceText, nature: item.nature });
+  if (ws.company.vatRegime !== 'franchise') line.vatRateBp = item.vatRateBp;
+  for (const [name, value] of [
+    [`lines.${i}.priceText`, priceText],
+    [`lines.${i}.vatRateBp`, String(line.vatRateBp)],
+    [`lines.${i}.nature`, item.nature],
+  ]) {
+    const input = form.querySelector(`[name="${name}"]`);
+    if (input) input.value = value;
+  }
 }
 
 document.addEventListener('input', (e) => {
@@ -72,6 +92,8 @@ document.addEventListener('input', (e) => {
       if (price === null) el.setAttribute('aria-invalid', 'true');
       else el.removeAttribute('aria-invalid');
     }
+    const lab = /^lines\.(\d+)\.label$/.exec(el.name);
+    if (lab) fillFromCatalog(form, Number(lab[1]), el.value);
     if (/^lines\.\d+\.qty$/.test(el.name)) ui.draft.lines[el.name.split('.')[1]].qty = Number(el.value.replace(',', '.')) || 0;
     $('totals').innerHTML = totalsBlock().s;
   }
@@ -350,6 +372,7 @@ document.addEventListener('submit', async (e) => {
     render();
     return toast('Paramètres enregistrés.');
   }
+  if (kind === 'catalog-item') return catalogSubmit(f, form);
   if (kind === 'reminder-templates') {
     ws.company.reminderTemplates = [0, 1, 2].map((i) => ({ subject: (f[`subject${i}`] || '').trim(), body: (f[`body${i}`] || '').trim() }));
     save();

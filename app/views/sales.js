@@ -2,18 +2,20 @@
  * Écran « sales ».
  */
 
-import { VAT_RATES_BP, checkInvoice, computeTotals, isVatExempt, issuerName, lineHt } from '../../core/invoices.js?v=c52829b';
-import { FREQUENCIES, nextDate } from '../../core/recurring.js?v=c52829b';
-import { field, html, opt, raw } from '../html.js?v=c52829b';
-import { ICONS } from '../icons.js?v=c52829b';
-import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=c52829b';
-import { save, toast } from '../store.js?v=c52829b';
-import { isUnconfirmed } from '../sync-ui.js?v=c52829b';
-import { badge, viewHeader } from '../ui/common.js?v=c52829b';
-import { lifecycleCard } from './expenses.js?v=c52829b';
-import { viewInvoiceForm } from './invoice-form.js?v=c52829b';
-import { depositCard } from './deposit.js?v=c52829b';
-import { REMINDER_STEPS, dueReminderLevel, reminderMessage } from '../../core/reminders.js?v=c52829b';
+import { VAT_RATES_BP, checkInvoice, computeTotals, isVatExempt, issuerName, lineHt } from '../../core/invoices.js?v=66361b9';
+import { FREQUENCIES, nextDate } from '../../core/recurring.js?v=66361b9';
+import { field, html, opt, raw } from '../html.js?v=66361b9';
+import { ICONS } from '../icons.js?v=66361b9';
+import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=66361b9';
+import { save, toast } from '../store.js?v=66361b9';
+import { isUnconfirmed } from '../sync-ui.js?v=66361b9';
+import { badge, viewHeader } from '../ui/common.js?v=66361b9';
+import { qrSvg } from '../ui/qr.js?v=66361b9';
+import { invoicePaymentQr } from '../../core/epc.js?v=66361b9';
+import { lifecycleCard } from './expenses.js?v=66361b9';
+import { viewInvoiceForm } from './invoice-form.js?v=66361b9';
+import { depositCard } from './deposit.js?v=66361b9';
+import { REMINDER_STEPS, dueReminderLevel, reminderMessage } from '../../core/reminders.js?v=66361b9';
 
 // ------------------------------------------------------------------ factures (§3.2, §3.5)
 
@@ -245,6 +247,21 @@ export function runRecurring() {
   );
 }
 
+/** QR code de virement SEPA sous la facture (reste dû), pour payer depuis l'application de sa banque. */
+function paymentQrBlock(inv, company, outstanding) {
+  const payload = invoicePaymentQr(inv, company, outstanding);
+  if (!payload) return '';
+  return html`<div class="payment-qr">
+    ${qrSvg(payload, { size: 112, label: `QR code de paiement de la facture ${inv.number}` })}
+    <div>
+      <strong>Payer par virement</strong>
+      <p class="text-muted">
+        Scannez ce code avec l’application de votre banque : bénéficiaire, IBAN, montant (${eur(outstanding)}) et référence sont pré-remplis.
+      </p>
+    </div>
+  </div>`;
+}
+
 export function viewInvoice(id) {
   let inv;
   try {
@@ -403,6 +420,7 @@ export function viewInvoice(id) {
         </tbody>
       </table>
       ${company.iban && !quote ? html`<p style="margin-top:18px;font-size:13.5px">Règlement par virement : <span class="mono">${company.iban}</span></p>` : ''}
+      ${paymentQrBlock(inv, company, outstanding)}
       <div class="mentions">${(issued ? inv.mentions : []).map((m) => html`<div>${m}</div>`)}</div>
     </article>
     ${issued && !quote ? lifecycleCard(inv) : ''}

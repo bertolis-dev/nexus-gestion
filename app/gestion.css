@@ -691,3 +691,145 @@ tr[data-href]:focus-visible,
 :root[data-theme='dark'] .parametres-sidebar-desktop .nav-section-label {
   color: var(--color-gold);
 }
+
+/* QR code de virement sous la facture (fond blanc conservé en thème sombre pour rester lisible). */
+.payment-qr {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.payment-qr .qr-code {
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+.payment-qr p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  max-width: 46ch;
+}
+
+/* « Mon activité » (accueil) : chiffres clés, histogramme marine (12 derniers mois) et or (un an plus tôt). */
+.stats-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.stats-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.stats-legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--color-text-muted);
+}
+.stats-key-bar,
+.stats-key-prev {
+  display: inline-block;
+  width: 12px;
+  border-radius: 2px;
+  margin-left: 8px;
+}
+.stats-key-bar {
+  height: 10px;
+  background: var(--color-primary);
+}
+.stats-key-prev {
+  height: 3px;
+  background: var(--color-gold);
+}
+.stats-figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+.stats-figure {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-primary-text);
+  font-variant-numeric: tabular-nums;
+}
+.stats-caption {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+.stats-chart-wrap {
+  overflow-x: auto;
+}
+.stats-chart {
+  width: 100%;
+  min-width: 480px;
+  height: 200px;
+  display: block;
+}
+.stats-bar {
+  fill: var(--color-primary);
+  opacity: 0.78;
+}
+.stats-bar-current {
+  opacity: 1;
+}
+.stats-prev {
+  fill: var(--color-gold);
+}
+.stats-base {
+  stroke: var(--color-border);
+  stroke-width: 1;
+}
+.stats-axis {
+  fill: var(--color-text-muted);
+  font-size: 12px;
+}
+.stats-clients {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.stats-clients h3 {
+  margin: 0;
+  font-size: 14px;
+}
+.stats-client {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) 2fr auto;
+  align-items: center;
+  gap: 12px;
+  font-size: 13.5px;
+}
+.stats-client-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stats-client-track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--color-primary-soft);
+  overflow: hidden;
+}
+.stats-client-fill {
+  display: block;
+  height: 100%;
+  background: var(--color-gold);
+}
+.stats-client-value {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+@media (max-width: 560px) {
+  .stats-client {
+    grid-template-columns: 1fr auto;
+  }
+  .stats-client-track {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}

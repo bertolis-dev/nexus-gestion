@@ -2,15 +2,15 @@
  * Écran « invoice-form ».
  */
 
-import { VAT_RATES_BP, computeTotals, defaultDueDate, isVatExempt } from '../../core/invoices.js?v=c52829b';
-import { parseEuros } from '../../core/money.js?v=c52829b';
-import { field, html, opt, raw } from '../html.js?v=c52829b';
-import { ICONS } from '../icons.js?v=c52829b';
-import { issueLink } from '../render.js?v=c52829b';
-import { eur, pct, today, ui, ws } from '../state.js?v=c52829b';
-import { save } from '../store.js?v=c52829b';
-import { viewHeader } from '../ui/common.js?v=c52829b';
-import { NEW_DOC_ROUTES } from './sales.js?v=c52829b';
+import { VAT_RATES_BP, computeTotals, defaultDueDate, isVatExempt } from '../../core/invoices.js?v=66361b9';
+import { parseEuros } from '../../core/money.js?v=66361b9';
+import { field, html, opt, raw } from '../html.js?v=66361b9';
+import { ICONS } from '../icons.js?v=66361b9';
+import { issueLink } from '../render.js?v=66361b9';
+import { eur, pct, today, ui, ws } from '../state.js?v=66361b9';
+import { save } from '../store.js?v=66361b9';
+import { viewHeader } from '../ui/common.js?v=66361b9';
+import { NEW_DOC_ROUTES } from './sales.js?v=66361b9';
 
 export function emptyLine() {
   return {
@@ -232,6 +232,8 @@ export function viewInvoiceForm(arg) {
                       <input
                         class="input"
                         name="lines.${i}.label"
+                        list="catalog-list"
+                        autocomplete="off"
                         aria-label="Désignation, ligne ${i + 1}"
                         value="${l.label}"
                         placeholder="Ex. : Accompagnement mars"
@@ -278,7 +280,9 @@ export function viewInvoiceForm(arg) {
             </tbody>
           </table>
         </div>
+        <datalist id="catalog-list">${(ws.company.catalog || []).map((c) => html`<option value="${c.label}"></option>`)}</datalist>
         <button type="button" class="btn btn-secondary btn-sm" data-action="line-add" style="margin-top:10px">+ Ajouter une ligne</button>
+        ${(ws.company.catalog || []).length ? '' : html`<p class="form-hint">Astuce : enregistrez vos prestations habituelles dans <a href="#/parametres/catalogue">Paramètres › Prestations et articles</a> pour les retrouver ici avec leur prix.</p>`}
       </div>
       <div id="totals">${totalsBlock()}</div>
       ${franchise ? html`<p class="form-hint">Mention ajoutée automatiquement : « TVA non applicable, art. 293 B du CGI ».</p>` : ''}

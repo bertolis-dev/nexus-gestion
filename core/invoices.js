@@ -4,12 +4,12 @@
  * la seule correction possible est l'avoir lié.
  */
 
-import { assertCents, divRound, sum, vatFromHt } from './money.js?v=c52829b';
-import { REVENUE_ACCOUNT_BY_NATURE } from './pcg.js?v=c52829b';
-import { LIFECYCLE } from './lifecycle.js?v=c52829b';
-import { tradeZone } from './countries.js?v=c52829b';
-import { creditsOf, originalOf, groupBalance } from './receipts.js?v=c52829b';
-import { addDays } from './dates.js?v=c52829b';
+import { assertCents, divRound, sum, vatFromHt } from './money.js?v=66361b9';
+import { REVENUE_ACCOUNT_BY_NATURE } from './pcg.js?v=66361b9';
+import { LIFECYCLE } from './lifecycle.js?v=66361b9';
+import { tradeZone } from './countries.js?v=66361b9';
+import { creditsOf, originalOf, groupBalance } from './receipts.js?v=66361b9';
+import { addDays } from './dates.js?v=66361b9';
 
 export const VAT_RATES_BP = [2000, 1000, 550, 210, 0];
 
@@ -285,7 +285,15 @@ export class InvoiceBook {
       ...draft,
       status: 'issued',
       number: `${key}-${String(n).padStart(4, '0')}`,
-      issuer: structuredClone({ ...this.company, logo: undefined, categoryRules: undefined, reminders: undefined, reminderTemplates: undefined }),
+      issuer: structuredClone({
+        ...this.company,
+        logo: undefined,
+        categoryRules: undefined,
+        reminders: undefined,
+        reminderTemplates: undefined,
+        catalog: undefined,
+        autoReminders: undefined,
+      }),
       operationNature: operationNature(draft.lines),
       mentions: legalMentions(draft, this.company),
       totals,

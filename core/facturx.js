@@ -7,7 +7,7 @@
  * scripts/validate-einvoice.mjs ; le navigateur lui passe les copies locales de app/vendor/.
  */
 
-import { issuerName } from './invoices.js?v=c52829b';
+import { issuerName } from './invoices.js?v=66361b9';
 
 export const FACTURX_FILE_NAME = 'factur-x.xml';
 const FX_NS = 'urn:factur-x:pdfa:CrossIndustryDocument:invoice:1p0#';
@@ -82,7 +82,7 @@ function documentId(text) {
  * @param {string} p.xml facture électronique CII (buildCii)
  * @returns {Promise<Uint8Array>}
  */
-export async function buildFacturXPdf({ lib, fonts, icc, logo = null, invoice, xml, now = new Date() }) {
+export async function buildFacturXPdf({ lib, fonts, icc, logo = null, invoice, xml, now = new Date(), paymentQr = null }) {
   const { PDFDocument, PDFName, PDFString, PDFHexString, rgb, fontkit } = lib;
   const doc = await PDFDocument.create({ updateMetadata: false });
   doc.registerFontkit(fontkit);
@@ -245,6 +245,28 @@ export async function buildFacturXPdf({ lib, fonts, icc, logo = null, invoice, x
   if (invoice.type !== 'quote' && invoice.type !== 'credit' && invoice.dueDate) payment.push(`À régler au plus tard le ${frDate(invoice.dueDate)}.`);
   if (issuer.iban && invoice.type !== 'quote' && invoice.type !== 'credit')
     payment.push(`Virement : IBAN ${issuer.iban}${issuer.bic ? ` · BIC ${issuer.bic}` : ''}`);
+  // QR code de virement SEPA (core/epc.js) : matrice de modules fournie par l'appelant.
+  if (paymentQr?.length) {
+    const size = 74;
+    const cell = size / paymentQr.length;
+    ensure(size + 18);
+    const top = y + 6;
+    paymentQr.forEach((row, r) => {
+      // Modules sombres consécutifs d'une ligne regroupés en un seul rectangle.
+      for (let c = 0; c < row.length; c++) {
+        if (!row[c]) continue;
+        let end = c;
+        while (end + 1 < row.length && row[end + 1]) end++;
+        page.drawRectangle({ x: M + c * cell, y: top - (r + 1) * cell, width: (end - c + 1) * cell, height: cell, color: color([0, 0, 0]) });
+        c = end;
+      }
+    });
+    const tx = M + size + 14;
+    text('Payer par virement', tx, top - 16, { size: 10, font: bold, c: NAVY });
+    text('Scannez ce code avec l’application de votre banque :', tx, top - 31, { size: 8.5, c: MUTED });
+    text('bénéficiaire, IBAN, montant et référence sont pré-remplis.', tx, top - 43, { size: 8.5, c: MUTED });
+    y = top - size - 22;
+  }
   const notes = [...payment, ...(invoice.mentions || [])];
   for (const note of notes) {
     const lines = wrap(note, 8.5, right - M);

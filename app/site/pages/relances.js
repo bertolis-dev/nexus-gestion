@@ -3,8 +3,8 @@ export default {
   slug: 'relances',
   icon: 'bell',
   title: 'Relances clients',
-  text: 'Rappel à 3 jours, relance à 15 jours, dernière relance à 30 jours : chaque étape remonte dans « À faire » avec l’e-mail déjà rédigé, et l’historique est conservé.',
-  lead: 'Un retard de paiement sur deux vient d’un simple oubli. Nexus repère chaque facture échue, vous la signale au bon moment et prépare l’e-mail de relance : vous n’avez plus qu’à l’envoyer.',
+  text: 'Rappel à 3 jours, relance à 15 jours, dernière relance à 30 jours : envoyées par e-mail en un clic, ou automatiquement chaque matin si vous l’activez. L’historique est conservé.',
+  lead: 'Un retard de paiement sur deux vient d’un simple oubli. Nexus repère chaque facture échue, vous la signale au bon moment et envoie la relance par e-mail : en un clic, ou tout seul chaque matin si vous l’activez.',
   images: [
     {
       src: 'features/relance.webp',
@@ -24,7 +24,7 @@ export default {
     },
     {
       title: 'Trois relances, au bon moment',
-      text: 'Un rappel courtois 3 jours après l’échéance, une relance à 15 jours, une dernière relance à 30 jours : « À faire » propose l’étape atteinte, une seule fois. « Relancer le client » ouvre votre messagerie avec l’e-mail du bon niveau (numéro, date, reste dû, jours de retard) ; la relance est ajoutée à l’historique de la facture.',
+      text: 'Un rappel courtois 3 jours après l’échéance, une relance à 15 jours, une dernière relance à 30 jours : « À faire » propose l’étape atteinte, une seule fois. « Relancer le client par e-mail » envoie le message du bon niveau (numéro, date, reste dû, jours de retard) directement au client ; ses réponses arrivent dans votre boîte e-mail. La relance est ajoutée à l’historique de la facture.',
     },
     {
       title: 'Vos propres modèles',
@@ -42,13 +42,17 @@ export default {
       title: 'Mentions légales de pénalités',
       text: 'Vos factures portent les pénalités de retard et l’indemnité forfaitaire de 40 € prévues par le Code de commerce : un argument utile dans la relance.',
     },
+    {
+      title: 'Relances automatiques',
+      text: 'Cochez une case dans les Paramètres : chaque matin, les relances dues partent seules, avec vos modèles. Les factures en litige, avec un avoir ou déjà encaissées ne sont jamais relancées, et chaque envoi est listé avec son résultat.',
+    },
     { title: 'Priorités claires', text: 'Les retards de plus de 30 jours passent en haut de la liste, avant les tâches moins urgentes.' },
   ],
   steps: [
     'Renseignez l’e-mail de facturation de vos clients dans leur fiche.',
     'Consultez votre liste « À faire » sur l’accueil : les factures en retard y apparaissent.',
-    'Cliquez sur la ligne, puis sur « Relancer le client » : l’e-mail s’ouvre dans votre messagerie.',
-    'Envoyez-le. Au paiement, le virement est rapproché dans l’écran Banque et la facture sort de la liste.',
+    'Cliquez sur la ligne, puis sur « Relancer le client par e-mail » : la relance part tout de suite.',
+    'Ou activez les relances automatiques dans Paramètres › Relances clients. Au paiement, le virement est rapproché dans l’écran Banque et la facture sort de la liste.',
   ],
   audience: [
     { role: 'Prestataires de services', text: 'Des clients professionnels qui paient à 30 ou 45 jours, et qu’il faut parfois relancer.' },
@@ -58,9 +62,12 @@ export default {
   faq: [
     {
       q: 'Les relances partent-elles toutes seules ?',
-      a: 'Pas encore : vous gardez la main et l’envoyez depuis votre propre messagerie, ce qui évite les relances maladroites. L’envoi automatique programmé arrivera dans une prochaine version.',
+      a: 'Si vous l’activez, oui : chaque matin, Nexus envoie les relances dues à 3, 15 et 30 jours. Sinon, vous gardez la main et envoyez chaque relance d’un clic depuis la facture.',
     },
-    { q: 'Puis-je modifier le texte de la relance ?', a: 'Oui, l’e-mail s’ouvre dans votre messagerie : vous le modifiez librement avant de l’envoyer.' },
+    {
+      q: 'Puis-je modifier le texte de la relance ?',
+      a: 'Oui : les trois modèles se modifient dans Paramètres › Relances clients, avec vos propres formulations.',
+    },
     {
       q: 'Comment une facture sort-elle de la liste ?',
       a: 'Dès que le paiement est associé à la facture dans l’écran Banque, elle passe « Payée » et disparaît de la liste des retards.',

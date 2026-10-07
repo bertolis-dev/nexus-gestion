@@ -3,8 +3,8 @@
  * Méthodes installées sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { divRound, sum } from '../money.js?v=c52829b';
-import { lineHt } from '../invoices.js?v=c52829b';
+import { divRound, sum } from '../money.js?v=66361b9';
+import { lineHt } from '../invoices.js?v=66361b9';
 import {
   ACTIVITY_TYPES,
   acreReminder,
@@ -17,9 +17,9 @@ import {
   urssafDeadline,
   urssafDeclaration,
   vatFranchiseMessage,
-} from '../micro.js?v=c52829b';
-import { combineEstimates } from '../workspace.js?v=c52829b';
-import { dueReminderLevel } from '../reminders.js?v=c52829b';
+} from '../micro.js?v=66361b9';
+import { combineEstimates } from '../workspace.js?v=66361b9';
+import { dueReminderLevel } from '../reminders.js?v=66361b9';
 
 export const microMethods = {
   /** Liste « À faire » classée par urgence (§5). */

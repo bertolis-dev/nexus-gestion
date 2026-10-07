@@ -20,6 +20,14 @@ export default {
   ],
   benefits: [
     {
+      title: 'QR code de paiement',
+      text: 'Chaque facture porte un QR code de virement SEPA : votre client le scanne avec l’application de sa banque, et bénéficiaire, IBAN, montant et numéro de facture sont pré-remplis. Vous êtes payé plus vite, sans commission.',
+    },
+    {
+      title: 'Catalogue de prestations',
+      text: 'Enregistrez vos prestations habituelles avec leur prix et leur TVA : dans une facture ou un devis, il suffit de commencer à taper la désignation.',
+    },
+    {
       title: 'Contrôle de conformité avant l’émission',
       text: 'Votre SIREN, votre adresse, votre capital social (pour une société), votre numéro de TVA, le SIREN et l’adresse du client, les dates, les désignations et les taux : tout est vérifié. S’il manque quelque chose, la facture n’est pas émise et Nexus vous dit exactement quoi compléter, champ par champ.',
     },

@@ -2,17 +2,19 @@
  * Écran « settings ».
  */
 
-import { field, html, opt, raw } from '../html.js?v=c52829b';
-import { isMicro } from '../render.js?v=c52829b';
-import { cloudState, ui, ws } from '../state.js?v=c52829b';
-import { ICONS } from '../icons.js?v=c52829b';
-import { badge, viewHeader } from '../ui/common.js?v=c52829b';
-import * as cloud from '../cloud.js?v=c52829b';
-import { render } from '../render.js?v=c52829b';
-import { membersCard, microSettingsCard, openingPreview, securityCard } from './onboarding.js?v=c52829b';
-import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=c52829b';
-import { INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=c52829b';
-import { DEFAULT_TEMPLATES, REMINDER_STEPS } from '../../core/reminders.js?v=c52829b';
+import { field, html, opt, raw } from '../html.js?v=66361b9';
+import { isMicro } from '../render.js?v=66361b9';
+import { cloudState, eur, pct, ui, ws } from '../state.js?v=66361b9';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=66361b9';
+import { ICONS } from '../icons.js?v=66361b9';
+import { badge, viewHeader } from '../ui/common.js?v=66361b9';
+import * as cloud from '../cloud.js?v=66361b9';
+import { render } from '../render.js?v=66361b9';
+import { membersCard, microSettingsCard, openingPreview, securityCard } from './onboarding.js?v=66361b9';
+import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=66361b9';
+import { normalizeIban } from '../../core/epc.js?v=66361b9';
+import { INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=66361b9';
+import { DEFAULT_TEMPLATES, REMINDER_STEPS } from '../../core/reminders.js?v=66361b9';
 
 // ------------------------------------------------------------------ paramètres
 
@@ -106,6 +108,67 @@ function emailCard() {
   </div>`;
 }
 
+/** Catalogue des prestations et articles, proposés pendant la saisie des factures et devis. */
+function catalogTab() {
+  const items = ws.company.catalog || [];
+  const franchise = ws.company.vatRegime === 'franchise';
+  return html`<form class="card" data-form="catalog-item" style="display:flex;flex-direction:column;gap:12px">
+      <h2>Ajouter une prestation ou un article</h2>
+      <p class="text-muted" style="margin:0">Dans une facture ou un devis, commencez à taper la désignation : Nexus la propose et remplit le prix et la TVA.</p>
+      <div class="form-grid">
+        ${field('Désignation', html`<input class="input" name="label" required maxlength="200" placeholder="Ex. : Création de site vitrine" />`)}
+        ${field('Prix unitaire HT', html`<input class="input" name="price" inputmode="decimal" required placeholder="0,00" />`)}
+        ${
+          franchise
+            ? ''
+            : field(
+                'TVA',
+                html`<select class="input" name="vatRateBp">
+                  ${VAT_RATES_BP.map((r) => opt(r, pct(r), r === 2000))}
+                </select>`,
+              )
+        }
+        ${field(
+          'Nature',
+          html`<select class="input" name="nature">
+            ${opt('services', 'Service', true)}${opt('biens', 'Bien', false)}
+          </select>`,
+        )}
+      </div>
+      <div><button class="btn btn-primary" type="submit">Ajouter au catalogue</button></div>
+    </form>
+    ${
+      items.length
+        ? html`<div class="card table-card">
+            <h2 style="padding:16px 16px 0">Mon catalogue (${items.length})</h2>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Désignation</th>
+                  <th class="num">Prix HT</th>
+                  ${franchise ? '' : html`<th class="num">TVA</th>`}
+                  <th>Nature</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                ${items.map(
+                  (it) =>
+                    html`<tr>
+                      <td>${it.label}</td>
+                      <td class="num">${eur(it.unitPrice)}</td>
+                      ${franchise ? '' : html`<td class="num">${pct(it.vatRateBp)}</td>`}
+                      <td>${it.nature === 'biens' ? 'Bien' : 'Service'}</td>
+                      <td class="num"><button class="btn btn-secondary btn-sm" data-action="catalog-remove" data-id="${it.id}">Retirer</button></td>
+                    </tr>`,
+                )}
+              </tbody>
+            </table>
+          </div>`
+        : html`<div class="card"><p class="text-muted" style="margin:0">Catalogue vide pour l’instant.</p></div>`
+    }`;
+}
+
 /** Règles de catégorisation apprises en banque, supprimables une à une. */
 function categoryRulesCard() {
   const rules = ws.company.categoryRules || [];
@@ -153,6 +216,7 @@ const SETTINGS_TABS = [
     visible: () => true,
     render: () => html`${emailCard()}${reminderTemplatesCard()}`,
   },
+  { key: 'catalogue', label: 'Prestations et articles', group: 'facturation', icon: 'package', visible: () => true, render: catalogTab },
   { key: 'banque', label: 'Catégories bancaires', group: 'facturation', icon: 'card', visible: () => true, render: bankTab },
   { key: 'reprise', label: 'Reprise d’historique', group: 'facturation', icon: 'upload', visible: () => !hasFecImport(), render: openingTab },
   {
@@ -200,7 +264,12 @@ function companyTab() {
         ${field('Immatriculation', html`<input class="input" name="registration" value="${c.registration || ''}" placeholder="Ex. : RCS Lyon, RM 69" />`, { hint: 'RCS (commerce) ou RM (artisanat) et ville du greffe : obligatoire sur les factures d’une société.' })}
         ${field('Adresse', html`<input class="input" name="address" value="${c.address}" />`)}
         ${field('N° de TVA intracommunautaire', html`<input class="input" name="vatNumber" value="${c.vatNumber || ''}" />`)}
-        ${field('IBAN (affiché sur les factures)', html`<input class="input" name="iban" value="${c.iban || ''}" />`)}
+        ${field('IBAN (affiché sur les factures)', html`<input class="input" name="iban" value="${c.iban || ''}" />`, {
+          hint:
+            c.iban && !normalizeIban(c.iban)
+              ? 'IBAN invalide (clé de contrôle) : vérifiez-le, sinon le QR code de paiement n’apparaît pas sur vos factures.'
+              : 'Un QR code de paiement par virement est ajouté à vos factures.',
+        })}
         ${field('Délai de paiement (jours)', html`<input class="input" name="paymentTermsDays" inputmode="numeric" value="${c.paymentTermsDays || 30}" />`)}
       </div>
       ${

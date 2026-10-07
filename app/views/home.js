@@ -2,13 +2,14 @@
  * Écran « home ».
  */
 
-import { html, raw } from '../html.js?v=c52829b';
-import { ICONS } from '../icons.js?v=c52829b';
-import { isMicro } from '../render.js?v=c52829b';
-import { eur, today, ui, ws } from '../state.js?v=c52829b';
-import { allocationCard } from './closing.js?v=c52829b';
-import { franchiseBanner } from './micro.js?v=c52829b';
-import { forecastCard } from './forecast.js?v=c52829b';
+import { html, raw } from '../html.js?v=66361b9';
+import { ICONS } from '../icons.js?v=66361b9';
+import { isMicro } from '../render.js?v=66361b9';
+import { eur, today, ui, ws } from '../state.js?v=66361b9';
+import { allocationCard } from './closing.js?v=66361b9';
+import { franchiseBanner } from './micro.js?v=66361b9';
+import { forecastCard } from './forecast.js?v=66361b9';
+import { activityCard } from './stats.js?v=66361b9';
 
 // ------------------------------------------------------------------ accueil
 
@@ -57,5 +58,5 @@ export function viewHome() {
           : html`<p class="text-muted">Tout est à jour. Rien à faire pour le moment.</p>`
       }
     </div>
-    ${forecastCard()}`;
+    ${activityCard()} ${forecastCard()}`;
 }
