@@ -20,10 +20,10 @@
  *   28 TVA nette due · 32 total à payer.
  */
 
-import { divRound, sum, vatFromHt } from './money.js?v=9436ed6';
-import { isOnReceipt, originalOf, receiptEvents } from './receipts.js?v=9436ed6';
-import { vatByNature } from './invoices.js?v=9436ed6';
-import { tradeZone } from './countries.js?v=9436ed6';
+import { divRound, sum, vatFromHt } from './money.js?v=a60350d';
+import { isOnReceipt, originalOf, receiptEvents } from './receipts.js?v=a60350d';
+import { vatSplit } from './invoices.js?v=a60350d';
+import { tradeZone } from './countries.js?v=a60350d';
 
 /**
  * Lignes de la CA3 par taux de TVA, par millésime du formulaire 3310-CA3 — À VALIDER PAR L'EXPERT-
@@ -55,7 +55,7 @@ function exigibleParts(inv, payments, period) {
 
 /**
  * Prépare la CA3 d'une période à partir du Workspace (factures, paiements, dépenses, grand livre).
- * @param {import('./workspace.js?v=9436ed6').Workspace} ws
+ * @param {import('./workspace.js?v=a60350d').Workspace} ws
  * @param {{ from: string, to: string }} period
  * @param {{ previousCredit?: number }} opts crédit de TVA reporté de la déclaration précédente
  */
@@ -74,9 +74,9 @@ export function prepareCa3(ws, period, { previousCredit = 0 } = {}) {
     const original = inv.type === 'credit' ? originalOf(ws.book.invoices, inv) : null;
     const grouped = original ? isOnReceipt(original) && original.totals.totalVat : inv.type !== 'credit' && isOnReceipt(inv) && inv.totals.totalVat;
     if (grouped && inPeriod(inv.issueDate, period)) {
-      // Part « biens » d'une facture ou d'un avoir mixte : exigible à la date d'émission.
+      // Part exigible à la facturation (biens d'une facture mixte), nette des acomptes déduits.
       const sign = inv.type === 'credit' ? -1 : 1;
-      for (const v of vatByNature(inv).biens) {
+      for (const v of vatSplit(inv, { receiptGoods: (original || inv).type === 'deposit' }).issue) {
         const row = byRate.get(v.rateBp) || { rateBp: v.rateBp, base: 0, vat: 0 };
         row.base += sign * v.base;
         row.vat += sign * v.vat;
@@ -139,14 +139,10 @@ export function prepareCa3(ws, period, { previousCredit = 0 } = {}) {
         });
         continue;
       }
-      // Déduction des acomptes déjà déclarés : la facture finale ne porte que le solde.
-      const depositVat = sum((inv.deposits || []).map((d) => d.amountVat));
-      const depositHt = sum((inv.deposits || []).map((d) => d.amountHt));
-      for (const v of inv.totals.vatBreakdown) {
-        if (!v.vat) continue;
-        const weight = inv.totals.totalVat ? v.vat / inv.totals.totalVat : 0;
-        const base = sign * divRound((v.base - Math.round(depositHt * weight)) * part.num, part.den);
-        const vat = sign * divRound((v.vat - Math.round(depositVat * weight)) * part.num, part.den);
+      // Déduction des acomptes déjà déclarés, taux par taux : la facture finale ne porte que le solde.
+      for (const v of vatSplit(inv).issue) {
+        const base = sign * divRound(v.base * part.num, part.den);
+        const vat = sign * divRound(v.vat * part.num, part.den);
         const row = byRate.get(v.rateBp) || { rateBp: v.rateBp, base: 0, vat: 0 };
         row.base += base;
         row.vat += vat;

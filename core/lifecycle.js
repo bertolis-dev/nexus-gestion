@@ -24,8 +24,14 @@ export const LIFECYCLE = {
   encaissee: { label: 'Encaissée', mandatory: true, step: 8, final: true },
 };
 
+/**
+ * Statut qui compte : un statut final (encaissée, refusée, rejetée) l'emporte sur un dépôt enregistré
+ * après lui ; sinon le dernier statut. Les statuts sont toujours ajoutés en fin de liste (la position
+ * est la clé de synchronisation : une insertion au milieu se perdrait en base).
+ */
 export function currentStatus(events = []) {
-  return events.length ? events.at(-1) : null;
+  if (!events.length) return null;
+  return [...events].reverse().find((e) => LIFECYCLE[e.status]?.final) || events.at(-1);
 }
 
 /** Statuts proposés à la main après le statut courant (on n'ajoute rien après un statut final). */

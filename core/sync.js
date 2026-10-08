@@ -92,7 +92,7 @@ export function invoiceDraftRow(inv, meta) {
       recurringId: inv.recurringId || null,
       period: inv.period || null,
       // Livraison : seulement si elle diffère de la date d'émission ou de l'adresse du client.
-      ...Object.fromEntries(['deliveryDate', 'deliveryAddress', 'deliveryCountry'].filter((k) => inv[k]).map((k) => [k, inv[k]])),
+      ...Object.fromEntries(['deliveryDate', 'deliveryAddress', 'deliveryCountry', 'reason'].filter((k) => inv[k]).map((k) => [k, inv[k]])),
     },
   };
 }
@@ -337,7 +337,7 @@ function draftFromRow(i) {
     lines: i.lines,
   };
   if (i.credit_of) draft.creditOf = i.credit_of;
-  for (const k of ['quoteRef', 'recurringId', 'period', 'deliveryDate', 'deliveryAddress', 'deliveryCountry']) if (x[k]) draft[k] = x[k];
+  for (const k of ['quoteRef', 'recurringId', 'period', 'deliveryDate', 'deliveryAddress', 'deliveryCountry', 'reason']) if (x[k]) draft[k] = x[k];
   return draft;
 }
 
@@ -380,6 +380,13 @@ export function ledgerStateFromRows(entries, fiscalYear) {
     seq: list.length ? list.at(-1).seq : 0,
     fiscalYear: { start: fiscalYear.start_date, end: fiscalYear.end_date },
   };
+}
+
+/** Regroupement par clé (Object.groupBy n'existe qu'à partir de Node 21 et des navigateurs de 2024). */
+function groupBy(list, key) {
+  const out = {};
+  for (const x of list) (out[key(x)] ||= []).push(x);
+  return out;
 }
 
 export function stateFromRows(r) {
@@ -474,7 +481,7 @@ export function stateFromRows(r) {
       seq: invoices.length,
       payments,
       lifecycle: Object.fromEntries(
-        Object.entries(Object.groupBy(r.events || [], (e) => e.invoice_id)).map(([id, list]) => [
+        Object.entries(groupBy(r.events || [], (e) => e.invoice_id)).map(([id, list]) => [
           id,
           list.sort((a, b) => a.position - b.position).map((e) => ({ status: e.status, date: e.event_date, source: e.source, detail: e.detail })),
         ]),
@@ -551,5 +558,5 @@ export function refusedUpdate(op) {
     divergence: true,
   });
 }
-import { DEFAULT_BANK_ACCOUNT } from './bank.js?v=9436ed6';
-import { parisDateOf } from './dates.js?v=9436ed6';
+import { DEFAULT_BANK_ACCOUNT } from './bank.js?v=a60350d';
+import { parisDateOf } from './dates.js?v=a60350d';

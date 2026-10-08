@@ -2,13 +2,13 @@
  * Actions de l'écran « Clients ».
  */
 
-import { importClientsCsv } from '../../core/clients.js?v=9436ed6';
-import { decodeStatement } from '../../core/bank-import.js?v=9436ed6';
-import { isValidSiren } from '../../core/invoices.js?v=9436ed6';
-import { lookupSiren } from '../company-lookup.js?v=9436ed6';
-import { render } from '../render.js?v=9436ed6';
-import { ui, ws } from '../state.js?v=9436ed6';
-import { save, toast } from '../store.js?v=9436ed6';
+import { importClientsCsv } from '../../core/clients.js?v=a60350d';
+import { decodeStatement } from '../../core/bank-import.js?v=a60350d';
+import { isValidSiren } from '../../core/invoices.js?v=a60350d';
+import { lookupSiren } from '../company-lookup.js?v=a60350d';
+import { render } from '../render.js?v=a60350d';
+import { ui, ws } from '../state.js?v=a60350d';
+import { save, toast } from '../store.js?v=a60350d';
 
 /** Enregistrement de la fiche (création ou modification). */
 export function clientSubmit(f) {
@@ -71,6 +71,8 @@ export const actionsTable = {
   },
   /** Facture ou devis pour ce client : le formulaire s'ouvre avec le client déjà choisi. */
   'client-new-doc': async ({ id, index }) => {
+    if (ui.draft?.lines?.some((l) => l.label || l.unitPrice) && !confirm('Une facture est en cours de saisie. L’abandonner pour en créer une pour ce client ?'))
+      return;
     ui.draft = null;
     ui.presetClientId = id;
     location.hash = index === 'quote' ? '#/ventes/nouveau-devis' : '#/ventes/nouvelle';

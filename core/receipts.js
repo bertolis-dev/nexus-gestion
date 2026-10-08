@@ -10,12 +10,15 @@
  * facture non encaissée, il réduit la TVA restant en attente.
  */
 
-import { divRound, sum } from './money.js?v=9436ed6';
-import { vatByNature } from './invoices.js?v=9436ed6';
+import { divRound, sum } from './money.js?v=a60350d';
+import { vatSplit } from './invoices.js?v=a60350d';
 
-/** TVA exigible à l'encaissement (et non à la facturation) ? Un avoir suit la facture qu'il corrige. */
+/**
+ * Une part de la TVA est-elle exigible à l'encaissement ? (prestations sans option pour les débits,
+ * acompte sur biens). Un avoir suit la facture qu'il corrige.
+ */
 export function isOnReceipt(inv) {
-  return (inv.operationNature === 'services' || inv.operationNature === 'mixte') && !inv.issuer?.vatOnDebits;
+  return vatSplit(inv).receipt.length > 0;
 }
 
 /** Avoirs émis rattachés à une facture (par son numéro). */
@@ -45,22 +48,11 @@ export function groupBalance(invoices, payments, inv, date = null) {
 }
 
 /**
- * Part « services » (exigible à l'encaissement) de la base et de la TVA, par taux, nette des acomptes
- * déduits (au prorata de cette part). Une facture de biens n'a pas de part à l'encaissement.
+ * Part exigible à l'encaissement de la base et de la TVA, par taux, nette des acomptes déduits
+ * (vatSplit). `receiptGoods` : l'avoir suit la règle de la facture qu'il corrige (acompte sur biens).
  */
-function ratesOf(inv, sign = 1) {
-  const depositVat = sum((inv.deposits || []).map((d) => d.amountVat));
-  const depositHt = sum((inv.deposits || []).map((d) => d.amountHt));
-  const services = new Map(vatByNature(inv).services.map((s) => [s.rateBp, s]));
-  return inv.totals.vatBreakdown
-    .filter((v) => v.vat && services.has(v.rateBp))
-    .map((v) => {
-      const s = services.get(v.rateBp);
-      const weight = inv.totals.totalVat ? v.vat / inv.totals.totalVat : 0;
-      const netBase = v.base - Math.round(depositHt * weight);
-      const netVat = v.vat - Math.round(depositVat * weight);
-      return { rateBp: v.rateBp, base: sign * divRound(netBase * s.base, v.base), vat: sign * divRound(netVat * s.vat, v.vat) };
-    });
+function ratesOf(inv, sign = 1, receiptGoods = inv.type === 'deposit') {
+  return vatSplit(inv, { receiptGoods }).receipt.map((r) => ({ rateBp: r.rateBp, base: sign * r.base, vat: sign * r.vat }));
 }
 
 /**
@@ -70,7 +62,7 @@ function ratesOf(inv, sign = 1) {
 export function receiptTargets(invoices, payments, inv, date) {
   const credits = creditsOf(invoices, inv).filter((c) => c.issueDate <= date);
   const net = new Map();
-  for (const r of [...ratesOf(inv), ...credits.flatMap((c) => ratesOf(c, -1))]) {
+  for (const r of [...ratesOf(inv), ...credits.flatMap((c) => ratesOf(c, -1, inv.type === 'deposit'))]) {
     const row = net.get(r.rateBp) || { rateBp: r.rateBp, base: 0, vat: 0 };
     row.base += r.base;
     row.vat += r.vat;

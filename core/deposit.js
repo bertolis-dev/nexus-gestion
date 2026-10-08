@@ -4,8 +4,6 @@
  * factures déposées sont marquées « Déposée » (cycle de vie, voir lifecycle.js).
  */
 
-import { LIFECYCLE } from './lifecycle.js?v=9436ed6';
-
 export const PLATFORMS = {
   qonto: 'Qonto',
   shine: 'Shine',
@@ -31,11 +29,9 @@ export const depositMethods = {
       if (inv.status !== 'issued' || inv.type === 'quote') throw new Error('Seule une facture émise se dépose.');
       const events = (this.book.lifecycle[id] ||= []);
       if (events.some((e) => e.status === 'deposee')) continue;
-      // Le dépôt est la première étape : il se place avant un statut déjà connu (facture déjà encaissée).
-      const event = { status: 'deposee', date, source: 'depot', detail: `Déposée sur ${label}` };
-      const at = events.findIndex((e) => LIFECYCLE[e.status].step > LIFECYCLE.deposee.step);
-      if (at < 0) events.push(event);
-      else events.splice(at, 0, event);
+      // Toujours ajouté en fin de liste, même après un statut final (voir currentStatus) : une insertion
+      // au milieu décalerait les positions déjà enregistrées en base et le dépôt s'y perdrait.
+      events.push({ status: 'deposee', date, source: 'depot', detail: `Déposée sur ${label}` });
     }
   },
 };

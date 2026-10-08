@@ -2,28 +2,28 @@
  * Événements du document : saisie, changement, clavier, formulaires, clics, navigation.
  */
 
-import { isValidSiren } from '../../core/invoices.js?v=9436ed6';
-import { parseEuros } from '../../core/money.js?v=9436ed6';
-import { usualVatRate } from '../../core/pcg.js?v=9436ed6';
-import { findCatalogItem } from '../../core/catalog.js?v=9436ed6';
-import * as cloud from '../cloud.js?v=9436ed6';
-import { html, raw } from '../html.js?v=9436ed6';
-import { ICONS } from '../icons.js?v=9436ed6';
-import { $, render, searchResults } from '../render.js?v=9436ed6';
-import { closeLightbox, featureSlug } from '../site/landing.js?v=9436ed6';
-import { cloudState, ui, ws } from '../state.js?v=9436ed6';
-import { save, savePrefs, toast } from '../store.js?v=9436ed6';
-import { afterSignIn } from '../sync-ui.js?v=9436ed6';
-import { currentBankAccount, importBankFile } from '../views/bank.js?v=9436ed6';
-import { attachReceipt } from '../views/expenses.js?v=9436ed6';
-import { readPrice, totalsBlock } from '../views/invoice-form.js?v=9436ed6';
-import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=9436ed6';
-import { runAction } from './index.js?v=9436ed6';
-import { readReceivedInvoices } from '../received-invoices.js?v=9436ed6';
-import { urssafLinkSubmit } from '../views/urssaf-link.js?v=9436ed6';
-import { catalogSubmit } from './settings.js?v=9436ed6';
-import { clientSubmit, readClientsFile } from './clients.js?v=9436ed6';
-import { filterClients } from '../views/clients.js?v=9436ed6';
+import { isValidSiren } from '../../core/invoices.js?v=a60350d';
+import { parseEuros } from '../../core/money.js?v=a60350d';
+import { usualVatRate } from '../../core/pcg.js?v=a60350d';
+import { findCatalogItem } from '../../core/catalog.js?v=a60350d';
+import * as cloud from '../cloud.js?v=a60350d';
+import { html, raw } from '../html.js?v=a60350d';
+import { ICONS } from '../icons.js?v=a60350d';
+import { $, render, searchResults } from '../render.js?v=a60350d';
+import { closeLightbox, featureSlug } from '../site/landing.js?v=a60350d';
+import { cloudState, ui, ws } from '../state.js?v=a60350d';
+import { save, savePrefs, toast } from '../store.js?v=a60350d';
+import { afterSignIn } from '../sync-ui.js?v=a60350d';
+import { currentBankAccount, importBankFile } from '../views/bank.js?v=a60350d';
+import { attachReceipt } from '../views/expenses.js?v=a60350d';
+import { readPrice, totalsBlock } from '../views/invoice-form.js?v=a60350d';
+import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=a60350d';
+import { runAction } from './index.js?v=a60350d';
+import { readReceivedInvoices } from '../received-invoices.js?v=a60350d';
+import { urssafLinkSubmit } from '../views/urssaf-link.js?v=a60350d';
+import { catalogSubmit } from './settings.js?v=a60350d';
+import { clientSubmit, readClientsFile } from './clients.js?v=a60350d';
+import { filterClients } from '../views/clients.js?v=a60350d';
 
 // ------------------------------------------------------------------ évènements
 
@@ -41,7 +41,7 @@ function fillFromCatalog(form, i, label) {
   if (!item) return;
   const line = ui.draft.lines[i];
   const priceText = (item.unitPrice / 100).toFixed(2).replace('.', ',');
-  Object.assign(line, { label: item.label, unitPrice: item.unitPrice, priceText, nature: item.nature });
+  Object.assign(line, { label: item.label, unitPrice: item.unitPrice, priceText, nature: item.nature, catalogPrice: item.unitPrice });
   if (ws.company.vatRegime !== 'franchise') line.vatRateBp = item.vatRateBp;
   for (const [name, value] of [
     [`lines.${i}.priceText`, priceText],
@@ -65,6 +65,12 @@ document.addEventListener('input', (e) => {
     return;
   }
   if (el.dataset.clientsSearch !== undefined) return filterClients(el.value);
+  // Nouveau client : saisie gardée si l'écran est redessiné (mise à jour, état de l'envoi…).
+  const clientForm = el.closest('form[data-form="client"]');
+  if (clientForm && !clientForm.querySelector('[name="id"]') && el.name) {
+    ui.clientDraft = { ...(ui.clientDraft || { type: 'B2B', country: 'FR' }), [el.name]: el.value };
+    return;
+  }
   if (el.id === 'global-search-input') {
     const results = searchResults(el.value);
     const box = $('global-search-results');
@@ -96,7 +102,11 @@ document.addEventListener('input', (e) => {
       else el.removeAttribute('aria-invalid');
     }
     const lab = /^lines\.(\d+)\.label$/.exec(el.name);
-    if (lab && (e.inputType === 'insertReplacementText' || !e.inputType || !ui.draft.lines[lab[1]].unitPrice)) fillFromCatalog(form, Number(lab[1]), el.value);
+    if (lab) {
+      const line = ui.draft.lines[lab[1]];
+      const untouched = !line.unitPrice || (line.catalogPrice !== undefined && line.unitPrice === line.catalogPrice);
+      if (e.inputType === 'insertReplacementText' || !e.inputType || untouched) fillFromCatalog(form, Number(lab[1]), el.value);
+    }
     if (/^lines\.\d+\.qty$/.test(el.name)) ui.draft.lines[el.name.split('.')[1]].qty = Number(el.value.replace(',', '.')) || 0;
     $('totals').innerHTML = totalsBlock().s;
   }
@@ -383,6 +393,8 @@ document.addEventListener('submit', async (e) => {
   if (kind === 'catalog-item') return catalogSubmit(f, form);
   if (kind === 'client') return clientSubmit(f);
   if (kind === 'reminder-templates') {
+    if ([0, 1, 2].some((i) => /https?:\/\/|www\./i.test(`${f[`subject${i}`] || ''} ${f[`body${i}`] || ''}`)))
+      return toast('Les liens (http://, www.) ne sont pas autorisés dans les relances : retirez-les, puis enregistrez.', true);
     ws.company.reminderTemplates = [0, 1, 2].map((i) => ({ subject: (f[`subject${i}`] || '').trim(), body: (f[`body${i}`] || '').trim() }));
     save();
     render();

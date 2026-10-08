@@ -2,21 +2,21 @@
  * Écran « sales ».
  */
 
-import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=9436ed6';
-import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=9436ed6';
-import { LIFECYCLE } from '../../core/lifecycle.js?v=9436ed6';
-import { lookupSiren } from '../company-lookup.js?v=9436ed6';
-import { render } from '../render.js?v=9436ed6';
-import * as cloud from '../cloud.js?v=9436ed6';
-import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=9436ed6';
-import { invoiceEmail, reminderMessage } from '../../core/reminders.js?v=9436ed6';
-import { explainEmailError } from '../email-errors.js?v=9436ed6';
-import { download, save, toast } from '../store.js?v=9436ed6';
-import { isUnconfirmed } from '../sync-ui.js?v=9436ed6';
-import { emptyLine, persistDraft } from '../views/invoice-form.js?v=9436ed6';
-import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=9436ed6';
-import { depositCandidates } from '../../core/deposit.js?v=9436ed6';
-import { createZip } from '../../core/zip.js?v=9436ed6';
+import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=a60350d';
+import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=a60350d';
+import { LIFECYCLE } from '../../core/lifecycle.js?v=a60350d';
+import { lookupSiren } from '../company-lookup.js?v=a60350d';
+import { render } from '../render.js?v=a60350d';
+import * as cloud from '../cloud.js?v=a60350d';
+import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=a60350d';
+import { invoiceEmail, reminderMessage } from '../../core/reminders.js?v=a60350d';
+import { explainEmailError } from '../email-errors.js?v=a60350d';
+import { download, save, toast } from '../store.js?v=a60350d';
+import { isUnconfirmed } from '../sync-ui.js?v=a60350d';
+import { emptyLine, persistDraft } from '../views/invoice-form.js?v=a60350d';
+import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=a60350d';
+import { depositCandidates } from '../../core/deposit.js?v=a60350d';
+import { createZip } from '../../core/zip.js?v=a60350d';
 
 /** Envoi de la facture : par Nexus (Brevo) si en service, sinon partage ou messagerie. */
 async function sendInvoice(id) {
@@ -29,7 +29,10 @@ async function sendInvoice(id) {
   }
   const name = pdfFileName(inv);
   const subject = `${inv.type === 'credit' ? 'Avoir' : 'Facture'} ${inv.number} — ${ws.company.name}`;
-  const body = `Bonjour,\n\nVeuillez trouver ci-joint ${inv.type === 'credit' ? "l'avoir" : 'la facture'} ${inv.number} d'un montant de ${eur(inv.totals.netToPay ?? inv.totals.totalTtc)}${inv.type === 'credit' ? '' : `, à régler avant le ${frDate(inv.dueDate)}`}.\n\nCordialement,\n${ws.company.name}`;
+  const net = inv.totals.netToPay ?? inv.totals.totalTtc;
+  const due = inv.type === 'credit' ? net : ws.book.outstanding(inv);
+  const rest = inv.type !== 'credit' && due > 0 && due < net ? ` (reste à régler : ${eur(due)})` : '';
+  const body = `Bonjour,\n\nVeuillez trouver ci-joint ${inv.type === 'credit' ? "l'avoir" : 'la facture'} ${inv.number} d'un montant de ${eur(net)}${rest}${inv.type === 'credit' ? '' : `, à régler avant le ${frDate(inv.dueDate)}`}.\n\nCordialement,\n${ws.company.name}`;
   // Envoi par Nexus Gestion (Brevo) : directement au client, PDF joint.
   const email = invoiceEmail(ws, inv);
   if (!ui.demo && cloudState.emailReady && email) {

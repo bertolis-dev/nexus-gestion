@@ -4,18 +4,18 @@
  * Sans DOM ni stockage : l'interface (app/) le sérialise, les tests l'utilisent tel quel.
  */
 
-import { buildChart, categoryById } from './pcg.js?v=9436ed6';
-import { Ledger } from './ledger.js?v=9436ed6';
-import { InvoiceBook, clientAux } from './invoices.js?v=9436ed6';
-import { purchaseEntry, findDuplicates, ttcLine } from './purchases.js?v=9436ed6';
-import { mergeTransactions, suggestMatches, settlementEntry, directEntry, DEFAULT_BANK_ACCOUNT } from './bank.js?v=9436ed6';
+import { buildChart, categoryById } from './pcg.js?v=a60350d';
+import { Ledger } from './ledger.js?v=a60350d';
+import { InvoiceBook, clientAux } from './invoices.js?v=a60350d';
+import { purchaseEntry, findDuplicates, ttcLine } from './purchases.js?v=a60350d';
+import { mergeTransactions, suggestMatches, settlementEntry, directEntry, DEFAULT_BANK_ACCOUNT } from './bank.js?v=a60350d';
 export { DEFAULT_BANK_ACCOUNT };
-import { isOnReceipt, creditsOf, originalOf, groupBalance, receiptTargets } from './receipts.js?v=9436ed6';
-import { divRound, splitTtc, sum } from './money.js?v=9436ed6';
-import { openingEntry } from './fecimport.js?v=9436ed6';
-import { creditTargetsAsset } from './assets.js?v=9436ed6';
-import { LIFECYCLE } from './lifecycle.js?v=9436ed6';
-import { SCHEMA_VERSION, migrateState } from './schema.js?v=9436ed6';
+import { creditsOf, originalOf, groupBalance } from './receipts.js?v=a60350d';
+import { divRound, splitTtc, sum } from './money.js?v=a60350d';
+import { openingEntry } from './fecimport.js?v=a60350d';
+import { creditTargetsAsset } from './assets.js?v=a60350d';
+import { LIFECYCLE, currentStatus } from './lifecycle.js?v=a60350d';
+import { SCHEMA_VERSION, migrateState } from './schema.js?v=a60350d';
 
 /** Entrées d'argent sans facture de vente, proposées en langage courant. */
 export const INCOME_CATEGORIES = [
@@ -58,13 +58,14 @@ export function combineEstimates(list) {
 
 export const MAX_BANK_ACCOUNTS = 10;
 
-import { recurringMethods } from './workspace/recurring.js?v=9436ed6';
-import { vatMethods } from './workspace/vat.js?v=9436ed6';
-import { closingMethods } from './workspace/closing.js?v=9436ed6';
-import { microMethods } from './workspace/micro.js?v=9436ed6';
-import { depositMethods } from './deposit.js?v=9436ed6';
-import { categorizationMethods, learnRule } from './categorization.js?v=9436ed6';
-import { reminderMethods } from './reminders.js?v=9436ed6';
+import { recurringMethods } from './workspace/recurring.js?v=a60350d';
+import { vatMethods } from './workspace/vat.js?v=a60350d';
+import { receiptVatMethods } from './workspace/receipt-vat.js?v=a60350d';
+import { closingMethods } from './workspace/closing.js?v=a60350d';
+import { microMethods } from './workspace/micro.js?v=a60350d';
+import { depositMethods } from './deposit.js?v=a60350d';
+import { categorizationMethods, learnRule } from './categorization.js?v=a60350d';
+import { reminderMethods } from './reminders.js?v=a60350d';
 
 export class Workspace {
   constructor({ company, state: saved = {}, now, newId } = {}) {
@@ -172,52 +173,10 @@ export class Workspace {
     // Un avoir modifie la TVA exigible et le restant dû de la facture qu'il corrige.
     const original = issued.type === 'credit' ? originalOf(this.book.invoices, issued) : null;
     if (original) {
-      this.#syncReceiptVat(original, issued.issueDate);
+      this._syncReceiptVat(original, issued.issueDate);
       this.#letterGroupIfSettled(original, issued.issueDate);
     }
     return issued;
-  }
-
-  /**
-   * TVA sur encaissements : passe l'écriture 445800 → 445710 (ou inverse) qui amène la TVA exigible
-   * comptabilisée sur l'exercice au niveau attendu (receipts.js). Calcul par écart avec ce qui est
-   * déjà comptabilisé : pas de dérive d'arrondi, et un encaissement de l'exercice précédent n'est pas
-   * compté deux fois.
-   */
-  #syncReceiptVat(inv, date) {
-    if (!isOnReceipt(inv) || !inv.totals.totalVat) return;
-    const fy = this.ledger.fiscalYear;
-    const before = new Date(Date.parse(`${fy.start}T00:00:00Z`) - 86400000).toISOString().slice(0, 10);
-    const expected =
-      receiptTargets(this.book.invoices, this.book.payments, inv, date).vat - receiptTargets(this.book.invoices, this.book.payments, inv, before).vat;
-    const booked = sum(
-      this.ledger.entries
-        .filter((e) => e.source?.kind === 'vat-receipt' && e.source.id === inv.id)
-        .flatMap((e) => e.lines)
-        .filter((l) => l.account === '445710')
-        .map((l) => l.credit - l.debit),
-    );
-    const delta = expected - booked;
-    if (!delta) return;
-    const amount = Math.abs(delta);
-    this.ledger.addDraft({
-      journal: 'OD',
-      date,
-      label: `TVA exigible sur encaissement ${inv.number}`,
-      pieceRef: inv.number,
-      pieceDate: date,
-      source: { kind: 'vat-receipt', id: inv.id },
-      lines:
-        delta > 0
-          ? [
-              { account: '445800', debit: amount, credit: 0 },
-              { account: '445710', debit: 0, credit: amount },
-            ]
-          : [
-              { account: '445710', debit: amount, credit: 0 },
-              { account: '445800', debit: 0, credit: amount },
-            ],
-    });
   }
 
   /** Groupe soldé (facture + avoirs + règlements) : lettrage de toutes ses lignes client. */
@@ -227,7 +186,10 @@ export class Workspace {
     const refs = [
       ...docs.filter((d) => this.ledger.entries.some((e) => e.id === d.entryId)).map((d) => ({ entryId: d.entryId, lineIndex: 0 })),
       ...docs.flatMap((d) => (this.book.payments[d.id] || []).map((p) => ({ entryId: p.entryId, lineIndex: p.lineIndex }))),
-    ].filter((r) => this.ledger.entries.some((e) => e.id === r.entryId));
+    ]
+      .filter((r) => this.ledger.entries.some((e) => e.id === r.entryId))
+      // Lignes déjà lettrées (facture soldée avant l'avoir) : seules les autres restent à lettrer ensemble.
+      .filter((r) => !this.ledger.entries.find((e) => e.id === r.entryId).lines[r.lineIndex]?.letter);
     if (refs.length < 2) return;
     try {
       this.ledger.letter(refs, date);
@@ -428,13 +390,13 @@ export class Workspace {
         this.book.recordPayment(cn.id, { amount: -amount, date: tx.date, ref: tx.id, entryId: entry.id, lineIndex });
         const original = originalOf(this.book.invoices, cn);
         if (original) {
-          this.#syncReceiptVat(original, tx.date);
+          this._syncReceiptVat(original, tx.date);
           this.#letterGroupIfSettled(original, tx.date);
         }
       } else if (doc.kind === 'invoice') {
         const inv = this.book.get(doc.id);
         const left = this.book.recordPayment(inv.id, { amount, date: tx.date, ref: tx.id, entryId: entry.id, lineIndex });
-        this.#syncReceiptVat(inv, tx.date);
+        this._syncReceiptVat(inv, tx.date);
         if (left === 0) {
           if (creditsOf(this.book.invoices, inv).length) this.#letterGroupIfSettled(inv, tx.date);
           else if (this.ledger.entries.some((e) => e.id === inv.entryId))
@@ -446,7 +408,7 @@ export class Workspace {
             if (ref) this.#letterSettled(ref, inLedger, tx.date);
           }
           const events = this.book.lifecycle[inv.id] || [];
-          const last = events.at(-1);
+          const last = currentStatus(events);
           // Pas de statut automatique après un statut final (facture refusée puis payée : à traiter à la main).
           if (!last || !LIFECYCLE[last.status].final)
             this.book.recordStatus(inv.id, { status: 'encaissee', date: tx.date, source: 'banque', detail: tx.label });
@@ -556,7 +518,7 @@ export class Workspace {
 }
 
 // Méthodes réparties par domaine (même `this`, même API) : voir core/workspace/.
-for (const methods of [recurringMethods, vatMethods, closingMethods, microMethods, depositMethods, categorizationMethods, reminderMethods]) {
+for (const methods of [recurringMethods, vatMethods, receiptVatMethods, closingMethods, microMethods, depositMethods, categorizationMethods, reminderMethods]) {
   Object.defineProperties(Workspace.prototype, Object.getOwnPropertyDescriptors(methods));
 }
 

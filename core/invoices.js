@@ -4,12 +4,12 @@
  * la seule correction possible est l'avoir lié.
  */
 
-import { assertCents, divRound, sum, vatFromHt } from './money.js?v=9436ed6';
-import { REVENUE_ACCOUNT_BY_NATURE } from './pcg.js?v=9436ed6';
-import { LIFECYCLE } from './lifecycle.js?v=9436ed6';
-import { tradeZone } from './countries.js?v=9436ed6';
-import { creditsOf, originalOf, groupBalance } from './receipts.js?v=9436ed6';
-import { addDays } from './dates.js?v=9436ed6';
+import { assertCents, divRound, sum, vatFromHt } from './money.js?v=a60350d';
+import { REVENUE_ACCOUNT_BY_NATURE } from './pcg.js?v=a60350d';
+import { LIFECYCLE, currentStatus } from './lifecycle.js?v=a60350d';
+import { tradeZone } from './countries.js?v=a60350d';
+import { creditsOf, originalOf, groupBalance } from './receipts.js?v=a60350d';
+import { addDays } from './dates.js?v=a60350d';
 
 export const VAT_RATES_BP = [2000, 1000, 550, 210, 0];
 
@@ -323,7 +323,14 @@ export class InvoiceBook {
         amountHt: i.totals.totalHt - credited(i, 'totalHt'),
         amountVat: i.totals.totalVat - credited(i, 'totalVat'),
         amountTtc: i.totals.totalTtc - credited(i, 'totalTtc'),
-        vatAccount: saleVatAccount(i, i.issuer),
+        // Ventilation par taux, nette des avoirs : déduite taux par taux de la facture finale.
+        vatBreakdown: i.totals.vatBreakdown
+          .map((v) => {
+            const credits = this.invoices.filter((c) => c.type === 'credit' && c.status === 'issued' && c.creditOf === i.number);
+            const of = (c) => c.totals.vatBreakdown.find((x) => x.rateBp === v.rateBp) || { base: 0, vat: 0 };
+            return { rateBp: v.rateBp, base: v.base - sum(credits.map((c) => of(c).base)), vat: v.vat - sum(credits.map((c) => of(c).vat)) };
+          })
+          .filter((v) => v.base || v.vat),
       }))
       .filter((d) => d.amountTtc > 0);
   }
@@ -395,7 +402,7 @@ export class InvoiceBook {
     if (inv.status !== 'issued' || inv.type === 'quote') throw new InvoiceError('Seule une facture émise a un cycle de vie.');
     if (!LIFECYCLE[status]) throw new InvoiceError(`Statut inconnu : ${status}`);
     const events = (this.lifecycle[invoiceId] ||= []);
-    const last = events.at(-1);
+    const last = currentStatus(events);
     if (last && LIFECYCLE[last.status].final) throw new InvoiceError(`La facture est déjà « ${LIFECYCLE[last.status].label} ».`);
     const event = { status, date, source, detail };
     events.push(event);
@@ -433,6 +440,75 @@ export function vatByNature(inv) {
     if (v.base - servicesBase) out.biens.push({ rateBp: v.rateBp, base: v.base - servicesBase, vat: v.vat - servicesVat });
   }
   return out;
+}
+
+/** Répartition exacte d'un montant entier selon des poids (le reste d'arrondi sur le dernier). */
+function allocate(total, weights) {
+  const all = sum(weights);
+  if (!all) return weights.map((_, i) => (i === weights.length - 1 ? total : 0));
+  let left = total;
+  return weights.map((w, i) => {
+    if (i === weights.length - 1) return left;
+    const part = divRound(total * w, all);
+    left -= part;
+    return part;
+  });
+}
+
+/**
+ * Acomptes déduits d'une facture finale, par taux : ventilation de chaque acompte (enregistrée avec
+ * lui), sinon au prorata de la TVA de la facture (factures enregistrées avant cette ventilation).
+ */
+export function depositsByRate(inv) {
+  const out = new Map();
+  for (const d of inv.deposits || []) {
+    let rows = d.vatBreakdown;
+    if (!rows?.length) {
+      const rates = inv.totals.vatBreakdown.filter((v) => v.vat);
+      const weights = rates.map((v) => v.vat);
+      const bases = allocate(d.amountHt, weights);
+      const vats = allocate(d.amountVat, weights);
+      rows = rates.map((v, i) => ({ rateBp: v.rateBp, base: bases[i], vat: vats[i] }));
+    }
+    for (const r of rows) {
+      const o = out.get(r.rateBp) || { base: 0, vat: 0 };
+      o.base += r.base;
+      o.vat += r.vat;
+      out.set(r.rateBp, o);
+    }
+  }
+  return out;
+}
+
+/**
+ * TVA d'une facture nette de ses acomptes, par taux, répartie entre la part exigible à la facturation
+ * (`issue`) et celle exigible à l'encaissement (`receipt`) :
+ *  - prestations de services : à l'encaissement, sauf option pour les débits ;
+ *  - livraisons de biens : à la facturation, sauf un acompte (et l'avoir qui l'annule), exigible à son
+ *    encaissement (CGI art. 269-2-a, depuis le 01/01/2023) — `receiptGoods`.
+ * Le total des deux parts vaut exactement la TVA de la facture moins celle des acomptes déduits.
+ */
+export function vatSplit(inv, { vatOnDebits = inv.issuer?.vatOnDebits, receiptGoods = inv.type === 'deposit' } = {}) {
+  const deposits = depositsByRate(inv);
+  const rates = new Map(inv.totals.vatBreakdown.filter((v) => v.vat || deposits.has(v.rateBp)).map((v) => [v.rateBp, v]));
+  for (const rateBp of deposits.keys()) if (!rates.has(rateBp)) rates.set(rateBp, { rateBp, base: 0, vat: 0 });
+  const issue = [];
+  const receipt = [];
+  for (const v of rates.values()) {
+    const d = deposits.get(v.rateBp) || { base: 0, vat: 0 };
+    const base = v.base - d.base;
+    const vat = v.vat - d.vat;
+    if (!base && !vat) continue;
+    // Part « services » du taux, d'après les lignes ; un taux présent seulement dans l'acompte suit la
+    // nature de la facture.
+    const servicesBase = sum(inv.lines.filter((l) => l.nature === 'services' && l.vatRateBp === v.rateBp).map(lineHt));
+    const share = v.base ? [servicesBase, v.base] : inv.operationNature === 'services' ? [1, 1] : [0, 1];
+    const services = { rateBp: v.rateBp, base: divRound(base * share[0], share[1]), vat: divRound(vat * share[0], share[1]) };
+    const goods = { rateBp: v.rateBp, base: base - services.base, vat: vat - services.vat };
+    if (services.base || services.vat) (vatOnDebits ? issue : receipt).push(services);
+    if (goods.base || goods.vat) (receiptGoods ? receipt : issue).push(goods);
+  }
+  return { issue, receipt };
 }
 
 /**
@@ -479,18 +555,12 @@ export function invoiceEntry(inv, company, { creditOfDeposit = false } = {}) {
     const drift = inv.totals.totalHt - sum([...byAccount.values()]);
     [...byAccount].forEach(([account, ht], i) => add(account, i === 0 ? ht + drift : ht));
   }
-  const vatAccount = saleVatAccount(inv, company);
-  if (inv.operationNature === 'mixte' && !company.vatOnDebits) {
-    // Facture mixte : chaque part de TVA suit la règle de sa nature (biens à la facturation,
-    // services à l'encaissement).
-    const split = vatByNature(inv);
-    add('445710', sum(split.biens.map((v) => v.vat)));
-    add('445800', sum(split.services.map((v) => v.vat)));
-  } else add(vatAccount, inv.totals.totalVat);
-  for (const d of inv.deposits || []) {
-    add('419100', -d.amountHt);
-    add(d.vatAccount || vatAccount, -d.amountVat);
-  }
+  // TVA nette des acomptes : exigible à la facturation en 445710, à l'encaissement en 445800 (bascule
+  // en 445710 au paiement). La TVA d'un acompte déduit est retirée là où la facture finale l'enregistre.
+  const split = vatSplit(inv, { vatOnDebits: company.vatOnDebits, receiptGoods: inv.type === 'deposit' || creditOfDeposit });
+  add('445710', sum(split.issue.map((v) => v.vat)));
+  add('445800', sum(split.receipt.map((v) => v.vat)));
+  for (const d of inv.deposits || []) add('419100', -d.amountHt);
 
   const receivable = sum([...credits.values()]);
   const toSide = (amount) => (amount * sign >= 0 ? { debit: 0, credit: Math.abs(amount) } : { debit: Math.abs(amount), credit: 0 });

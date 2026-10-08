@@ -35,18 +35,20 @@ export function salesStats(invoices, payments, today) {
     const m = monthOf(inv.issueDate);
     byMonth.set(m, (byMonth.get(m) || 0) + signedHt(inv));
     if (m >= firstMonth && m <= current) {
-      const name = inv.client?.name || 'Sans nom';
-      byClient.set(name, (byClient.get(name) || 0) + signedHt(inv));
+      const key = inv.client?.code || inv.client?.name || 'Sans nom';
+      const prev = byClient.get(key) || { name: inv.client?.name || 'Sans nom', revenue: 0 };
+      byClient.set(key, { name: inv.client?.name || prev.name, revenue: prev.revenue + signedHt(inv) });
     }
   }
   const series = months.map((month) => ({ month, revenue: byMonth.get(month) || 0, previous: byMonth.get(shiftMonth(month, -12)) || 0 }));
   const total = series.reduce((s, x) => s + x.revenue, 0);
   const previousTotal = [...byMonth].filter(([m]) => m >= previousFirst && m < firstMonth).reduce((s, [, v]) => s + v, 0);
-  const topClients = [...byClient]
-    .filter(([, v]) => v > 0)
-    .sort((a, b) => b[1] - a[1])
+  const positives = [...byClient.values()].filter((c) => c.revenue > 0);
+  const positiveTotal = positives.reduce((sum, c) => sum + c.revenue, 0);
+  const topClients = positives
+    .sort((a, b) => b.revenue - a.revenue)
     .slice(0, 3)
-    .map(([name, revenue]) => ({ name, revenue, share: total > 0 ? revenue / total : 0 }));
+    .map((c) => ({ name: c.name, revenue: c.revenue, share: positiveTotal > 0 ? c.revenue / positiveTotal : 0 }));
 
   // Factures (hors avoirs) soldées sur les 12 derniers mois : date du dernier règlement.
   const settled = [];

@@ -11,7 +11,7 @@
  *   friendly(error) → message ; onStatus(status) ; onResult(op, result).
  */
 
-import { planSync, isDivergence } from './sync.js?v=9436ed6';
+import { planSync, isDivergence } from './sync.js?v=a60350d';
 
 const DIVERGENCE_MESSAGE = 'Des modifications ont été enregistrées ailleurs (autre appareil ou autre onglet) : rechargez les données depuis la base.';
 const directLock = (_name, fn) => fn();
@@ -22,6 +22,7 @@ const directLock = (_name, fn) => fn();
  * l'application (autre onglet déjà mis à jour) n'est ni envoyée ni réécrite.
  */
 export const OUTBOX_SCHEMA_VERSION = 2;
+const STORAGE_WARNING = 'Le stockage de ce navigateur est plein : gardez cette page ouverte jusqu’à « Toutes les modifications sont enregistrées ».';
 const NEWER_MESSAGE = 'Des modifications en attente viennent d’une version plus récente de Nexus Gestion : rechargez la page.';
 
 export class Outbox {
@@ -33,6 +34,8 @@ export class Outbox {
   }
 
   #load() {
+    // Stockage refusé (plein ou bloqué) : la file en mémoire fait foi, ne pas la relire (elle serait vide).
+    if (this.memoryOnly) return this.queue;
     let saved;
     try {
       saved = JSON.parse(this.storage.getItem(this.key) || '[]');
@@ -48,8 +51,12 @@ export class Outbox {
     if (this.newer) return;
     try {
       this.storage.setItem(this.key, JSON.stringify({ v: OUTBOX_SCHEMA_VERSION, ops: this.queue }));
+      this.memoryOnly = false;
     } catch {
-      // Stockage plein : la file reste en mémoire, l'envoi continue.
+      // Stockage plein ou bloqué : la file reste en mémoire et l'envoi continue ; l'utilisateur est
+      // prévenu qu'une fermeture de la page avant la fin de l'envoi perdrait ces modifications.
+      if (!this.memoryOnly) this.onStatus({ pending: this.queue.length, error: null, warning: STORAGE_WARNING });
+      this.memoryOnly = true;
     }
   }
 

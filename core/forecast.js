@@ -6,9 +6,9 @@
  * inclus (acomptes non gérés).
  */
 
-import { addDays } from './dates.js?v=9436ed6';
-import { dueOccurrences } from './recurring.js?v=9436ed6';
-import { computeTotals, isVatExempt } from './invoices.js?v=9436ed6';
+import { addDays } from './dates.js?v=a60350d';
+import { dueOccurrences } from './recurring.js?v=a60350d';
+import { computeTotals, isVatExempt } from './invoices.js?v=a60350d';
 
 /** Délai de paiement d'une dépense sans échéance connue (usage, à valider par l'expert-comptable). */
 export const DEFAULT_SUPPLIER_TERMS_DAYS = 30;
@@ -24,6 +24,11 @@ export function cashForecast(ws, today, { horizons = [30, 60, 90] } = {}) {
   for (const r of ws.receivables(today)) {
     if (r.outstanding > 0)
       add(r.invoice.dueDate, 'facture', `${r.invoice.number} — ${r.invoice.client?.name || ''}${r.lateDays > 0 ? ' (en retard)' : ''}`, r.outstanding);
+  }
+  // Avoirs à rembourser au client (règlement déjà reçu) : sortie d'argent, dès aujourd'hui.
+  for (const c of ws.book.invoices.filter((i) => i.type === 'credit' && i.status === 'issued')) {
+    const due = ws.book.outstanding(c);
+    if (due < 0) add(today, 'remboursement', `Avoir ${c.number} à rembourser — ${c.client?.name || ''}`, due);
   }
   for (const t of ws.recurring || []) {
     const exempt = isVatExempt({ client: t.client, lines: t.lines }, ws.company);

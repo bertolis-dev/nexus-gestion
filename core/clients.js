@@ -4,8 +4,9 @@
  * logiciel de facturation).
  */
 
-import { parseCsv } from './bank-import.js?v=9436ed6';
-import { isValidSiren } from './invoices.js?v=9436ed6';
+import { parseCsv } from './bank-import.js?v=a60350d';
+import { isValidSiren } from './invoices.js?v=a60350d';
+import { shiftMonth } from './stats.js?v=a60350d';
 
 const DAY = 86400000;
 
@@ -21,9 +22,9 @@ export function clientSummary(book, client, today) {
   const issued = docs.filter((i) => i.status === 'issued' && i.type !== 'quote');
   const depositNumbers = new Set(issued.filter((i) => i.type === 'deposit').map((i) => i.number));
   const sales = issued.filter((i) => i.type !== 'deposit' && !(i.type === 'credit' && depositNumbers.has(i.creditOf)));
-  const since = new Date(Date.parse(today) - 365 * DAY).toISOString().slice(0, 10);
+  const since = `${shiftMonth(today.slice(0, 7), -11)}-01`;
   const ht = (i) => (i.type === 'credit' ? -1 : 1) * (i.totals?.totalHt || 0);
-  const revenue12 = sales.filter((i) => i.issueDate > since).reduce((s, i) => s + ht(i), 0);
+  const revenue12 = sales.filter((i) => i.issueDate >= since && i.issueDate <= today).reduce((s, i) => s + ht(i), 0);
   const revenueTotal = sales.reduce((s, i) => s + ht(i), 0);
   let outstanding = 0;
   let overdue = 0;
@@ -81,7 +82,67 @@ const HEADERS = {
   country: ['pays', 'country', 'codepays'],
   vatNumber: ['tva', 'ntva', 'numerotva', 'tvaintracommunautaire', 'ntvaintracommunautaire', 'vat', 'vatnumber'],
   type: ['type', 'typedeclient', 'categorie'],
+  firstName: ['prenom', 'firstname', 'prenomduclient'],
 };
+
+/** Noms de pays courants (sans accents ni ponctuation) → code ISO ; un code de 2 lettres est repris tel quel. */
+const COUNTRY_NAMES = {
+  france: 'FR',
+  monaco: 'MC',
+  belgique: 'BE',
+  allemagne: 'DE',
+  espagne: 'ES',
+  italie: 'IT',
+  luxembourg: 'LU',
+  paysbas: 'NL',
+  hollande: 'NL',
+  portugal: 'PT',
+  autriche: 'AT',
+  irlande: 'IE',
+  suede: 'SE',
+  danemark: 'DK',
+  finlande: 'FI',
+  pologne: 'PL',
+  grece: 'GR',
+  tchequie: 'CZ',
+  republiquetcheque: 'CZ',
+  slovaquie: 'SK',
+  slovenie: 'SI',
+  hongrie: 'HU',
+  roumanie: 'RO',
+  bulgarie: 'BG',
+  croatie: 'HR',
+  estonie: 'EE',
+  lettonie: 'LV',
+  lituanie: 'LT',
+  malte: 'MT',
+  chypre: 'CY',
+  royaumeuni: 'GB',
+  angleterre: 'GB',
+  grandebretagne: 'GB',
+  suisse: 'CH',
+  norvege: 'NO',
+  etatsunis: 'US',
+  usa: 'US',
+  canada: 'CA',
+  maroc: 'MA',
+  tunisie: 'TN',
+  algerie: 'DZ',
+  senegal: 'SN',
+  cotedivoire: 'CI',
+  japon: 'JP',
+  chine: 'CN',
+  andorre: 'AD',
+  liechtenstein: 'LI',
+};
+
+/** Code ISO du pays saisi (« FR », « France », « Pays-Bas »…), ou null s'il n'est pas reconnu. */
+export function countryCode(raw) {
+  const t = String(raw || '').trim();
+  if (!t) return 'FR';
+  if (/^[A-Za-z]{2}$/.test(t)) return t.toUpperCase();
+  return COUNTRY_NAMES[norm(t)] || null;
+}
 
 /**
  * Lit un fichier de clients. Renvoie les fiches prêtes à créer, les doublons ignorés (même SIREN ou
@@ -111,8 +172,9 @@ export function importClientsCsv(text, existing = []) {
   const errors = [];
   for (const r of rows) {
     const get = (f) => (col[f] === undefined ? '' : (r.fields[col[f]] || '').trim());
-    const name = get('name');
-    if (!name) {
+    const firstName = get('firstName');
+    const name = [firstName, get('name')].filter(Boolean).join(' ');
+    if (!get('name')) {
       errors.push({ line: r.line, message: 'Nom manquant.' });
       continue;
     }
@@ -131,8 +193,16 @@ export function importClientsCsv(text, existing = []) {
       duplicates.push({ line: r.line, name });
       continue;
     }
-    const country = (get('country') || 'FR').toUpperCase().slice(0, 2) === 'FR' || !get('country') ? 'FR' : get('country').toUpperCase().slice(0, 2);
-    const type = /particulier|b2c|personne/i.test(get('type')) || (!siren && /^(m\.|mme|madame|monsieur)\s/i.test(name)) ? 'B2C' : 'B2B';
+    const country = countryCode(get('country'));
+    if (!country) {
+      errors.push({ line: r.line, message: `${name} : pays non reconnu (${get('country')}) ; indiquez son code à 2 lettres (FR, BE, DE…).` });
+      continue;
+    }
+    const type =
+      /particulier|b2c|personne/i.test(get('type')) ||
+      (!siren && (firstName || /^(m\.|mme|madame|monsieur)\s/i.test(name)) && !/entreprise|b2b|soci/i.test(get('type')))
+        ? 'B2C'
+        : 'B2B';
     const address = [get('address'), [get('postcode'), get('city')].filter(Boolean).join(' ')].filter(Boolean).join(', ');
     const client = { name, type, country };
     if (siren) client.siren = siren;

@@ -11,7 +11,7 @@
  * L'aperçu est toujours montré au dirigeant (ou à son expert-comptable) avant import.
  */
 
-import { sum } from './money.js?v=9436ed6';
+import { sum } from './money.js?v=a60350d';
 
 const REQUIRED = ['JournalCode', 'EcritureNum', 'EcritureDate', 'CompteNum', 'CompteLib'];
 

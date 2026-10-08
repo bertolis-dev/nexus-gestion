@@ -2,12 +2,12 @@
  * Écran « shell ».
  */
 
-import * as cloud from '../cloud.js?v=9436ed6';
-import { removeDemo } from '../demo-store.js?v=9436ed6';
-import { $, render, renderApp } from '../render.js?v=9436ed6';
-import { cloudState, freshOnboarding, setWs, today, ui, ws } from '../state.js?v=9436ed6';
-import { download, setTheme, toast } from '../store.js?v=9436ed6';
-import { openStructure, openStructureAndShow } from '../sync-ui.js?v=9436ed6';
+import * as cloud from '../cloud.js?v=a60350d';
+import { removeDemo } from '../demo-store.js?v=a60350d';
+import { $, render, renderApp } from '../render.js?v=a60350d';
+import { cloudState, freshOnboarding, setWs, today, ui, ws } from '../state.js?v=a60350d';
+import { download, setTheme, toast } from '../store.js?v=a60350d';
+import { openStructure, openStructureAndShow, refreshEmailStatus } from '../sync-ui.js?v=a60350d';
 
 /** Version publiée plus récente que celle chargée ? (numéro ?v=… ajouté à la mise en ligne) */
 async function newerVersionAvailable() {
@@ -54,7 +54,8 @@ export const actionsTable = {
     el?.setAttribute('aria-busy', 'true');
     try {
       const newer = await newerVersionAvailable();
-      if (newer && !ui.draft) {
+      const editing = /^#\/(ventes\/(nouve|modifier-)|clients\/nouveau)/.test(location.hash);
+      if (newer && !editing) {
         if (cloudState.outbox) await cloudState.outbox.flush();
         return location.reload();
       }
@@ -65,6 +66,7 @@ export const actionsTable = {
       await cloudState.outbox?.flush();
       if (cloudState.outbox?.error) return;
       await openStructure(cloudState.meta.structureId);
+      await refreshEmailStatus();
       render();
       toast(newer ? 'Données à jour. Nouvelle version disponible : enregistrez votre saisie, puis mettez à jour.' : 'Données à jour.');
     } catch (err) {
