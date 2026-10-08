@@ -865,3 +865,17 @@ tr[data-href]:focus-visible,
     opacity: 0.5;
   }
 }
+
+/* Écran Clients : noms et numéros en lien discret, aux couleurs de Nexus. */
+.client-name,
+.doc-link {
+  color: var(--color-primary-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+.client-name:hover,
+.doc-link:hover,
+.client-name:focus-visible,
+.doc-link:focus-visible {
+  text-decoration: underline;
+}

@@ -2,13 +2,13 @@
  * Écran « settings ».
  */
 
-import * as cloud from '../cloud.js?v=bd59798';
-import { render } from '../render.js?v=bd59798';
-import { cloudState, frDate, today, ui, ws } from '../state.js?v=bd59798';
-import { download, save, toast } from '../store.js?v=bd59798';
-import { forgetRule } from '../../core/categorization.js?v=bd59798';
-import { removeCatalogItem, saveCatalogItem } from '../../core/catalog.js?v=bd59798';
-import { readPrice } from '../views/invoice-form.js?v=bd59798';
+import * as cloud from '../cloud.js?v=b774003';
+import { render } from '../render.js?v=b774003';
+import { cloudState, frDate, today, ui, ws } from '../state.js?v=b774003';
+import { download, save, toast } from '../store.js?v=b774003';
+import { forgetRule } from '../../core/categorization.js?v=b774003';
+import { removeCatalogItem, saveCatalogItem } from '../../core/catalog.js?v=b774003';
+import { readPrice } from '../views/invoice-form.js?v=b774003';
 
 /** Ajout au catalogue (formulaire de Paramètres > Prestations et articles). */
 export function catalogSubmit(f, form) {

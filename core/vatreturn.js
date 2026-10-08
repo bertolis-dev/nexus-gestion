@@ -20,10 +20,10 @@
  *   28 TVA nette due · 32 total à payer.
  */
 
-import { divRound, sum, vatFromHt } from './money.js?v=bd59798';
-import { isOnReceipt, originalOf, receiptEvents } from './receipts.js?v=bd59798';
-import { vatByNature } from './invoices.js?v=bd59798';
-import { tradeZone } from './countries.js?v=bd59798';
+import { divRound, sum, vatFromHt } from './money.js?v=b774003';
+import { isOnReceipt, originalOf, receiptEvents } from './receipts.js?v=b774003';
+import { vatByNature } from './invoices.js?v=b774003';
+import { tradeZone } from './countries.js?v=b774003';
 
 /**
  * Lignes de la CA3 par taux de TVA, par millésime du formulaire 3310-CA3 — À VALIDER PAR L'EXPERT-
@@ -55,7 +55,7 @@ function exigibleParts(inv, payments, period) {
 
 /**
  * Prépare la CA3 d'une période à partir du Workspace (factures, paiements, dépenses, grand livre).
- * @param {import('./workspace.js?v=bd59798').Workspace} ws
+ * @param {import('./workspace.js?v=b774003').Workspace} ws
  * @param {{ from: string, to: string }} period
  * @param {{ previousCredit?: number }} opts crédit de TVA reporté de la déclaration précédente
  */

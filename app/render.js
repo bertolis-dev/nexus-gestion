@@ -2,24 +2,25 @@
  * Rendu général : choix de l’écran, cadre de l’application, recherche globale, repères d’accessibilité.
  */
 
-import { html, raw } from './html.js?v=bd59798';
-import { ICONS } from './icons.js?v=bd59798';
-import { featureBySlug, featureSlug, features, loadFeatures, viewFeature, viewLanding } from './site/landing.js?v=bd59798';
-import { cloudState, eur, frDate, ui, ws } from './state.js?v=bd59798';
-import { getTheme } from './store.js?v=bd59798';
-import { syncStatusHtml } from './sync-ui.js?v=bd59798';
-import { LOGO, badge, brand } from './ui/common.js?v=bd59798';
-import { viewAuth, viewMfa, viewStructurePicker } from './views/auth.js?v=bd59798';
-import { viewBank } from './views/bank.js?v=bd59798';
-import { viewClosing } from './views/closing.js?v=bd59798';
-import { viewCompta } from './views/compta.js?v=bd59798';
-import { viewExpenses } from './views/expenses.js?v=bd59798';
-import { viewHome } from './views/home.js?v=bd59798';
-import { viewUrssaf } from './views/micro.js?v=bd59798';
-import { viewOnboarding } from './views/onboarding.js?v=bd59798';
-import { runRecurring, viewSales } from './views/sales.js?v=bd59798';
-import { viewSettings } from './views/settings.js?v=bd59798';
-import { viewVat } from './views/vat.js?v=bd59798';
+import { html, raw } from './html.js?v=b774003';
+import { ICONS } from './icons.js?v=b774003';
+import { featureBySlug, featureSlug, features, loadFeatures, viewFeature, viewLanding } from './site/landing.js?v=b774003';
+import { cloudState, eur, frDate, ui, ws } from './state.js?v=b774003';
+import { getTheme } from './store.js?v=b774003';
+import { syncStatusHtml } from './sync-ui.js?v=b774003';
+import { LOGO, badge, brand } from './ui/common.js?v=b774003';
+import { viewAuth, viewMfa, viewStructurePicker } from './views/auth.js?v=b774003';
+import { viewBank } from './views/bank.js?v=b774003';
+import { viewClosing } from './views/closing.js?v=b774003';
+import { viewCompta } from './views/compta.js?v=b774003';
+import { viewExpenses } from './views/expenses.js?v=b774003';
+import { viewHome } from './views/home.js?v=b774003';
+import { viewUrssaf } from './views/micro.js?v=b774003';
+import { viewOnboarding } from './views/onboarding.js?v=b774003';
+import { runRecurring, viewSales } from './views/sales.js?v=b774003';
+import { viewSettings } from './views/settings.js?v=b774003';
+import { viewClients } from './views/clients.js?v=b774003';
+import { viewVat } from './views/vat.js?v=b774003';
 
 // ------------------------------------------------------------------ rendu général
 
@@ -85,6 +86,7 @@ export const routes = {
   compta: viewCompta,
   cloture: viewClosing,
   parametres: viewSettings,
+  clients: viewClients,
 };
 
 export function route() {
@@ -98,6 +100,7 @@ export function navItems() {
   const items = [
     { key: 'accueil', label: 'Accueil', icon: 'home' },
     { key: 'ventes', label: 'Factures', icon: 'receipt' },
+    { key: 'clients', label: 'Clients', icon: 'people' },
     { key: 'depenses', label: 'Dépenses', icon: 'paperclip' },
     { key: 'banque', label: 'Banque', icon: 'card' },
     isMicro() ? { key: 'urssaf', label: 'URSSAF et seuils', icon: 'scale' } : { key: 'tva', label: 'TVA', icon: 'percent' },
@@ -312,6 +315,10 @@ export function searchResults(q) {
         sub: `${i.client?.name || ''} · ${frDate(i.issueDate)}`,
         href: `#/ventes/${i.id}`,
       });
+  }
+  for (const c of ws.clients) {
+    if (`${c.name} ${c.email || ''} ${c.siren || ''}`.toLowerCase().includes(n))
+      out.push({ icon: 'people', label: c.name, sub: `Client${c.email ? ` · ${c.email}` : ''}`, href: `#/clients/${c.id}` });
   }
   for (const p of ws.purchases) {
     if (`${p.supplier.name} ${p.number}`.toLowerCase().includes(n))

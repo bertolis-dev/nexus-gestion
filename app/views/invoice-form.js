@@ -2,15 +2,15 @@
  * Écran « invoice-form ».
  */
 
-import { VAT_RATES_BP, computeTotals, defaultDueDate, isVatExempt } from '../../core/invoices.js?v=bd59798';
-import { parseEuros } from '../../core/money.js?v=bd59798';
-import { field, html, opt, raw } from '../html.js?v=bd59798';
-import { ICONS } from '../icons.js?v=bd59798';
-import { issueLink } from '../render.js?v=bd59798';
-import { eur, pct, today, ui, ws } from '../state.js?v=bd59798';
-import { save } from '../store.js?v=bd59798';
-import { viewHeader } from '../ui/common.js?v=bd59798';
-import { NEW_DOC_ROUTES } from './sales.js?v=bd59798';
+import { VAT_RATES_BP, computeTotals, defaultDueDate, isVatExempt } from '../../core/invoices.js?v=b774003';
+import { parseEuros } from '../../core/money.js?v=b774003';
+import { field, html, opt, raw } from '../html.js?v=b774003';
+import { ICONS } from '../icons.js?v=b774003';
+import { issueLink } from '../render.js?v=b774003';
+import { eur, pct, today, ui, ws } from '../state.js?v=b774003';
+import { save } from '../store.js?v=b774003';
+import { viewHeader } from '../ui/common.js?v=b774003';
+import { NEW_DOC_ROUTES } from './sales.js?v=b774003';
 
 export function emptyLine() {
   return {
@@ -43,11 +43,12 @@ export function startDraft(arg) {
       type,
       issueDate: today(),
       dueDate: due,
-      clientId: ws.clients[0]?.id || '__new',
+      clientId: (ws.clients.some((c) => c.id === ui.presetClientId) && ui.presetClientId) || ws.clients[0]?.id || '__new',
       newClient: { type: 'B2B', country: 'FR' },
       lines: [emptyLine()],
       depositIds: [],
     };
+    ui.presetClientId = null;
     if (type === 'deposit') ui.draft.lines[0].label = 'Acompte sur commande';
   }
   ui.draft.depositIds ||= (ui.draft.deposits || []).map((x) => x.id);
