@@ -2,21 +2,21 @@
  * Écran « sales ».
  */
 
-import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=a2f2703';
-import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=a2f2703';
-import { LIFECYCLE } from '../../core/lifecycle.js?v=a2f2703';
-import { lookupSiren } from '../company-lookup.js?v=a2f2703';
-import { render } from '../render.js?v=a2f2703';
-import * as cloud from '../cloud.js?v=a2f2703';
-import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=a2f2703';
-import { invoiceEmail, reminderMessage } from '../../core/reminders.js?v=a2f2703';
-import { explainEmailError } from '../email-errors.js?v=a2f2703';
-import { download, save, toast } from '../store.js?v=a2f2703';
-import { isUnconfirmed } from '../sync-ui.js?v=a2f2703';
-import { emptyLine, persistDraft } from '../views/invoice-form.js?v=a2f2703';
-import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=a2f2703';
-import { depositCandidates } from '../../core/deposit.js?v=a2f2703';
-import { createZip } from '../../core/zip.js?v=a2f2703';
+import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=9436ed6';
+import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=9436ed6';
+import { LIFECYCLE } from '../../core/lifecycle.js?v=9436ed6';
+import { lookupSiren } from '../company-lookup.js?v=9436ed6';
+import { render } from '../render.js?v=9436ed6';
+import * as cloud from '../cloud.js?v=9436ed6';
+import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=9436ed6';
+import { invoiceEmail, reminderMessage } from '../../core/reminders.js?v=9436ed6';
+import { explainEmailError } from '../email-errors.js?v=9436ed6';
+import { download, save, toast } from '../store.js?v=9436ed6';
+import { isUnconfirmed } from '../sync-ui.js?v=9436ed6';
+import { emptyLine, persistDraft } from '../views/invoice-form.js?v=9436ed6';
+import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=9436ed6';
+import { depositCandidates } from '../../core/deposit.js?v=9436ed6';
+import { createZip } from '../../core/zip.js?v=9436ed6';
 
 /** Envoi de la facture : par Nexus (Brevo) si en service, sinon partage ou messagerie. */
 async function sendInvoice(id) {
@@ -42,7 +42,14 @@ async function sendInvoice(id) {
       return toast(`La facture n’est pas partie. ${explainEmailError(cloud.friendly(err))}`, true);
     }
   }
-  if (!ui.demo && !email) toast('Ce client n’a pas d’adresse e-mail : complétez sa fiche pour l’envoi direct. Votre messagerie s’ouvre à la place.', true);
+  // Démonstration : client fictif (adresse en .example) ; rien ne part, la facture est seulement montrée.
+  if (ui.demo) {
+    download(name, pdf, 'application/pdf');
+    return toast(
+      'Démonstration : aucun e-mail ne part, le client est fictif. Le PDF est téléchargé pour que vous voyiez la facture ; connectez-vous pour envoyer vos vraies factures.',
+    );
+  }
+  if (!email) toast('Ce client n’a pas d’adresse e-mail : complétez sa fiche pour l’envoi direct. Votre messagerie s’ouvre à la place.', true);
   const file = new File([pdf], name, { type: 'application/pdf' });
   // Téléphone et certains ordinateurs : partage natif avec le PDF joint.
   if (navigator.canShare?.({ files: [file] })) {

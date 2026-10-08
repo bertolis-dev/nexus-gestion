@@ -2,12 +2,12 @@
  * Écran « closing ».
  */
 
-import { allocationProposal } from '../../core/closing.js?v=a2f2703';
-import { parseEuros } from '../../core/money.js?v=a2f2703';
-import { render } from '../render.js?v=a2f2703';
-import { today, ui, ws } from '../state.js?v=a2f2703';
-import { save, toast } from '../store.js?v=a2f2703';
-import { closeYearFlow } from '../views/closing.js?v=a2f2703';
+import { allocationProposal } from '../../core/closing.js?v=9436ed6';
+import { parseEuros } from '../../core/money.js?v=9436ed6';
+import { render } from '../render.js?v=9436ed6';
+import { today, ui, ws } from '../state.js?v=9436ed6';
+import { save, toast } from '../store.js?v=9436ed6';
+import { closeYearFlow } from '../views/closing.js?v=9436ed6';
 
 /** Actions « closing » : data-action → fonction. */
 export const actionsTable = {
