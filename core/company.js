@@ -3,7 +3,7 @@
  * fiche créée à partir des réponses de l'assistant d'installation (§3.1).
  */
 
-import { firstFiscalYear } from './dates.js?v=f9f52cc';
+import { firstFiscalYear } from './dates.js?v=bd59798';
 
 /** Formes juridiques prises en charge par Nexus Gestion (contrôlées aussi en base). */
 export const SUPPORTED_LEGAL_FORMS = ['EI', 'EURL', 'SARL', 'SAS', 'SASU'];

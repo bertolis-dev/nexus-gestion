@@ -2,20 +2,20 @@
  * Écran « sales ».
  */
 
-import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=f9f52cc';
-import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=f9f52cc';
-import { LIFECYCLE } from '../../core/lifecycle.js?v=f9f52cc';
-import { lookupSiren } from '../company-lookup.js?v=f9f52cc';
-import { render } from '../render.js?v=f9f52cc';
-import * as cloud from '../cloud.js?v=f9f52cc';
-import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=f9f52cc';
-import { reminderMessage } from '../../core/reminders.js?v=f9f52cc';
-import { download, save, toast } from '../store.js?v=f9f52cc';
-import { isUnconfirmed } from '../sync-ui.js?v=f9f52cc';
-import { emptyLine, persistDraft } from '../views/invoice-form.js?v=f9f52cc';
-import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=f9f52cc';
-import { depositCandidates } from '../../core/deposit.js?v=f9f52cc';
-import { createZip } from '../../core/zip.js?v=f9f52cc';
+import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=bd59798';
+import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=bd59798';
+import { LIFECYCLE } from '../../core/lifecycle.js?v=bd59798';
+import { lookupSiren } from '../company-lookup.js?v=bd59798';
+import { render } from '../render.js?v=bd59798';
+import * as cloud from '../cloud.js?v=bd59798';
+import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=bd59798';
+import { reminderMessage } from '../../core/reminders.js?v=bd59798';
+import { download, save, toast } from '../store.js?v=bd59798';
+import { isUnconfirmed } from '../sync-ui.js?v=bd59798';
+import { emptyLine, persistDraft } from '../views/invoice-form.js?v=bd59798';
+import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=bd59798';
+import { depositCandidates } from '../../core/deposit.js?v=bd59798';
+import { createZip } from '../../core/zip.js?v=bd59798';
 
 /** Envoi de la facture : par Nexus (Brevo) si en service, sinon partage ou messagerie. */
 async function sendInvoice(id) {

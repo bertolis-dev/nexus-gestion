@@ -2,15 +2,15 @@
  * Écran « archives ».
  */
 
-import { balanceSheet, fiscalYearLabel, incomeStatement } from '../../core/closing.js?v=f9f52cc';
-import { Ledger } from '../../core/ledger.js?v=f9f52cc';
-import { trialBalance } from '../../core/reports.js?v=f9f52cc';
-import { ledgerStateFromRows } from '../../core/sync.js?v=f9f52cc';
-import * as cloud from '../cloud.js?v=f9f52cc';
-import { html } from '../html.js?v=f9f52cc';
-import { render } from '../render.js?v=f9f52cc';
-import { cloudState, eur, ui, ws } from '../state.js?v=f9f52cc';
-import { statementTable } from './closing.js?v=f9f52cc';
+import { balanceSheet, fiscalYearLabel, incomeStatement } from '../../core/closing.js?v=bd59798';
+import { Ledger } from '../../core/ledger.js?v=bd59798';
+import { trialBalance } from '../../core/reports.js?v=bd59798';
+import { ledgerStateFromRows } from '../../core/sync.js?v=bd59798';
+import * as cloud from '../cloud.js?v=bd59798';
+import { html } from '../html.js?v=bd59798';
+import { render } from '../render.js?v=bd59798';
+import { cloudState, eur, ui, ws } from '../state.js?v=bd59798';
+import { statementTable } from './closing.js?v=bd59798';
 
 // ------------------------------------------------------------------ exercices clos (consultation)
 

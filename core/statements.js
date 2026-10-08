@@ -4,7 +4,7 @@
  * (docs/regles-a-valider.md). Utilisé par la clôture (core/closing.js).
  */
 
-import { sum } from './money.js?v=f9f52cc';
+import { sum } from './money.js?v=bd59798';
 
 /** Soldes (débit − crédit) par compte, hors écritures de détermination du résultat. */
 export function balancesOf(ledger) {

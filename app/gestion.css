@@ -849,3 +849,19 @@ tr[data-href]:focus-visible,
   flex-direction: column;
   gap: 16px;
 }
+
+/* Bouton « Mettre à jour » pendant le rechargement des données. */
+@keyframes nexus-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+[data-action='reload'].is-spinning svg {
+  animation: nexus-spin 0.9s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-action='reload'].is-spinning svg {
+    animation: none;
+    opacity: 0.5;
+  }
+}

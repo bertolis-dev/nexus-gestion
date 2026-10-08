@@ -2,24 +2,24 @@
  * Rendu général : choix de l’écran, cadre de l’application, recherche globale, repères d’accessibilité.
  */
 
-import { html, raw } from './html.js?v=f9f52cc';
-import { ICONS } from './icons.js?v=f9f52cc';
-import { featureBySlug, featureSlug, features, loadFeatures, viewFeature, viewLanding } from './site/landing.js?v=f9f52cc';
-import { cloudState, eur, frDate, ui, ws } from './state.js?v=f9f52cc';
-import { getTheme } from './store.js?v=f9f52cc';
-import { syncStatusHtml } from './sync-ui.js?v=f9f52cc';
-import { LOGO, badge, brand } from './ui/common.js?v=f9f52cc';
-import { viewAuth, viewMfa, viewStructurePicker } from './views/auth.js?v=f9f52cc';
-import { viewBank } from './views/bank.js?v=f9f52cc';
-import { viewClosing } from './views/closing.js?v=f9f52cc';
-import { viewCompta } from './views/compta.js?v=f9f52cc';
-import { viewExpenses } from './views/expenses.js?v=f9f52cc';
-import { viewHome } from './views/home.js?v=f9f52cc';
-import { viewUrssaf } from './views/micro.js?v=f9f52cc';
-import { viewOnboarding } from './views/onboarding.js?v=f9f52cc';
-import { runRecurring, viewSales } from './views/sales.js?v=f9f52cc';
-import { viewSettings } from './views/settings.js?v=f9f52cc';
-import { viewVat } from './views/vat.js?v=f9f52cc';
+import { html, raw } from './html.js?v=bd59798';
+import { ICONS } from './icons.js?v=bd59798';
+import { featureBySlug, featureSlug, features, loadFeatures, viewFeature, viewLanding } from './site/landing.js?v=bd59798';
+import { cloudState, eur, frDate, ui, ws } from './state.js?v=bd59798';
+import { getTheme } from './store.js?v=bd59798';
+import { syncStatusHtml } from './sync-ui.js?v=bd59798';
+import { LOGO, badge, brand } from './ui/common.js?v=bd59798';
+import { viewAuth, viewMfa, viewStructurePicker } from './views/auth.js?v=bd59798';
+import { viewBank } from './views/bank.js?v=bd59798';
+import { viewClosing } from './views/closing.js?v=bd59798';
+import { viewCompta } from './views/compta.js?v=bd59798';
+import { viewExpenses } from './views/expenses.js?v=bd59798';
+import { viewHome } from './views/home.js?v=bd59798';
+import { viewUrssaf } from './views/micro.js?v=bd59798';
+import { viewOnboarding } from './views/onboarding.js?v=bd59798';
+import { runRecurring, viewSales } from './views/sales.js?v=bd59798';
+import { viewSettings } from './views/settings.js?v=bd59798';
+import { viewVat } from './views/vat.js?v=bd59798';
 
 // ------------------------------------------------------------------ rendu général
 
@@ -152,7 +152,14 @@ export function renderApp() {
             <div id="global-search-results" class="search-results" role="listbox" aria-label="Résultats de recherche"></div>
           </div>
           <div class="topbar-user">
-            <button class="btn-icon" data-action="reload" title="Recharger la page">${raw(ICONS.refresh)}</button>
+            <button
+              class="btn-icon"
+              data-action="reload"
+              title="Mettre à jour (données et application)"
+              aria-label="Mettre à jour les données et l’application"
+            >
+              ${raw(ICONS.refresh)}
+            </button>
             <div class="user-menu-wrapper">
               <button
                 class="avatar avatar-initials"

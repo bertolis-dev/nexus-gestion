@@ -2,12 +2,25 @@
  * Écran « shell ».
  */
 
-import * as cloud from '../cloud.js?v=f9f52cc';
-import { removeDemo } from '../demo-store.js?v=f9f52cc';
-import { $, render, renderApp } from '../render.js?v=f9f52cc';
-import { cloudState, freshOnboarding, setWs, today, ui, ws } from '../state.js?v=f9f52cc';
-import { download, setTheme, toast } from '../store.js?v=f9f52cc';
-import { openStructure, openStructureAndShow } from '../sync-ui.js?v=f9f52cc';
+import * as cloud from '../cloud.js?v=bd59798';
+import { removeDemo } from '../demo-store.js?v=bd59798';
+import { $, render, renderApp } from '../render.js?v=bd59798';
+import { cloudState, freshOnboarding, setWs, today, ui, ws } from '../state.js?v=bd59798';
+import { download, setTheme, toast } from '../store.js?v=bd59798';
+import { openStructure, openStructureAndShow } from '../sync-ui.js?v=bd59798';
+
+/** Version publiée plus récente que celle chargée ? (numéro ?v=… ajouté à la mise en ligne) */
+async function newerVersionAvailable() {
+  const current = /[?&]v=([\w-]+)/.exec(document.querySelector('script[src*="app.js"]')?.src || '')?.[1];
+  if (!current) return false;
+  try {
+    const page = await (await fetch(location.pathname, { cache: 'no-store' })).text();
+    const latest = /app\.js\?v=([\w-]+)/.exec(page)?.[1];
+    return Boolean(latest && latest !== current);
+  } catch {
+    return false;
+  }
+}
 
 /** Actions « shell » : data-action → fonction. */
 export const actionsTable = {
@@ -29,8 +42,39 @@ export const actionsTable = {
     setTheme(el.dataset.value);
     return renderApp();
   },
-  reload: async () => {
-    return location.reload();
+  /**
+   * Mise à jour : les modifications en attente sont d'abord enregistrées, puis les données rechargées
+   * depuis la base sans quitter l'écran ni perdre une saisie en cours. Si une nouvelle version de
+   * l'application est en ligne, la page est rechargée pour la prendre (sauf saisie en cours).
+   */
+  reload: async ({ el }) => {
+    if (ui.reloading) return;
+    ui.reloading = true;
+    el?.classList.add('is-spinning');
+    el?.setAttribute('aria-busy', 'true');
+    try {
+      const newer = await newerVersionAvailable();
+      if (newer && !ui.draft) {
+        if (cloudState.outbox) await cloudState.outbox.flush();
+        return location.reload();
+      }
+      if (ui.demo || !cloudState.meta) {
+        render();
+        return toast(newer ? 'Nouvelle version disponible : enregistrez votre saisie, puis mettez à jour.' : 'Affichage à jour.');
+      }
+      await cloudState.outbox?.flush();
+      if (cloudState.outbox?.error) return;
+      await openStructure(cloudState.meta.structureId);
+      render();
+      toast(newer ? 'Données à jour. Nouvelle version disponible : enregistrez votre saisie, puis mettez à jour.' : 'Données à jour.');
+    } catch (err) {
+      toast(cloud.friendly(err), true);
+    } finally {
+      ui.reloading = false;
+      const btn = document.querySelector('[data-action="reload"]');
+      btn?.classList.remove('is-spinning');
+      btn?.removeAttribute('aria-busy');
+    }
   },
   print: async () => {
     return window.print();

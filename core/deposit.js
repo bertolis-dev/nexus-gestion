@@ -4,7 +4,7 @@
  * factures déposées sont marquées « Déposée » (cycle de vie, voir lifecycle.js).
  */
 
-import { LIFECYCLE } from './lifecycle.js?v=f9f52cc';
+import { LIFECYCLE } from './lifecycle.js?v=bd59798';
 
 export const PLATFORMS = {
   qonto: 'Qonto',

@@ -2,19 +2,19 @@
  * Écran « settings ».
  */
 
-import { field, html, opt, raw } from '../html.js?v=f9f52cc';
-import { isMicro } from '../render.js?v=f9f52cc';
-import { cloudState, eur, pct, ui, ws } from '../state.js?v=f9f52cc';
-import { VAT_RATES_BP } from '../../core/invoices.js?v=f9f52cc';
-import { ICONS } from '../icons.js?v=f9f52cc';
-import { badge, viewHeader } from '../ui/common.js?v=f9f52cc';
-import * as cloud from '../cloud.js?v=f9f52cc';
-import { render } from '../render.js?v=f9f52cc';
-import { membersCard, microSettingsCard, openingPreview, securityCard } from './onboarding.js?v=f9f52cc';
-import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=f9f52cc';
-import { normalizeIban } from '../../core/epc.js?v=f9f52cc';
-import { INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=f9f52cc';
-import { DEFAULT_TEMPLATES, REMINDER_STEPS } from '../../core/reminders.js?v=f9f52cc';
+import { field, html, opt, raw } from '../html.js?v=bd59798';
+import { isMicro } from '../render.js?v=bd59798';
+import { cloudState, eur, pct, ui, ws } from '../state.js?v=bd59798';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=bd59798';
+import { ICONS } from '../icons.js?v=bd59798';
+import { badge, viewHeader } from '../ui/common.js?v=bd59798';
+import * as cloud from '../cloud.js?v=bd59798';
+import { render } from '../render.js?v=bd59798';
+import { membersCard, microSettingsCard, openingPreview, securityCard } from './onboarding.js?v=bd59798';
+import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=bd59798';
+import { normalizeIban } from '../../core/epc.js?v=bd59798';
+import { INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=bd59798';
+import { DEFAULT_TEMPLATES, REMINDER_STEPS } from '../../core/reminders.js?v=bd59798';
 
 // ------------------------------------------------------------------ paramètres
 

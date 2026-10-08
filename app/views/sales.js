@@ -2,20 +2,20 @@
  * Écran « sales ».
  */
 
-import { VAT_RATES_BP, checkInvoice, computeTotals, isVatExempt, issuerName, lineHt } from '../../core/invoices.js?v=f9f52cc';
-import { FREQUENCIES, nextDate } from '../../core/recurring.js?v=f9f52cc';
-import { field, html, opt, raw } from '../html.js?v=f9f52cc';
-import { ICONS } from '../icons.js?v=f9f52cc';
-import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=f9f52cc';
-import { save, toast } from '../store.js?v=f9f52cc';
-import { isUnconfirmed } from '../sync-ui.js?v=f9f52cc';
-import { badge, viewHeader } from '../ui/common.js?v=f9f52cc';
-import { qrSvg } from '../ui/qr.js?v=f9f52cc';
-import { invoicePaymentQr } from '../../core/epc.js?v=f9f52cc';
-import { lifecycleCard } from './expenses.js?v=f9f52cc';
-import { viewInvoiceForm } from './invoice-form.js?v=f9f52cc';
-import { depositCard } from './deposit.js?v=f9f52cc';
-import { REMINDER_STEPS, dueReminderLevel, reminderMessage } from '../../core/reminders.js?v=f9f52cc';
+import { VAT_RATES_BP, checkInvoice, computeTotals, isVatExempt, issuerName, lineHt } from '../../core/invoices.js?v=bd59798';
+import { FREQUENCIES, nextDate } from '../../core/recurring.js?v=bd59798';
+import { field, html, opt, raw } from '../html.js?v=bd59798';
+import { ICONS } from '../icons.js?v=bd59798';
+import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=bd59798';
+import { save, toast } from '../store.js?v=bd59798';
+import { isUnconfirmed } from '../sync-ui.js?v=bd59798';
+import { badge, viewHeader } from '../ui/common.js?v=bd59798';
+import { qrSvg } from '../ui/qr.js?v=bd59798';
+import { invoicePaymentQr } from '../../core/epc.js?v=bd59798';
+import { lifecycleCard } from './expenses.js?v=bd59798';
+import { viewInvoiceForm } from './invoice-form.js?v=bd59798';
+import { depositCard } from './deposit.js?v=bd59798';
+import { REMINDER_STEPS, dueReminderLevel, reminderMessage } from '../../core/reminders.js?v=bd59798';
 
 // ------------------------------------------------------------------ factures (§3.2, §3.5)
 
