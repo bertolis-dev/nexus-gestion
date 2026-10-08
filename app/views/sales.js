@@ -2,20 +2,20 @@
  * Écran « sales ».
  */
 
-import { VAT_RATES_BP, checkInvoice, computeTotals, isVatExempt, issuerName, lineHt } from '../../core/invoices.js?v=b774003';
-import { FREQUENCIES, nextDate } from '../../core/recurring.js?v=b774003';
-import { field, html, opt, raw } from '../html.js?v=b774003';
-import { ICONS } from '../icons.js?v=b774003';
-import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=b774003';
-import { save, toast } from '../store.js?v=b774003';
-import { isUnconfirmed } from '../sync-ui.js?v=b774003';
-import { badge, viewHeader } from '../ui/common.js?v=b774003';
-import { qrSvg } from '../ui/qr.js?v=b774003';
-import { invoicePaymentQr } from '../../core/epc.js?v=b774003';
-import { lifecycleCard } from './expenses.js?v=b774003';
-import { viewInvoiceForm } from './invoice-form.js?v=b774003';
-import { depositCard } from './deposit.js?v=b774003';
-import { REMINDER_STEPS, dueReminderLevel, reminderMessage } from '../../core/reminders.js?v=b774003';
+import { VAT_RATES_BP, checkInvoice, computeTotals, isVatExempt, issuerName, lineHt } from '../../core/invoices.js?v=a2f2703';
+import { FREQUENCIES, nextDate } from '../../core/recurring.js?v=a2f2703';
+import { field, html, opt, raw } from '../html.js?v=a2f2703';
+import { ICONS } from '../icons.js?v=a2f2703';
+import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=a2f2703';
+import { save, toast } from '../store.js?v=a2f2703';
+import { isUnconfirmed } from '../sync-ui.js?v=a2f2703';
+import { badge, viewHeader } from '../ui/common.js?v=a2f2703';
+import { qrSvg } from '../ui/qr.js?v=a2f2703';
+import { invoicePaymentQr } from '../../core/epc.js?v=a2f2703';
+import { lifecycleCard } from './expenses.js?v=a2f2703';
+import { viewInvoiceForm } from './invoice-form.js?v=a2f2703';
+import { depositCard } from './deposit.js?v=a2f2703';
+import { REMINDER_STEPS, dueReminderLevel, invoiceEmail, reminderMessage } from '../../core/reminders.js?v=a2f2703';
 
 // ------------------------------------------------------------------ factures (§3.2, §3.5)
 
@@ -284,7 +284,7 @@ export function viewInvoice(id) {
   const history = issued ? ws.reminderHistory(inv.id) : [];
   const lateDays = Math.floor((Date.parse(today()) - Date.parse(inv.dueDate)) / 86400000);
   const reminderLevel = dueReminderLevel(lateDays, history) || Math.min(3, Math.max(0, ...history.map((h) => h.level)) + 1);
-  const reminder = c.email && issued && outstanding > 0 ? reminderMessage(ws, inv.id, reminderLevel, today()) : null;
+  const reminder = invoiceEmail(ws, inv) && issued && outstanding > 0 ? reminderMessage(ws, inv.id, reminderLevel, today()) : null;
   const mailto = reminder
     ? `mailto:${encodeURIComponent(reminder.to)}?subject=${encodeURIComponent(reminder.subject)}&body=${encodeURIComponent(reminder.body)}`
     : '';

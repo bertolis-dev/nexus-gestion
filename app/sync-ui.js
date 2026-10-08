@@ -2,14 +2,14 @@
  * Mode connecté : ouverture d’une entreprise, file d’envoi, état de la synchronisation.
  */
 
-import { pickStructure } from '../core/company.js?v=b774003';
-import { applySyncResult } from '../core/sync.js?v=b774003';
-import { Workspace } from '../core/workspace.js?v=b774003';
-import * as cloud from './cloud.js?v=b774003';
-import { html } from './html.js?v=b774003';
-import { render } from './render.js?v=b774003';
-import { cloudState, newId, setWs, ui, ws } from './state.js?v=b774003';
-import { toast } from './store.js?v=b774003';
+import { pickStructure } from '../core/company.js?v=a2f2703';
+import { applySyncResult } from '../core/sync.js?v=a2f2703';
+import { Workspace } from '../core/workspace.js?v=a2f2703';
+import * as cloud from './cloud.js?v=a2f2703';
+import { html } from './html.js?v=a2f2703';
+import { render } from './render.js?v=a2f2703';
+import { cloudState, newId, setWs, ui, ws } from './state.js?v=a2f2703';
+import { toast } from './store.js?v=a2f2703';
 
 // ------------------------------------------------------------------ synchronisation
 
@@ -81,7 +81,9 @@ export async function openStructureAndShow(id) {
   ui.picking = false;
   await openStructure(id);
   // Envoi d'e-mails par Nexus (Brevo) en service ? Sinon, factures et relances passent par la messagerie.
-  cloud.emailConfigured().then((ready) => {
+  cloud.emailStatus().then((st) => {
+    const ready = Boolean(st?.configured) && st?.http !== false;
+    cloudState.emailStatus = st;
     if (ready === cloudState.emailReady) return;
     cloudState.emailReady = ready;
     render();

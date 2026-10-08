@@ -5,7 +5,7 @@
  * {entreprise}.
  */
 
-import { formatEuros } from './money.js?v=b774003';
+import { formatEuros } from './money.js?v=a2f2703';
 
 export const REMINDER_STEPS = [
   { level: 1, days: 3, label: 'Rappel courtois' },
@@ -40,6 +40,14 @@ export const renderTemplate = (text, vars) => String(text).replace(/\{(\w+)\}/g,
 
 const frDate = (iso) => (iso ? `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}` : '');
 
+/**
+ * Adresse du client d'une facture : celle figée à l'émission, sinon celle de sa fiche (ajoutée après
+ * coup) — même règle que l'envoi par la base (courriel.envoyer).
+ */
+export function invoiceEmail(ws, inv) {
+  return inv.client?.email || ws.clients?.find((c) => c.code === inv.client?.code)?.email || '';
+}
+
 /** Message de relance (destinataire, objet, texte) pour une facture et un niveau. */
 export function reminderMessage(ws, invoiceId, level, today) {
   const inv = ws.book.get(invoiceId);
@@ -55,7 +63,7 @@ export function reminderMessage(ws, invoiceId, level, today) {
     jours: String(lateDays),
     entreprise: ws.company.name || '',
   };
-  return { to: inv.client?.email || '', subject: renderTemplate(template.subject, vars), body: renderTemplate(template.body, vars) };
+  return { to: invoiceEmail(ws, inv), subject: renderTemplate(template.subject, vars), body: renderTemplate(template.body, vars) };
 }
 
 /** Méthodes installées sur Workspace.prototype (voir core/workspace.js). */

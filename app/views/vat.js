@@ -2,11 +2,11 @@
  * Écran « vat ».
  */
 
-import { html, raw } from '../html.js?v=b774003';
-import { ICONS } from '../icons.js?v=b774003';
-import { eur, frDate, today, ui, ws } from '../state.js?v=b774003';
-import { viewHeader } from '../ui/common.js?v=b774003';
-import { franchiseBanner, thresholdCard } from './micro.js?v=b774003';
+import { html, raw } from '../html.js?v=a2f2703';
+import { ICONS } from '../icons.js?v=a2f2703';
+import { eur, frDate, today, ui, ws } from '../state.js?v=a2f2703';
+import { viewHeader } from '../ui/common.js?v=a2f2703';
+import { franchiseBanner, thresholdCard } from './micro.js?v=a2f2703';
 
 // ------------------------------------------------------------------ TVA (§3.6)
 

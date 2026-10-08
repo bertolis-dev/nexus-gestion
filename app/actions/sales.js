@@ -2,20 +2,21 @@
  * Écran « sales ».
  */
 
-import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=b774003';
-import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=b774003';
-import { LIFECYCLE } from '../../core/lifecycle.js?v=b774003';
-import { lookupSiren } from '../company-lookup.js?v=b774003';
-import { render } from '../render.js?v=b774003';
-import * as cloud from '../cloud.js?v=b774003';
-import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=b774003';
-import { reminderMessage } from '../../core/reminders.js?v=b774003';
-import { download, save, toast } from '../store.js?v=b774003';
-import { isUnconfirmed } from '../sync-ui.js?v=b774003';
-import { emptyLine, persistDraft } from '../views/invoice-form.js?v=b774003';
-import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=b774003';
-import { depositCandidates } from '../../core/deposit.js?v=b774003';
-import { createZip } from '../../core/zip.js?v=b774003';
+import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=a2f2703';
+import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=a2f2703';
+import { LIFECYCLE } from '../../core/lifecycle.js?v=a2f2703';
+import { lookupSiren } from '../company-lookup.js?v=a2f2703';
+import { render } from '../render.js?v=a2f2703';
+import * as cloud from '../cloud.js?v=a2f2703';
+import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=a2f2703';
+import { invoiceEmail, reminderMessage } from '../../core/reminders.js?v=a2f2703';
+import { explainEmailError } from '../email-errors.js?v=a2f2703';
+import { download, save, toast } from '../store.js?v=a2f2703';
+import { isUnconfirmed } from '../sync-ui.js?v=a2f2703';
+import { emptyLine, persistDraft } from '../views/invoice-form.js?v=a2f2703';
+import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=a2f2703';
+import { depositCandidates } from '../../core/deposit.js?v=a2f2703';
+import { createZip } from '../../core/zip.js?v=a2f2703';
 
 /** Envoi de la facture : par Nexus (Brevo) si en service, sinon partage ou messagerie. */
 async function sendInvoice(id) {
@@ -30,16 +31,18 @@ async function sendInvoice(id) {
   const subject = `${inv.type === 'credit' ? 'Avoir' : 'Facture'} ${inv.number} — ${ws.company.name}`;
   const body = `Bonjour,\n\nVeuillez trouver ci-joint ${inv.type === 'credit' ? "l'avoir" : 'la facture'} ${inv.number} d'un montant de ${eur(inv.totals.netToPay ?? inv.totals.totalTtc)}${inv.type === 'credit' ? '' : `, à régler avant le ${frDate(inv.dueDate)}`}.\n\nCordialement,\n${ws.company.name}`;
   // Envoi par Nexus Gestion (Brevo) : directement au client, PDF joint.
-  if (!ui.demo && cloudState.emailReady && inv.client?.email) {
+  const email = invoiceEmail(ws, inv);
+  if (!ui.demo && cloudState.emailReady && email) {
     try {
       const r = await cloud.sendInvoiceEmail(inv.id, { subject, body, pdf, name });
-      if (!r.ok) return toast(`La facture n’est pas partie : le service d’e-mails l’a refusée (${r.detail || 'raison inconnue'}).`, true);
+      if (!r.ok) return toast(`La facture n’est pas partie. ${explainEmailError(r.detail)}`, true);
       ui.emails = null;
       return toast(`Facture envoyée par e-mail à ${r.recipient}, PDF joint.`);
     } catch (err) {
-      return toast(cloud.friendly(err), true);
+      return toast(`La facture n’est pas partie. ${explainEmailError(cloud.friendly(err))}`, true);
     }
   }
+  if (!ui.demo && !email) toast('Ce client n’a pas d’adresse e-mail : complétez sa fiche pour l’envoi direct. Votre messagerie s’ouvre à la place.', true);
   const file = new File([pdf], name, { type: 'application/pdf' });
   // Téléphone et certains ordinateurs : partage natif avec le PDF joint.
   if (navigator.canShare?.({ files: [file] })) {
@@ -52,7 +55,7 @@ async function sendInvoice(id) {
   }
   // Sinon : PDF téléchargé, puis message préparé dans la messagerie (la pièce jointe s'ajoute à la main).
   download(name, pdf, 'application/pdf');
-  const to = inv.client?.email ? encodeURIComponent(inv.client.email) : '';
+  const to = email ? encodeURIComponent(email) : '';
   location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   toast(`${name} est téléchargé : joignez-le au message qui s’ouvre.`);
 }
@@ -166,7 +169,7 @@ export const actionsTable = {
     ui.sending = true;
     try {
       const r = await cloud.sendReminderEmail(id, level, msg);
-      if (!r.ok) return toast(`La relance n’est pas partie : le service d’e-mails l’a refusée (${r.detail || 'raison inconnue'}).`, true);
+      if (!r.ok) return toast(`La relance n’est pas partie. ${explainEmailError(r.detail)}`, true);
       ws.recordReminder(id, { level, date: today() });
       save();
       ui.emails = null;

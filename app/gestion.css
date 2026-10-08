@@ -879,3 +879,12 @@ tr[data-href]:focus-visible,
 .doc-link:focus-visible {
   text-decoration: underline;
 }
+
+/* Résultat positif (e-mail de test parti). */
+.notice-success {
+  background: #e3f3ea;
+  color: #1f6b45;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+}

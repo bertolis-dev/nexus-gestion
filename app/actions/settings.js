@@ -2,13 +2,14 @@
  * Écran « settings ».
  */
 
-import * as cloud from '../cloud.js?v=b774003';
-import { render } from '../render.js?v=b774003';
-import { cloudState, frDate, today, ui, ws } from '../state.js?v=b774003';
-import { download, save, toast } from '../store.js?v=b774003';
-import { forgetRule } from '../../core/categorization.js?v=b774003';
-import { removeCatalogItem, saveCatalogItem } from '../../core/catalog.js?v=b774003';
-import { readPrice } from '../views/invoice-form.js?v=b774003';
+import * as cloud from '../cloud.js?v=a2f2703';
+import { render } from '../render.js?v=a2f2703';
+import { cloudState, frDate, today, ui, ws } from '../state.js?v=a2f2703';
+import { download, save, toast } from '../store.js?v=a2f2703';
+import { forgetRule } from '../../core/categorization.js?v=a2f2703';
+import { explainEmailError } from '../email-errors.js?v=a2f2703';
+import { removeCatalogItem, saveCatalogItem } from '../../core/catalog.js?v=a2f2703';
+import { readPrice } from '../views/invoice-form.js?v=a2f2703';
 
 /** Ajout au catalogue (formulaire de Paramètres > Prestations et articles). */
 export function catalogSubmit(f, form) {
@@ -41,6 +42,22 @@ export const actionsTable = {
     } catch (err) {
       toast(cloud.friendly(err), true);
     }
+  },
+  'email-test': async () => {
+    if (ui.emailTest?.busy) return;
+    ui.emailTest = { busy: true };
+    render();
+    try {
+      const r = await cloud.sendTestEmail();
+      ui.emailTest = r.ok
+        ? { ok: true, message: `E-mail de test envoyé à ${r.recipient} depuis ${r.sender}. Vérifiez votre boîte de réception (et les indésirables).` }
+        : { ok: false, message: explainEmailError(r.detail), detail: r.detail };
+    } catch (err) {
+      const detail = cloud.friendly(err);
+      ui.emailTest = { ok: false, message: explainEmailError(detail), detail };
+    }
+    ui.emails = null;
+    render();
   },
   'catalog-remove': async ({ id }) => {
     ws.company.catalog = removeCatalogItem(ws.company.catalog, id);

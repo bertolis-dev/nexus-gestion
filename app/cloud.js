@@ -9,11 +9,11 @@
  * nombre d'écritures validées), l'état est rechargé depuis la base, qui fait foi.
  */
 
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js?v=b774003';
-import { stateFromRows, refusedUpdate } from '../core/sync.js?v=b774003';
-import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, pendingOutboxOps, OUTBOX_PREFIX } from '../core/outbox.js?v=b774003';
-import { ACCOUNTS } from '../core/pcg.js?v=b774003';
-import { mfaState, canRemoveFactor } from '../core/mfa.js?v=b774003';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js?v=a2f2703';
+import { stateFromRows, refusedUpdate } from '../core/sync.js?v=a2f2703';
+import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, pendingOutboxOps, OUTBOX_PREFIX } from '../core/outbox.js?v=a2f2703';
+import { ACCOUNTS } from '../core/pcg.js?v=a2f2703';
+import { mfaState, canRemoveFactor } from '../core/mfa.js?v=a2f2703';
 
 // supabase-js (copie locale, app/vendor/) n'est chargé qu'en mode connecté : la démonstration et
 // le site public ne téléchargent pas ces 220 Ko.
@@ -21,7 +21,7 @@ let client = null;
 const authListeners = [];
 async function connect() {
   if (!client) {
-    const { createClient } = await import('./vendor/supabase.js?v=b774003');
+    const { createClient } = await import('./vendor/supabase.js?v=a2f2703');
     // Session gardée dans le navigateur et renouvelée automatiquement : on reste connecté d'une visite
     // à l'autre, jusqu'à « Se déconnecter » (comme Nexus RH).
     client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -306,6 +306,19 @@ function toBase64(bytes) {
   let bin = '';
   for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
   return btoa(bin);
+}
+/** État de l'envoi : configuré, adresse d'expéditeur, extension http active (migration 0024). */
+export async function emailStatus() {
+  const supabase = await connect();
+  const { data, error } = await supabase.rpc('email_status');
+  if (!error) return data;
+  // Base sans la migration 0024 : seul « configuré » est connu.
+  return { configured: await emailConfigured(), sender: null, http: null };
+}
+/** E-mail de test à l'adresse du dirigeant connecté ; renvoie { ok, recipient, sender, detail }. */
+export async function sendTestEmail() {
+  const supabase = await connect();
+  return check(await supabase.rpc('send_test_email'));
 }
 /** Facture envoyée au client de la facture, PDF joint ; renvoie { ok, recipient, detail }. */
 export async function sendInvoiceEmail(invoiceId, { subject, body, pdf, name }) {

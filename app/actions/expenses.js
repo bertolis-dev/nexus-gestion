@@ -2,12 +2,12 @@
  * Écran « expenses ».
  */
 
-import { purchaseLinesFrom } from '../../core/einvoice-in.js?v=b774003';
-import * as cloud from '../cloud.js?v=b774003';
-import { render } from '../render.js?v=b774003';
-import { eur, ui, ws } from '../state.js?v=b774003';
-import { save, toast } from '../store.js?v=b774003';
-import { attachReceipt } from '../views/expenses.js?v=b774003';
+import { purchaseLinesFrom } from '../../core/einvoice-in.js?v=a2f2703';
+import * as cloud from '../cloud.js?v=a2f2703';
+import { render } from '../render.js?v=a2f2703';
+import { eur, ui, ws } from '../state.js?v=a2f2703';
+import { save, toast } from '../store.js?v=a2f2703';
+import { attachReceipt } from '../views/expenses.js?v=a2f2703';
 
 /** Actions « expenses » : data-action → fonction. */
 export const actionsTable = {

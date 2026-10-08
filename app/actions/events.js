@@ -2,28 +2,28 @@
  * Événements du document : saisie, changement, clavier, formulaires, clics, navigation.
  */
 
-import { isValidSiren } from '../../core/invoices.js?v=b774003';
-import { parseEuros } from '../../core/money.js?v=b774003';
-import { usualVatRate } from '../../core/pcg.js?v=b774003';
-import { findCatalogItem } from '../../core/catalog.js?v=b774003';
-import * as cloud from '../cloud.js?v=b774003';
-import { html, raw } from '../html.js?v=b774003';
-import { ICONS } from '../icons.js?v=b774003';
-import { $, render, searchResults } from '../render.js?v=b774003';
-import { closeLightbox, featureSlug } from '../site/landing.js?v=b774003';
-import { cloudState, ui, ws } from '../state.js?v=b774003';
-import { save, savePrefs, toast } from '../store.js?v=b774003';
-import { afterSignIn } from '../sync-ui.js?v=b774003';
-import { currentBankAccount, importBankFile } from '../views/bank.js?v=b774003';
-import { attachReceipt } from '../views/expenses.js?v=b774003';
-import { readPrice, totalsBlock } from '../views/invoice-form.js?v=b774003';
-import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=b774003';
-import { runAction } from './index.js?v=b774003';
-import { readReceivedInvoices } from '../received-invoices.js?v=b774003';
-import { urssafLinkSubmit } from '../views/urssaf-link.js?v=b774003';
-import { catalogSubmit } from './settings.js?v=b774003';
-import { clientSubmit, readClientsFile } from './clients.js?v=b774003';
-import { filterClients } from '../views/clients.js?v=b774003';
+import { isValidSiren } from '../../core/invoices.js?v=a2f2703';
+import { parseEuros } from '../../core/money.js?v=a2f2703';
+import { usualVatRate } from '../../core/pcg.js?v=a2f2703';
+import { findCatalogItem } from '../../core/catalog.js?v=a2f2703';
+import * as cloud from '../cloud.js?v=a2f2703';
+import { html, raw } from '../html.js?v=a2f2703';
+import { ICONS } from '../icons.js?v=a2f2703';
+import { $, render, searchResults } from '../render.js?v=a2f2703';
+import { closeLightbox, featureSlug } from '../site/landing.js?v=a2f2703';
+import { cloudState, ui, ws } from '../state.js?v=a2f2703';
+import { save, savePrefs, toast } from '../store.js?v=a2f2703';
+import { afterSignIn } from '../sync-ui.js?v=a2f2703';
+import { currentBankAccount, importBankFile } from '../views/bank.js?v=a2f2703';
+import { attachReceipt } from '../views/expenses.js?v=a2f2703';
+import { readPrice, totalsBlock } from '../views/invoice-form.js?v=a2f2703';
+import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=a2f2703';
+import { runAction } from './index.js?v=a2f2703';
+import { readReceivedInvoices } from '../received-invoices.js?v=a2f2703';
+import { urssafLinkSubmit } from '../views/urssaf-link.js?v=a2f2703';
+import { catalogSubmit } from './settings.js?v=a2f2703';
+import { clientSubmit, readClientsFile } from './clients.js?v=a2f2703';
+import { filterClients } from '../views/clients.js?v=a2f2703';
 
 // ------------------------------------------------------------------ évènements
 

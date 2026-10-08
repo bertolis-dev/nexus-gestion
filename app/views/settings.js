@@ -2,19 +2,19 @@
  * Écran « settings ».
  */
 
-import { field, html, opt, raw } from '../html.js?v=b774003';
-import { isMicro } from '../render.js?v=b774003';
-import { cloudState, eur, pct, ui, ws } from '../state.js?v=b774003';
-import { VAT_RATES_BP } from '../../core/invoices.js?v=b774003';
-import { ICONS } from '../icons.js?v=b774003';
-import { badge, viewHeader } from '../ui/common.js?v=b774003';
-import * as cloud from '../cloud.js?v=b774003';
-import { render } from '../render.js?v=b774003';
-import { membersCard, microSettingsCard, openingPreview, securityCard } from './onboarding.js?v=b774003';
-import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=b774003';
-import { normalizeIban } from '../../core/epc.js?v=b774003';
-import { INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=b774003';
-import { DEFAULT_TEMPLATES, REMINDER_STEPS } from '../../core/reminders.js?v=b774003';
+import { field, html, opt, raw } from '../html.js?v=a2f2703';
+import { isMicro } from '../render.js?v=a2f2703';
+import { cloudState, eur, pct, ui, ws } from '../state.js?v=a2f2703';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=a2f2703';
+import { ICONS } from '../icons.js?v=a2f2703';
+import { badge, viewHeader } from '../ui/common.js?v=a2f2703';
+import * as cloud from '../cloud.js?v=a2f2703';
+import { render } from '../render.js?v=a2f2703';
+import { membersCard, microSettingsCard, openingPreview, securityCard } from './onboarding.js?v=a2f2703';
+import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=a2f2703';
+import { normalizeIban } from '../../core/epc.js?v=a2f2703';
+import { INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=a2f2703';
+import { DEFAULT_TEMPLATES, REMINDER_STEPS } from '../../core/reminders.js?v=a2f2703';
 
 // ------------------------------------------------------------------ paramètres
 
@@ -46,12 +46,19 @@ function emailCard() {
       <h2>Envoi par e-mail</h2>
       <p class="text-muted" style="margin:0">En démonstration, aucun e-mail ne part : factures et relances s’ouvrent dans votre messagerie.</p>
     </div>`;
+  const st = cloudState.emailStatus;
+  const testBlock = emailTestBlock();
   if (!cloudState.emailReady)
-    return html`<div class="card">
+    return html`<div class="card" style="display:flex;flex-direction:column;gap:10px">
       <h2>Envoi par e-mail</h2>
       <p class="text-muted" style="margin:0">
-        L’envoi direct par Nexus Gestion n’est pas encore en service : factures et relances s’ouvrent dans votre messagerie, prêtes à partir.
+        ${
+          st?.configured && st?.http === false
+            ? 'L’envoi est configuré, mais l’extension http est inactive dans Supabase : ouvrez Database › Extensions, cherchez « http » et activez-la.'
+            : 'L’envoi direct par Nexus Gestion n’est pas encore en service : factures et relances s’ouvrent dans votre messagerie, prêtes à partir.'
+        }
       </p>
+      ${testBlock}
     </div>`;
   if (!ui.emails && cloudState.meta) {
     const structureId = cloudState.meta.structureId;
@@ -70,8 +77,10 @@ function emailCard() {
   return html`<div class="card" style="display:flex;flex-direction:column;gap:12px">
     <h2>Envoi par e-mail</h2>
     <p class="text-muted" style="margin:0">
-      Factures et relances partent directement chez votre client, à l’adresse de sa fiche ; ses réponses arrivent dans votre boîte e-mail.
+      Factures et relances partent directement chez votre client, à l’adresse de sa fiche ; ses réponses arrivent dans votre boîte
+      e-mail.${st?.sender ? ` Expéditeur : ${st.sender}.` : ''}
     </p>
+    ${testBlock}
     <label class="form-field-checkbox" style="display:flex;gap:8px;align-items:center"
       ><input type="checkbox" data-action="auto-reminders" ${ws.company.autoReminders ? raw('checked') : ''} ${ownerOnly() ? raw('disabled') : ''} />Relancer
       automatiquement les factures impayées (3, 15 puis 30 jours après l’échéance, chaque matin)</label
@@ -171,6 +180,26 @@ function catalogTab() {
           </div>`
         : html`<div class="card"><p class="text-muted" style="margin:0">Catalogue vide pour l’instant.</p></div>`
     }`;
+}
+
+/** Bouton « M'envoyer un e-mail de test » (dirigeant) et résultat, avec la cause exacte d'un échec. */
+function emailTestBlock() {
+  if (ownerOnly()) return '';
+  const t = ui.emailTest;
+  return html`<div style="display:flex;flex-direction:column;gap:8px">
+    <div>
+      <button class="btn btn-secondary btn-sm" data-action="email-test" ${t?.busy ? raw('disabled aria-busy="true"') : ''}>
+        ${t?.busy ? 'Envoi en cours…' : 'M’envoyer un e-mail de test'}
+      </button>
+    </div>
+    ${
+      t && !t.busy
+        ? html`<div class="${t.ok ? 'notice-success' : 'notice-gold'}" role="status">
+            ${t.message}${t.detail ? html`<div class="text-muted" style="font-size:12px;margin-top:4px">Réponse technique : ${t.detail}</div>` : ''}
+          </div>`
+        : ''
+    }
+  </div>`;
 }
 
 /** Règles de catégorisation apprises en banque, supprimables une à une. */

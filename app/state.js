@@ -2,9 +2,9 @@
  * État partagé de l'interface : entreprise affichée, écran, mode connecté, formats d'affichage.
  */
 
-import { todayParis } from '../core/dates.js?v=b774003';
-import { formatEuros } from '../core/money.js?v=b774003';
-import { getDemo, removeDemo, setDemo } from './demo-store.js?v=b774003';
+import { todayParis } from '../core/dates.js?v=a2f2703';
+import { formatEuros } from '../core/money.js?v=a2f2703';
+import { getDemo, removeDemo, setDemo } from './demo-store.js?v=a2f2703';
 
 /**
  * Nexus Gestion — interface (lot 1).

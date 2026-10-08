@@ -13,8 +13,8 @@
  * compte|date|montant|libellé|rang pour le CSV), et un ré-import ne crée aucun doublon.
  */
 
-import { parisDateOf } from './dates.js?v=b774003';
-import { parseEuros } from './money.js?v=b774003';
+import { parisDateOf } from './dates.js?v=a2f2703';
+import { parseEuros } from './money.js?v=a2f2703';
 
 // ------------------------------------------------------------------ outils
 
