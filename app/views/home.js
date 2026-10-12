@@ -2,14 +2,14 @@
  * Écran « home ».
  */
 
-import { html, raw } from '../html.js?v=a60350d';
-import { ICONS } from '../icons.js?v=a60350d';
-import { isMicro } from '../render.js?v=a60350d';
-import { eur, today, ui, ws } from '../state.js?v=a60350d';
-import { allocationCard } from './closing.js?v=a60350d';
-import { franchiseBanner } from './micro.js?v=a60350d';
-import { forecastCard } from './forecast.js?v=a60350d';
-import { activityCard } from './stats.js?v=a60350d';
+import { html, raw } from '../html.js?v=e260546';
+import { ICONS } from '../icons.js?v=e260546';
+import { isMicro } from '../render.js?v=e260546';
+import { eur, today, ui, ws } from '../state.js?v=e260546';
+import { allocationCard } from './closing.js?v=e260546';
+import { franchiseBanner } from './micro.js?v=e260546';
+import { forecastCard } from './forecast.js?v=e260546';
+import { activityCard } from './stats.js?v=e260546';
 
 // ------------------------------------------------------------------ accueil
 
@@ -23,7 +23,7 @@ export function viewHome() {
       <div class="kpi-value">${eur(value)}</div>
       <div class="kpi-label">${label}</div></a
     >`;
-  const todoIcon = { bank: 'card', late: 'bell', draft: 'pencil', receipt: 'paperclip', vat: 'percent', urssaf: 'scale' };
+  const todoIcon = { cash: 'coin', bank: 'card', late: 'bell', draft: 'pencil', receipt: 'paperclip', vat: 'percent', urssaf: 'scale' };
   return html` <div class="dashboard-hero">
       <div class="dashboard-hero-text">
         <h1>Accueil</h1>
@@ -48,7 +48,11 @@ export function viewHome() {
           ? html`<div class="action-center-list">
               ${todo.map(
                 (i) =>
-                  html` <button type="button" class="action-center-item" data-href="#/${i.view}${i.id ? `/${i.id}` : i.period ? `/${i.period}` : ''}">
+                  html` <button
+                    type="button"
+                    class="action-center-item${i.kind === 'cash' ? ' action-center-urgent' : ''}"
+                    ${i.action ? raw(`data-action="${i.action}"`) : raw(`data-href="#/${i.view}${i.id ? `/${i.id}` : i.period ? `/${i.period}` : ''}"`)}
+                  >
                     <span class="action-center-icon">${raw(ICONS[todoIcon[i.kind] || 'info'])}</span>
                     <span class="action-center-label">${i.text}${i.amount != null ? ` — ${eur(i.amount)}` : ''}</span>
                     <span class="action-center-arrow">→</span>

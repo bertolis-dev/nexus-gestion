@@ -2,28 +2,29 @@
  * Événements du document : saisie, changement, clavier, formulaires, clics, navigation.
  */
 
-import { isValidSiren } from '../../core/invoices.js?v=a60350d';
-import { parseEuros } from '../../core/money.js?v=a60350d';
-import { usualVatRate } from '../../core/pcg.js?v=a60350d';
-import { findCatalogItem } from '../../core/catalog.js?v=a60350d';
-import * as cloud from '../cloud.js?v=a60350d';
-import { html, raw } from '../html.js?v=a60350d';
-import { ICONS } from '../icons.js?v=a60350d';
-import { $, render, searchResults } from '../render.js?v=a60350d';
-import { closeLightbox, featureSlug } from '../site/landing.js?v=a60350d';
-import { cloudState, ui, ws } from '../state.js?v=a60350d';
-import { save, savePrefs, toast } from '../store.js?v=a60350d';
-import { afterSignIn } from '../sync-ui.js?v=a60350d';
-import { currentBankAccount, importBankFile } from '../views/bank.js?v=a60350d';
-import { attachReceipt } from '../views/expenses.js?v=a60350d';
-import { readPrice, totalsBlock } from '../views/invoice-form.js?v=a60350d';
-import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=a60350d';
-import { runAction } from './index.js?v=a60350d';
-import { readReceivedInvoices } from '../received-invoices.js?v=a60350d';
-import { urssafLinkSubmit } from '../views/urssaf-link.js?v=a60350d';
-import { catalogSubmit } from './settings.js?v=a60350d';
-import { clientSubmit, readClientsFile } from './clients.js?v=a60350d';
-import { filterClients } from '../views/clients.js?v=a60350d';
+import { isValidSiren } from '../../core/invoices.js?v=e260546';
+import { parseEuros } from '../../core/money.js?v=e260546';
+import { knownVatOnDebits } from '../../core/purchases.js?v=e260546';
+import { usualVatRate } from '../../core/pcg.js?v=e260546';
+import { findCatalogItem } from '../../core/catalog.js?v=e260546';
+import * as cloud from '../cloud.js?v=e260546';
+import { html, raw } from '../html.js?v=e260546';
+import { ICONS } from '../icons.js?v=e260546';
+import { $, render, searchResults } from '../render.js?v=e260546';
+import { closeLightbox, featureSlug } from '../site/landing.js?v=e260546';
+import { cloudState, ui, ws } from '../state.js?v=e260546';
+import { save, savePrefs, toast } from '../store.js?v=e260546';
+import { afterSignIn } from '../sync-ui.js?v=e260546';
+import { attachTxReceipt, currentBankAccount, importBankFile } from '../views/bank.js?v=e260546';
+import { attachReceipt } from '../views/expenses.js?v=e260546';
+import { readPrice, totalsBlock } from '../views/invoice-form.js?v=e260546';
+import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=e260546';
+import { runAction } from './index.js?v=e260546';
+import { readReceivedInvoices } from '../received-invoices.js?v=e260546';
+import { urssafLinkSubmit } from '../views/urssaf-link.js?v=e260546';
+import { catalogSubmit } from './settings.js?v=e260546';
+import { clientSubmit, readClientsFile } from './clients.js?v=e260546';
+import { filterClients } from '../views/clients.js?v=e260546';
 
 // ------------------------------------------------------------------ évènements
 
@@ -114,6 +115,12 @@ document.addEventListener('input', (e) => {
 
 document.addEventListener('change', async (e) => {
   const el = e.target;
+  // Fournisseur déjà connu : son option pour les débits est reprise.
+  if (el.name === 'supplier' && el.form?.dataset.form === 'purchase') {
+    const box = el.form.querySelector('[name="vatOnDebits"]');
+    if (box) box.checked = knownVatOnDebits(ws.purchases, el.value);
+    return;
+  }
   if (el.dataset.statement !== undefined) return render();
   if (el.dataset.cat !== undefined) {
     const tx = ws.transactions.find((t) => t.id === el.dataset.cat);
@@ -174,6 +181,7 @@ document.addEventListener('change', async (e) => {
     reader.readAsDataURL(file);
     return;
   }
+  if (el.dataset.action === 'tx-receipt-file' && el.files[0]) return attachTxReceipt(el.dataset.id, el.files[0]);
   if (el.dataset.action === 'bank-file' && el.files[0]) {
     try {
       const result = await importBankFile(el.files[0], currentBankAccount().id);
@@ -327,6 +335,7 @@ document.addEventListener('submit', async (e) => {
         type: f.docType === 'credit' ? 'credit' : 'invoice',
         reverseCharge: fd.has('reverseCharge'),
       };
+      if (form.querySelector('[name="vatOnDebits"]')) data.supplier.vatOnDebits = fd.has('vatOnDebits');
       if (!data.supplier.name) throw new Error('Indiquez le fournisseur.');
       if (data.ttc <= 0) throw new Error('Le montant doit être positif.');
       ui.pendingPurchase.data = data;

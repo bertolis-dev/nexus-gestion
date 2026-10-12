@@ -3,14 +3,14 @@
  * trésorerie passe sous zéro, détail des mouvements pris en compte.
  */
 
-import { cashForecast } from '../../core/forecast.js?v=a60350d';
-import { html } from '../html.js?v=a60350d';
-import { eur, frDate, today, ui, ws } from '../state.js?v=a60350d';
+import { cashForecast } from '../../core/forecast.js?v=e260546';
+import { html } from '../html.js?v=e260546';
+import { eur, frDate, today, ui, ws } from '../state.js?v=e260546';
 
 export function forecastCard() {
   const f = cashForecast(ws, today());
   if (!f.events.length) return '';
-  return html`<div class="card" style="display:flex;flex-direction:column;gap:10px">
+  return html`<div class="card" id="tresorerie-prevue" tabindex="-1" style="display:flex;flex-direction:column;gap:10px">
     <h2>Trésorerie prévisionnelle</h2>
     ${
       f.firstNegative
@@ -67,7 +67,8 @@ export function forecastCard() {
         : ''
     }
     <p class="form-hint" style="margin:0">
-      Prévision à partir de vos factures, dépenses, factures récurrentes, TVA et cotisations estimées ; l’impôt sur les sociétés n’est pas inclus.
+      Prévision à partir de vos factures, dépenses, factures récurrentes, TVA et cotisations
+      estimées${ws.company.taxRegime === 'is-reel' ? ', acomptes et solde d’impôt sur les sociétés (calculés sur votre dernier exercice clôturé)' : ''}.
     </p>
   </div>`;
 }

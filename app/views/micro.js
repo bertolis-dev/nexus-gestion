@@ -2,13 +2,13 @@
  * Écran « micro ».
  */
 
-import { ESTIMATE_MISSING_LABELS, incomeDeclaration, receiptsBook } from '../../core/micro.js?v=a60350d';
-import { formatDecimalComma } from '../../core/money.js?v=a60350d';
-import { field, html, opt } from '../html.js?v=a60350d';
-import { isMicro } from '../render.js?v=a60350d';
-import { eur, frDate, today, ui, ws } from '../state.js?v=a60350d';
-import { badge, icon, viewHeader } from '../ui/common.js?v=a60350d';
-import { urssafLinkCard } from './urssaf-link.js?v=a60350d';
+import { ESTIMATE_MISSING_LABELS, incomeDeclaration, receiptsBook } from '../../core/micro.js?v=e260546';
+import { formatDecimalComma } from '../../core/money.js?v=e260546';
+import { field, html, opt } from '../html.js?v=e260546';
+import { isMicro } from '../render.js?v=e260546';
+import { eur, frDate, today, ui, ws } from '../state.js?v=e260546';
+import { badge, icon, viewHeader } from '../ui/common.js?v=e260546';
+import { urssafLinkCard } from './urssaf-link.js?v=e260546';
 
 // ------------------------------------------------------------------ micro-entrepreneur
 
@@ -76,7 +76,7 @@ export function urssafCard(year) {
       </div>
       <p class="form-hint" style="padding:0 16px">
         Cotisations estimées : calcul de Nexus à partir de votre chiffre d'affaires encaissé et de votre situation (Paramètres). Le montant qui fait foi est
-        celui affiché par l'URSSAF. ${estimateCaveat(periods[0]?.estimate)}
+        celui affiché par l'URSSAF.
       </p>
       ${open ? urssafDeclarePanel(open) : ''}
     </div>
@@ -84,13 +84,22 @@ export function urssafCard(year) {
 }
 
 /** Ce que l'estimation n'inclut pas faute de valeur validée, dit en une phrase. */
-export function estimateCaveat(e) {
+export function estimateCaveatText(e) {
   if (!e?.missing.length) return '';
-  const items = e.missing.map((k) => ESTIMATE_MISSING_LABELS[k]);
-  const list = items.length > 1 ? `${items.slice(0, -1).join(', ')} et ${items.at(-1)}` : items[0];
-  return e.missing.includes('acre-fin') && e.missing.length === 1
-    ? 'Indiquez la date de fin de votre ACRE dans les paramètres pour une estimation exacte.'
-    : `Cette estimation n’inclut pas encore ${list} : taux en attente de validation par notre expert-comptable${e.missing.includes('acre-fin') ? '. Indiquez aussi la date de fin de votre ACRE dans les paramètres' : ''}.`;
+  const rates = e.missing.filter((k) => k !== 'acre-fin').map((k) => ESTIMATE_MISSING_LABELS[k]);
+  const acre = e.missing.includes('acre-fin') ? 'Indiquez la date de fin de votre ACRE dans les paramètres pour une estimation exacte.' : '';
+  if (!rates.length) return acre;
+  const list = rates.length > 1 ? `${rates.slice(0, -1).join(', ')} et ${rates.at(-1)}` : rates[0];
+  return `L’estimation n’inclut pas ${list} : ${rates.length > 1 ? 'ces taux sont' : 'ce taux est'} en attente de validation par notre expert-comptable. Le montant réel demandé par l’URSSAF sera donc plus élevé.${acre ? ` ${acre}` : ''}`;
+}
+
+/** Encadré bien visible reprenant `estimateCaveatText` (tête d'écran, « À mettre de côté », déclaration). */
+export function estimateCaveat(e) {
+  const text = estimateCaveatText(e);
+  if (!text) return '';
+  return html`<div class="notice-gold" role="note" data-estimate-caveat style="display:flex;gap:8px;align-items:flex-start">
+    <span aria-hidden="true">${icon('info', 16)}</span><span>${text}</span>
+  </div>`;
 }
 
 /** Encart « À mettre de côté » : estimation sur la période en cours, à partir de ce qui est déjà encaissé. */
@@ -107,6 +116,7 @@ export function setAsideCard(periods) {
         <strong>${eur(current.estimate.total)}</strong> pour l'URSSAF, à régler au plus tard le ${frDate(current.deadline)}.
       </p>
       ${current.estimate.acreReduction ? html`<p class="form-hint" style="margin:4px 0 0">ACRE déduite : ${eur(current.estimate.acreReduction)} (${current.estimate.rates.acreBp / 100} % des cotisations sociales).</p>` : ''}
+      ${estimateCaveat(current.estimate)}
     </div>
     <strong class="landing-gradient-number" style="font-size:28px">${eur(current.estimate.total)}</strong>
   </div>`;
@@ -115,6 +125,7 @@ export function setAsideCard(periods) {
 export function urssafDeclarePanel(p) {
   return html`<div style="padding:16px;border-top:1px solid var(--color-border);display:flex;flex-direction:column;gap:14px">
     <h3 style="margin:0">Déclarer ${p.label}</h3>
+    ${estimateCaveat(p.estimate)}
     <ol class="landing-steps" style="margin:0">
       <li>
         <span class="landing-step-num">1</span
@@ -217,8 +228,10 @@ export function viewUrssaf() {
   const receipts = microReceipts();
   const year = Number(today().slice(0, 4));
   const book = receiptsBook(receipts, { from: `${year}-01-01`, to: `${year}-12-31` });
-  return html` ${viewHeader('URSSAF et seuils', 'Le montant à déclarer est votre chiffre d’affaires encaissé sur la période.')} ${franchiseBanner()}
-    ${urssafCard(year)} ${urssafLinkCard()}
+  const periods = ws.urssafPeriods(year, today());
+  const current = periods.find((p) => p.status === 'en-cours') || periods.at(-1);
+  return html` ${viewHeader('URSSAF et seuils', 'Le montant à déclarer est votre chiffre d’affaires encaissé sur la période.')}
+    ${estimateCaveat(current?.estimate)} ${franchiseBanner()} ${urssafCard(year)} ${urssafLinkCard()}
     <div class="card">${thresholdCard()}</div>
     <div class="card table-card">
       <div class="view-header-row" style="display:flex;justify-content:space-between;align-items:center;padding:16px 16px 0">

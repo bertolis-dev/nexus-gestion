@@ -2,15 +2,43 @@
  * Écran « closing ».
  */
 
-import { allocationProposal } from '../../core/closing.js?v=a60350d';
-import { parseEuros } from '../../core/money.js?v=a60350d';
-import { render } from '../render.js?v=a60350d';
-import { today, ui, ws } from '../state.js?v=a60350d';
-import { save, toast } from '../store.js?v=a60350d';
-import { closeYearFlow } from '../views/closing.js?v=a60350d';
+import { allocationProposal } from '../../core/closing.js?v=e260546';
+import { closingPackage } from '../../core/closing-package.js?v=e260546';
+import * as cloud from '../cloud.js?v=e260546';
+import { parseEuros } from '../../core/money.js?v=e260546';
+import { render } from '../render.js?v=e260546';
+import { cloudState, today, ui, ws } from '../state.js?v=e260546';
+import { download, save, toast } from '../store.js?v=e260546';
+import { closeYearFlow } from '../views/closing.js?v=e260546';
 
 /** Actions « closing » : data-action → fonction. */
 export const actionsTable = {
+  // Dossier de clôture (FEC, balance, grand livre, check-list) en un ZIP, inscrit au journal d'audit.
+  'closing-package': async () => {
+    let pkg;
+    try {
+      pkg = closingPackage(ws, { today: today() });
+    } catch (err) {
+      return toast(err.message, true);
+    }
+    if (!ui.demo && cloudState.meta) {
+      const digest = await crypto.subtle.digest('SHA-256', pkg.zip);
+      const sha256 = [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
+      try {
+        await cloud.logClosingPackage(cloudState.meta.structureId, { fiscalYear: pkg.fiscalYear, files: pkg.files.map((f) => f.name), sha256 });
+      } catch (err) {
+        return toast(`Dossier non téléchargé : ${cloud.friendly(err)}`, true);
+      }
+    }
+    download(pkg.fileName, pkg.zip, 'application/zip');
+    const fec = pkg.fecIncluded ? '' : ' Le FEC n’y est pas encore : validez d’abord les écritures.';
+    return toast(
+      ui.demo
+        ? `Démonstration : dossier téléchargé. En mode connecté, le téléchargement est inscrit au journal d’audit.${fec}`
+        : `Dossier de clôture téléchargé et inscrit au journal d’audit : envoyez-le à votre expert-comptable.${fec}`,
+      !pkg.fecIncluded,
+    );
+  },
   'inventory-add': async () => {
     const f = ui.inventoryForm || { type: 'prepaid' };
     const form = Object.fromEntries([...document.querySelectorAll('[data-inv]')].map((e) => [e.dataset.inv, e.value]));

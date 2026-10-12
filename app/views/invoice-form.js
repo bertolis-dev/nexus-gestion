@@ -2,15 +2,15 @@
  * Écran « invoice-form ».
  */
 
-import { VAT_RATES_BP, computeTotals, defaultDueDate, isVatExempt } from '../../core/invoices.js?v=a60350d';
-import { parseEuros } from '../../core/money.js?v=a60350d';
-import { field, html, opt, raw } from '../html.js?v=a60350d';
-import { ICONS } from '../icons.js?v=a60350d';
-import { issueLink } from '../render.js?v=a60350d';
-import { eur, pct, today, ui, ws } from '../state.js?v=a60350d';
-import { save } from '../store.js?v=a60350d';
-import { viewHeader } from '../ui/common.js?v=a60350d';
-import { NEW_DOC_ROUTES } from './sales.js?v=a60350d';
+import { VAT_RATES_BP, computeTotals, defaultDueDate, isVatExempt } from '../../core/invoices.js?v=e260546';
+import { parseEuros } from '../../core/money.js?v=e260546';
+import { field, html, opt, raw } from '../html.js?v=e260546';
+import { ICONS } from '../icons.js?v=e260546';
+import { issueLink } from '../render.js?v=e260546';
+import { eur, pct, today, ui, ws } from '../state.js?v=e260546';
+import { save } from '../store.js?v=e260546';
+import { viewHeader } from '../ui/common.js?v=e260546';
+import { NEW_DOC_ROUTES } from './sales.js?v=e260546';
 
 export function emptyLine() {
   return {
@@ -291,6 +291,7 @@ export function viewInvoiceForm(arg) {
         <button type="button" class="btn btn-primary" data-action="invoice-issue">
           ${d.type === 'quote' ? 'Émettre le devis' : d.type === 'deposit' ? "Émettre la facture d'acompte" : d.type === 'credit' ? 'Émettre l’avoir' : 'Émettre la facture'}
         </button>
+        ${d.type === 'quote' ? '' : html`<button type="button" class="btn btn-gold" data-action="invoice-issue-send">${d.type === 'credit' ? 'Émettre et envoyer l’avoir' : 'Émettre et envoyer au client'}</button>`}
         <button type="button" class="btn btn-secondary" data-action="invoice-save">Enregistrer le brouillon</button>
         <button type="button" class="btn-link" data-action="invoice-cancel">Annuler</button>
       </div>

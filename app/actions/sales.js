@@ -2,21 +2,57 @@
  * Écran « sales ».
  */
 
-import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=a60350d';
-import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=a60350d';
-import { LIFECYCLE } from '../../core/lifecycle.js?v=a60350d';
-import { lookupSiren } from '../company-lookup.js?v=a60350d';
-import { render } from '../render.js?v=a60350d';
-import * as cloud from '../cloud.js?v=a60350d';
-import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=a60350d';
-import { invoiceEmail, reminderMessage } from '../../core/reminders.js?v=a60350d';
-import { explainEmailError } from '../email-errors.js?v=a60350d';
-import { download, save, toast } from '../store.js?v=a60350d';
-import { isUnconfirmed } from '../sync-ui.js?v=a60350d';
-import { emptyLine, persistDraft } from '../views/invoice-form.js?v=a60350d';
-import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=a60350d';
-import { depositCandidates } from '../../core/deposit.js?v=a60350d';
-import { createZip } from '../../core/zip.js?v=a60350d';
+import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=e260546';
+import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=e260546';
+import { LIFECYCLE } from '../../core/lifecycle.js?v=e260546';
+import { lookupSiren } from '../company-lookup.js?v=e260546';
+import { render } from '../render.js?v=e260546';
+import * as cloud from '../cloud.js?v=e260546';
+import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=e260546';
+import { invoiceEmail, reminderMessage } from '../../core/reminders.js?v=e260546';
+import { explainEmailError } from '../email-errors.js?v=e260546';
+import { download, save, toast } from '../store.js?v=e260546';
+import { isUnconfirmed } from '../sync-ui.js?v=e260546';
+import { emptyLine, persistDraft } from '../views/invoice-form.js?v=e260546';
+import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=e260546';
+import { depositCandidates } from '../../core/deposit.js?v=e260546';
+import { createZip } from '../../core/zip.js?v=e260546';
+
+/**
+ * Émet le brouillon du formulaire (`fromForm`) ou un brouillon enregistré ; renvoie la pièce émise,
+ * ou null si l'émission a échoué (anomalies affichées sur le formulaire) ou attend son numéro.
+ */
+async function issueDraft(fromForm, id) {
+  const inv = fromForm ? persistDraft() : ws.book.get(id);
+  if (!inv) {
+    render();
+    return null;
+  }
+  try {
+    const issued = ws.issueInvoice(inv.id);
+    ui.draft = null;
+    save();
+    location.hash = `#/ventes/${issued.id}`;
+    render();
+    if (isUnconfirmed(issued)) {
+      toast('Émission envoyée : le numéro s’affiche dès sa confirmation par le serveur.');
+      return null;
+    }
+    toast(
+      `${issued.type === 'quote' ? 'Devis' : issued.type === 'deposit' ? "Facture d'acompte" : issued.type === 'credit' ? 'Avoir' : 'Facture'} ${issued.number} émis${issued.type === 'quote' || issued.type === 'credit' ? '' : 'e'}.`,
+    );
+    return issued;
+  } catch (err) {
+    if (err instanceof InvoiceError && err.issues.length) {
+      if (ui.draft) {
+        Object.assign(ui.draft, { issues: err.issues, focusIssues: true, key: `modifier-${inv.id}`, savedId: inv.id });
+        location.hash = `#/ventes/modifier-${inv.id}`;
+      }
+      render();
+    } else toast(err.message, true);
+  }
+  return null;
+}
 
 /** Envoi de la facture : par Nexus (Brevo) si en service, sinon partage ou messagerie. */
 async function sendInvoice(id) {
@@ -105,31 +141,24 @@ export const actionsTable = {
     location.hash = `#/ventes/${inv.id}`;
     return toast('Brouillon enregistré.');
   },
-  'invoice-issue': async ({ action, id }) => {
-    const inv = action === 'invoice-issue' ? persistDraft() : ws.book.get(id);
-    if (!inv) return render();
-    try {
-      const issued = ws.issueInvoice(inv.id);
-      ui.draft = null;
-      save();
-      location.hash = `#/ventes/${issued.id}`;
-      render();
-      if (isUnconfirmed(issued)) return toast('Émission envoyée : le numéro s’affiche dès sa confirmation par le serveur.');
-      toast(
-        `${issued.type === 'quote' ? 'Devis' : issued.type === 'deposit' ? "Facture d'acompte" : issued.type === 'credit' ? 'Avoir' : 'Facture'} ${issued.number} émis${issued.type === 'quote' || issued.type === 'credit' ? '' : 'e'}.`,
-      );
-    } catch (err) {
-      if (err instanceof InvoiceError && err.issues.length) {
-        if (ui.draft) {
-          Object.assign(ui.draft, { issues: err.issues, focusIssues: true, key: `modifier-${inv.id}`, savedId: inv.id });
-          location.hash = `#/ventes/modifier-${inv.id}`;
-        }
-        render();
-      } else toast(err.message, true);
-    }
-    return;
+  'invoice-issue': async () => {
+    await issueDraft(true);
   },
-  'invoice-issue-existing': (ctx) => actionsTable['invoice-issue'](ctx),
+  'invoice-issue-existing': async ({ id }) => {
+    await issueDraft(false, id);
+  },
+  // Émettre puis envoyer au client dans le même clic (formulaire, ou brouillon enregistré si `id`).
+  'invoice-issue-send': async ({ id }) => {
+    if (ui.sending) return;
+    const issued = await issueDraft(!id, id);
+    if (!issued) return;
+    ui.sending = true;
+    try {
+      await sendInvoice(issued.id);
+    } finally {
+      ui.sending = false;
+    }
+  },
   'invoice-delete': async ({ id }) => {
     if (!confirm('Supprimer ce brouillon ?')) return;
     ws.book.deleteDraft(id);

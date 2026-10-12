@@ -4,18 +4,18 @@
  * Sans DOM ni stockage : l'interface (app/) le sérialise, les tests l'utilisent tel quel.
  */
 
-import { buildChart, categoryById } from './pcg.js?v=a60350d';
-import { Ledger } from './ledger.js?v=a60350d';
-import { InvoiceBook, clientAux } from './invoices.js?v=a60350d';
-import { purchaseEntry, findDuplicates, ttcLine } from './purchases.js?v=a60350d';
-import { mergeTransactions, suggestMatches, settlementEntry, directEntry, DEFAULT_BANK_ACCOUNT } from './bank.js?v=a60350d';
+import { buildChart, categoryById } from './pcg.js?v=e260546';
+import { Ledger } from './ledger.js?v=e260546';
+import { InvoiceBook, clientAux } from './invoices.js?v=e260546';
+import { purchaseEntry, findDuplicates, knownVatOnDebits, ttcLine } from './purchases.js?v=e260546';
+import { mergeTransactions, suggestMatches, settlementEntry, directEntry, DEFAULT_BANK_ACCOUNT } from './bank.js?v=e260546';
 export { DEFAULT_BANK_ACCOUNT };
-import { creditsOf, originalOf, groupBalance } from './receipts.js?v=a60350d';
-import { divRound, splitTtc, sum } from './money.js?v=a60350d';
-import { openingEntry } from './fecimport.js?v=a60350d';
-import { creditTargetsAsset } from './assets.js?v=a60350d';
-import { LIFECYCLE, currentStatus } from './lifecycle.js?v=a60350d';
-import { SCHEMA_VERSION, migrateState } from './schema.js?v=a60350d';
+import { creditsOf, originalOf, groupBalance } from './receipts.js?v=e260546';
+import { divRound, splitTtc, sum } from './money.js?v=e260546';
+import { openingEntry } from './fecimport.js?v=e260546';
+import { creditTargetsAsset } from './assets.js?v=e260546';
+import { LIFECYCLE, currentStatus } from './lifecycle.js?v=e260546';
+import { SCHEMA_VERSION, migrateState } from './schema.js?v=e260546';
 
 /** Entrées d'argent sans facture de vente, proposées en langage courant. */
 export const INCOME_CATEGORIES = [
@@ -58,14 +58,15 @@ export function combineEstimates(list) {
 
 export const MAX_BANK_ACCOUNTS = 10;
 
-import { recurringMethods } from './workspace/recurring.js?v=a60350d';
-import { vatMethods } from './workspace/vat.js?v=a60350d';
-import { receiptVatMethods } from './workspace/receipt-vat.js?v=a60350d';
-import { closingMethods } from './workspace/closing.js?v=a60350d';
-import { microMethods } from './workspace/micro.js?v=a60350d';
-import { depositMethods } from './deposit.js?v=a60350d';
-import { categorizationMethods, learnRule } from './categorization.js?v=a60350d';
-import { reminderMethods } from './reminders.js?v=a60350d';
+import { recurringMethods } from './workspace/recurring.js?v=e260546';
+import { vatMethods } from './workspace/vat.js?v=e260546';
+import { receiptVatMethods } from './workspace/receipt-vat.js?v=e260546';
+import { paymentVatMethods } from './workspace/payment-vat.js?v=e260546';
+import { closingMethods } from './workspace/closing.js?v=e260546';
+import { microMethods } from './workspace/micro.js?v=e260546';
+import { depositMethods } from './deposit.js?v=e260546';
+import { categorizationMethods, learnRule } from './categorization.js?v=e260546';
+import { reminderMethods } from './reminders.js?v=e260546';
 
 export class Workspace {
   constructor({ company, state: saved = {}, now, newId } = {}) {
@@ -262,6 +263,8 @@ export class Workspace {
     { force = false } = {},
   ) {
     const p = { id: this._id('P'), supplier: { country: 'FR', ...supplier }, date, number, documentName, lines: structuredClone(lines) };
+    // Option pour les débits non précisée (facture électronique reçue) : celle connue du fournisseur.
+    if (p.supplier.vatOnDebits === undefined && knownVatOnDebits(this.purchases, p.supplier.name)) p.supplier.vatOnDebits = true;
     if (reverseCharge) p.reverseCharge = true;
     if (type === 'credit') {
       p.type = 'credit';
@@ -417,6 +420,7 @@ export class Workspace {
         const p = this.purchases.find((x) => x.id === doc.id);
         p.paid += amount;
         (p.payments ||= []).push({ amount, date: tx.date, ref: tx.id, entryId: entry.id, lineIndex });
+        this._syncPurchaseVat(p, tx.date);
         const purchaseEntryRow = this.ledger.entries.find((e) => e.id === p.entryId);
         if (p.paid === p.totalTtc && purchaseEntryRow) {
           this.#letterSettled({ entryId: p.entryId, lineIndex: purchaseEntryRow.lines.length - 1 }, p.payments, tx.date);
@@ -497,6 +501,14 @@ export class Workspace {
     return entry;
   }
 
+  /** Justificatif ajouté après coup (photo, PDF) : la transaction et sa dépense ne sont plus signalées. */
+  markReceiptAttached(txId) {
+    const tx = this.transactions.find((t) => t.id === txId);
+    if (!tx) throw new Error('Transaction introuvable');
+    tx.missingReceipt = false;
+    for (const p of this.purchases.filter((x) => x.missingReceipt && (x.payments || []).some((pay) => pay.ref === txId))) p.missingReceipt = false;
+  }
+
   ignoreTransaction(txId) {
     const tx = this.transactions.find((t) => t.id === txId);
     tx.status = 'ignored';
@@ -518,7 +530,17 @@ export class Workspace {
 }
 
 // Méthodes réparties par domaine (même `this`, même API) : voir core/workspace/.
-for (const methods of [recurringMethods, vatMethods, receiptVatMethods, closingMethods, microMethods, depositMethods, categorizationMethods, reminderMethods]) {
+for (const methods of [
+  recurringMethods,
+  vatMethods,
+  receiptVatMethods,
+  paymentVatMethods,
+  closingMethods,
+  microMethods,
+  depositMethods,
+  categorizationMethods,
+  reminderMethods,
+]) {
   Object.defineProperties(Workspace.prototype, Object.getOwnPropertyDescriptors(methods));
 }
 

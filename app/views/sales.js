@@ -2,20 +2,20 @@
  * Écran « sales ».
  */
 
-import { VAT_RATES_BP, checkInvoice, computeTotals, isVatExempt, issuerName, lineHt } from '../../core/invoices.js?v=a60350d';
-import { FREQUENCIES, nextDate } from '../../core/recurring.js?v=a60350d';
-import { field, html, opt, raw } from '../html.js?v=a60350d';
-import { ICONS } from '../icons.js?v=a60350d';
-import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=a60350d';
-import { save, toast } from '../store.js?v=a60350d';
-import { isUnconfirmed } from '../sync-ui.js?v=a60350d';
-import { badge, viewHeader } from '../ui/common.js?v=a60350d';
-import { qrSvg } from '../ui/qr.js?v=a60350d';
-import { invoicePaymentQr } from '../../core/epc.js?v=a60350d';
-import { lifecycleCard } from './expenses.js?v=a60350d';
-import { viewInvoiceForm } from './invoice-form.js?v=a60350d';
-import { depositCard } from './deposit.js?v=a60350d';
-import { REMINDER_STEPS, dueReminderLevel, invoiceEmail, reminderMessage } from '../../core/reminders.js?v=a60350d';
+import { VAT_RATES_BP, checkInvoice, computeTotals, isVatExempt, issuerName, lineHt } from '../../core/invoices.js?v=e260546';
+import { FREQUENCIES, nextDate } from '../../core/recurring.js?v=e260546';
+import { field, html, opt, raw } from '../html.js?v=e260546';
+import { ICONS } from '../icons.js?v=e260546';
+import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=e260546';
+import { save, toast } from '../store.js?v=e260546';
+import { isUnconfirmed } from '../sync-ui.js?v=e260546';
+import { badge, viewHeader } from '../ui/common.js?v=e260546';
+import { qrSvg } from '../ui/qr.js?v=e260546';
+import { invoicePaymentQr } from '../../core/epc.js?v=e260546';
+import { lifecycleCard } from './expenses.js?v=e260546';
+import { viewInvoiceForm } from './invoice-form.js?v=e260546';
+import { depositCard } from './deposit.js?v=e260546';
+import { REMINDER_STEPS, dueReminderLevel, invoiceEmail, reminderMessage } from '../../core/reminders.js?v=e260546';
 
 // ------------------------------------------------------------------ factures (§3.2, §3.5)
 
@@ -305,7 +305,7 @@ export function viewInvoice(id) {
           : inv.type === 'credit'
             ? `Avoir sur la facture ${inv.creditOf}`
             : 'Payée intégralement';
-  const actions = html` ${!issued ? html`<button class="btn btn-primary" data-action="invoice-issue-existing" data-id="${inv.id}">Émettre</button><button class="btn btn-secondary" data-href="#/ventes/modifier-${inv.id}">Modifier</button><button class="btn btn-secondary" data-action="invoice-delete" data-id="${inv.id}">Supprimer</button>` : ''}
+  const actions = html` ${!issued ? html`<button class="btn btn-primary" data-action="invoice-issue-existing" data-id="${inv.id}">Émettre</button>${quote ? '' : html`<button class="btn btn-gold" data-action="invoice-issue-send" data-id="${inv.id}">Émettre et envoyer</button>`}<button class="btn btn-secondary" data-href="#/ventes/modifier-${inv.id}">Modifier</button><button class="btn btn-secondary" data-action="invoice-delete" data-id="${inv.id}">Supprimer</button>` : ''}
   ${quote && issued && !invoicedFrom ? html`<button class="btn btn-gold" data-action="quote-convert" data-id="${inv.id}">Transformer en facture</button>` : ''}
   ${issued && !unconfirmed ? html`<button class="btn btn-secondary" data-action="print">Imprimer / PDF</button>` : ''}
   ${issued && !quote && !unconfirmed ? html`<button class="btn btn-primary" data-action="invoice-send" data-id="${inv.id}">Envoyer au client</button><button class="btn btn-secondary" data-action="invoice-pdf" data-id="${inv.id}">Télécharger la facture (PDF)</button><button class="btn btn-secondary" data-action="einvoice" data-id="${inv.id}">Facture électronique (XML)</button>` : ''}

@@ -2,13 +2,14 @@
  * Trésorerie prévisionnelle à 30, 60 et 90 jours : trésorerie du jour, puis mouvements attendus —
  * factures à encaisser (à leur échéance ; en retard : comptées aujourd'hui), factures récurrentes à
  * venir, dépenses à payer (échéance, sinon 30 jours après la facture), TVA à payer (CA3 à son
- * échéance, acomptes de CA12), cotisations URSSAF estimées (micro). L'impôt sur les sociétés n'est pas
- * inclus (acomptes non gérés).
+ * échéance, acomptes de CA12), cotisations URSSAF estimées (micro), impôt sur les sociétés (acomptes,
+ * solde de l'exercice clos, solde estimé de l'exercice terminé non clôturé : core/istax.js).
  */
 
-import { addDays } from './dates.js?v=a60350d';
-import { dueOccurrences } from './recurring.js?v=a60350d';
-import { computeTotals, isVatExempt } from './invoices.js?v=a60350d';
+import { addDays } from './dates.js?v=e260546';
+import { dueOccurrences } from './recurring.js?v=e260546';
+import { computeTotals, isVatExempt } from './invoices.js?v=e260546';
+import { corporateTaxSchedule } from './istax.js?v=e260546';
 
 /** Délai de paiement d'une dépense sans échéance connue (usage, à valider par l'expert-comptable). */
 export const DEFAULT_SUPPLIER_TERMS_DAYS = 30;
@@ -75,6 +76,8 @@ export function cashForecast(ws, today, { horizons = [30, 60, 90] } = {}) {
       add(p.deadline, 'urssaf', `Cotisations URSSAF ${p.label} (estimation)`, -(p.estimate?.total || 0));
     }
   }
+
+  for (const t of corporateTaxSchedule(ws, today)) add(t.date, 'impot', t.label, t.amount);
 
   events.sort((a, b) => a.date.localeCompare(b.date) || b.amount - a.amount);
   const start = ws.dashboard(today).cash;

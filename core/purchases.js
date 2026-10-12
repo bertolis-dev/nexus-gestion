@@ -3,8 +3,8 @@
  * TVA non déductible appliquée automatiquement, détection des immobilisations et des doublons.
  */
 
-import { divRound, splitTtc, sum, vatFromHt } from './money.js?v=a60350d';
-import { categoryById } from './pcg.js?v=a60350d';
+import { divRound, splitTtc, sum, vatFromHt } from './money.js?v=e260546';
+import { categoryById } from './pcg.js?v=e260546';
 
 /** Ligne d'achat saisie TTC : HT et TVA dont la somme redonne exactement le TTC. */
 export function ttcLine(ttc, vatRateBp) {
@@ -16,7 +16,8 @@ export const FIXED_ASSET_THRESHOLD_HT = 50000; // 500 € HT, paramétrable par 
 
 /**
  * @param {object} p facture d'achat : { id, supplier: {name, code, country}, date, number,
- *   lines: [{ categoryId, ht, vatRateBp }], giftBeneficiaries? }
+ *   lines: [{ categoryId, ht, vatRateBp, nature? }], giftBeneficiaries? } — `supplier.vatOnDebits` :
+ *   fournisseur ayant opté pour le paiement de la TVA d'après les débits.
  * @param {object} company { vatRegime, fixedAssetThreshold? }
  */
 export function purchaseEntry(p, company) {
@@ -30,7 +31,9 @@ export function purchaseEntry(p, company) {
   const lines = [];
   let totalTtc = 0;
   let hasFixedAsset = false;
-  const deductibleByAccount = { 445660: 0, 445620: 0 };
+  // 445680 : TVA d'une prestation de services, déductible seulement au paiement (CGI art. 271-I-2),
+  // sauf fournisseur ayant opté pour les débits ; elle bascule en 445660 à chaque règlement.
+  const deductibleByAccount = { 445660: 0, 445620: 0, 445680: 0 };
   let reverseChargeVat = 0;
 
   for (const l of p.lines) {
@@ -57,7 +60,8 @@ export function purchaseEntry(p, company) {
       totalTtc += l.ht;
     } else {
       const deductible = divRound(vat * pct, 100);
-      deductibleByAccount[isAsset ? '445620' : '445660'] += deductible;
+      const onPayment = !isAsset && (l.nature || cat.nature) === 'services' && !p.supplier.vatOnDebits;
+      deductibleByAccount[isAsset ? '445620' : onPayment ? '445680' : '445660'] += deductible;
       lines.push({ account, label, debit: l.ht + (vat - deductible), credit: 0 });
       totalTtc += l.ht + vat;
     }
@@ -94,6 +98,23 @@ function mergeSameAccount(lines) {
     else out.push({ ...l });
   }
   return out;
+}
+
+/**
+ * Option du fournisseur pour le paiement de la TVA d'après les débits, telle qu'indiquée sur sa
+ * dernière facture enregistrée (false si inconnue) : reprise pour ses factures suivantes.
+ */
+export function knownVatOnDebits(purchases, supplierName) {
+  const key = String(supplierName || '')
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '');
+  const last = purchases.findLast(
+    (p) =>
+      String(p.supplier.name)
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, '') === key && p.supplier.vatOnDebits !== undefined,
+  );
+  return Boolean(last?.supplier.vatOnDebits);
 }
 
 /** Doublon : même fournisseur, même montant TTC et même date ou même numéro de facture. */

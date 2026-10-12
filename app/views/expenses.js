@@ -2,17 +2,18 @@
  * Écran « expenses ».
  */
 
-import { VAT_RATES_BP } from '../../core/invoices.js?v=a60350d';
-import { LIFECYCLE, nextStatuses } from '../../core/lifecycle.js?v=a60350d';
-import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=a60350d';
-import * as cloud from '../cloud.js?v=a60350d';
-import { field, html, opt, raw } from '../html.js?v=a60350d';
-import { ICONS } from '../icons.js?v=a60350d';
-import { render } from '../render.js?v=a60350d';
-import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=a60350d';
-import { toast } from '../store.js?v=a60350d';
-import { badge, icon, term, viewHeader } from '../ui/common.js?v=a60350d';
-import { viewAssets } from './assets.js?v=a60350d';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=e260546';
+import { LIFECYCLE, nextStatuses } from '../../core/lifecycle.js?v=e260546';
+import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=e260546';
+import * as cloud from '../cloud.js?v=e260546';
+import { field, html, opt, raw } from '../html.js?v=e260546';
+import { ICONS } from '../icons.js?v=e260546';
+import { render } from '../render.js?v=e260546';
+import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=e260546';
+import { toast } from '../store.js?v=e260546';
+import { badge, icon, term, viewHeader } from '../ui/common.js?v=e260546';
+import { preparePhoto } from '../ui/photo.js?v=e260546';
+import { viewAssets } from './assets.js?v=e260546';
 
 // ------------------------------------------------------------------ dépenses (§3.3)
 
@@ -61,15 +62,19 @@ export function viewExpenses() {
                 </select>`,
               )
         }
-        ${field('Justificatif', html`<input class="input" type="file" name="document" accept="image/*,application/pdf" capture="environment" />`, { hint: 'Photo ou PDF, conservé au format d’origine.' })}
+        ${field('Justificatif', html`<input class="input" type="file" name="document" accept="image/*,application/pdf" capture="environment" />`, { hint: 'Photo prise avec le téléphone ou PDF. Une grande photo est allégée avant l’envoi ; un PDF est conservé tel quel.' })}
       </div>
       ${
         franchise
           ? ''
           : html`<label class="form-field-checkbox" style="display:flex;gap:8px;align-items:center"
-              ><input type="checkbox" name="reverseCharge" ${f.reverseCharge ? raw('checked') : ''} />Facture reçue sans TVA à reverser par moi (autoliquidation
-              : sous-traitance dans le bâtiment)</label
-            >`
+                ><input type="checkbox" name="reverseCharge" ${f.reverseCharge ? raw('checked') : ''} />Facture reçue sans TVA à reverser par moi
+                (autoliquidation : sous-traitance dans le bâtiment)</label
+              >
+              <label class="form-field-checkbox" style="display:flex;gap:8px;align-items:center"
+                ><input type="checkbox" name="vatOnDebits" ${f.vatOnDebits ? raw('checked') : ''} />Sa facture porte la mention « TVA d’après les débits » : la
+                TVA d’une prestation est récupérable dès la facture, et non à son paiement</label
+              >`
       }
       <div><button class="btn btn-primary" type="submit">Enregistrer la dépense</button></div>
     </form>
@@ -227,7 +232,8 @@ export function receiptCell(p) {
 export async function attachReceipt(purchase, file) {
   if (!file || ui.demo || !cloudState.meta) return;
   try {
-    cloudState.documents.push(await cloud.uploadReceipt(cloudState.meta.structureId, file, { entity: 'purchase', id: purchase.id }));
+    const ready = await preparePhoto(file); // photo du téléphone réduite avant l'envoi
+    cloudState.documents.push(await cloud.uploadReceipt(cloudState.meta.structureId, ready, { entity: 'purchase', id: purchase.id }));
     render();
     toast('Justificatif enregistré.');
   } catch (err) {

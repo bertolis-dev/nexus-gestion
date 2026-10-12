@@ -20,10 +20,10 @@
  *   28 TVA nette due · 32 total à payer.
  */
 
-import { divRound, sum, vatFromHt } from './money.js?v=a60350d';
-import { isOnReceipt, originalOf, receiptEvents } from './receipts.js?v=a60350d';
-import { vatSplit } from './invoices.js?v=a60350d';
-import { tradeZone } from './countries.js?v=a60350d';
+import { divRound, sum, vatFromHt } from './money.js?v=e260546';
+import { isOnReceipt, originalOf, receiptEvents } from './receipts.js?v=e260546';
+import { vatSplit } from './invoices.js?v=e260546';
+import { tradeZone } from './countries.js?v=e260546';
 
 /**
  * Lignes de la CA3 par taux de TVA, par millésime du formulaire 3310-CA3 — À VALIDER PAR L'EXPERT-
@@ -55,7 +55,7 @@ function exigibleParts(inv, payments, period) {
 
 /**
  * Prépare la CA3 d'une période à partir du Workspace (factures, paiements, dépenses, grand livre).
- * @param {import('./workspace.js?v=a60350d').Workspace} ws
+ * @param {import('./workspace.js?v=e260546').Workspace} ws
  * @param {{ from: string, to: string }} period
  * @param {{ previousCredit?: number }} opts crédit de TVA reporté de la déclaration précédente
  */
@@ -184,7 +184,7 @@ export function prepareCa3(ws, period, { previousCredit = 0 } = {}) {
   // Hors écritures de liquidation elles-mêmes (sinon une déclaration déjà validée s'annulerait).
   const lines = ws.ledger.lines(period).filter((l) => l.entry.source?.kind !== 'vat-return');
   const net = (acc) => sum(lines.filter((l) => l.account === acc).map((l) => l.credit - l.debit));
-  const debitNet = (acc) => -net(acc);
+  const debitNet = (acc) => sum(lines.filter((l) => l.account === acc).map((l) => l.debit - l.credit));
   const collectedLedger = net('445710');
   const reverseCharge = net('445200');
   const deductibleAssets = debitNet('445620');

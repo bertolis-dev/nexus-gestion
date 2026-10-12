@@ -2,17 +2,20 @@
  * Écran « bank ».
  */
 
-import { decodeStatement, importStatement } from '../../core/bank-import.js?v=a60350d';
-import { reconciliationStatement } from '../../core/bank.js?v=a60350d';
-import { VAT_RATES_BP } from '../../core/invoices.js?v=a60350d';
-import { parseEuros } from '../../core/money.js?v=a60350d';
-import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=a60350d';
-import { INCOME_CATEGORIES, MAX_BANK_ACCOUNTS, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=a60350d';
-import { field, html, opt, raw } from '../html.js?v=a60350d';
-import { ICONS } from '../icons.js?v=a60350d';
-import { eur, frDate, pct, today, ui, ws } from '../state.js?v=a60350d';
-import { dataVersion } from '../store.js?v=a60350d';
-import { badge, icon, term, viewHeader } from '../ui/common.js?v=a60350d';
+import { decodeStatement, importStatement } from '../../core/bank-import.js?v=e260546';
+import { reconciliationStatement } from '../../core/bank.js?v=e260546';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=e260546';
+import { parseEuros } from '../../core/money.js?v=e260546';
+import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=e260546';
+import { INCOME_CATEGORIES, MAX_BANK_ACCOUNTS, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=e260546';
+import { field, html, opt, raw } from '../html.js?v=e260546';
+import { ICONS } from '../icons.js?v=e260546';
+import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=e260546';
+import { dataVersion, save, toast } from '../store.js?v=e260546';
+import * as cloud from '../cloud.js?v=e260546';
+import { render } from '../render.js?v=e260546';
+import { preparePhoto } from '../ui/photo.js?v=e260546';
+import { badge, icon, term, viewHeader } from '../ui/common.js?v=e260546';
 
 // ------------------------------------------------------------------ banque (§3.4)
 
@@ -176,7 +179,7 @@ export function viewBank() {
     </div>
     ${
       done.length
-        ? html`<div class="card table-card">
+        ? html`<div class="card table-card" tabindex="0" role="region" aria-label="Transactions déjà justifiées">
             <h2 style="padding:16px 16px 0">Déjà justifiées</h2>
             <table class="table">
               <tbody>
@@ -190,6 +193,7 @@ export function viewBank() {
                           >${t.status === 'ignored' ? badge('Ignorée') : ''}${t.missingReceipt ? badge('Sans justificatif', 'warning') : ''}</span
                         >
                       </td>
+                      <td class="no-print">${txReceiptCell(t)}</td>
                       <td class="num">${eur(t.amount)}</td>
                     </tr>`,
                 )}
@@ -198,6 +202,43 @@ export function viewBank() {
           </div>`
         : ''
     }`;
+}
+
+/** Justificatif d'une transaction : voir la pièce, ou en ajouter une (photo prise avec le téléphone, PDF). */
+function txReceiptCell(t) {
+  const doc = cloudState.documents.find((d) => d.linked_entity === 'transaction' && d.linked_id === t.id);
+  if (doc) return html`<button class="btn-link" data-action="receipt-open" data-path="${doc.storage_path}">Voir le justificatif</button>`;
+  if (!t.missingReceipt) return '';
+  return html`<label class="btn btn-secondary btn-sm" style="margin:0"
+    >${icon('camera', 14)} Ajouter le justificatif<input
+      type="file"
+      accept="image/*,application/pdf"
+      capture="environment"
+      data-action="tx-receipt-file"
+      data-id="${t.id}"
+      aria-label="Ajouter le justificatif de ${t.label}"
+      hidden
+  /></label>`;
+}
+
+/**
+ * Justificatif ajouté à une transaction déjà classée : photo réduite dans le navigateur, déposée au
+ * stockage (mode connecté), puis la transaction n'est plus signalée « sans justificatif ».
+ */
+export async function attachTxReceipt(txId, file) {
+  if (!file) return;
+  try {
+    if (!ui.demo && cloudState.meta) {
+      const ready = await preparePhoto(file);
+      cloudState.documents.push(await cloud.uploadReceipt(cloudState.meta.structureId, ready, { entity: 'transaction', id: txId }));
+    }
+    ws.markReceiptAttached(txId);
+    save();
+    render();
+    toast(ui.demo ? 'Démonstration : justificatif pris en compte (il n’est pas conservé).' : 'Justificatif enregistré.');
+  } catch (err) {
+    toast(`Justificatif non enregistré : ${cloud.friendly(err)}`, true);
+  }
 }
 
 /**

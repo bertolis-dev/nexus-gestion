@@ -2,18 +2,18 @@
  * Écran « closing ».
  */
 
-import { INVENTORY_TYPES, allocationProposal, balanceSheet, closingChecklist, fiscalYearLabel, incomeStatement } from '../../core/closing.js?v=a60350d';
-import { addDays } from '../../core/dates.js?v=a60350d';
-import { VAT_RATES_BP } from '../../core/invoices.js?v=a60350d';
-import { parseEuros } from '../../core/money.js?v=a60350d';
-import * as cloud from '../cloud.js?v=a60350d';
-import { field, html, opt, raw } from '../html.js?v=a60350d';
-import { ICONS } from '../icons.js?v=a60350d';
-import { render } from '../render.js?v=a60350d';
-import { cloudState, eur, frDate, pct, setWs, today, ui, ws } from '../state.js?v=a60350d';
-import { save, toast } from '../store.js?v=a60350d';
-import { openStructure } from '../sync-ui.js?v=a60350d';
-import { badge, term, viewHeader } from '../ui/common.js?v=a60350d';
+import { INVENTORY_TYPES, allocationProposal, balanceSheet, closingChecklist, fiscalYearLabel, incomeStatement } from '../../core/closing.js?v=e260546';
+import { addDays } from '../../core/dates.js?v=e260546';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=e260546';
+import { parseEuros } from '../../core/money.js?v=e260546';
+import * as cloud from '../cloud.js?v=e260546';
+import { field, html, opt, raw } from '../html.js?v=e260546';
+import { ICONS } from '../icons.js?v=e260546';
+import { render } from '../render.js?v=e260546';
+import { cloudState, eur, frDate, pct, setWs, today, ui, ws } from '../state.js?v=e260546';
+import { save, toast } from '../store.js?v=e260546';
+import { openStructure } from '../sync-ui.js?v=e260546';
+import { badge, icon, term, viewHeader } from '../ui/common.js?v=e260546';
 
 // ------------------------------------------------------------------ clôture de l'exercice (lot 3)
 
@@ -84,7 +84,7 @@ export function viewClosing() {
   const it = ui.inventoryForm || { type: 'prepaid' };
   const accounts = ['deferred', 'receivable'].includes(it.type) ? REVENUE_ACCOUNTS : CHARGE_ACCOUNTS;
   const clientsDue = ws.receivables(fy.end).filter((r) => r.outstanding > 0);
-  return html` ${viewHeader(`Clôture de l'exercice ${fiscalYearLabel(fy)}`, `Du ${frDate(fy.start)} au ${frDate(fy.end)} : inventaire, impôt, comptes annuels.`, html`<button class="btn btn-secondary no-print" data-action="print">Imprimer / PDF</button>`)}
+  return html` ${viewHeader(`Clôture de l'exercice ${fiscalYearLabel(fy)}`, `Du ${frDate(fy.start)} au ${frDate(fy.end)} : inventaire, impôt, comptes annuels.`, html`${cloudState.role === 'collaborateur' ? '' : html`<button class="btn btn-primary no-print" data-action="closing-package">${icon('archive', 14)} Dossier pour l’expert-comptable (ZIP)</button>`}<button class="btn btn-secondary no-print" data-action="print">Imprimer / PDF</button>`)}
     ${allocationCard()}
     <div class="card action-center no-print">
       <h2>1. Check-list</h2>

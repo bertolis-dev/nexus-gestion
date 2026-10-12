@@ -3,8 +3,8 @@
  * Méthodes installées sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { divRound, sum } from '../money.js?v=a60350d';
-import { lineHt } from '../invoices.js?v=a60350d';
+import { divRound, sum } from '../money.js?v=e260546';
+import { lineHt } from '../invoices.js?v=e260546';
 import {
   ACTIVITY_TYPES,
   acreReminder,
@@ -17,9 +17,10 @@ import {
   urssafDeadline,
   urssafDeclaration,
   vatFranchiseMessage,
-} from '../micro.js?v=a60350d';
-import { combineEstimates } from '../workspace.js?v=a60350d';
-import { dueReminderLevel } from '../reminders.js?v=a60350d';
+} from '../micro.js?v=e260546';
+import { combineEstimates } from '../workspace.js?v=e260546';
+import { dueReminderLevel } from '../reminders.js?v=e260546';
+import { cashForecast } from '../forecast.js?v=e260546';
 
 export const microMethods = {
   /** Liste « À faire » classée par urgence (§5). */
@@ -195,7 +196,25 @@ export const microMethods = {
       items.push({ urgency: 1, kind: 'receipt', view: 'banque', text: `${noReceipt.length} dépense${noReceipt.length > 1 ? 's' : ''} sans justificatif` });
     items.push(...this._vatTodo(today));
     items.push(...this._urssafTodo(today));
-    return items.sort((a, b) => b.urgency - a.urgency);
+    // Trésorerie prévue sous zéro : en tête (tri stable), avec le montant qui manquera au point le plus bas.
+    const cash = this._cashTodo(today);
+    return [...(cash ? [cash] : []), ...items.sort((a, b) => b.urgency - a.urgency)];
+  },
+
+  _cashTodo(today) {
+    const f = cashForecast(this, today);
+    if (!f.firstNegative) return null;
+    const lowest = Math.min(f.start, ...f.events.map((e) => e.balance));
+    const [y, m, d] = f.firstNegative.split('-');
+    return {
+      urgency: 3,
+      kind: 'cash',
+      view: 'accueil',
+      action: 'forecast-show',
+      date: f.firstNegative,
+      amount: -lowest,
+      text: `Trésorerie prévue sous zéro le ${d}/${m}/${y} : montant à couvrir`,
+    };
   },
 
   _vatTodo(today) {

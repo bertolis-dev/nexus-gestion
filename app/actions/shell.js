@@ -2,12 +2,12 @@
  * Écran « shell ».
  */
 
-import * as cloud from '../cloud.js?v=a60350d';
-import { removeDemo } from '../demo-store.js?v=a60350d';
-import { $, render, renderApp } from '../render.js?v=a60350d';
-import { cloudState, freshOnboarding, setWs, today, ui, ws } from '../state.js?v=a60350d';
-import { download, setTheme, toast } from '../store.js?v=a60350d';
-import { openStructure, openStructureAndShow, refreshEmailStatus } from '../sync-ui.js?v=a60350d';
+import * as cloud from '../cloud.js?v=e260546';
+import { removeDemo } from '../demo-store.js?v=e260546';
+import { $, render, renderApp } from '../render.js?v=e260546';
+import { cloudState, freshOnboarding, setWs, today, ui, ws } from '../state.js?v=e260546';
+import { download, setTheme, toast } from '../store.js?v=e260546';
+import { openStructure, openStructureAndShow, refreshEmailStatus } from '../sync-ui.js?v=e260546';
 
 /** Version publiée plus récente que celle chargée ? (numéro ?v=… ajouté à la mise en ligne) */
 async function newerVersionAvailable() {
@@ -27,6 +27,14 @@ export const actionsTable = {
   'forecast-toggle': async () => {
     ui.forecastOpen = !ui.forecastOpen;
     return render();
+  },
+  // Alerte de trésorerie (« À faire ») : prévision dépliée et affichée.
+  'forecast-show': async () => {
+    ui.forecastOpen = true;
+    render();
+    const card = $('tresorerie-prevue');
+    card?.scrollIntoView({ block: 'start' });
+    card?.focus({ preventScroll: true });
   },
   'toggle-nav': async ({ el }) => {
     const open = $('sidebar-nav').classList.toggle('open');

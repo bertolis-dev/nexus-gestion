@@ -888,3 +888,11 @@ tr[data-href]:focus-visible,
   padding: 10px 14px;
   font-size: 14px;
 }
+.action-center-item.action-center-urgent {
+  border-left: 3px solid var(--landing-gold-500);
+}
+
+/* Les notifications (texte seul) ne bloquent jamais un bouton situé dessous, en bas d'un écran de téléphone. */
+#toast-root {
+  pointer-events: none;
+}
