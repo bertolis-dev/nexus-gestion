@@ -2,14 +2,14 @@
  * Écran « home ».
  */
 
-import { html, raw } from '../html.js?v=e260546';
-import { ICONS } from '../icons.js?v=e260546';
-import { isMicro } from '../render.js?v=e260546';
-import { eur, today, ui, ws } from '../state.js?v=e260546';
-import { allocationCard } from './closing.js?v=e260546';
-import { franchiseBanner } from './micro.js?v=e260546';
-import { forecastCard } from './forecast.js?v=e260546';
-import { activityCard } from './stats.js?v=e260546';
+import { html, raw } from '../html.js?v=214818f';
+import { ICONS } from '../icons.js?v=214818f';
+import { isMicro } from '../render.js?v=214818f';
+import { eur, today, ui, ws } from '../state.js?v=214818f';
+import { allocationCard } from './closing.js?v=214818f';
+import { franchiseBanner } from './micro.js?v=214818f';
+import { forecastCard } from './forecast.js?v=214818f';
+import { activityCard } from './stats.js?v=214818f';
 
 // ------------------------------------------------------------------ accueil
 
@@ -51,7 +51,7 @@ export function viewHome() {
                   html` <button
                     type="button"
                     class="action-center-item${i.kind === 'cash' ? ' action-center-urgent' : ''}"
-                    ${i.action ? raw(`data-action="${i.action}"`) : raw(`data-href="#/${i.view}${i.id ? `/${i.id}` : i.period ? `/${i.period}` : ''}"`)}
+                    ${i.action ? html`data-action="${i.action}"` : html`data-href="#/${i.view}${i.id ? `/${i.id}` : i.period ? `/${i.period}` : ''}"`}
                   >
                     <span class="action-center-icon">${raw(ICONS[todoIcon[i.kind] || 'info'])}</span>
                     <span class="action-center-label">${i.text}${i.amount != null ? ` — ${eur(i.amount)}` : ''}</span>

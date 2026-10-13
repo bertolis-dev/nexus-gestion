@@ -2,29 +2,29 @@
  * Événements du document : saisie, changement, clavier, formulaires, clics, navigation.
  */
 
-import { isValidSiren } from '../../core/invoices.js?v=e260546';
-import { parseEuros } from '../../core/money.js?v=e260546';
-import { knownVatOnDebits } from '../../core/purchases.js?v=e260546';
-import { usualVatRate } from '../../core/pcg.js?v=e260546';
-import { findCatalogItem } from '../../core/catalog.js?v=e260546';
-import * as cloud from '../cloud.js?v=e260546';
-import { html, raw } from '../html.js?v=e260546';
-import { ICONS } from '../icons.js?v=e260546';
-import { $, render, searchResults } from '../render.js?v=e260546';
-import { closeLightbox, featureSlug } from '../site/landing.js?v=e260546';
-import { cloudState, ui, ws } from '../state.js?v=e260546';
-import { save, savePrefs, toast } from '../store.js?v=e260546';
-import { afterSignIn } from '../sync-ui.js?v=e260546';
-import { attachTxReceipt, currentBankAccount, importBankFile } from '../views/bank.js?v=e260546';
-import { attachReceipt } from '../views/expenses.js?v=e260546';
-import { readPrice, totalsBlock } from '../views/invoice-form.js?v=e260546';
-import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=e260546';
-import { runAction } from './index.js?v=e260546';
-import { readReceivedInvoices } from '../received-invoices.js?v=e260546';
-import { urssafLinkSubmit } from '../views/urssaf-link.js?v=e260546';
-import { catalogSubmit } from './settings.js?v=e260546';
-import { clientSubmit, readClientsFile } from './clients.js?v=e260546';
-import { filterClients } from '../views/clients.js?v=e260546';
+import { isValidSiren } from '../../core/invoices.js?v=214818f';
+import { parseEuros } from '../../core/money.js?v=214818f';
+import { knownVatOnDebits } from '../../core/purchases.js?v=214818f';
+import { usualVatRate } from '../../core/pcg.js?v=214818f';
+import { findCatalogItem } from '../../core/catalog.js?v=214818f';
+import * as cloud from '../cloud.js?v=214818f';
+import { html, raw } from '../html.js?v=214818f';
+import { ICONS } from '../icons.js?v=214818f';
+import { $, render, searchResults } from '../render.js?v=214818f';
+import { closeLightbox, featureSlug } from '../site/landing.js?v=214818f';
+import { cloudState, ui, ws } from '../state.js?v=214818f';
+import { save, savePrefs, toast } from '../store.js?v=214818f';
+import { afterSignIn } from '../sync-ui.js?v=214818f';
+import { attachTxReceipt, currentBankAccount, importBankFile } from '../views/bank.js?v=214818f';
+import { attachReceipt } from '../views/expenses.js?v=214818f';
+import { readPrice, totalsBlock } from '../views/invoice-form.js?v=214818f';
+import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=214818f';
+import { runAction } from './index.js?v=214818f';
+import { readReceivedInvoices } from '../received-invoices.js?v=214818f';
+import { urssafLinkSubmit } from '../views/urssaf-link.js?v=214818f';
+import { catalogSubmit } from './settings.js?v=214818f';
+import { clientSubmit, readClientsFile } from './clients.js?v=214818f';
+import { filterClients } from '../views/clients.js?v=214818f';
 
 // ------------------------------------------------------------------ évènements
 
@@ -118,7 +118,8 @@ document.addEventListener('change', async (e) => {
   // Fournisseur déjà connu : son option pour les débits est reprise.
   if (el.name === 'supplier' && el.form?.dataset.form === 'purchase') {
     const box = el.form.querySelector('[name="vatOnDebits"]');
-    if (box) box.checked = knownVatOnDebits(ws.purchases, el.value);
+    const known = knownVatOnDebits(ws.purchases, el.value);
+    if (box && known !== null) box.checked = known; // fournisseur inconnu : la case cochée reste cochée
     return;
   }
   if (el.dataset.statement !== undefined) return render();
@@ -181,7 +182,11 @@ document.addEventListener('change', async (e) => {
     reader.readAsDataURL(file);
     return;
   }
-  if (el.dataset.action === 'tx-receipt-file' && el.files[0]) return attachTxReceipt(el.dataset.id, el.files[0]);
+  if (el.dataset.action === 'tx-receipt-file' && el.files[0]) {
+    const file = el.files[0];
+    el.value = ''; // le même fichier peut être choisi de nouveau après un échec
+    return attachTxReceipt(el.dataset.id, file);
+  }
   if (el.dataset.action === 'bank-file' && el.files[0]) {
     try {
       const result = await importBankFile(el.files[0], currentBankAccount().id);

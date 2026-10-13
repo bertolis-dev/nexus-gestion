@@ -9,11 +9,11 @@
  * nombre d'écritures validées), l'état est rechargé depuis la base, qui fait foi.
  */
 
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js?v=e260546';
-import { stateFromRows, refusedUpdate } from '../core/sync.js?v=e260546';
-import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, pendingOutboxOps, OUTBOX_PREFIX } from '../core/outbox.js?v=e260546';
-import { ACCOUNTS } from '../core/pcg.js?v=e260546';
-import { mfaState, canRemoveFactor } from '../core/mfa.js?v=e260546';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js?v=214818f';
+import { stateFromRows, refusedUpdate } from '../core/sync.js?v=214818f';
+import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, pendingOutboxOps, OUTBOX_PREFIX } from '../core/outbox.js?v=214818f';
+import { ACCOUNTS } from '../core/pcg.js?v=214818f';
+import { mfaState, canRemoveFactor } from '../core/mfa.js?v=214818f';
 
 // supabase-js (copie locale, app/vendor/) n'est chargé qu'en mode connecté : la démonstration et
 // le site public ne téléchargent pas ces 220 Ko.
@@ -21,7 +21,7 @@ let client = null;
 const authListeners = [];
 async function connect() {
   if (!client) {
-    const { createClient } = await import('./vendor/supabase.js?v=e260546');
+    const { createClient } = await import('./vendor/supabase.js?v=214818f');
     // Session gardée dans le navigateur et renouvelée automatiquement : on reste connecté d'une visite
     // à l'autre, jusqu'à « Se déconnecter » (comme Nexus RH).
     client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -375,8 +375,21 @@ async function sha256Hex(file) {
  * fichier altéré ne correspondrait plus à son nom ni à l'empreinte enregistrée), puis la référence
  * dans la table documents. Un même fichier déposé deux fois n'est stocké qu'une fois.
  */
+/** Type d'un fichier que le navigateur n'a pas reconnu (photo HEIC sous Windows…), d'après son extension. */
+const TYPE_BY_EXT = {
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
+  heic: 'image/heic',
+  heif: 'image/heif',
+  pdf: 'application/pdf',
+  xml: 'application/xml',
+};
+
 export async function uploadReceipt(structureId, file, { entity, id }) {
   const supabase = await connect();
+  const type = file.type || TYPE_BY_EXT[(file.name.split('.').pop() || '').toLowerCase()] || 'application/octet-stream';
   const sha = await sha256Hex(file);
   const ext =
     (file.name.split('.').pop() || 'bin')
@@ -384,7 +397,7 @@ export async function uploadReceipt(structureId, file, { entity, id }) {
       .replace(/[^a-z0-9]/g, '')
       .slice(0, 5) || 'bin';
   const path = `${structureId}/${sha}.${ext}`;
-  const { error } = await supabase.storage.from('justificatifs').upload(path, file, { contentType: file.type || 'application/octet-stream', upsert: false });
+  const { error } = await supabase.storage.from('justificatifs').upload(path, file, { contentType: type, upsert: false });
   if (error && !/exists|duplicate/i.test(error.message)) throw error;
   return check(
     await supabase
@@ -393,7 +406,7 @@ export async function uploadReceipt(structureId, file, { entity, id }) {
         structure_id: structureId,
         storage_path: path,
         sha256: sha,
-        mime_type: file.type || 'application/octet-stream',
+        mime_type: type,
         original_name: file.name,
         linked_entity: entity,
         linked_id: id,

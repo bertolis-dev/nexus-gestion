@@ -4,18 +4,18 @@
  * Sans DOM ni stockage : l'interface (app/) le sérialise, les tests l'utilisent tel quel.
  */
 
-import { buildChart, categoryById } from './pcg.js?v=e260546';
-import { Ledger } from './ledger.js?v=e260546';
-import { InvoiceBook, clientAux } from './invoices.js?v=e260546';
-import { purchaseEntry, findDuplicates, knownVatOnDebits, ttcLine } from './purchases.js?v=e260546';
-import { mergeTransactions, suggestMatches, settlementEntry, directEntry, DEFAULT_BANK_ACCOUNT } from './bank.js?v=e260546';
+import { buildChart, categoryById } from './pcg.js?v=214818f';
+import { Ledger } from './ledger.js?v=214818f';
+import { InvoiceBook, clientAux } from './invoices.js?v=214818f';
+import { purchaseEntry, findDuplicates, knownVatOnDebits, ttcLine } from './purchases.js?v=214818f';
+import { mergeTransactions, suggestMatches, settlementEntry, directEntry, DEFAULT_BANK_ACCOUNT } from './bank.js?v=214818f';
 export { DEFAULT_BANK_ACCOUNT };
-import { creditsOf, originalOf, groupBalance } from './receipts.js?v=e260546';
-import { divRound, splitTtc, sum } from './money.js?v=e260546';
-import { openingEntry } from './fecimport.js?v=e260546';
-import { creditTargetsAsset } from './assets.js?v=e260546';
-import { LIFECYCLE, currentStatus } from './lifecycle.js?v=e260546';
-import { SCHEMA_VERSION, migrateState } from './schema.js?v=e260546';
+import { creditsOf, originalOf, groupBalance } from './receipts.js?v=214818f';
+import { divRound, splitTtc, sum } from './money.js?v=214818f';
+import { openingEntry } from './fecimport.js?v=214818f';
+import { creditTargetsAsset } from './assets.js?v=214818f';
+import { LIFECYCLE, currentStatus } from './lifecycle.js?v=214818f';
+import { SCHEMA_VERSION, migrateState } from './schema.js?v=214818f';
 
 /** Entrées d'argent sans facture de vente, proposées en langage courant. */
 export const INCOME_CATEGORIES = [
@@ -58,15 +58,15 @@ export function combineEstimates(list) {
 
 export const MAX_BANK_ACCOUNTS = 10;
 
-import { recurringMethods } from './workspace/recurring.js?v=e260546';
-import { vatMethods } from './workspace/vat.js?v=e260546';
-import { receiptVatMethods } from './workspace/receipt-vat.js?v=e260546';
-import { paymentVatMethods } from './workspace/payment-vat.js?v=e260546';
-import { closingMethods } from './workspace/closing.js?v=e260546';
-import { microMethods } from './workspace/micro.js?v=e260546';
-import { depositMethods } from './deposit.js?v=e260546';
-import { categorizationMethods, learnRule } from './categorization.js?v=e260546';
-import { reminderMethods } from './reminders.js?v=e260546';
+import { recurringMethods } from './workspace/recurring.js?v=214818f';
+import { vatMethods } from './workspace/vat.js?v=214818f';
+import { receiptVatMethods } from './workspace/receipt-vat.js?v=214818f';
+import { paymentVatMethods } from './workspace/payment-vat.js?v=214818f';
+import { closingMethods } from './workspace/closing.js?v=214818f';
+import { microMethods } from './workspace/micro.js?v=214818f';
+import { depositMethods } from './deposit.js?v=214818f';
+import { categorizationMethods, learnRule } from './categorization.js?v=214818f';
+import { reminderMethods } from './reminders.js?v=214818f';
 
 export class Workspace {
   constructor({ company, state: saved = {}, now, newId } = {}) {
@@ -501,12 +501,11 @@ export class Workspace {
     return entry;
   }
 
-  /** Justificatif ajouté après coup (photo, PDF) : la transaction et sa dépense ne sont plus signalées. */
+  /** Justificatif ajouté après coup (photo, PDF) : la transaction n'est plus signalée « sans justificatif ». */
   markReceiptAttached(txId) {
     const tx = this.transactions.find((t) => t.id === txId);
     if (!tx) throw new Error('Transaction introuvable');
     tx.missingReceipt = false;
-    for (const p of this.purchases.filter((x) => x.missingReceipt && (x.payments || []).some((pay) => pay.ref === txId))) p.missingReceipt = false;
   }
 
   ignoreTransaction(txId) {

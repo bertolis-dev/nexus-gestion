@@ -4,7 +4,7 @@
  * mais pas encore clôturé. Les versements déjà faits (compte 444) sont imputés dans l'ordre des échéances.
  */
 
-import { divRound, sum } from './money.js?v=e260546';
+import { divRound, sum } from './money.js?v=214818f';
 
 /**
  * Paramètres 2026, à faire valider par l'expert-comptable (docs/regles-a-valider.md) :
@@ -46,6 +46,8 @@ function advanceDates({ start, end }) {
   return out;
 }
 
+const dayAfter = (iso) => new Date(Date.parse(`${iso}T00:00:00Z`) + 86400000).toISOString().slice(0, 10);
+
 const isTaxEntry = (e) => e.source?.kind === 'inventory' && e.source.type === 'corporate-tax';
 
 /**
@@ -69,13 +71,16 @@ export function corporateTaxSchedule(ws, today) {
         amount: due,
       });
     if (refTax >= P.minTaxForAdvances) {
-      const dates = advanceDates(fy);
+      // Exercice terminé mais pas encore clôturé : les acomptes du nouvel exercice courent déjà, sur la
+      // base du dernier impôt connu.
+      const next = { start: dayAfter(fy.end), end: `${Number(fy.end.slice(0, 4)) + 1}${fy.end.slice(4)}` };
+      const dates = [...advanceDates(fy), ...(fy.end < today ? advanceDates(next) : [])];
       const part = divRound(refTax * P.advanceSharePct, 100);
       dates.forEach((date, i) =>
         obligations.push({
           date,
-          label: `Acompte d'impôt sur les sociétés (${i + 1}/${dates.length})`,
-          amount: i === dates.length - 1 && dates.length === 4 ? refTax - part * 3 : part,
+          label: `Acompte d'impôt sur les sociétés (${(i % 4) + 1}/4)`,
+          amount: i % 4 === 3 ? refTax - part * 3 : part,
         }),
       );
     }
@@ -85,8 +90,9 @@ export function corporateTaxSchedule(ws, today) {
   const paidThisYear = sum(lines.filter((l) => l.account === '444000').map((l) => l.debit - l.credit));
   // Exercice terminé mais pas encore clôturé : son solde est estimé d'après le résultat actuel.
   if (fy.end < today) {
-    const advances = obligations.filter((o) => o.date >= fy.start && o.date <= fy.end && o.label.startsWith('Acompte'));
-    const advancesPaid = Math.max(0, paidThisYear - sum(obligations.filter((o) => !advances.includes(o)).map((o) => o.amount)));
+    // Versements de l'exercice moins le solde de l'exercice précédent : acomptes de cet exercice.
+    const previousBalance = sum(obligations.filter((o) => o.label.startsWith('Solde')).map((o) => o.amount));
+    const advancesPaid = Math.max(0, paidThisYear - previousBalance);
     const estimate = ws.computeCorporateTax().tax - advancesPaid;
     if (estimate > 0)
       obligations.push({

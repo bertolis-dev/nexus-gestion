@@ -2,14 +2,14 @@
  * Mode connecté : ouverture d’une entreprise, file d’envoi, état de la synchronisation.
  */
 
-import { pickStructure } from '../core/company.js?v=e260546';
-import { applySyncResult } from '../core/sync.js?v=e260546';
-import { Workspace } from '../core/workspace.js?v=e260546';
-import * as cloud from './cloud.js?v=e260546';
-import { html } from './html.js?v=e260546';
-import { render } from './render.js?v=e260546';
-import { cloudState, newId, setWs, ui, ws } from './state.js?v=e260546';
-import { toast } from './store.js?v=e260546';
+import { pickStructure } from '../core/company.js?v=214818f';
+import { applySyncResult, ledgerStateFromRows } from '../core/sync.js?v=214818f';
+import { Workspace } from '../core/workspace.js?v=214818f';
+import * as cloud from './cloud.js?v=214818f';
+import { html } from './html.js?v=214818f';
+import { render } from './render.js?v=214818f';
+import { cloudState, newId, setWs, ui, ws } from './state.js?v=214818f';
+import { toast } from './store.js?v=214818f';
 
 // ------------------------------------------------------------------ synchronisation
 
@@ -51,6 +51,23 @@ export function syncStatusHtml() {
   return html`<div id="sync-status" class="sync-status">${s.pending ? `Enregistrement… (${s.pending})` : 'Toutes les modifications sont enregistrées'}</div>`;
 }
 
+/**
+ * Dernier exercice clos (société à l'IS) : sert à l'échéancier des acomptes d'impôt de la trésorerie
+ * prévisionnelle (core/istax.js). Les autres entreprises n'en ont pas besoin ; un échec n'empêche pas
+ * l'ouverture.
+ */
+async function lastClosedYear(structureId, company) {
+  if (company.taxRegime !== 'is-reel') return [];
+  try {
+    const [year] = await cloud.closedFiscalYears(structureId);
+    if (!year) return [];
+    const entries = await cloud.fiscalYearEntries(structureId, year.id);
+    return [{ fiscalYear: { start: year.start_date, end: year.end_date }, ledger: ledgerStateFromRows(entries, year) }];
+  } catch {
+    return [];
+  }
+}
+
 export async function openStructure(structureId) {
   ui.emails = null;
   ui.members = null;
@@ -60,6 +77,7 @@ export async function openStructure(structureId) {
   cloudState.role = await cloud.myRole(structureId).catch(() => null);
   cloudState.outbox = new cloud.Outbox({ key: `${cloud.OUTBOX_PREFIX}${structureId}`, onStatus: onSyncStatus, onResult: onSyncResult });
   setWs(new Workspace({ company: state.company, state, newId }));
+  ws.archives = await lastClosedYear(structureId, state.company);
   cloudState.synced = JSON.parse(JSON.stringify(ws));
   if (cloudState.outbox.queue.length) {
     await cloudState.outbox.flush();

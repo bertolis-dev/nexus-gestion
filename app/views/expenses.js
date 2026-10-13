@@ -2,18 +2,18 @@
  * Écran « expenses ».
  */
 
-import { VAT_RATES_BP } from '../../core/invoices.js?v=e260546';
-import { LIFECYCLE, nextStatuses } from '../../core/lifecycle.js?v=e260546';
-import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=e260546';
-import * as cloud from '../cloud.js?v=e260546';
-import { field, html, opt, raw } from '../html.js?v=e260546';
-import { ICONS } from '../icons.js?v=e260546';
-import { render } from '../render.js?v=e260546';
-import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=e260546';
-import { toast } from '../store.js?v=e260546';
-import { badge, icon, term, viewHeader } from '../ui/common.js?v=e260546';
-import { preparePhoto } from '../ui/photo.js?v=e260546';
-import { viewAssets } from './assets.js?v=e260546';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=214818f';
+import { LIFECYCLE, nextStatuses } from '../../core/lifecycle.js?v=214818f';
+import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=214818f';
+import * as cloud from '../cloud.js?v=214818f';
+import { field, html, opt, raw } from '../html.js?v=214818f';
+import { ICONS } from '../icons.js?v=214818f';
+import { render } from '../render.js?v=214818f';
+import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=214818f';
+import { toast } from '../store.js?v=214818f';
+import { badge, icon, term, viewHeader } from '../ui/common.js?v=214818f';
+import { preparePhoto } from '../ui/photo.js?v=214818f';
+import { viewAssets } from './assets.js?v=214818f';
 
 // ------------------------------------------------------------------ dépenses (§3.3)
 
@@ -222,7 +222,11 @@ export function einvoicePreview({ inv, duplicates }) {
 
 /** Justificatif d'une dépense : lien vers la pièce stockée, ou signalement de son absence. */
 export function receiptCell(p) {
-  const doc = cloudState.documents.find((d) => d.linked_entity === 'purchase' && d.linked_id === p.id);
+  // Pièce jointe à la dépense, ou ajoutée depuis la Banque sur le paiement de cette dépense.
+  const paidBy = new Set((p.payments || []).map((x) => x.ref));
+  const doc = cloudState.documents.find(
+    (d) => (d.linked_entity === 'purchase' && d.linked_id === p.id) || (d.linked_entity === 'transaction' && paidBy.has(d.linked_id)),
+  );
   if (doc) return html`<button class="btn-link" data-action="receipt-open" data-path="${doc.storage_path}">Voir le justificatif</button>`;
   if (ui.demo && p.documentName) return badge('Justificatif joint', 'info');
   return badge('Sans justificatif');

@@ -2,20 +2,20 @@
  * Écran « bank ».
  */
 
-import { decodeStatement, importStatement } from '../../core/bank-import.js?v=e260546';
-import { reconciliationStatement } from '../../core/bank.js?v=e260546';
-import { VAT_RATES_BP } from '../../core/invoices.js?v=e260546';
-import { parseEuros } from '../../core/money.js?v=e260546';
-import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=e260546';
-import { INCOME_CATEGORIES, MAX_BANK_ACCOUNTS, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=e260546';
-import { field, html, opt, raw } from '../html.js?v=e260546';
-import { ICONS } from '../icons.js?v=e260546';
-import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=e260546';
-import { dataVersion, save, toast } from '../store.js?v=e260546';
-import * as cloud from '../cloud.js?v=e260546';
-import { render } from '../render.js?v=e260546';
-import { preparePhoto } from '../ui/photo.js?v=e260546';
-import { badge, icon, term, viewHeader } from '../ui/common.js?v=e260546';
+import { decodeStatement, importStatement } from '../../core/bank-import.js?v=214818f';
+import { reconciliationStatement } from '../../core/bank.js?v=214818f';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=214818f';
+import { parseEuros } from '../../core/money.js?v=214818f';
+import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=214818f';
+import { INCOME_CATEGORIES, MAX_BANK_ACCOUNTS, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=214818f';
+import { field, html, opt, raw } from '../html.js?v=214818f';
+import { ICONS } from '../icons.js?v=214818f';
+import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=214818f';
+import { dataVersion, save, toast } from '../store.js?v=214818f';
+import * as cloud from '../cloud.js?v=214818f';
+import { render } from '../render.js?v=214818f';
+import { preparePhoto } from '../ui/photo.js?v=214818f';
+import { badge, icon, term, viewHeader } from '../ui/common.js?v=214818f';
 
 // ------------------------------------------------------------------ banque (§3.4)
 

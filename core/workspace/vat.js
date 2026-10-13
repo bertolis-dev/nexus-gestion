@@ -3,13 +3,22 @@
  * Méthodes installées sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { ca12Advances, liquidationEntry, prepareCa12, prepareCa3 } from '../vatreturn.js?v=e260546';
-import { sum } from '../money.js?v=e260546';
+import { ca12Advances, liquidationEntry, prepareCa12, prepareCa3 } from '../vatreturn.js?v=214818f';
+import { sum } from '../money.js?v=214818f';
 
 export const vatMethods = {
   /** Déclarations déjà validées (conservées dans les paramètres de la structure). */
   get vatReturns() {
     return this.company.vatReturns || [];
+  },
+
+  /** Lendemain de la dernière période de TVA déclarée (null si aucune) : une régularisation n'y retourne pas. */
+  _firstUndeclaredDay() {
+    const last = this.vatReturns
+      .map((r) => r.to)
+      .sort()
+      .at(-1);
+    return last ? new Date(Date.parse(`${last}T00:00:00Z`) + 86400000).toISOString().slice(0, 10) : null;
   },
 
   /** Crédit de TVA reporté de la dernière déclaration validée avant la période. */

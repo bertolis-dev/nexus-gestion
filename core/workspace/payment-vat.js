@@ -4,8 +4,8 @@
  * Méthode installée sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { divRound, sum } from '../money.js?v=e260546';
-import { purchaseEntry } from '../purchases.js?v=e260546';
+import { divRound, sum } from '../money.js?v=214818f';
+import { purchaseEntry } from '../purchases.js?v=214818f';
 
 const dayBefore = (iso) => new Date(Date.parse(`${iso}T00:00:00Z`) - 86400000).toISOString().slice(0, 10);
 const dayAfter = (iso) => new Date(Date.parse(`${iso}T00:00:00Z`) + 86400000).toISOString().slice(0, 10);
@@ -23,15 +23,20 @@ export const paymentVatMethods = {
         .map((l) => l.debit - l.credit),
     );
     if (!pending || !p.totalTtc) return;
+    // Pas de déduction avant la facture (CGI art. 271-II) : un acompte versé avant attend sa date.
     const target = (d) => {
+      if (d < p.date) return 0;
       const paid = sum((p.payments || []).filter((x) => x.date <= d).map((x) => x.amount));
       return paid >= p.totalTtc ? pending : divRound(pending * paid, p.totalTtc);
     };
     const fy = this.ledger.fiscalYear;
     const base = target(dayBefore(fy.start));
     const locked = this.ledger.lockedThrough;
-    const firstOpen = locked ? dayAfter(locked) : fy.start;
-    const dates = [...new Set([...(p.payments || []).map((x) => x.date), date])].filter((d) => d >= fy.start && d <= fy.end).sort();
+    // Ni dans une période verrouillée, ni dans une période de TVA déjà déclarée : reportée au premier jour libre.
+    const firstOpen = [locked ? dayAfter(locked) : fy.start, this._firstUndeclaredDay()].filter(Boolean).sort().at(-1);
+    const dates = [...new Set([...(p.payments || []).map((x) => (x.date < p.date ? p.date : x.date)), date < p.date ? p.date : date])]
+      .filter((d) => d >= fy.start && d <= fy.end)
+      .sort();
     const bookedUpTo = (d) =>
       sum(
         this.ledger.entries

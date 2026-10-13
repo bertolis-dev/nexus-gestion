@@ -2,9 +2,9 @@
  * Préférences, thème, enregistrement (démonstration ou base), notifications, erreurs inattendues.
  */
 
-import { Workspace } from '../core/workspace.js?v=e260546';
-import { getDemo, setDemo } from './demo-store.js?v=e260546';
-import { CONTACT_EMAIL, PREFS_KEY, THEME_KEY, cloudState, setWs, ui, ws } from './state.js?v=e260546';
+import { Workspace } from '../core/workspace.js?v=214818f';
+import { getDemo, setDemo } from './demo-store.js?v=214818f';
+import { CONTACT_EMAIL, PREFS_KEY, THEME_KEY, cloudState, setWs, ui, ws } from './state.js?v=214818f';
 
 // ------------------------------------------------------------------ préférences, thème, stockage
 
@@ -64,8 +64,27 @@ export function save() {
     toast('Une version plus récente de Nexus Gestion est ouverte dans un autre onglet : rechargez cette page avant de continuer.', true);
   }
   const next = JSON.parse(JSON.stringify(ws));
-  cloudState.outbox.push(cloudState.synced, next, cloudState.meta);
+  lastPush = cloudState.outbox.push(cloudState.synced, next, cloudState.meta).catch(() => {});
   cloudState.synced = next;
+}
+
+let lastPush = Promise.resolve();
+
+/**
+ * Attend que les dernières modifications soient acceptées par le serveur (mode connecté) ; échoue
+ * après `timeoutMs` ou si le serveur en refuse une. Immédiat en démonstration.
+ */
+export async function whenSaved(timeoutMs = 20000) {
+  if (ui.demo || !cloudState.outbox) return;
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error('Le serveur ne répond pas pour le moment.')), timeoutMs);
+  });
+  try {
+    await Promise.race([lastPush.then(() => cloudState.outbox.waitIdle()), timeout]);
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 /** Même implémentation que showToast() de Nexus RH (empilement, apparition, retrait après 3 s). */

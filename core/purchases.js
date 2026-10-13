@@ -3,8 +3,8 @@
  * TVA non déductible appliquée automatiquement, détection des immobilisations et des doublons.
  */
 
-import { divRound, splitTtc, sum, vatFromHt } from './money.js?v=e260546';
-import { categoryById } from './pcg.js?v=e260546';
+import { divRound, splitTtc, sum, vatFromHt } from './money.js?v=214818f';
+import { categoryById } from './pcg.js?v=214818f';
 
 /** Ligne d'achat saisie TTC : HT et TVA dont la somme redonne exactement le TTC. */
 export function ttcLine(ttc, vatRateBp) {
@@ -102,7 +102,7 @@ function mergeSameAccount(lines) {
 
 /**
  * Option du fournisseur pour le paiement de la TVA d'après les débits, telle qu'indiquée sur sa
- * dernière facture enregistrée (false si inconnue) : reprise pour ses factures suivantes.
+ * dernière facture enregistrée (null si ce fournisseur n'a jamais indiqué son choix) : reprise pour ses factures suivantes.
  */
 export function knownVatOnDebits(purchases, supplierName) {
   const key = String(supplierName || '')
@@ -114,7 +114,7 @@ export function knownVatOnDebits(purchases, supplierName) {
         .toUpperCase()
         .replace(/[^A-Z0-9]/g, '') === key && p.supplier.vatOnDebits !== undefined,
   );
-  return Boolean(last?.supplier.vatOnDebits);
+  return last ? Boolean(last.supplier.vatOnDebits) : null;
 }
 
 /** Doublon : même fournisseur, même montant TTC et même date ou même numéro de facture. */
