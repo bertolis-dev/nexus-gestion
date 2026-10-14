@@ -4,18 +4,18 @@
  * Sans DOM ni stockage : l'interface (app/) le sérialise, les tests l'utilisent tel quel.
  */
 
-import { buildChart, categoryById } from './pcg.js?v=df4a177';
-import { Ledger } from './ledger.js?v=df4a177';
-import { InvoiceBook, clientAux } from './invoices.js?v=df4a177';
-import { purchaseEntry, findDuplicates, knownVatOnDebits, ttcLine } from './purchases.js?v=df4a177';
-import { mergeTransactions, suggestMatches, settlementEntry, directEntry, DEFAULT_BANK_ACCOUNT } from './bank.js?v=df4a177';
+import { buildChart, categoryById } from './pcg.js?v=d1ecbb7';
+import { Ledger } from './ledger.js?v=d1ecbb7';
+import { InvoiceBook, clientAux } from './invoices.js?v=d1ecbb7';
+import { purchaseEntry, findDuplicates, knownVatOnDebits, ttcLine } from './purchases.js?v=d1ecbb7';
+import { mergeTransactions, suggestMatches, settlementEntry, directEntry, DEFAULT_BANK_ACCOUNT } from './bank.js?v=d1ecbb7';
 export { DEFAULT_BANK_ACCOUNT };
-import { creditsOf, originalOf, groupBalance } from './receipts.js?v=df4a177';
-import { divRound, splitTtc, sum } from './money.js?v=df4a177';
-import { openingEntry } from './fecimport.js?v=df4a177';
-import { creditTargetsAsset } from './assets.js?v=df4a177';
-import { LIFECYCLE, currentStatus } from './lifecycle.js?v=df4a177';
-import { SCHEMA_VERSION, migrateState } from './schema.js?v=df4a177';
+import { creditsOf, originalOf, groupBalance } from './receipts.js?v=d1ecbb7';
+import { divRound, splitTtc, sum } from './money.js?v=d1ecbb7';
+import { openingEntry } from './fecimport.js?v=d1ecbb7';
+import { creditTargetsAsset } from './assets.js?v=d1ecbb7';
+import { LIFECYCLE, currentStatus } from './lifecycle.js?v=d1ecbb7';
+import { SCHEMA_VERSION, migrateState } from './schema.js?v=d1ecbb7';
 
 /** Entrées d'argent sans facture de vente, proposées en langage courant. */
 export const INCOME_CATEGORIES = [
@@ -33,6 +33,9 @@ export const OUTFLOW_CATEGORIES = [
   { id: 'acompte-tva', label: 'Acompte de TVA (régime simplifié, juillet ou décembre)', account: '445810' },
   { id: 'acompte-is', label: 'Acompte ou solde d’impôt sur les sociétés', account: '444000' },
   { id: 'cotisations-urssaf', label: 'Cotisations URSSAF', account: '646000' },
+  { id: 'salaires-verses', label: 'Salaires versés aux salariés', account: '421000' },
+  { id: 'cotisations-salaries', label: 'Cotisations URSSAF des salariés', account: '431000' },
+  { id: 'organismes-sociaux', label: 'Retraite complémentaire, mutuelle, prévoyance', account: '437000' },
   { id: 'remboursement-emprunt', label: "Remboursement d'emprunt (capital)", account: '164000' },
   { id: 'prelevement-personnel', label: 'Prélèvement personnel du dirigeant', account: '108000' },
   { id: 'remboursement-associe', label: 'Remboursement du compte courant d’associé', account: '455000' },
@@ -58,16 +61,16 @@ export function combineEstimates(list) {
 
 export const MAX_BANK_ACCOUNTS = 10;
 
-import { recurringMethods } from './workspace/recurring.js?v=df4a177';
-import { vatMethods } from './workspace/vat.js?v=df4a177';
-import { receiptVatMethods } from './workspace/receipt-vat.js?v=df4a177';
-import { paymentVatMethods } from './workspace/payment-vat.js?v=df4a177';
-import { nexusRhMethods } from './workspace/nexusrh.js?v=df4a177';
-import { closingMethods } from './workspace/closing.js?v=df4a177';
-import { microMethods } from './workspace/micro.js?v=df4a177';
-import { depositMethods } from './deposit.js?v=df4a177';
-import { categorizationMethods, learnRule } from './categorization.js?v=df4a177';
-import { reminderMethods } from './reminders.js?v=df4a177';
+import { recurringMethods } from './workspace/recurring.js?v=d1ecbb7';
+import { vatMethods } from './workspace/vat.js?v=d1ecbb7';
+import { receiptVatMethods } from './workspace/receipt-vat.js?v=d1ecbb7';
+import { paymentVatMethods } from './workspace/payment-vat.js?v=d1ecbb7';
+import { nexusRhMethods } from './workspace/nexusrh.js?v=d1ecbb7';
+import { closingMethods } from './workspace/closing.js?v=d1ecbb7';
+import { microMethods } from './workspace/micro.js?v=d1ecbb7';
+import { depositMethods } from './deposit.js?v=d1ecbb7';
+import { categorizationMethods, learnRule } from './categorization.js?v=d1ecbb7';
+import { reminderMethods } from './reminders.js?v=d1ecbb7';
 
 export class Workspace {
   constructor({ company, state: saved = {}, now, newId } = {}) {
@@ -85,6 +88,7 @@ export class Workspace {
     this.bankAccounts = state.bankAccounts || [{ ...DEFAULT_BANK_ACCOUNT }];
     this.recurring = state.recurring || [];
     this.archives = state.archives || [];
+    this.payrolls = state.payrolls || [];
     this.seq = state.seq || 0;
   }
 
@@ -100,6 +104,7 @@ export class Workspace {
       bankAccounts: this.bankAccounts,
       recurring: this.recurring,
       archives: this.archives,
+      payrolls: this.payrolls,
       seq: this.seq,
     };
   }
@@ -136,6 +141,7 @@ export class Workspace {
       bankAccounts: s.bankAccounts,
       recurring: s.recurring,
       archives: s.archives,
+      payrolls: s.payrolls,
       seq: s.seq,
     });
   }

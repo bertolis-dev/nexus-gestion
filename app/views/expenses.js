@@ -2,19 +2,19 @@
  * Écran « expenses ».
  */
 
-import { VAT_RATES_BP } from '../../core/invoices.js?v=df4a177';
-import { LIFECYCLE, nextStatuses } from '../../core/lifecycle.js?v=df4a177';
-import { CHOOSABLE_EXPENSE_CATEGORIES, EXPENSE_CATEGORIES } from '../../core/pcg.js?v=df4a177';
-import * as cloud from '../cloud.js?v=df4a177';
-import { field, html, opt, raw } from '../html.js?v=df4a177';
-import { ICONS } from '../icons.js?v=df4a177';
-import { render } from '../render.js?v=df4a177';
-import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=df4a177';
-import { toast } from '../store.js?v=df4a177';
-import { badge, icon, term, viewHeader } from '../ui/common.js?v=df4a177';
-import { preparePhoto } from '../ui/photo.js?v=df4a177';
-import { nexusRhButton, nexusRhPanel } from './nexusrh-import.js?v=df4a177';
-import { viewAssets } from './assets.js?v=df4a177';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=d1ecbb7';
+import { LIFECYCLE, nextStatuses } from '../../core/lifecycle.js?v=d1ecbb7';
+import { CHOOSABLE_EXPENSE_CATEGORIES, EXPENSE_CATEGORIES } from '../../core/pcg.js?v=d1ecbb7';
+import * as cloud from '../cloud.js?v=d1ecbb7';
+import { field, html, opt, raw } from '../html.js?v=d1ecbb7';
+import { ICONS } from '../icons.js?v=d1ecbb7';
+import { render } from '../render.js?v=d1ecbb7';
+import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=d1ecbb7';
+import { toast } from '../store.js?v=d1ecbb7';
+import { badge, icon, term, viewHeader } from '../ui/common.js?v=d1ecbb7';
+import { preparePhoto } from '../ui/photo.js?v=d1ecbb7';
+import { nexusRhButton, nexusRhPanel } from './nexusrh-import.js?v=d1ecbb7';
+import { viewAssets } from './assets.js?v=d1ecbb7';
 
 // ------------------------------------------------------------------ dépenses (§3.3)
 
@@ -229,6 +229,9 @@ export function receiptCell(p) {
     (d) => (d.linked_entity === 'purchase' && d.linked_id === p.id) || (d.linked_entity === 'transaction' && paidBy.has(d.linked_id)),
   );
   if (doc) return html`<button class="btn-link" data-action="receipt-open" data-path="${doc.storage_path}">Voir le justificatif</button>`;
+  // Note de frais importée de Nexus RH : la pièce reste conservée par Nexus RH.
+  if (p.receiptUrl) return html`<a class="btn-link" href="${p.receiptUrl}" target="_blank" rel="noopener">Voir le justificatif (Nexus RH)</a>`;
+  if (p.externalRef?.startsWith('nexus-rh:') && p.documentName) return badge('Justificatif dans Nexus RH', 'info');
   if (ui.demo && p.documentName) return badge('Justificatif joint', 'info');
   return badge('Sans justificatif');
 }

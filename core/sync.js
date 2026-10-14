@@ -124,6 +124,12 @@ export function purchaseRow(p, meta) {
   };
 }
 
+/** Paie du mois importée de Nexus RH (migration 0030) : ajout seul. */
+export function payrollRow(p, meta) {
+  const { id, ref, period, entryId, ...data } = p;
+  return { id, structure_id: meta.structureId, period, ref, data, entry_id: entryId || null };
+}
+
 /** Compte bancaire ajouté (le compte principal existe déjà en base, créé avec l'entreprise). */
 export function bankAccountRow(a, meta) {
   return {
@@ -250,6 +256,9 @@ export function planSync(before, after, meta) {
   const bPurch = byId(b.purchases);
   const purchases = (after.purchases || []).filter((p) => !bPurch.has(p.id)).map((p) => purchaseRow(p, meta));
   if (purchases.length) ops.push({ kind: 'upsert', table: 'purchases', rows: purchases, onConflict: 'id', ignoreDuplicates: true });
+  const bPay = byId(b.payrolls);
+  const payrolls = (after.payrolls || []).filter((p) => !bPay.has(p.id)).map((p) => payrollRow(p, meta));
+  if (payrolls.length) ops.push({ kind: 'upsert', table: 'payrolls', rows: payrolls, onConflict: 'id', ignoreDuplicates: true });
 
   // Règlements
   const bSet = new Set(settlementRows(b, meta).map(settlementKey));
@@ -530,6 +539,7 @@ export function stateFromRows(r) {
         missingReceipt: t.missing_receipt || undefined,
       })),
     recurring: (r.recurring || []).map((x) => ({ ...x.data, id: x.id })),
+    payrolls: (r.payrolls || []).map((x) => ({ ...x.data, id: x.id, ref: x.ref, period: x.period, ...(x.entry_id ? { entryId: x.entry_id } : {}) })),
     seq: 0,
   };
 }
@@ -565,5 +575,5 @@ export function refusedUpdate(op) {
     divergence: true,
   });
 }
-import { DEFAULT_BANK_ACCOUNT } from './bank.js?v=df4a177';
-import { parisDateOf } from './dates.js?v=df4a177';
+import { DEFAULT_BANK_ACCOUNT } from './bank.js?v=d1ecbb7';
+import { parisDateOf } from './dates.js?v=d1ecbb7';

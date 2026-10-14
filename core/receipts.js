@@ -10,8 +10,8 @@
  * facture non encaissée, il réduit la TVA restant en attente.
  */
 
-import { divRound, sum } from './money.js?v=df4a177';
-import { vatSplit } from './invoices.js?v=df4a177';
+import { divRound, sum } from './money.js?v=d1ecbb7';
+import { vatSplit } from './invoices.js?v=d1ecbb7';
 
 /**
  * Une part de la TVA est-elle exigible à l'encaissement ? (prestations sans option pour les débits,

@@ -4,7 +4,8 @@
  * Méthode installée sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { noteRef, ticketsRef } from '../nexusrh-import.js?v=df4a177';
+import { noteRef, payrollRef, ticketsRef } from '../nexusrh-import.js?v=d1ecbb7';
+import { payrollEntry } from '../payroll.js?v=d1ecbb7';
 
 export const nexusRhMethods = {
   /**
@@ -27,8 +28,8 @@ export const nexusRhMethods = {
           supplier: { name: n.employee, kind: 'salarie' },
           date: n.date,
           number: n.id,
-          documentName: n.label,
-          lines: [{ categoryId: n.categoryId, ht: n.ht, vat: n.vat, vatRateBp: n.vatRateBp }],
+          documentName: n.receiptRef,
+          lines: [{ categoryId: n.categoryId, ht: n.ht, vat: n.vat, vatRateBp: n.vatRateBp, label: n.label }],
         },
         { force: true },
       );
@@ -54,6 +55,20 @@ export const nexusRhMethods = {
           { force: true },
         );
         Object.assign(purchase, { externalRef: ref, dueDate: t.date });
+        created++;
+      }
+    }
+    const pay = preview.payroll;
+    if (pay) {
+      const ref = payrollRef(preview.siren, preview.period);
+      if (pay.status !== 'new' || this.payrolls.some((x) => x.ref === ref)) ignored++;
+      else {
+        const { status, message, ...data } = pay;
+        const record = { id: this._id('PAY'), ref, ...data };
+        // Salaires saisis dans Nexus (réglage) : écriture de paie ; sinon l'expert-comptable les passe et
+        // Nexus ne les reprend que dans la trésorerie prévisionnelle.
+        if (this.company.payrollBy === 'nexus') record.entryId = this.ledger.addDraft(payrollEntry(record)).id;
+        this.payrolls.push(record);
         created++;
       }
     }

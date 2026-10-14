@@ -37,6 +37,7 @@ export const ACCOUNTS = [
   ['419100', 'Clients - avances et acomptes reçus', 'Acomptes reçus de clients'],
   ['421000', 'Personnel - rémunérations dues', 'Salaires à payer'],
   ['431000', 'Sécurité sociale', 'Cotisations sociales à payer'],
+  ['437000', 'Autres organismes sociaux', 'Cotisations retraite, mutuelle et prévoyance à payer'],
   ['444000', 'État - impôt sur les bénéfices', 'Impôt sur les sociétés'],
   ['445510', 'TVA à décaisser', 'TVA à payer'],
   ['445200', 'TVA due intracommunautaire', 'TVA due sur achats étrangers (autoliquidation)'],

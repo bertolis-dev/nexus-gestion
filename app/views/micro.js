@@ -2,13 +2,13 @@
  * Écran « micro ».
  */
 
-import { ESTIMATE_MISSING_LABELS, incomeDeclaration, receiptsBook } from '../../core/micro.js?v=df4a177';
-import { formatDecimalComma } from '../../core/money.js?v=df4a177';
-import { field, html, opt } from '../html.js?v=df4a177';
-import { isMicro } from '../render.js?v=df4a177';
-import { eur, frDate, today, ui, ws } from '../state.js?v=df4a177';
-import { badge, icon, viewHeader } from '../ui/common.js?v=df4a177';
-import { urssafLinkCard } from './urssaf-link.js?v=df4a177';
+import { ESTIMATE_MISSING_LABELS, incomeDeclaration, receiptsBook } from '../../core/micro.js?v=d1ecbb7';
+import { formatDecimalComma } from '../../core/money.js?v=d1ecbb7';
+import { field, html, opt } from '../html.js?v=d1ecbb7';
+import { isMicro } from '../render.js?v=d1ecbb7';
+import { eur, frDate, today, ui, ws } from '../state.js?v=d1ecbb7';
+import { badge, icon, viewHeader } from '../ui/common.js?v=d1ecbb7';
+import { urssafLinkCard } from './urssaf-link.js?v=d1ecbb7';
 
 // ------------------------------------------------------------------ micro-entrepreneur
 

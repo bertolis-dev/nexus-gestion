@@ -2,19 +2,19 @@
  * Écran « settings ».
  */
 
-import { field, html, opt, raw } from '../html.js?v=df4a177';
-import { isMicro } from '../render.js?v=df4a177';
-import { cloudState, eur, pct, ui, ws } from '../state.js?v=df4a177';
-import { VAT_RATES_BP } from '../../core/invoices.js?v=df4a177';
-import { ICONS } from '../icons.js?v=df4a177';
-import { badge, viewHeader } from '../ui/common.js?v=df4a177';
-import * as cloud from '../cloud.js?v=df4a177';
-import { render } from '../render.js?v=df4a177';
-import { membersCard, microSettingsCard, openingPreview, securityCard } from './onboarding.js?v=df4a177';
-import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=df4a177';
-import { normalizeIban } from '../../core/epc.js?v=df4a177';
-import { INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=df4a177';
-import { DEFAULT_TEMPLATES, REMINDER_STEPS } from '../../core/reminders.js?v=df4a177';
+import { field, html, opt, raw } from '../html.js?v=d1ecbb7';
+import { isMicro } from '../render.js?v=d1ecbb7';
+import { cloudState, eur, pct, ui, ws } from '../state.js?v=d1ecbb7';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=d1ecbb7';
+import { ICONS } from '../icons.js?v=d1ecbb7';
+import { badge, viewHeader } from '../ui/common.js?v=d1ecbb7';
+import * as cloud from '../cloud.js?v=d1ecbb7';
+import { render } from '../render.js?v=d1ecbb7';
+import { membersCard, microSettingsCard, openingPreview, securityCard } from './onboarding.js?v=d1ecbb7';
+import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=d1ecbb7';
+import { normalizeIban } from '../../core/epc.js?v=d1ecbb7';
+import { INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=d1ecbb7';
+import { DEFAULT_TEMPLATES, REMINDER_STEPS } from '../../core/reminders.js?v=d1ecbb7';
 
 // ------------------------------------------------------------------ paramètres
 
@@ -334,6 +334,15 @@ function companyTab() {
           <label class="form-field-checkbox" style="display:flex;gap:8px;align-items:center"
             ><input type="checkbox" name="vatOnDebits" ${c.vatOnDebits ? raw('checked') : ''} />J'ai opté pour le paiement de la TVA d'après les débits</label
           >
+          ${field(
+            'Qui saisit les salaires ?',
+            html`<select class="input" name="payrollBy" style="max-width:360px">
+              ${opt('expert', 'Mon expert-comptable (depuis le journal de paie)', c.payrollBy !== 'nexus')}${opt('nexus', 'Nexus, à l’import depuis Nexus RH', c.payrollBy === 'nexus')}
+            </select>`,
+            {
+              hint: 'Expert-comptable : les salaires importés de Nexus RH servent seulement à prévoir votre trésorerie, pour ne pas les compter deux fois. Nexus : ils sont aussi enregistrés en comptabilité.',
+            },
+          )}
           <div><button class="btn btn-primary" type="submit">Enregistrer</button></div>
         </form>
         <div class="card" style="display:flex;flex-direction:column;gap:10px">

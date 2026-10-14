@@ -3,14 +3,14 @@
  * n'est enregistré avant le clic sur « Importer ». Contrôles et règles : core/nexusrh-import.js.
  */
 
-import { previewNexusRhImport } from '../../core/nexusrh-import.js?v=df4a177';
-import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=df4a177';
-import * as cloud from '../cloud.js?v=df4a177';
-import { html } from '../html.js?v=df4a177';
-import { render } from '../render.js?v=df4a177';
-import { cloudState, eur, frDate, ui, ws } from '../state.js?v=df4a177';
-import { save, toast, whenSaved } from '../store.js?v=df4a177';
-import { badge, icon } from '../ui/common.js?v=df4a177';
+import { previewNexusRhImport } from '../../core/nexusrh-import.js?v=d1ecbb7';
+import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=d1ecbb7';
+import * as cloud from '../cloud.js?v=d1ecbb7';
+import { html } from '../html.js?v=d1ecbb7';
+import { render } from '../render.js?v=d1ecbb7';
+import { cloudState, eur, frDate, ui, ws } from '../state.js?v=d1ecbb7';
+import { save, toast, whenSaved } from '../store.js?v=d1ecbb7';
+import { badge, icon } from '../ui/common.js?v=d1ecbb7';
 
 const STATUS = { new: ['À importer', 'info'], already: ['Déjà importée', 'muted'], error: ['À corriger', 'warning'] };
 const categoryLabel = (id) => EXPENSE_CATEGORIES.find((c) => c.id === id)?.label || '—';
@@ -25,7 +25,13 @@ export function nexusRhButton() {
 /** Fichier choisi : lu et contrôlé, puis présenté en aperçu. */
 export async function readNexusRhFile(file) {
   const text = await file.text();
-  ui.nexusRh = { fileName: file.name, preview: previewNexusRhImport(ws, text) };
+  const preview = previewNexusRhImport(ws, text);
+  // Salaires : données confidentielles, réservées au dirigeant et à l'expert-comptable (comme en base).
+  if (preview.payroll && cloudState.role === 'collaborateur')
+    preview.errors.push(
+      'Ce fichier contient les salaires : seul le dirigeant ou l’expert-comptable peut l’importer. Demandez à Nexus RH un export sans la paie.',
+    );
+  ui.nexusRh = { fileName: file.name, preview };
   ui.expensesTab = 'depenses';
   render();
 }
@@ -85,6 +91,21 @@ export function nexusRhPanel() {
             <strong>Tickets restaurant :</strong> ${p.tickets.count} titres, ${eur(p.tickets.total ?? 0)} payés à l’émetteur le
             ${p.tickets.date ? frDate(p.tickets.date) : '—'}, dont ${eur(p.tickets.employer ?? 0)} à la charge de l’entreprise.
             ${badge(...STATUS[p.tickets.status])}
+          </p>`
+        : ''
+    }
+    ${
+      p.payroll
+        ? html`<p style="margin:0">
+            <strong>Salaires :</strong> ${eur(p.payroll.net)} nets versés le ${frDate(p.payroll.payDate)}, cotisations
+            ${eur(p.payroll.employeeCharges + p.payroll.employerCharges)} à payer le ${frDate(p.payroll.organisms[0].dueDate)}.
+            ${badge(...STATUS[p.payroll.status])} <br /><span class="form-hint"
+              >${
+                ws.company.payrollBy === 'nexus'
+                  ? 'Ils seront enregistrés en comptabilité (réglage « Qui saisit les salaires ? » : Nexus).'
+                  : 'Ils serviront seulement à prévoir votre trésorerie : votre expert-comptable les enregistre depuis le journal de paie (modifiable dans les Paramètres).'
+              }</span
+            >
           </p>`
         : ''
     }

@@ -2,21 +2,21 @@
  * Écran « onboarding ».
  */
 
-import { firstFiscalYear } from '../../core/dates.js?v=df4a177';
-import { openingBalanceFromFec, parseFec } from '../../core/fecimport.js?v=df4a177';
-import { isValidSiren } from '../../core/invoices.js?v=df4a177';
-import { ACTIVITY_TYPES, CIPAV_PROFESSIONS } from '../../core/micro.js?v=df4a177';
-import { buildChart } from '../../core/pcg.js?v=df4a177';
-import { Workspace } from '../../core/workspace.js?v=df4a177';
-import * as cloud from '../cloud.js?v=df4a177';
-import { lookupSiren } from '../company-lookup.js?v=df4a177';
-import { companyFromOnboarding } from '../../core/company.js?v=df4a177';
-import { choiceGroup, field, html, opt, raw } from '../html.js?v=df4a177';
-import { render } from '../render.js?v=df4a177';
-import { cloudState, eur, newId, setWs, ui, ws } from '../state.js?v=df4a177';
-import { save, toast } from '../store.js?v=df4a177';
-import { onSyncResult, onSyncStatus } from '../sync-ui.js?v=df4a177';
-import { badge, brand } from '../ui/common.js?v=df4a177';
+import { firstFiscalYear } from '../../core/dates.js?v=d1ecbb7';
+import { openingBalanceFromFec, parseFec } from '../../core/fecimport.js?v=d1ecbb7';
+import { isValidSiren } from '../../core/invoices.js?v=d1ecbb7';
+import { ACTIVITY_TYPES, CIPAV_PROFESSIONS } from '../../core/micro.js?v=d1ecbb7';
+import { buildChart } from '../../core/pcg.js?v=d1ecbb7';
+import { Workspace } from '../../core/workspace.js?v=d1ecbb7';
+import * as cloud from '../cloud.js?v=d1ecbb7';
+import { lookupSiren } from '../company-lookup.js?v=d1ecbb7';
+import { companyFromOnboarding } from '../../core/company.js?v=d1ecbb7';
+import { choiceGroup, field, html, opt, raw } from '../html.js?v=d1ecbb7';
+import { render } from '../render.js?v=d1ecbb7';
+import { cloudState, eur, newId, setWs, ui, ws } from '../state.js?v=d1ecbb7';
+import { save, toast } from '../store.js?v=d1ecbb7';
+import { onSyncResult, onSyncStatus } from '../sync-ui.js?v=d1ecbb7';
+import { badge, brand } from '../ui/common.js?v=d1ecbb7';
 
 // ------------------------------------------------------------------ assistant d'installation (§3.1)
 

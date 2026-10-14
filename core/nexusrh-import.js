@@ -7,7 +7,8 @@
  * (nombres décimaux), taux de TVA en pourcentage (20 pour 20 %), catégories en clair.
  */
 
-import { formatEuros } from './money.js?v=df4a177';
+import { formatEuros } from './money.js?v=d1ecbb7';
+import { parsePayroll } from './payroll.js?v=d1ecbb7';
 
 export const NEXUS_RH_FORMAT = 'nexus-rh-export';
 export const NEXUS_RH_VERSION = 1;
@@ -30,6 +31,10 @@ export const NEXUS_RH_CATEGORIES = {
   deplacement: 'deplacements',
   deplacements: 'deplacements',
   carburant: 'carburant-vp',
+  // Indemnités kilométriques : remboursement forfaitaire du véhicule personnel, sans TVA.
+  kilometrique: 'deplacements',
+  'indemnites kilometriques': 'deplacements',
+  'frais kilometriques': 'deplacements',
   fournitures: 'fournitures',
   'fournitures de bureau': 'fournitures',
   telephone: 'telecom',
@@ -64,15 +69,16 @@ function cents(v) {
 
 export const noteRef = (id) => `nexus-rh:${id}`;
 export const ticketsRef = (siren, period) => `nexus-rh:tickets:${siren}:${period}`;
+export const payrollRef = (siren, period) => `nexus-rh:paie:${siren}:${period}`;
 
 /**
- * @param {import('./workspace.js?v=df4a177').Workspace} ws
+ * @param {import('./workspace.js?v=d1ecbb7').Workspace} ws
  * @param {string} text contenu du fichier choisi par l'utilisateur
  * @returns {{ errors: string[], period?, notes: object[], tickets: object|null, toCreate: number }}
  */
 export function previewNexusRhImport(ws, text) {
   const errors = [];
-  const out = { errors, notes: [], tickets: null, toCreate: 0 };
+  const out = { errors, notes: [], tickets: null, payroll: null, toCreate: 0 };
   let d;
   try {
     d = JSON.parse(text);
@@ -96,10 +102,17 @@ export function previewNexusRhImport(ws, text) {
   }
   if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(d.periode || ''))
     errors.push('La période du fichier est illisible (attendu : AAAA-MM) : exportez de nouveau depuis Nexus RH.');
-  if (d.paie !== null && d.paie !== undefined) {
-    errors.push('Le fichier contient des salaires : leur import n’est pas pris en charge dans cette version. Exportez depuis Nexus RH sans la paie.');
-  }
   out.period = d.periode;
+  // Salaires du mois (journal de paie de Nexus RH) : contrôlés ici, repris selon le réglage
+  // « Qui saisit les salaires ? » (core/payroll.js).
+  if (d.paie !== null && d.paie !== undefined) {
+    const { errors: payErrors, payroll } = parsePayroll(d.paie, /^\d{4}-\d{2}$/.test(d.periode || '') ? d.periode : '1970-01');
+    errors.push(...payErrors);
+    if (payroll) {
+      const already = (ws.payrolls || []).some((x) => x.ref === payrollRef(d.siren, d.periode));
+      out.payroll = { ...payroll, status: already ? 'already' : 'new', message: already ? 'Salaires de ce mois déjà importés.' : '' };
+    }
+  }
 
   const known = new Map(ws.purchases.filter((p) => p.externalRef).map((p) => [p.externalRef, p]));
   for (const [i, n] of (Array.isArray(d.notes_de_frais) ? d.notes_de_frais : []).entries()) {
@@ -121,7 +134,10 @@ export function previewNexusRhImport(ws, text) {
       vat,
       ttc,
       vatRateBp: RATES_PCT.includes(rate) ? Math.round(rate * 100) : null,
+      // Lien web (https) consultable depuis Nexus Gestion, ou chemin du justificatif dans le stockage de
+      // Nexus RH (format réel v1) gardé comme référence de la pièce.
       receiptUrl: typeof n?.justificatif_url === 'string' && /^https:\/\//.test(n.justificatif_url) ? n.justificatif_url : null,
+      receiptRef: typeof n?.justificatif_url === 'string' ? n.justificatif_url.trim().slice(0, 300) : '',
       refundDate: isDate(n?.date_remboursement) ? n.date_remboursement : null,
       status: 'new',
       message: '',
@@ -169,6 +185,6 @@ export function previewNexusRhImport(ws, text) {
     if (total) out.tickets = tickets;
   }
   out.siren = String(d.siren);
-  out.toCreate = out.notes.filter((n) => n.status === 'new').length + (out.tickets?.status === 'new' ? 1 : 0);
+  out.toCreate = out.notes.filter((n) => n.status === 'new').length + (out.tickets?.status === 'new' ? 1 : 0) + (out.payroll?.status === 'new' ? 1 : 0);
   return out;
 }

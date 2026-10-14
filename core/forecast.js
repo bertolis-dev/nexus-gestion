@@ -6,10 +6,11 @@
  * solde de l'exercice clos, solde estimé de l'exercice terminé non clôturé : core/istax.js).
  */
 
-import { addDays } from './dates.js?v=df4a177';
-import { dueOccurrences } from './recurring.js?v=df4a177';
-import { computeTotals, isVatExempt } from './invoices.js?v=df4a177';
-import { corporateTaxSchedule } from './istax.js?v=df4a177';
+import { addDays } from './dates.js?v=d1ecbb7';
+import { dueOccurrences } from './recurring.js?v=d1ecbb7';
+import { computeTotals, isVatExempt } from './invoices.js?v=d1ecbb7';
+import { corporateTaxSchedule } from './istax.js?v=d1ecbb7';
+import { payrollOutflows } from './payroll.js?v=d1ecbb7';
 
 /** Délai de paiement d'une dépense sans échéance connue (usage, à valider par l'expert-comptable). */
 export const DEFAULT_SUPPLIER_TERMS_DAYS = 30;
@@ -78,6 +79,8 @@ export function cashForecast(ws, today, { horizons = [30, 60, 90] } = {}) {
   }
 
   for (const t of corporateTaxSchedule(ws, today)) add(t.date, 'impot', t.label, t.amount);
+  // Salaires importés de Nexus RH : net et cotisations à venir (une échéance passée est supposée payée).
+  for (const p of ws.payrolls || []) for (const o of payrollOutflows(p)) if (o.date >= today) add(o.date, 'salaires', o.label, o.amount);
 
   events.sort((a, b) => a.date.localeCompare(b.date) || b.amount - a.amount);
   const start = ws.dashboard(today).cash;
