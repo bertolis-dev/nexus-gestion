@@ -2,15 +2,21 @@
  * Écran « expenses ».
  */
 
-import { purchaseLinesFrom } from '../../core/einvoice-in.js?v=214818f';
-import * as cloud from '../cloud.js?v=214818f';
-import { render } from '../render.js?v=214818f';
-import { eur, ui, ws } from '../state.js?v=214818f';
-import { save, toast } from '../store.js?v=214818f';
-import { attachReceipt } from '../views/expenses.js?v=214818f';
+import { purchaseLinesFrom } from '../../core/einvoice-in.js?v=df4a177';
+import * as cloud from '../cloud.js?v=df4a177';
+import { render } from '../render.js?v=df4a177';
+import { eur, ui, ws } from '../state.js?v=df4a177';
+import { save, toast } from '../store.js?v=df4a177';
+import { attachReceipt } from '../views/expenses.js?v=df4a177';
+import { saveNexusRhImport } from '../views/nexusrh-import.js?v=df4a177';
 
 /** Actions « expenses » : data-action → fonction. */
 export const actionsTable = {
+  'nexusrh-save': () => saveNexusRhImport(),
+  'nexusrh-cancel': async () => {
+    ui.nexusRh = null;
+    return render();
+  },
   'purchase-force': async () => {
     const res = ws.addPurchase(ui.pendingPurchase.data, { force: true });
     const pendingFile = ui.pendingPurchase.file;

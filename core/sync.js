@@ -117,6 +117,10 @@ export function purchaseRow(p, meta) {
     document_name: p.documentName || '',
     kind: p.type === 'credit' ? 'credit' : 'invoice',
     reverse_charge: Boolean(p.reverseCharge),
+    // Import Nexus RH (migration 0029) : pièce d'origine, échéance, justificatif conservé par Nexus RH.
+    external_ref: p.externalRef || null,
+    due_date: p.dueDate || null,
+    receipt_url: p.receiptUrl || null,
   };
 }
 
@@ -502,6 +506,9 @@ export function stateFromRows(r) {
           entryId: p.entry_id,
           ...(p.kind === 'credit' ? { type: 'credit' } : {}),
           ...(p.reverse_charge ? { reverseCharge: true } : {}),
+          ...(p.external_ref ? { externalRef: p.external_ref } : {}),
+          ...(p.due_date ? { dueDate: p.due_date } : {}),
+          ...(p.receipt_url ? { receiptUrl: p.receipt_url } : {}),
           totalTtc: Number(p.total_ttc),
           paid: pays.reduce((sum, x) => sum + x.amount, 0),
           payments: pays,
@@ -558,5 +565,5 @@ export function refusedUpdate(op) {
     divergence: true,
   });
 }
-import { DEFAULT_BANK_ACCOUNT } from './bank.js?v=214818f';
-import { parisDateOf } from './dates.js?v=214818f';
+import { DEFAULT_BANK_ACCOUNT } from './bank.js?v=df4a177';
+import { parisDateOf } from './dates.js?v=df4a177';

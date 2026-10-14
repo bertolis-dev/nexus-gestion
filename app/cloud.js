@@ -9,11 +9,11 @@
  * nombre d'écritures validées), l'état est rechargé depuis la base, qui fait foi.
  */
 
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js?v=214818f';
-import { stateFromRows, refusedUpdate } from '../core/sync.js?v=214818f';
-import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, pendingOutboxOps, OUTBOX_PREFIX } from '../core/outbox.js?v=214818f';
-import { ACCOUNTS } from '../core/pcg.js?v=214818f';
-import { mfaState, canRemoveFactor } from '../core/mfa.js?v=214818f';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js?v=df4a177';
+import { stateFromRows, refusedUpdate } from '../core/sync.js?v=df4a177';
+import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, pendingOutboxOps, OUTBOX_PREFIX } from '../core/outbox.js?v=df4a177';
+import { ACCOUNTS } from '../core/pcg.js?v=df4a177';
+import { mfaState, canRemoveFactor } from '../core/mfa.js?v=df4a177';
 
 // supabase-js (copie locale, app/vendor/) n'est chargé qu'en mode connecté : la démonstration et
 // le site public ne téléchargent pas ces 220 Ko.
@@ -21,7 +21,7 @@ let client = null;
 const authListeners = [];
 async function connect() {
   if (!client) {
-    const { createClient } = await import('./vendor/supabase.js?v=214818f');
+    const { createClient } = await import('./vendor/supabase.js?v=df4a177');
     // Session gardée dans le navigateur et renouvelée automatiquement : on reste connecté d'une visite
     // à l'autre, jusqu'à « Se déconnecter » (comme Nexus RH).
     client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -348,6 +348,11 @@ export async function listEmails(structureId) {
 export async function exportStructure(structureId) {
   const supabase = await connect();
   return check(await supabase.rpc('export_structure', { p_structure: structureId }));
+}
+/** Import d'un fichier Nexus RH inscrit au journal d'audit (migration 0029). */
+export async function logNexusRhImport(structureId, detail) {
+  const supabase = await connect();
+  return check(await supabase.rpc('log_nexus_rh_import', { p_structure: structureId, p_detail: detail }));
 }
 /** Téléchargement du dossier de clôture inscrit au journal d'audit (migration 0027). */
 export async function logClosingPackage(structureId, detail) {

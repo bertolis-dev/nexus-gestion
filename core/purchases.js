@@ -3,8 +3,8 @@
  * TVA non déductible appliquée automatiquement, détection des immobilisations et des doublons.
  */
 
-import { divRound, splitTtc, sum, vatFromHt } from './money.js?v=214818f';
-import { categoryById } from './pcg.js?v=214818f';
+import { divRound, splitTtc, sum, vatFromHt } from './money.js?v=df4a177';
+import { categoryById } from './pcg.js?v=df4a177';
 
 /** Ligne d'achat saisie TTC : HT et TVA dont la somme redonne exactement le TTC. */
 export function ttcLine(ttc, vatRateBp) {
@@ -60,7 +60,8 @@ export function purchaseEntry(p, company) {
       totalTtc += l.ht;
     } else {
       const deductible = divRound(vat * pct, 100);
-      const onPayment = !isAsset && (l.nature || cat.nature) === 'services' && !p.supplier.vatOnDebits;
+      // Dépense avancée par un salarié (note de frais) : le fournisseur est déjà payé, TVA récupérable aussitôt.
+      const onPayment = !isAsset && (l.nature || cat.nature) === 'services' && !p.supplier.vatOnDebits && p.supplier.kind !== 'salarie';
       deductibleByAccount[isAsset ? '445620' : onPayment ? '445680' : '445660'] += deductible;
       lines.push({ account, label, debit: l.ht + (vat - deductible), credit: 0 });
       totalTtc += l.ht + vat;
@@ -70,8 +71,9 @@ export function purchaseEntry(p, company) {
     if (amount) lines.push({ account, label, debit: amount, credit: 0 });
   }
   if (reverseChargeVat) lines.push({ account: '445200', label, debit: 0, credit: reverseChargeVat });
-  const payable = hasFixedAsset ? '404000' : '401000';
-  // Sous-compte du tiers préfixé par son collectif (401… fournisseurs, 404… fournisseurs d'immobilisations).
+  const payable = p.supplier.kind === 'salarie' ? '421000' : hasFixedAsset ? '404000' : '401000';
+  // Sous-compte du tiers préfixé par son collectif (401… fournisseurs, 404… fournisseurs d'immobilisations,
+  // 421… salarié pour une note de frais).
   lines.push({ account: payable, aux: `${payable.slice(0, 3)}${supplierCode}`, auxLabel: p.supplier.name, label, debit: 0, credit: totalTtc });
 
   const merged = mergeSameAccount(lines);

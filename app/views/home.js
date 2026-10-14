@@ -2,14 +2,14 @@
  * Écran « home ».
  */
 
-import { html, raw } from '../html.js?v=214818f';
-import { ICONS } from '../icons.js?v=214818f';
-import { isMicro } from '../render.js?v=214818f';
-import { eur, today, ui, ws } from '../state.js?v=214818f';
-import { allocationCard } from './closing.js?v=214818f';
-import { franchiseBanner } from './micro.js?v=214818f';
-import { forecastCard } from './forecast.js?v=214818f';
-import { activityCard } from './stats.js?v=214818f';
+import { html, raw } from '../html.js?v=df4a177';
+import { ICONS } from '../icons.js?v=df4a177';
+import { isMicro } from '../render.js?v=df4a177';
+import { eur, today, ui, ws } from '../state.js?v=df4a177';
+import { allocationCard } from './closing.js?v=df4a177';
+import { franchiseBanner } from './micro.js?v=df4a177';
+import { forecastCard } from './forecast.js?v=df4a177';
+import { activityCard } from './stats.js?v=df4a177';
 
 // ------------------------------------------------------------------ accueil
 

@@ -2,20 +2,20 @@
  * Écran « bank ».
  */
 
-import { decodeStatement, importStatement } from '../../core/bank-import.js?v=214818f';
-import { reconciliationStatement } from '../../core/bank.js?v=214818f';
-import { VAT_RATES_BP } from '../../core/invoices.js?v=214818f';
-import { parseEuros } from '../../core/money.js?v=214818f';
-import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=214818f';
-import { INCOME_CATEGORIES, MAX_BANK_ACCOUNTS, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=214818f';
-import { field, html, opt, raw } from '../html.js?v=214818f';
-import { ICONS } from '../icons.js?v=214818f';
-import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=214818f';
-import { dataVersion, save, toast } from '../store.js?v=214818f';
-import * as cloud from '../cloud.js?v=214818f';
-import { render } from '../render.js?v=214818f';
-import { preparePhoto } from '../ui/photo.js?v=214818f';
-import { badge, icon, term, viewHeader } from '../ui/common.js?v=214818f';
+import { decodeStatement, importStatement } from '../../core/bank-import.js?v=df4a177';
+import { reconciliationStatement } from '../../core/bank.js?v=df4a177';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=df4a177';
+import { parseEuros } from '../../core/money.js?v=df4a177';
+import { CHOOSABLE_EXPENSE_CATEGORIES } from '../../core/pcg.js?v=df4a177';
+import { INCOME_CATEGORIES, MAX_BANK_ACCOUNTS, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=df4a177';
+import { field, html, opt, raw } from '../html.js?v=df4a177';
+import { ICONS } from '../icons.js?v=df4a177';
+import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=df4a177';
+import { dataVersion, save, toast } from '../store.js?v=df4a177';
+import * as cloud from '../cloud.js?v=df4a177';
+import { render } from '../render.js?v=df4a177';
+import { preparePhoto } from '../ui/photo.js?v=df4a177';
+import { badge, icon, term, viewHeader } from '../ui/common.js?v=df4a177';
 
 // ------------------------------------------------------------------ banque (§3.4)
 
@@ -33,7 +33,7 @@ export function categoryOptions(outflow, selected = null) {
   if (selected) {
     const mark = (list) => list.map((c) => opt(c.id, c.label, c.id === selected));
     return outflow
-      ? html`<optgroup label="Dépenses">${mark(EXPENSE_CATEGORIES)}</optgroup>
+      ? html`<optgroup label="Dépenses">${mark(CHOOSABLE_EXPENSE_CATEGORIES)}</optgroup>
           <optgroup label="Autres sorties d’argent">${mark(OUTFLOW_CATEGORIES)}</optgroup>`
       : html`${mark(INCOME_CATEGORIES)}`;
   }
@@ -41,7 +41,7 @@ export function categoryOptions(outflow, selected = null) {
     categoryOptionsCache.set(
       outflow,
       outflow
-        ? html`<optgroup label="Dépenses">${EXPENSE_CATEGORIES.map((c) => opt(c.id, c.label))}</optgroup>
+        ? html`<optgroup label="Dépenses">${CHOOSABLE_EXPENSE_CATEGORIES.map((c) => opt(c.id, c.label))}</optgroup>
             <optgroup label="Autres sorties d’argent">${OUTFLOW_CATEGORIES.map((c) => opt(c.id, c.label))}</optgroup>`
         : html`${INCOME_CATEGORIES.map((c) => opt(c.id, c.label))}`,
     );

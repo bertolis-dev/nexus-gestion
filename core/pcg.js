@@ -97,6 +97,7 @@ export const ACCOUNTS = [
   ['644000', "Rémunération du travail de l'exploitant", 'Rémunération du dirigeant'],
   ['645000', 'Charges de sécurité sociale et de prévoyance', 'Cotisations sociales'],
   ['646000', "Cotisations sociales personnelles de l'exploitant", 'Cotisations sociales du dirigeant'],
+  ['647400', 'Versements aux autres œuvres sociales', 'Titres-restaurant (part employeur)'],
   ['658000', 'Charges diverses de gestion courante', 'Écarts et charges diverses'],
   ['661100', 'Intérêts des emprunts et dettes', "Intérêts d'emprunt"],
   ['681110', 'Dotations aux amortissements des immobilisations incorporelles', "Usure des logiciels de l'année"],
@@ -163,10 +164,17 @@ export const EXPENSE_CATEGORIES = [
   { id: 'banque', label: 'Frais bancaires', account: '627000', vatDeductiblePct: 100, nature: 'services' },
   { id: 'logiciel', label: 'Abonnements et logiciels', account: '628000', vatDeductiblePct: 100, nature: 'services' },
   { id: 'impots', label: 'Impôts et taxes (CFE…)', account: '635000', vatDeductiblePct: 0, nature: 'services' },
+  // Titres-restaurant importés de Nexus RH : part employeur en charge, part salarié retenue sur salaire
+  // (421). Sans TVA ; `internal` : non proposées dans les listes de saisie.
+  { id: 'titres-restaurant', label: 'Titres-restaurant (part employeur)', account: '647400', vatDeductiblePct: 0, nature: 'services', internal: true },
+  { id: 'titres-restaurant-salarie', label: 'Titres-restaurant (part salarié)', account: '421000', vatDeductiblePct: 0, nature: 'services', internal: true },
   { id: 'materiel-info', label: 'Ordinateur et matériel informatique', account: '218300', vatDeductiblePct: 100, fixedAsset: true, nature: 'goods' },
   { id: 'mobilier', label: 'Mobilier', account: '218400', vatDeductiblePct: 100, fixedAsset: true, nature: 'goods' },
   { id: 'logiciel-achat', label: 'Logiciel acheté (licence définitive)', account: '205000', vatDeductiblePct: 100, fixedAsset: true, nature: 'goods' },
 ];
+
+/** Catégories proposées dans les listes de saisie (les catégories internes aux imports en sont exclues). */
+export const CHOOSABLE_EXPENSE_CATEGORIES = EXPENSE_CATEGORIES.filter((c) => !c.internal);
 
 /**
  * Taux de TVA habituel par catégorie de dépense, proposé par défaut quand un mouvement bancaire est

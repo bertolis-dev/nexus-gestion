@@ -2,18 +2,19 @@
  * Écran « expenses ».
  */
 
-import { VAT_RATES_BP } from '../../core/invoices.js?v=214818f';
-import { LIFECYCLE, nextStatuses } from '../../core/lifecycle.js?v=214818f';
-import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=214818f';
-import * as cloud from '../cloud.js?v=214818f';
-import { field, html, opt, raw } from '../html.js?v=214818f';
-import { ICONS } from '../icons.js?v=214818f';
-import { render } from '../render.js?v=214818f';
-import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=214818f';
-import { toast } from '../store.js?v=214818f';
-import { badge, icon, term, viewHeader } from '../ui/common.js?v=214818f';
-import { preparePhoto } from '../ui/photo.js?v=214818f';
-import { viewAssets } from './assets.js?v=214818f';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=df4a177';
+import { LIFECYCLE, nextStatuses } from '../../core/lifecycle.js?v=df4a177';
+import { CHOOSABLE_EXPENSE_CATEGORIES, EXPENSE_CATEGORIES } from '../../core/pcg.js?v=df4a177';
+import * as cloud from '../cloud.js?v=df4a177';
+import { field, html, opt, raw } from '../html.js?v=df4a177';
+import { ICONS } from '../icons.js?v=df4a177';
+import { render } from '../render.js?v=df4a177';
+import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=df4a177';
+import { toast } from '../store.js?v=df4a177';
+import { badge, icon, term, viewHeader } from '../ui/common.js?v=df4a177';
+import { preparePhoto } from '../ui/photo.js?v=df4a177';
+import { nexusRhButton, nexusRhPanel } from './nexusrh-import.js?v=df4a177';
+import { viewAssets } from './assets.js?v=df4a177';
 
 // ------------------------------------------------------------------ dépenses (§3.3)
 
@@ -29,8 +30,8 @@ export function viewExpenses() {
     </button>
   </div>`;
   if (ui.expensesTab === 'immobilisations') return html`${viewHeader('Dépenses', 'Vos équipements durables et leur amortissement.')}${tabs}${viewAssets()}`;
-  return html` ${viewHeader('Dépenses', 'Ajoutez vos factures d’achat : la catégorie suffit, Nexus fait le reste.', html`<label class="btn btn-secondary" style="margin:0">${icon('upload', 14)} Importer des factures reçues (XML, PDF Factur-X ou ZIP)<input type="file" accept=".xml,.pdf,.zip,application/xml,text/xml,application/pdf,application/zip" multiple data-action="einvoice-in-file" hidden /></label>`)}
-    ${tabs} ${ui.pendingEinvoice ? einvoicePreview(ui.pendingEinvoice) : ''}
+  return html` ${viewHeader('Dépenses', 'Ajoutez vos factures d’achat : la catégorie suffit, Nexus fait le reste.', html`<label class="btn btn-secondary" style="margin:0">${icon('upload', 14)} Importer des factures reçues (XML, PDF Factur-X ou ZIP)<input type="file" accept=".xml,.pdf,.zip,application/xml,text/xml,application/pdf,application/zip" multiple data-action="einvoice-in-file" hidden /></label>${nexusRhButton()}`)}
+    ${tabs} ${ui.nexusRh ? nexusRhPanel() : ''} ${ui.pendingEinvoice ? einvoicePreview(ui.pendingEinvoice) : ''}
     <form class="card" data-form="purchase" style="display:flex;flex-direction:column;gap:14px">
       <h2>Ajouter une dépense</h2>
       ${pending?.duplicates?.length ? html`<div class="notice-gold">Cette dépense ressemble à une facture déjà enregistrée (${pending.duplicates.map((p) => `${p.supplier.name} du ${frDate(p.date)}`).join(', ')}). <button type="button" class="btn btn-gold btn-sm" data-action="purchase-force">L'enregistrer quand même</button> <button type="button" class="btn btn-secondary btn-sm" data-action="purchase-cancel">Annuler</button></div>` : ''}
@@ -48,7 +49,7 @@ export function viewExpenses() {
         ${field(
           'Catégorie',
           html`<select class="input" name="categoryId">
-            ${EXPENSE_CATEGORIES.map((c) => opt(c.id, c.label, f.categoryId === c.id))}
+            ${CHOOSABLE_EXPENSE_CATEGORIES.map((c) => opt(c.id, c.label, f.categoryId === c.id))}
           </select>`,
         )}
         ${field('Montant TTC', html`<input class="input" name="ttc" inputmode="decimal" placeholder="0,00" value="${f.ttc || ''}" required />`)}
@@ -208,7 +209,7 @@ export function einvoicePreview({ inv, duplicates }) {
             ${field(
               'Catégorie',
               html`<select class="input" data-einvoice-cat>
-                ${EXPENSE_CATEGORIES.map((cat) => opt(cat.id, cat.label))}
+                ${CHOOSABLE_EXPENSE_CATEGORIES.map((cat) => opt(cat.id, cat.label))}
               </select>`,
             )}
             <button class="btn btn-primary" data-action="einvoice-in-save" style="margin-bottom:2px">
