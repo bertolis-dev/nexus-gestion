@@ -5,16 +5,16 @@
  * Règle de rédaction : ne décrire que ce que l'application fait réellement aujourd'hui ; ce qui
  * dépend d'un partenaire pas encore branché est annoncé comme tel.
  */
-import factures from './site/pages/factures.js?v=d1ecbb7';
-import devis from './site/pages/devis.js?v=d1ecbb7';
-import banque from './site/pages/banque.js?v=d1ecbb7';
-import depenses from './site/pages/depenses.js?v=d1ecbb7';
-import tva from './site/pages/tva.js?v=d1ecbb7';
-import micro from './site/pages/micro.js?v=d1ecbb7';
-import relances from './site/pages/relances.js?v=d1ecbb7';
-import compta from './site/pages/compta.js?v=d1ecbb7';
-import cloture from './site/pages/cloture.js?v=d1ecbb7';
-import securite from './site/pages/securite.js?v=d1ecbb7';
+import factures from './site/pages/factures.js?v=eb01de0';
+import devis from './site/pages/devis.js?v=eb01de0';
+import banque from './site/pages/banque.js?v=eb01de0';
+import depenses from './site/pages/depenses.js?v=eb01de0';
+import tva from './site/pages/tva.js?v=eb01de0';
+import micro from './site/pages/micro.js?v=eb01de0';
+import relances from './site/pages/relances.js?v=eb01de0';
+import compta from './site/pages/compta.js?v=eb01de0';
+import cloture from './site/pages/cloture.js?v=eb01de0';
+import securite from './site/pages/securite.js?v=eb01de0';
 
 /** Ordre d'affichage sur la page d'accueil. */
 export const FEATURE_PAGES = [factures, devis, banque, depenses, tva, micro, relances, compta, cloture, securite];

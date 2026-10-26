@@ -2,13 +2,12 @@
  * Écran « micro ».
  */
 
-import { ESTIMATE_MISSING_LABELS, incomeDeclaration, receiptsBook } from '../../core/micro.js?v=d1ecbb7';
-import { formatDecimalComma } from '../../core/money.js?v=d1ecbb7';
-import { field, html, opt } from '../html.js?v=d1ecbb7';
-import { isMicro } from '../render.js?v=d1ecbb7';
-import { eur, frDate, today, ui, ws } from '../state.js?v=d1ecbb7';
-import { badge, icon, viewHeader } from '../ui/common.js?v=d1ecbb7';
-import { urssafLinkCard } from './urssaf-link.js?v=d1ecbb7';
+import { ESTIMATE_MISSING_LABELS, incomeDeclaration, receiptsBook } from '../../core/micro.js?v=eb01de0';
+import { formatDecimalComma } from '../../core/money.js?v=eb01de0';
+import { field, html, opt } from '../html.js?v=eb01de0';
+import { isMicro } from '../render.js?v=eb01de0';
+import { eur, frDate, today, ui, ws } from '../state.js?v=eb01de0';
+import { badge, icon, viewHeader } from '../ui/common.js?v=eb01de0';
 
 // ------------------------------------------------------------------ micro-entrepreneur
 
@@ -231,8 +230,11 @@ export function viewUrssaf() {
   const periods = ws.urssafPeriods(year, today());
   const current = periods.find((p) => p.status === 'en-cours') || periods.at(-1);
   return html` ${viewHeader('URSSAF et seuils', 'Le montant à déclarer est votre chiffre d’affaires encaissé sur la période.')}
-    ${estimateCaveat(current?.estimate)} ${franchiseBanner()} ${urssafCard(year)} ${urssafLinkCard()}
-    <div class="card">${thresholdCard()}</div>
+    ${estimateCaveat(current?.estimate)} ${franchiseBanner()} ${urssafCard(year)}
+    ${(() => {
+      const t = thresholdCard();
+      return t ? html`<div class="card">${t}</div>` : '';
+    })()}
     <div class="card table-card">
       <div class="view-header-row" style="display:flex;justify-content:space-between;align-items:center;padding:16px 16px 0">
         <h2>Livre des recettes ${year}</h2>

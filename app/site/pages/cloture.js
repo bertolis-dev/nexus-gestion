@@ -54,7 +54,7 @@ export default {
   faq: [
     {
       q: 'Nexus remplace-t-il mon expert-comptable pour la liasse fiscale ?',
-      a: 'Pas aujourd’hui : Nexus prépare la clôture et les états financiers, et l’envoi de la liasse fiscale aux impôts arrivera avec un partenaire agréé. Pour une société, la clôture est réservée à l’expert-comptable invité, pour plus de sécurité.',
+      a: 'Non : Nexus prépare la clôture, les états financiers et un dossier complet (FEC, balance, grand livre, check-list) que votre expert-comptable reprend pour établir et déposer la liasse fiscale. Pour une société, la clôture est réservée à l’expert-comptable invité, pour plus de sécurité.',
     },
     {
       q: 'Puis-je revenir en arrière après la clôture ?',

@@ -4,10 +4,10 @@
  * validées (il ne peut contenir que des écritures définitives) ; sinon la check-list le signale.
  */
 
-import { closingChecklist, fiscalYearLabel } from './closing.js?v=d1ecbb7';
-import { generalLedgerCsv, trialBalanceCsv } from './exports.js?v=d1ecbb7';
-import { encodeLatin9, exportFEC } from './reports.js?v=d1ecbb7';
-import { createZip } from './zip.js?v=d1ecbb7';
+import { closingChecklist, fiscalYearLabel } from './closing.js?v=eb01de0';
+import { generalLedgerCsv, trialBalanceCsv } from './exports.js?v=eb01de0';
+import { encodeLatin9, exportFEC } from './reports.js?v=eb01de0';
+import { createZip } from './zip.js?v=eb01de0';
 
 const utf8 = (s) => new TextEncoder().encode(s);
 const frDate = (iso) => iso.split('-').reverse().join('/');

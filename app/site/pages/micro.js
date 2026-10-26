@@ -72,7 +72,7 @@ export default {
     },
     {
       q: 'Puis-je déclarer et payer directement depuis Nexus ?',
-      a: 'Aujourd’hui, Nexus prépare tout et vous guide : le montant se copie en un clic et votre espace URSSAF s’ouvre directement. La déclaration et le paiement sans quitter Nexus arriveront avec son raccordement au service officiel de tierce déclaration de l’URSSAF : vous autoriserez alors Nexus en un clic, sans jamais nous confier vos identifiants.',
+      a: 'Nexus prépare tout et vous guide : le montant à déclarer se copie en un clic et votre espace URSSAF s’ouvre directement. Vous validez la déclaration sur le site de l’URSSAF, puis reportez le montant des cotisations dans Nexus, qui suit leur paiement.',
     },
     {
       q: 'Que se passe-t-il si je dépasse le seuil de TVA ?',

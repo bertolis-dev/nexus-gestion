@@ -2,30 +2,29 @@
  * Événements du document : saisie, changement, clavier, formulaires, clics, navigation.
  */
 
-import { isValidSiren } from '../../core/invoices.js?v=d1ecbb7';
-import { parseEuros } from '../../core/money.js?v=d1ecbb7';
-import { knownVatOnDebits } from '../../core/purchases.js?v=d1ecbb7';
-import { usualVatRate } from '../../core/pcg.js?v=d1ecbb7';
-import { findCatalogItem } from '../../core/catalog.js?v=d1ecbb7';
-import * as cloud from '../cloud.js?v=d1ecbb7';
-import { html, raw } from '../html.js?v=d1ecbb7';
-import { ICONS } from '../icons.js?v=d1ecbb7';
-import { $, render, searchResults } from '../render.js?v=d1ecbb7';
-import { closeLightbox, featureSlug } from '../site/landing.js?v=d1ecbb7';
-import { cloudState, ui, ws } from '../state.js?v=d1ecbb7';
-import { save, savePrefs, toast } from '../store.js?v=d1ecbb7';
-import { afterSignIn } from '../sync-ui.js?v=d1ecbb7';
-import { attachTxReceipt, currentBankAccount, importBankFile } from '../views/bank.js?v=d1ecbb7';
-import { attachReceipt } from '../views/expenses.js?v=d1ecbb7';
-import { readNexusRhFile } from '../views/nexusrh-import.js?v=d1ecbb7';
-import { readPrice, totalsBlock } from '../views/invoice-form.js?v=d1ecbb7';
-import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=d1ecbb7';
-import { runAction } from './index.js?v=d1ecbb7';
-import { readReceivedInvoices } from '../received-invoices.js?v=d1ecbb7';
-import { urssafLinkSubmit } from '../views/urssaf-link.js?v=d1ecbb7';
-import { catalogSubmit } from './settings.js?v=d1ecbb7';
-import { clientSubmit, readClientsFile } from './clients.js?v=d1ecbb7';
-import { filterClients } from '../views/clients.js?v=d1ecbb7';
+import { isValidSiren } from '../../core/invoices.js?v=eb01de0';
+import { parseEuros } from '../../core/money.js?v=eb01de0';
+import { knownVatOnDebits } from '../../core/purchases.js?v=eb01de0';
+import { usualVatRate } from '../../core/pcg.js?v=eb01de0';
+import { findCatalogItem } from '../../core/catalog.js?v=eb01de0';
+import * as cloud from '../cloud.js?v=eb01de0';
+import { html, raw } from '../html.js?v=eb01de0';
+import { ICONS } from '../icons.js?v=eb01de0';
+import { $, render, searchResults } from '../render.js?v=eb01de0';
+import { closeLightbox, featureSlug } from '../site/landing.js?v=eb01de0';
+import { cloudState, ui, ws } from '../state.js?v=eb01de0';
+import { save, savePrefs, toast } from '../store.js?v=eb01de0';
+import { afterSignIn } from '../sync-ui.js?v=eb01de0';
+import { attachTxReceipt, currentBankAccount, importBankFile } from '../views/bank.js?v=eb01de0';
+import { attachReceipt } from '../views/expenses.js?v=eb01de0';
+import { readNexusRhFile } from '../views/nexusrh-import.js?v=eb01de0';
+import { readPrice, totalsBlock } from '../views/invoice-form.js?v=eb01de0';
+import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=eb01de0';
+import { runAction } from './index.js?v=eb01de0';
+import { readReceivedInvoices } from '../received-invoices.js?v=eb01de0';
+import { catalogSubmit } from './settings.js?v=eb01de0';
+import { clientSubmit, readClientsFile } from './clients.js?v=eb01de0';
+import { filterClients } from '../views/clients.js?v=eb01de0';
 
 // ------------------------------------------------------------------ évènements
 
@@ -419,10 +418,6 @@ document.addEventListener('submit', async (e) => {
     save();
     render();
     return toast('Modèles de relance enregistrés.');
-  }
-  if (kind === 'urssaf-link-siret' || kind === 'urssaf-link-account') {
-    if (await urssafLinkSubmit(kind, f)) save();
-    return render();
   }
   if (kind === 'micro') {
     if (f.acreStart && f.acreEnd && f.acreEnd < f.acreStart)

@@ -2,21 +2,21 @@
  * Écran « onboarding ».
  */
 
-import { firstFiscalYear } from '../../core/dates.js?v=d1ecbb7';
-import { openingBalanceFromFec, parseFec } from '../../core/fecimport.js?v=d1ecbb7';
-import { isValidSiren } from '../../core/invoices.js?v=d1ecbb7';
-import { ACTIVITY_TYPES, CIPAV_PROFESSIONS } from '../../core/micro.js?v=d1ecbb7';
-import { buildChart } from '../../core/pcg.js?v=d1ecbb7';
-import { Workspace } from '../../core/workspace.js?v=d1ecbb7';
-import * as cloud from '../cloud.js?v=d1ecbb7';
-import { lookupSiren } from '../company-lookup.js?v=d1ecbb7';
-import { companyFromOnboarding } from '../../core/company.js?v=d1ecbb7';
-import { choiceGroup, field, html, opt, raw } from '../html.js?v=d1ecbb7';
-import { render } from '../render.js?v=d1ecbb7';
-import { cloudState, eur, newId, setWs, ui, ws } from '../state.js?v=d1ecbb7';
-import { save, toast } from '../store.js?v=d1ecbb7';
-import { onSyncResult, onSyncStatus } from '../sync-ui.js?v=d1ecbb7';
-import { badge, brand } from '../ui/common.js?v=d1ecbb7';
+import { firstFiscalYear } from '../../core/dates.js?v=eb01de0';
+import { openingBalanceFromFec, parseFec } from '../../core/fecimport.js?v=eb01de0';
+import { isValidSiren } from '../../core/invoices.js?v=eb01de0';
+import { ACTIVITY_TYPES, CIPAV_PROFESSIONS } from '../../core/micro.js?v=eb01de0';
+import { buildChart } from '../../core/pcg.js?v=eb01de0';
+import { Workspace } from '../../core/workspace.js?v=eb01de0';
+import * as cloud from '../cloud.js?v=eb01de0';
+import { lookupSiren } from '../company-lookup.js?v=eb01de0';
+import { companyFromOnboarding } from '../../core/company.js?v=eb01de0';
+import { choiceGroup, field, html, opt, raw } from '../html.js?v=eb01de0';
+import { render } from '../render.js?v=eb01de0';
+import { cloudState, eur, newId, setWs, ui, ws } from '../state.js?v=eb01de0';
+import { save, toast } from '../store.js?v=eb01de0';
+import { onSyncResult, onSyncStatus } from '../sync-ui.js?v=eb01de0';
+import { badge, brand } from '../ui/common.js?v=eb01de0';
 
 // ------------------------------------------------------------------ assistant d'installation (§3.1)
 
@@ -74,8 +74,7 @@ export function viewOnboarding() {
     body = html`<h1>Votre banque</h1>
       <p class="text-muted">Vos transactions alimentent le rapprochement automatique avec vos factures.</p>
       <div class="notice-gold">
-        <strong>Connexion automatique (Qonto, Shine, autres banques)</strong> : disponible dès l'ouverture des accès partenaires. En attendant, importez le
-        relevé CSV, OFX, CAMT.053 ou QIF de votre banque.
+        Importez le relevé de votre banque (CSV, OFX, CAMT.053 ou QIF), téléchargé depuis son espace client : toutes les banques françaises le proposent.
       </div>
       ${field('Relevé bancaire (facultatif)', html`<input class="input" id="ob-bank" type="file" accept=".csv,.ofx,.qfx,.txt" data-action="ob-bank-file" />`, { id: 'ob-bank' })}
       ${data.bankFileName ? html`<p class="text-muted">Relevé prêt : <strong>${data.bankFileName}</strong> (${data.bankTx.length} transactions)</p>` : ''}
@@ -87,8 +86,8 @@ export function viewOnboarding() {
         devient obligatoire pour les TPE le 1er septembre 2027.
       </p>
       <div class="notice-gold">
-        Nexus Gestion sera raccordé à une plateforme agréée partenaire. Vous pourrez alors vous inscrire à l'annuaire en un clic. Rien à faire aujourd'hui : vos
-        factures sont déjà conformes.
+        Vos factures sont déjà conformes. Pour recevoir et transmettre vos factures électroniques, utilisez la plateforme agréée de votre banque ou de votre
+        logiciel (souvent gratuite) : le mode « dépôt » de Nexus prépare vos factures pour elle, et vous importez celles que vous y recevez dans Dépenses.
       </div>
       ${errBox}${nav('Terminer et ouvrir mon espace')}`;
   }

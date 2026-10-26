@@ -70,7 +70,7 @@ export default {
     },
     {
       q: 'Nexus lit-il automatiquement mes factures papier ?',
-      a: 'Pas encore : la lecture automatique des photos de factures arrive dans une prochaine version. Les factures électroniques (XML), elles, se remplissent déjà toutes seules.',
+      a: 'Non : pour une photo, vous saisissez le fournisseur, le montant et la catégorie (la photo est jointe à la dépense). Les factures électroniques (XML ou PDF Factur-X), elles, se remplissent toutes seules.',
     },
     { q: 'Où sont stockés mes justificatifs ?', a: 'Dans un espace sécurisé hébergé à Paris, accessible uniquement aux membres de votre entreprise.' },
   ],

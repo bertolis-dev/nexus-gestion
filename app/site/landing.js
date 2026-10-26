@@ -2,23 +2,20 @@
  * Site public : page d’accueil, pages Fonctionnalités, agrandissement des captures.
  */
 
-import { html, raw } from '../html.js?v=d1ecbb7';
-import { ICONS } from '../icons.js?v=d1ecbb7';
-import { $ } from '../render.js?v=d1ecbb7';
-import { CONTACT_EMAIL, ui } from '../state.js?v=d1ecbb7';
-import { brand, icon } from '../ui/common.js?v=d1ecbb7';
+import { html, raw } from '../html.js?v=eb01de0';
+import { ICONS } from '../icons.js?v=eb01de0';
+import { $ } from '../render.js?v=eb01de0';
+import { CONTACT_EMAIL, ui } from '../state.js?v=eb01de0';
+import { brand, icon } from '../ui/common.js?v=eb01de0';
 
 // Pages « Fonctionnalités » du site public (50 Ko) : chargées seulement quand le site public s'affiche.
 export let features = null;
 
-export const loadFeatures = async () => (features ??= await import('../features.js?v=d1ecbb7'));
+export const loadFeatures = async () => (features ??= await import('../features.js?v=eb01de0'));
 
 export const featureBySlug = (slug) => features?.featureBySlug(slug);
 
 // ------------------------------------------------------------------ site public (même gabarit que Nexus RH)
-
-/** Installeur Windows : toujours la dernière version publiée (voir desktop/ et scripts/deploy.mjs). */
-export const DESKTOP_APP_DOWNLOAD_URL = 'https://github.com/bertolis-dev/nexus-gestion/releases/latest/download/Nexus-Gestion-Setup.exe';
 
 export const LANDING_FAQ = [
   {
@@ -27,7 +24,7 @@ export const LANDING_FAQ = [
   },
   {
     q: 'Suis-je prêt pour la facturation électronique ?',
-    a: 'Vos factures portent déjà les mentions obligatoires de septembre 2027 (SIREN du client, nature des opérations). La transmission par plateforme agréée arrive avec la prochaine version, avant l’échéance.',
+    a: 'Vos factures portent déjà les mentions obligatoires de septembre 2027 (SIREN du client, nature des opérations). Le mode « dépôt » les prépare en un clic (PDF Factur-X) pour la plateforme agréée que vous utilisez, souvent gratuite avec votre banque ou votre logiciel.',
   },
   {
     q: 'Mes données sont-elles en sécurité ?',
@@ -253,7 +250,7 @@ export function viewLanding() {
       <div class="landing-steps-grid">
         ${plan('Micro-entrepreneur', '0 €', 'Pour facturer et suivre votre activité', ['Factures et avoirs conformes', 'Livre des recettes et registre des achats', 'Montant URSSAF par trimestre', 'Alerte seuils de TVA'])}
         ${plan('Société', 'Bientôt', 'EURL à l’IR ou à l’IS', ['Tout Micro-entrepreneur', 'Rapprochement bancaire et lettrage', 'TVA préparée (CA3 / CA12)', 'Balance, grand livre, FEC'], 'Ouverture prochaine')}
-        ${plan('Société + clôture', 'Bientôt', 'Jusqu’au bilan', ['Tout Société', 'Écritures d’inventaire assistées', 'Bilan et compte de résultat', 'Liasse fiscale'], 'En préparation')}
+        ${plan('Société + clôture', 'Bientôt', 'Jusqu’au bilan', ['Tout Société', 'Écritures d’inventaire assistées', 'Bilan et compte de résultat', 'Dossier de clôture pour l’expert-comptable'], 'En préparation')}
       </div>
       <div class="landing-compare-table-wrap">
         <table class="landing-compare-table">
@@ -282,7 +279,7 @@ export function viewLanding() {
             </tr>
             <tr>
               <td>Avec Nexus RH</td>
-              <td>Même compte, même interface</td>
+              <td>Notes de frais, tickets restaurant et salaires importés en un fichier</td>
               <td>Deux outils séparés</td>
             </tr>
           </tbody>
@@ -316,12 +313,8 @@ export function viewLanding() {
           'desktop',
           'Ordinateur',
           'Windows, via Chrome ou Edge',
-          html` <a class="btn btn-gold" href="${DESKTOP_APP_DOWNLOAD_URL}">${icon('desktop', 14)} Télécharger (.exe)</a>
-            <p class="landing-platform-note">
-              Windows peut afficher « Windows a protégé votre PC » (pas de certificat payant) : cliquez « Informations complémentaires » puis « Exécuter quand
-              même ».
-            </p>
-            <button type="button" class="btn-link" data-action="install" style="margin-top:6px">Ou installer depuis le navigateur</button>`,
+          html` <button type="button" class="btn btn-gold" data-action="install">${icon('desktop', 14)} Installer Nexus Gestion</button>
+            ${steps(['Ouvrez ce site dans <strong>Chrome</strong> ou <strong>Edge</strong>', 'Cliquez sur l’icône d’installation, à droite de la barre d’adresse', 'Confirmez : Nexus s’ouvre comme une application'])}`,
         )}
         ${platformCard('ios', 'mobile', 'iPhone & iPad', 'Via Safari (obligatoire)', steps(['Ouvrez ce site dans <strong>Safari</strong>', 'Appuyez sur <strong>Partager</strong>, en bas de l’écran', 'Choisissez <strong>« Sur l’écran d’accueil »</strong>, puis « Ajouter »']))}
         ${platformCard(

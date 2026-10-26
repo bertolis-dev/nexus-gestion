@@ -73,7 +73,7 @@ export default {
   faq: [
     {
       q: 'Nexus se connecte-t-il directement à ma banque ?',
-      a: 'Aujourd’hui, vous importez votre relevé (CSV, OFX, CAMT.053 ou QIF) en quelques secondes. La synchronisation automatique avec les banques arrivera dans une prochaine version.',
+      a: 'Non : vous importez le relevé de votre banque (CSV, OFX, CAMT.053 ou QIF) en quelques secondes, depuis son espace client. Cela fonctionne avec toutes les banques, sans abonnement à un service de connexion.',
     },
     {
       q: 'Et si Nexus se trompe de facture ?',

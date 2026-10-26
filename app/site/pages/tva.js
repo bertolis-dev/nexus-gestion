@@ -57,7 +57,7 @@ export default {
   faq: [
     {
       q: 'Nexus envoie-t-il la déclaration aux impôts ?',
-      a: 'Pas encore : vous recopiez les montants sur votre espace professionnel impots.gouv.fr. La télétransmission directe arrive dans une prochaine version.',
+      a: 'Non : Nexus prépare la déclaration case par case et vous recopiez les montants sur votre espace professionnel impots.gouv.fr, en quelques minutes.',
     },
     {
       q: 'Je suis en franchise de TVA, suis-je concerné ?',

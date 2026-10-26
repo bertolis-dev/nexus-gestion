@@ -2,19 +2,19 @@
  * Écran « expenses ».
  */
 
-import { VAT_RATES_BP } from '../../core/invoices.js?v=d1ecbb7';
-import { LIFECYCLE, nextStatuses } from '../../core/lifecycle.js?v=d1ecbb7';
-import { CHOOSABLE_EXPENSE_CATEGORIES, EXPENSE_CATEGORIES } from '../../core/pcg.js?v=d1ecbb7';
-import * as cloud from '../cloud.js?v=d1ecbb7';
-import { field, html, opt, raw } from '../html.js?v=d1ecbb7';
-import { ICONS } from '../icons.js?v=d1ecbb7';
-import { render } from '../render.js?v=d1ecbb7';
-import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=d1ecbb7';
-import { toast } from '../store.js?v=d1ecbb7';
-import { badge, icon, term, viewHeader } from '../ui/common.js?v=d1ecbb7';
-import { preparePhoto } from '../ui/photo.js?v=d1ecbb7';
-import { nexusRhButton, nexusRhPanel } from './nexusrh-import.js?v=d1ecbb7';
-import { viewAssets } from './assets.js?v=d1ecbb7';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=eb01de0';
+import { LIFECYCLE, nextStatuses } from '../../core/lifecycle.js?v=eb01de0';
+import { CHOOSABLE_EXPENSE_CATEGORIES, EXPENSE_CATEGORIES } from '../../core/pcg.js?v=eb01de0';
+import * as cloud from '../cloud.js?v=eb01de0';
+import { field, html, opt, raw } from '../html.js?v=eb01de0';
+import { ICONS } from '../icons.js?v=eb01de0';
+import { render } from '../render.js?v=eb01de0';
+import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=eb01de0';
+import { toast } from '../store.js?v=eb01de0';
+import { badge, icon, term, viewHeader } from '../ui/common.js?v=eb01de0';
+import { preparePhoto } from '../ui/photo.js?v=eb01de0';
+import { nexusRhButton, nexusRhPanel } from './nexusrh-import.js?v=eb01de0';
+import { viewAssets } from './assets.js?v=eb01de0';
 
 // ------------------------------------------------------------------ dépenses (§3.3)
 
@@ -142,8 +142,8 @@ export function lifecycleCard(inv) {
             </tbody>
           </table>`
         : html`<p class="text-muted">
-            Aucun statut pour l'instant. Une fois Nexus raccordé à la plateforme agréée, les statuts (déposée, reçue, approuvée…) arriveront tout seuls ; «
-            Encaissée » se pose déjà au paiement.
+            Aucun statut pour l'instant. Ajoutez ci-dessous ceux qu'affiche votre plateforme agréée (déposée, reçue, approuvée…) ; « Encaissée » se pose tout
+            seul au paiement.
           </p>`
     }
     ${

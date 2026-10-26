@@ -41,7 +41,7 @@ export default {
     },
     {
       title: 'Facture électronique au format européen',
-      text: 'Chaque facture émise se télécharge en XML au format CII, conforme à la norme européenne EN 16931 : le format que les plateformes agréées échangeront. La transmission directe par une plateforme agréée arrive avec la prochaine version, avant l’échéance de septembre 2027.',
+      text: 'Chaque facture émise se télécharge en XML au format CII, conforme à la norme européenne EN 16931 : le format que les plateformes agréées échangeront. Le mode « dépôt » prépare en un clic vos factures pour la plateforme agréée que vous utilisez.',
     },
     {
       title: 'PDF Factur-X, envoyé en un clic',
@@ -82,7 +82,7 @@ export default {
     },
     {
       q: 'Que se passe-t-il en septembre 2027 ?',
-      a: 'Les entreprises devront envoyer leurs factures par une plateforme agréée, au format électronique. Nexus produit déjà ce format et les nouvelles mentions. Dès aujourd’hui, le mode « dépôt » prépare en un clic vos factures (PDF Factur-X) pour la plateforme agréée que vous utilisez, souvent gratuite avec votre banque ou votre logiciel (Qonto, Shine, Pennylane, Tiime…), et réimporte les factures que vous y recevez. La transmission automatique, sans dépôt, arrive ensuite.',
+      a: 'Les entreprises devront envoyer leurs factures par une plateforme agréée, au format électronique. Nexus produit déjà ce format et les nouvelles mentions. Dès aujourd’hui, le mode « dépôt » prépare en un clic vos factures (PDF Factur-X) pour la plateforme agréée que vous utilisez, souvent gratuite avec votre banque ou votre logiciel (Qonto, Shine, Pennylane, Tiime…), et réimporte les factures que vous y recevez.',
     },
     {
       q: 'Mon client est en Belgique, que dois-je faire ?',

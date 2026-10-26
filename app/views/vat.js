@@ -2,11 +2,11 @@
  * Écran « vat ».
  */
 
-import { html, raw } from '../html.js?v=d1ecbb7';
-import { ICONS } from '../icons.js?v=d1ecbb7';
-import { eur, frDate, today, ui, ws } from '../state.js?v=d1ecbb7';
-import { viewHeader } from '../ui/common.js?v=d1ecbb7';
-import { franchiseBanner, thresholdCard } from './micro.js?v=d1ecbb7';
+import { html, raw } from '../html.js?v=eb01de0';
+import { ICONS } from '../icons.js?v=eb01de0';
+import { eur, frDate, today, ui, ws } from '../state.js?v=eb01de0';
+import { viewHeader } from '../ui/common.js?v=eb01de0';
+import { franchiseBanner, thresholdCard } from './micro.js?v=eb01de0';
 
 // ------------------------------------------------------------------ TVA (§3.6)
 
@@ -152,7 +152,7 @@ export function viewCa3(months) {
   const selected = closed.find((mo) => mo.from === ui.vatPeriod) || closed.at(-1);
   const header = viewHeader(
     'TVA',
-    `Déclaration ${ws.company.vatPeriodicity === 'trimestrielle' ? 'trimestrielle' : 'mensuelle'} (CA3) préparée à partir de vos factures et de votre banque. La télétransmission arrive avec la prochaine version.`,
+    `Déclaration ${ws.company.vatPeriodicity === 'trimestrielle' ? 'trimestrielle' : 'mensuelle'} (CA3) préparée à partir de vos factures et de votre banque. Recopiez les montants sur votre espace professionnel impots.gouv.fr.`,
   );
   if (!selected)
     return html`${header}
