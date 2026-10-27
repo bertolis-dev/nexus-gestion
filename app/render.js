@@ -2,25 +2,25 @@
  * Rendu général : choix de l’écran, cadre de l’application, recherche globale, repères d’accessibilité.
  */
 
-import { html, raw } from './html.js?v=eb01de0';
-import { ICONS } from './icons.js?v=eb01de0';
-import { featureBySlug, featureSlug, features, loadFeatures, viewFeature, viewLanding } from './site/landing.js?v=eb01de0';
-import { cloudState, eur, frDate, ui, ws } from './state.js?v=eb01de0';
-import { getTheme } from './store.js?v=eb01de0';
-import { syncStatusHtml } from './sync-ui.js?v=eb01de0';
-import { LOGO, badge, brand } from './ui/common.js?v=eb01de0';
-import { viewAuth, viewMfa, viewStructurePicker } from './views/auth.js?v=eb01de0';
-import { viewBank } from './views/bank.js?v=eb01de0';
-import { viewClosing } from './views/closing.js?v=eb01de0';
-import { viewCompta } from './views/compta.js?v=eb01de0';
-import { viewExpenses } from './views/expenses.js?v=eb01de0';
-import { viewHome } from './views/home.js?v=eb01de0';
-import { viewUrssaf } from './views/micro.js?v=eb01de0';
-import { viewOnboarding } from './views/onboarding.js?v=eb01de0';
-import { runRecurring, viewSales } from './views/sales.js?v=eb01de0';
-import { viewSettings } from './views/settings.js?v=eb01de0';
-import { viewClients } from './views/clients.js?v=eb01de0';
-import { viewVat } from './views/vat.js?v=eb01de0';
+import { html, raw } from './html.js?v=e7aed24';
+import { ICONS } from './icons.js?v=e7aed24';
+import { featureBySlug, featureSlug, features, loadFeatures, viewFeature, viewLanding } from './site/landing.js?v=e7aed24';
+import { cloudState, eur, frDate, ui, ws } from './state.js?v=e7aed24';
+import { getTheme } from './store.js?v=e7aed24';
+import { syncStatusHtml } from './sync-ui.js?v=e7aed24';
+import { LOGO, badge, brand } from './ui/common.js?v=e7aed24';
+import { viewAuth, viewMfa, viewStructurePicker } from './views/auth.js?v=e7aed24';
+import { viewBank } from './views/bank.js?v=e7aed24';
+import { viewClosing } from './views/closing.js?v=e7aed24';
+import { viewCompta } from './views/compta.js?v=e7aed24';
+import { viewExpenses } from './views/expenses.js?v=e7aed24';
+import { viewHome } from './views/home.js?v=e7aed24';
+import { viewUrssaf } from './views/micro.js?v=e7aed24';
+import { viewOnboarding } from './views/onboarding.js?v=e7aed24';
+import { runRecurring, viewSales } from './views/sales.js?v=e7aed24';
+import { viewSettings } from './views/settings.js?v=e7aed24';
+import { viewClients } from './views/clients.js?v=e7aed24';
+import { viewVat } from './views/vat.js?v=e7aed24';
 
 // ------------------------------------------------------------------ rendu général
 

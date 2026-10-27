@@ -3,8 +3,8 @@
  * Méthodes installées sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { divRound, sum } from '../money.js?v=eb01de0';
-import { lineHt } from '../invoices.js?v=eb01de0';
+import { divRound, sum } from '../money.js?v=e7aed24';
+import { lineHt } from '../invoices.js?v=e7aed24';
 import {
   ACTIVITY_TYPES,
   acreReminder,
@@ -17,10 +17,10 @@ import {
   urssafDeadline,
   urssafDeclaration,
   vatFranchiseMessage,
-} from '../micro.js?v=eb01de0';
-import { combineEstimates } from '../workspace.js?v=eb01de0';
-import { dueReminderLevel } from '../reminders.js?v=eb01de0';
-import { cashForecast } from '../forecast.js?v=eb01de0';
+} from '../micro.js?v=e7aed24';
+import { combineEstimates } from '../workspace.js?v=e7aed24';
+import { dueReminderLevel } from '../reminders.js?v=e7aed24';
+import { cashForecast } from '../forecast.js?v=e7aed24';
 
 export const microMethods = {
   /** Liste « À faire » classée par urgence (§5). */
@@ -247,7 +247,7 @@ export const microMethods = {
         kind: 'vat',
         view: 'tva',
         period: late.from,
-        text: `TVA ${name(late)} non déclarée : l'échéance du ${ddmm(this.vatDeadline(late))} est dépassée`,
+        text: `TVA ${name(late)} non déclarée : l’échéance du ${ddmm(this.vatDeadline(late))} est dépassée`,
       });
     }
     // Période à déclarer : la première dont l'échéance n'est pas passée (la période échue tant que
@@ -262,8 +262,12 @@ export const microMethods = {
         kind: 'vat',
         view: 'tva',
         period: next.from,
-        amount: net,
-        text: `TVA ${name(next)} à déclarer avant le ${ddmm(this.vatDeadline(next))}`,
+        // Crédit de TVA (plus de TVA récupérable que de TVA due) : annoncé comme tel, montant positif.
+        amount: Math.abs(net),
+        text:
+          net < 0
+            ? `Crédit de TVA ${name(next)} à déclarer avant le ${ddmm(this.vatDeadline(next))}`
+            : `TVA ${name(next)} à déclarer avant le ${ddmm(this.vatDeadline(next))}`,
       },
     ];
   },

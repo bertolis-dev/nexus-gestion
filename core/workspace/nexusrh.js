@@ -4,8 +4,8 @@
  * Méthode installée sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { noteRef, payrollRef, ticketsRef } from '../nexusrh-import.js?v=eb01de0';
-import { payrollEntry } from '../payroll.js?v=eb01de0';
+import { noteRef, payrollRef, ticketsRef } from '../nexusrh-import.js?v=e7aed24';
+import { payrollEntry } from '../payroll.js?v=e7aed24';
 
 export const nexusRhMethods = {
   /**
@@ -42,14 +42,15 @@ export const nexusRhMethods = {
       const ref = ticketsRef(preview.siren, preview.period);
       if (t.status !== 'new' || this.purchases.some((p) => p.externalRef === ref)) ignored++;
       else {
-        const lines = [{ categoryId: 'titres-restaurant', ht: t.employer, vat: 0, vatRateBp: 0 }];
-        if (t.total > t.employer) lines.push({ categoryId: 'titres-restaurant-salarie', ht: t.total - t.employer, vat: 0, vatRateBp: 0 });
+        const label = `${t.count} titres-restaurant`;
+        const lines = t.employer ? [{ categoryId: 'titres-restaurant', ht: t.employer, vat: 0, vatRateBp: 0, label }] : [];
+        if (t.total > t.employer) lines.push({ categoryId: 'titres-restaurant-salarie', ht: t.total - t.employer, vat: 0, vatRateBp: 0, label });
         const { purchase } = this.addPurchaseLines(
           {
             supplier: { name: 'Titres-restaurant', kind: 'titres-restaurant' },
             date: t.date,
             number: `TR-${preview.period}`,
-            documentName: `${t.count} titres-restaurant`,
+            documentName: '',
             lines,
           },
           { force: true },

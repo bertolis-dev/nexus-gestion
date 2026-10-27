@@ -3,21 +3,22 @@
  * n'est enregistré avant le clic sur « Importer ». Contrôles et règles : core/nexusrh-import.js.
  */
 
-import { previewNexusRhImport } from '../../core/nexusrh-import.js?v=eb01de0';
-import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=eb01de0';
-import * as cloud from '../cloud.js?v=eb01de0';
-import { html } from '../html.js?v=eb01de0';
-import { render } from '../render.js?v=eb01de0';
-import { cloudState, eur, frDate, ui, ws } from '../state.js?v=eb01de0';
-import { save, toast, whenSaved } from '../store.js?v=eb01de0';
-import { badge, icon } from '../ui/common.js?v=eb01de0';
+import { previewNexusRhImport } from '../../core/nexusrh-import.js?v=e7aed24';
+import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=e7aed24';
+import * as cloud from '../cloud.js?v=e7aed24';
+import { html } from '../html.js?v=e7aed24';
+import { render } from '../render.js?v=e7aed24';
+import { cloudState, eur, frDate, ui, ws } from '../state.js?v=e7aed24';
+import { save, toast, whenSaved } from '../store.js?v=e7aed24';
+import { badge, icon } from '../ui/common.js?v=e7aed24';
 
-const STATUS = { new: ['À importer', 'info'], already: ['Déjà importée', 'muted'], error: ['À corriger', 'warning'] };
+const STATUS = { new: ['À importer', 'info'], already: ['Déjà importée', 'muted'], error: ['À corriger', 'warning'], skip: ['Non importée', 'warning'] };
+const TICKETS_STATUS = { ...STATUS, already: ['Déjà importés', 'muted'], skip: ['Non importés', 'warning'] };
 const categoryLabel = (id) => EXPENSE_CATEGORIES.find((c) => c.id === id)?.label || '—';
 
 /** Bouton d'en-tête de l'écran Dépenses. */
 export function nexusRhButton() {
-  return html`<label class="btn btn-secondary" style="margin:0"
+  return html`<label class="btn btn-secondary" style="margin:0" tabindex="0" data-file-picker
     >${icon('upload', 14)} Importer depuis Nexus RH<input type="file" accept=".json,application/json" data-action="nexusrh-file" hidden
   /></label>`;
 }
@@ -25,7 +26,16 @@ export function nexusRhButton() {
 /** Fichier choisi : lu et contrôlé, puis présenté en aperçu. */
 export async function readNexusRhFile(file) {
   const text = await file.text();
-  const preview = previewNexusRhImport(ws, text);
+  // Mode connecté : ce qu'un autre appareil a déjà importé compte comme « déjà importé ».
+  let serverRefs = [];
+  if (!ui.demo && cloudState.meta) {
+    try {
+      serverRefs = await cloud.importedRefs(cloudState.meta.structureId);
+    } catch {
+      return toast('Vérification des imports précédents impossible (connexion ?) : réessayez dans un instant.', true);
+    }
+  }
+  const preview = previewNexusRhImport(ws, text, { serverRefs });
   // Salaires : données confidentielles, réservées au dirigeant et à l'expert-comptable (comme en base).
   if (preview.payroll && cloudState.role === 'collaborateur')
     preview.errors.push(
@@ -34,13 +44,17 @@ export async function readNexusRhFile(file) {
   ui.nexusRh = { fileName: file.name, preview };
   ui.expensesTab = 'depenses';
   render();
+  // Le panneau d'aperçu reçoit le focus (annoncé aux lecteurs d'écran).
+  document.getElementById('nexusrh-title')?.focus();
 }
 
 export function nexusRhPanel() {
   const { fileName, preview: p } = ui.nexusRh;
   const blocked = p.errors.length > 0;
+  // Fichier illisible ou vide : seuls les messages d'erreur et « Annuler » sont utiles.
+  const empty = blocked && !p.notes.length && !p.tickets && !p.payroll;
   return html`<div class="card" style="display:flex;flex-direction:column;gap:12px" id="nexusrh-import">
-    <h2>Import depuis Nexus RH${p.period ? ` — ${p.period.slice(5)}/${p.period.slice(0, 4)}` : ''}</h2>
+    <h2 id="nexusrh-title" tabindex="-1">Import depuis Nexus RH${p.period ? ` — ${p.period.slice(5)}/${p.period.slice(0, 4)}` : ''}</h2>
     <p class="form-hint" style="margin:0">Fichier : ${fileName}. Vérifiez les lignes ci-dessous : rien n’est enregistré avant votre confirmation.</p>
     ${
       blocked
@@ -76,21 +90,23 @@ export function nexusRhPanel() {
                       <td data-label="Libellé">${n.label}</td>
                       <td class="num" data-label="Montant TTC">${n.ttc === null ? '—' : eur(n.ttc)}</td>
                       <td data-label="État">
-                        ${badge(...STATUS[n.status])}${n.message && n.status !== 'error' ? html`<div class="form-hint">${n.message}</div>` : ''}
+                        ${badge(...STATUS[n.status])}${n.message && n.message !== 'Déjà importée.' ? html`<div class="form-hint">${n.message}</div>` : ''}
                       </td>
                     </tr>`,
                 )}
               </tbody>
             </table>
           </div>`
-        : html`<p style="margin:0">Aucune note de frais dans ce fichier.</p>`
+        : blocked
+          ? ''
+          : html`<p style="margin:0">Aucune note de frais dans ce fichier.</p>`
     }
     ${
       p.tickets
         ? html`<p style="margin:0">
             <strong>Tickets restaurant :</strong> ${p.tickets.count} titres, ${eur(p.tickets.total ?? 0)} payés à l’émetteur le
             ${p.tickets.date ? frDate(p.tickets.date) : '—'}, dont ${eur(p.tickets.employer ?? 0)} à la charge de l’entreprise.
-            ${badge(...STATUS[p.tickets.status])}
+            ${badge(...TICKETS_STATUS[p.tickets.status])}${p.tickets.message ? html` <span class="form-hint">${p.tickets.message}</span>` : ''}
           </p>`
         : ''
     }
@@ -99,7 +115,8 @@ export function nexusRhPanel() {
         ? html`<p style="margin:0">
             <strong>Salaires :</strong> ${eur(p.payroll.net)} nets versés le ${frDate(p.payroll.payDate)}, cotisations
             ${eur(p.payroll.employeeCharges + p.payroll.employerCharges)} à payer le ${frDate(p.payroll.organisms[0].dueDate)}.
-            ${badge(...STATUS[p.payroll.status])} <br /><span class="form-hint"
+            ${badge(...TICKETS_STATUS[p.payroll.status])}${p.payroll.message ? html` <span class="form-hint">${p.payroll.message}</span>` : ''} <br /><span
+              class="form-hint"
               >${
                 ws.company.payrollBy === 'nexus'
                   ? 'Ils seront enregistrés en comptabilité (réglage « Qui saisit les salaires ? » : Nexus).'
@@ -109,14 +126,22 @@ export function nexusRhPanel() {
           </p>`
         : ''
     }
-    <p class="form-hint" style="margin:0">
-      Chaque note devient une dépense à rembourser au salarié ; sa TVA est récupérée selon la catégorie. Le remboursement se rapproche ensuite du virement dans
-      l’écran Banque.
-    </p>
+    ${
+      empty
+        ? ''
+        : html`<p class="form-hint" style="margin:0">
+            Chaque note devient une dépense à rembourser au salarié ; sa TVA est récupérée selon la catégorie. Le remboursement se rapproche ensuite du virement
+            dans l’écran Banque.
+          </p>`
+    }
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-primary" data-action="nexusrh-save" ${blocked || !p.toCreate ? 'disabled' : ''}>
-        ${p.toCreate ? `Importer ${p.toCreate} ligne${p.toCreate > 1 ? 's' : ''}` : 'Rien de nouveau à importer'}
-      </button>
+      ${
+        empty
+          ? ''
+          : html`<button class="btn btn-primary" data-action="nexusrh-save" ${blocked || !p.toCreate ? 'disabled' : ''}>
+              ${p.toCreate ? `Importer ${p.toCreate} ligne${p.toCreate > 1 ? 's' : ''}` : 'Rien de nouveau à importer'}
+            </button>`
+      }
       <button class="btn btn-secondary" data-action="nexusrh-cancel">Annuler</button>
     </div>
   </div>`;

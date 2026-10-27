@@ -2,20 +2,20 @@
  * Écran « bank ».
  */
 
-import { decodeStatement, importStatement } from '../../core/bank-import.js?v=eb01de0';
-import { reconciliationStatement } from '../../core/bank.js?v=eb01de0';
-import { VAT_RATES_BP } from '../../core/invoices.js?v=eb01de0';
-import { parseEuros } from '../../core/money.js?v=eb01de0';
-import { CHOOSABLE_EXPENSE_CATEGORIES } from '../../core/pcg.js?v=eb01de0';
-import { INCOME_CATEGORIES, MAX_BANK_ACCOUNTS, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=eb01de0';
-import { field, html, opt, raw } from '../html.js?v=eb01de0';
-import { ICONS } from '../icons.js?v=eb01de0';
-import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=eb01de0';
-import { dataVersion, save, toast } from '../store.js?v=eb01de0';
-import * as cloud from '../cloud.js?v=eb01de0';
-import { render } from '../render.js?v=eb01de0';
-import { preparePhoto } from '../ui/photo.js?v=eb01de0';
-import { badge, icon, term, viewHeader } from '../ui/common.js?v=eb01de0';
+import { decodeStatement, importStatement } from '../../core/bank-import.js?v=e7aed24';
+import { reconciliationStatement } from '../../core/bank.js?v=e7aed24';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=e7aed24';
+import { parseEuros } from '../../core/money.js?v=e7aed24';
+import { CHOOSABLE_EXPENSE_CATEGORIES } from '../../core/pcg.js?v=e7aed24';
+import { INCOME_CATEGORIES, MAX_BANK_ACCOUNTS, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=e7aed24';
+import { field, html, opt, raw } from '../html.js?v=e7aed24';
+import { ICONS } from '../icons.js?v=e7aed24';
+import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=e7aed24';
+import { dataVersion, save, toast } from '../store.js?v=e7aed24';
+import * as cloud from '../cloud.js?v=e7aed24';
+import { render } from '../render.js?v=e7aed24';
+import { preparePhoto } from '../ui/photo.js?v=e7aed24';
+import { badge, icon, term, viewHeader } from '../ui/common.js?v=e7aed24';
 
 // ------------------------------------------------------------------ banque (§3.4)
 
@@ -143,7 +143,7 @@ export function viewBank() {
       stmt = reconciliationStatement(ws.ledger, ws.transactions, { date: today(), statementBalance: parseEuros(ui.statementBalance), account });
     } catch {}
   }
-  return html` ${viewHeader('Banque', 'Associez chaque mouvement à une facture, ou choisissez une catégorie.', html`<label class="btn btn-primary" style="margin:0">${icon('upload', 14)} Importer un relevé (CSV, OFX, CAMT.053, QIF)<input type="file" accept=".csv,.ofx,.qfx,.xml,.qif,.txt" data-action="bank-file" hidden /></label>`)}
+  return html` ${viewHeader('Banque', 'Associez chaque mouvement à une facture, ou choisissez une catégorie.', html`<label class="btn btn-primary" style="margin:0" tabindex="0" data-file-picker>${icon('upload', 14)} Importer un relevé (CSV, OFX, CAMT.053, QIF)<input type="file" accept=".csv,.ofx,.qfx,.xml,.qif,.txt" data-action="bank-file" hidden /></label>`)}
     ${bankAccountsBar()} ${bankImportReport()}
     <div class="card table-card" id="bank-open">${bankOpenCard(open)}</div>
     <div class="card">
@@ -209,7 +209,7 @@ function txReceiptCell(t) {
   const doc = cloudState.documents.find((d) => d.linked_entity === 'transaction' && d.linked_id === t.id);
   if (doc) return html`<button class="btn-link" data-action="receipt-open" data-path="${doc.storage_path}">Voir le justificatif</button>`;
   if (!t.missingReceipt) return '';
-  return html`<label class="btn btn-secondary btn-sm" style="margin:0"
+  return html`<label class="btn btn-secondary btn-sm" style="margin:0" tabindex="0" data-file-picker
     >${icon('camera', 14)} Ajouter le justificatif<input
       type="file"
       accept="image/*,application/pdf"

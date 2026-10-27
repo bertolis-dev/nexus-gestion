@@ -2,29 +2,29 @@
  * Événements du document : saisie, changement, clavier, formulaires, clics, navigation.
  */
 
-import { isValidSiren } from '../../core/invoices.js?v=eb01de0';
-import { parseEuros } from '../../core/money.js?v=eb01de0';
-import { knownVatOnDebits } from '../../core/purchases.js?v=eb01de0';
-import { usualVatRate } from '../../core/pcg.js?v=eb01de0';
-import { findCatalogItem } from '../../core/catalog.js?v=eb01de0';
-import * as cloud from '../cloud.js?v=eb01de0';
-import { html, raw } from '../html.js?v=eb01de0';
-import { ICONS } from '../icons.js?v=eb01de0';
-import { $, render, searchResults } from '../render.js?v=eb01de0';
-import { closeLightbox, featureSlug } from '../site/landing.js?v=eb01de0';
-import { cloudState, ui, ws } from '../state.js?v=eb01de0';
-import { save, savePrefs, toast } from '../store.js?v=eb01de0';
-import { afterSignIn } from '../sync-ui.js?v=eb01de0';
-import { attachTxReceipt, currentBankAccount, importBankFile } from '../views/bank.js?v=eb01de0';
-import { attachReceipt } from '../views/expenses.js?v=eb01de0';
-import { readNexusRhFile } from '../views/nexusrh-import.js?v=eb01de0';
-import { readPrice, totalsBlock } from '../views/invoice-form.js?v=eb01de0';
-import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=eb01de0';
-import { runAction } from './index.js?v=eb01de0';
-import { readReceivedInvoices } from '../received-invoices.js?v=eb01de0';
-import { catalogSubmit } from './settings.js?v=eb01de0';
-import { clientSubmit, readClientsFile } from './clients.js?v=eb01de0';
-import { filterClients } from '../views/clients.js?v=eb01de0';
+import { isValidSiren } from '../../core/invoices.js?v=e7aed24';
+import { parseEuros } from '../../core/money.js?v=e7aed24';
+import { knownVatOnDebits } from '../../core/purchases.js?v=e7aed24';
+import { usualVatRate } from '../../core/pcg.js?v=e7aed24';
+import { findCatalogItem } from '../../core/catalog.js?v=e7aed24';
+import * as cloud from '../cloud.js?v=e7aed24';
+import { html, raw } from '../html.js?v=e7aed24';
+import { ICONS } from '../icons.js?v=e7aed24';
+import { $, render, searchResults } from '../render.js?v=e7aed24';
+import { closeLightbox, featureSlug } from '../site/landing.js?v=e7aed24';
+import { cloudState, ui, ws } from '../state.js?v=e7aed24';
+import { save, savePrefs, toast } from '../store.js?v=e7aed24';
+import { afterSignIn } from '../sync-ui.js?v=e7aed24';
+import { attachTxReceipt, currentBankAccount, importBankFile } from '../views/bank.js?v=e7aed24';
+import { attachReceipt } from '../views/expenses.js?v=e7aed24';
+import { readNexusRhFile } from '../views/nexusrh-import.js?v=e7aed24';
+import { readPrice, totalsBlock } from '../views/invoice-form.js?v=e7aed24';
+import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=e7aed24';
+import { runAction } from './index.js?v=e7aed24';
+import { readReceivedInvoices } from '../received-invoices.js?v=e7aed24';
+import { catalogSubmit } from './settings.js?v=e7aed24';
+import { clientSubmit, readClientsFile } from './clients.js?v=e7aed24';
+import { filterClients } from '../views/clients.js?v=e7aed24';
 
 // ------------------------------------------------------------------ évènements
 
@@ -296,6 +296,16 @@ export function closeMenus() {
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && $('modal-root')?.classList.contains('open')) return closeLightbox();
+  // Bouton « choisir un fichier » (étiquette autour d'un champ caché) : Entrée ou Espace ouvre le choix.
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches?.('[data-file-picker]')) {
+    e.preventDefault();
+    return e.target.querySelector('input[type="file"]')?.click();
+  }
+  // Aperçu de l'import Nexus RH : Échap le ferme.
+  if (e.key === 'Escape' && ui.nexusRh) {
+    ui.nexusRh = null;
+    return render();
+  }
   if (e.key === 'Escape' && closeMenus()) return;
   // Ligne de tableau ou résultat de recherche : Entrée (ou Espace) l'ouvre.
   const target = e.target.closest?.('tr[data-href], .search-result-item[data-href]');

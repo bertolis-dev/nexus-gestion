@@ -2,19 +2,19 @@
  * Écran « expenses ».
  */
 
-import { VAT_RATES_BP } from '../../core/invoices.js?v=eb01de0';
-import { LIFECYCLE, nextStatuses } from '../../core/lifecycle.js?v=eb01de0';
-import { CHOOSABLE_EXPENSE_CATEGORIES, EXPENSE_CATEGORIES } from '../../core/pcg.js?v=eb01de0';
-import * as cloud from '../cloud.js?v=eb01de0';
-import { field, html, opt, raw } from '../html.js?v=eb01de0';
-import { ICONS } from '../icons.js?v=eb01de0';
-import { render } from '../render.js?v=eb01de0';
-import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=eb01de0';
-import { toast } from '../store.js?v=eb01de0';
-import { badge, icon, term, viewHeader } from '../ui/common.js?v=eb01de0';
-import { preparePhoto } from '../ui/photo.js?v=eb01de0';
-import { nexusRhButton, nexusRhPanel } from './nexusrh-import.js?v=eb01de0';
-import { viewAssets } from './assets.js?v=eb01de0';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=e7aed24';
+import { LIFECYCLE, nextStatuses } from '../../core/lifecycle.js?v=e7aed24';
+import { CHOOSABLE_EXPENSE_CATEGORIES, EXPENSE_CATEGORIES } from '../../core/pcg.js?v=e7aed24';
+import * as cloud from '../cloud.js?v=e7aed24';
+import { field, html, opt, raw } from '../html.js?v=e7aed24';
+import { ICONS } from '../icons.js?v=e7aed24';
+import { render } from '../render.js?v=e7aed24';
+import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=e7aed24';
+import { toast } from '../store.js?v=e7aed24';
+import { badge, icon, term, viewHeader } from '../ui/common.js?v=e7aed24';
+import { preparePhoto } from '../ui/photo.js?v=e7aed24';
+import { nexusRhButton, nexusRhPanel } from './nexusrh-import.js?v=e7aed24';
+import { viewAssets } from './assets.js?v=e7aed24';
 
 // ------------------------------------------------------------------ dépenses (§3.3)
 
@@ -30,7 +30,7 @@ export function viewExpenses() {
     </button>
   </div>`;
   if (ui.expensesTab === 'immobilisations') return html`${viewHeader('Dépenses', 'Vos équipements durables et leur amortissement.')}${tabs}${viewAssets()}`;
-  return html` ${viewHeader('Dépenses', 'Ajoutez vos factures d’achat : la catégorie suffit, Nexus fait le reste.', html`<label class="btn btn-secondary" style="margin:0">${icon('upload', 14)} Importer des factures reçues (XML, PDF Factur-X ou ZIP)<input type="file" accept=".xml,.pdf,.zip,application/xml,text/xml,application/pdf,application/zip" multiple data-action="einvoice-in-file" hidden /></label>${nexusRhButton()}`)}
+  return html` ${viewHeader('Dépenses', 'Ajoutez vos factures d’achat : la catégorie suffit, Nexus fait le reste.', html`<label class="btn btn-secondary" style="margin:0" tabindex="0" data-file-picker>${icon('upload', 14)} Importer des factures reçues (XML, PDF Factur-X ou ZIP)<input type="file" accept=".xml,.pdf,.zip,application/xml,text/xml,application/pdf,application/zip" multiple data-action="einvoice-in-file" hidden /></label>${nexusRhButton()}`)}
     ${tabs} ${ui.nexusRh ? nexusRhPanel() : ''} ${ui.pendingEinvoice ? einvoicePreview(ui.pendingEinvoice) : ''}
     <form class="card" data-form="purchase" style="display:flex;flex-direction:column;gap:14px">
       <h2>Ajouter une dépense</h2>
@@ -98,8 +98,18 @@ export function viewExpenses() {
                     (p) =>
                       html`<tr>
                         <td>${frDate(p.date)}</td>
-                        <td>${p.supplier.name}${p.number ? html` <span class="text-muted mono">${p.number}</span>` : ''}</td>
-                        <td>${EXPENSE_CATEGORIES.find((c) => c.id === p.lines[0].categoryId)?.label}</td>
+                        <td>
+                          ${p.supplier.name}${
+                            p.externalRef
+                              ? html` <span class="text-muted">${p.lines[0].label || ''}</span>`
+                              : p.number
+                                ? html` <span class="text-muted mono">${p.number}</span>`
+                                : ''
+                          }
+                        </td>
+                        <td>
+                          ${p.supplier.kind === 'titres-restaurant' ? 'Titres-restaurant' : EXPENSE_CATEGORIES.find((c) => c.id === p.lines[0].categoryId)?.label}
+                        </td>
                         <td class="num">${eur(p.type === 'credit' ? -p.totalTtc : p.totalTtc)}</td>
                         <td>
                           <div class="badge-row">

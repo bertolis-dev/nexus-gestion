@@ -11,7 +11,7 @@
  *   friendly(error) → message ; onStatus(status) ; onResult(op, result).
  */
 
-import { planSync, isDivergence } from './sync.js?v=eb01de0';
+import { planSync, isDivergence } from './sync.js?v=e7aed24';
 
 const DIVERGENCE_MESSAGE = 'Des modifications ont été enregistrées ailleurs (autre appareil ou autre onglet) : rechargez les données depuis la base.';
 const directLock = (_name, fn) => fn();
@@ -110,7 +110,11 @@ export class Outbox {
     } catch (e) {
       // Refus motivé par la base (règle métier, droits) : son message dit quoi corriger ; seule une
       // divergence sans motif (doublon, numéro différent) reçoit le message générique.
-      const refused = Boolean(e?.code) && e.code !== '23505' && isDivergence(e);
+      // Valeur rejetée par un contrôle de la base (22… données, 23514 contrôle, 23502 champ manquant) :
+      // elle ne passera jamais, l'utilisateur peut la retirer. Une clé étrangère manquante (23503) reste
+      // bloquante : elle se corrige par une migration, sans perdre l'opération.
+      const invalid = /^22/.test(e?.code || '') || ['23514', '23502'].includes(e?.code);
+      const refused = Boolean(e?.code) && e.code !== '23505' && (isDivergence(e) || invalid);
       this.error = refused ? this.friendly(e) : isDivergence(e) ? DIVERGENCE_MESSAGE : this.friendly(e);
       this.refusedOp = refused ? this.queue[0] : null;
       this.onStatus({ pending: this.queue.length, error: this.error, divergence: isDivergence(e), refused });

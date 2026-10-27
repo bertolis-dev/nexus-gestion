@@ -9,11 +9,11 @@
  * nombre d'écritures validées), l'état est rechargé depuis la base, qui fait foi.
  */
 
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js?v=eb01de0';
-import { stateFromRows, refusedUpdate } from '../core/sync.js?v=eb01de0';
-import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, pendingOutboxOps, OUTBOX_PREFIX } from '../core/outbox.js?v=eb01de0';
-import { ACCOUNTS } from '../core/pcg.js?v=eb01de0';
-import { mfaState, canRemoveFactor } from '../core/mfa.js?v=eb01de0';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js?v=e7aed24';
+import { stateFromRows, refusedUpdate } from '../core/sync.js?v=e7aed24';
+import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, pendingOutboxOps, OUTBOX_PREFIX } from '../core/outbox.js?v=e7aed24';
+import { ACCOUNTS } from '../core/pcg.js?v=e7aed24';
+import { mfaState, canRemoveFactor } from '../core/mfa.js?v=e7aed24';
 
 // supabase-js (copie locale, app/vendor/) n'est chargé qu'en mode connecté : la démonstration et
 // le site public ne téléchargent pas ces 220 Ko.
@@ -21,7 +21,7 @@ let client = null;
 const authListeners = [];
 async function connect() {
   if (!client) {
-    const { createClient } = await import('./vendor/supabase.js?v=eb01de0');
+    const { createClient } = await import('./vendor/supabase.js?v=e7aed24');
     // Session gardée dans le navigateur et renouvelée automatiquement : on reste connecté d'une visite
     // à l'autre, jusqu'à « Se déconnecter » (comme Nexus RH).
     client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -354,6 +354,18 @@ export async function listEmails(structureId) {
 export async function exportStructure(structureId) {
   const supabase = await connect();
   return check(await supabase.rpc('export_structure', { p_structure: structureId }));
+}
+/** Références Nexus RH déjà enregistrées sur le serveur (dépenses et paies), import fait depuis un autre appareil. */
+export async function importedRefs(structureId) {
+  const supabase = await connect();
+  const purchases = check(await supabase.from('purchases').select('external_ref').eq('structure_id', structureId).not('external_ref', 'is', null));
+  // Paies : invisibles pour un collaborateur (données confidentielles), table absente avant 0030.
+  const payrolls = await supabase
+    .from('payrolls')
+    .select('ref')
+    .eq('structure_id', structureId)
+    .then((r) => (r.error ? [] : r.data));
+  return [...purchases.map((p) => p.external_ref), ...payrolls.map((p) => p.ref)];
 }
 /** Import d'un fichier Nexus RH inscrit au journal d'audit (migration 0029). */
 export async function logNexusRhImport(structureId, detail) {

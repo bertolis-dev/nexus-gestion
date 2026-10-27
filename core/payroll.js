@@ -7,7 +7,7 @@
  *  - « nexus » : Nexus passe aussi l'écriture de paie du mois.
  */
 
-import { formatEuros, sum } from './money.js?v=eb01de0';
+import { formatEuros, sum } from './money.js?v=e7aed24';
 
 /**
  * Paramètres 2026, à valider (docs/regles-a-valider.md) : cotisations de tous les organismes payées le
@@ -19,6 +19,7 @@ const eur = (cents) => formatEuros(cents).replace(/\s/g, ' ');
 const isDate = (s) => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.parse(`${s}T00:00:00Z`));
 function cents(v) {
   const n = typeof v === 'string' ? Number(v.replace(',', '.')) : v;
+  if (typeof v === 'string' && !v.trim()) return null;
   if (typeof n !== 'number' || !Number.isFinite(n) || n < 0) return null;
   return Math.round(n * 100);
 }
@@ -47,16 +48,19 @@ export function parsePayroll(paie, period) {
   const employer = cents(paie?.charges_patronales);
   const net = cents(paie?.net_a_payer);
   const organisms = (Array.isArray(paie?.detail_par_organisme) ? paie.detail_par_organisme : []).map((o) => ({
-    name: String(o?.organisme ?? '').trim(),
+    name: String(o?.organisme ?? '')
+      .trim()
+      .slice(0, 100),
     amount: cents(o?.montant),
   }));
   if ([gross, employee, employer, net].includes(null) || organisms.some((o) => o.amount === null || !o.name)) errors.push('Salaires : montant illisible');
   else {
-    if (Math.abs(gross - employee - net) > 1)
+    // Égalités exactes : l'écriture de paie (mode « Nexus ») doit s'équilibrer au centime.
+    if (gross - employee !== net)
       errors.push(`Salaires : le net à payer (${eur(net)}) ne correspond pas au brut moins les cotisations salariales (${eur(gross - employee)})`);
     const detail = sum(organisms.map((o) => o.amount));
     if (!organisms.length) errors.push('Salaires : le détail par organisme est vide');
-    else if (Math.abs(detail - employee - employer) > 1)
+    else if (detail !== employee + employer)
       errors.push(
         `Salaires : le détail par organisme (${eur(detail)}) ne correspond pas aux cotisations salariales et patronales (${eur(employee + employer)})`,
       );

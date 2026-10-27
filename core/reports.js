@@ -4,9 +4,9 @@
  * balance et FEC ».
  */
 
-import { formatDecimalComma, sum } from './money.js?v=eb01de0';
-import { JOURNALS } from './ledger.js?v=eb01de0';
-import { isCalendarDate, parisDateOf } from './dates.js?v=eb01de0';
+import { formatDecimalComma, sum } from './money.js?v=e7aed24';
+import { JOURNALS } from './ledger.js?v=e7aed24';
+import { isCalendarDate, parisDateOf } from './dates.js?v=e7aed24';
 
 /** Balance générale : totaux débit/crédit et solde par compte, triés par numéro. */
 export function trialBalance(ledger, opts = {}) {

@@ -2,21 +2,21 @@
  * Écran « sales ».
  */
 
-import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=eb01de0';
-import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=eb01de0';
-import { LIFECYCLE } from '../../core/lifecycle.js?v=eb01de0';
-import { lookupSiren } from '../company-lookup.js?v=eb01de0';
-import { render } from '../render.js?v=eb01de0';
-import * as cloud from '../cloud.js?v=eb01de0';
-import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=eb01de0';
-import { invoiceEmail, reminderMessage } from '../../core/reminders.js?v=eb01de0';
-import { explainEmailError } from '../email-errors.js?v=eb01de0';
-import { download, save, toast, whenSaved } from '../store.js?v=eb01de0';
-import { isUnconfirmed } from '../sync-ui.js?v=eb01de0';
-import { emptyLine, persistDraft } from '../views/invoice-form.js?v=eb01de0';
-import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=eb01de0';
-import { depositCandidates } from '../../core/deposit.js?v=eb01de0';
-import { createZip } from '../../core/zip.js?v=eb01de0';
+import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=e7aed24';
+import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=e7aed24';
+import { LIFECYCLE } from '../../core/lifecycle.js?v=e7aed24';
+import { lookupSiren } from '../company-lookup.js?v=e7aed24';
+import { render } from '../render.js?v=e7aed24';
+import * as cloud from '../cloud.js?v=e7aed24';
+import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=e7aed24';
+import { invoiceEmail, reminderMessage } from '../../core/reminders.js?v=e7aed24';
+import { explainEmailError } from '../email-errors.js?v=e7aed24';
+import { download, save, toast, whenSaved } from '../store.js?v=e7aed24';
+import { isUnconfirmed } from '../sync-ui.js?v=e7aed24';
+import { emptyLine, persistDraft } from '../views/invoice-form.js?v=e7aed24';
+import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=e7aed24';
+import { depositCandidates } from '../../core/deposit.js?v=e7aed24';
+import { createZip } from '../../core/zip.js?v=e7aed24';
 
 /**
  * Émet le brouillon du formulaire (`fromForm`) ou un brouillon enregistré ; renvoie la pièce émise,

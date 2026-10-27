@@ -3,8 +3,8 @@
  * TVA non déductible appliquée automatiquement, détection des immobilisations et des doublons.
  */
 
-import { divRound, splitTtc, sum, vatFromHt } from './money.js?v=eb01de0';
-import { categoryById } from './pcg.js?v=eb01de0';
+import { divRound, splitTtc, sum, vatFromHt } from './money.js?v=e7aed24';
+import { categoryById } from './pcg.js?v=e7aed24';
 
 /** Ligne d'achat saisie TTC : HT et TVA dont la somme redonne exactement le TTC. */
 export function ttcLine(ttc, vatRateBp) {
@@ -27,7 +27,17 @@ export function purchaseEntry(p, company) {
   // 283-2 nonies) — la facture reçue est alors hors taxes et la TVA est due par l'acheteur.
   const reverseCharge = p.reverseCharge === true || (p.supplier.country || 'FR') !== 'FR';
   const label = `${p.supplier.name} ${p.number || ''}`.trim();
-  const supplierCode = `${p.supplier.code || p.supplier.name.slice(0, 8)}`.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  // Salarié (note de frais) : nom complet sans accents, pour que deux homonymes de prénom aient deux
+  // sous-comptes 421 distincts ; fournisseur : code ou 8 premiers caractères (inchangé).
+  const supplierCode =
+    p.supplier.kind === 'salarie' && !p.supplier.code
+      ? p.supplier.name
+          .normalize('NFD')
+          .replace(/\p{M}/gu, '')
+          .toUpperCase()
+          .replace(/[^A-Z0-9]/g, '')
+          .slice(0, 24) || 'SALARIE'
+      : `${p.supplier.code || p.supplier.name.slice(0, 8)}`.toUpperCase().replace(/[^A-Z0-9]/g, '');
   const lines = [];
   let totalTtc = 0;
   let hasFixedAsset = false;

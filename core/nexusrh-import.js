@@ -7,8 +7,8 @@
  * (nombres décimaux), taux de TVA en pourcentage (20 pour 20 %), catégories en clair.
  */
 
-import { formatEuros } from './money.js?v=eb01de0';
-import { parsePayroll } from './payroll.js?v=eb01de0';
+import { formatEuros } from './money.js?v=e7aed24';
+import { parsePayroll } from './payroll.js?v=e7aed24';
 
 export const NEXUS_RH_FORMAT = 'nexus-rh-export';
 export const NEXUS_RH_VERSION = 1;
@@ -62,6 +62,7 @@ const eur = (cents) => formatEuros(cents).replace(/\s/g, ' ');
 
 /** Montant en euros du fichier → centimes (null si illisible ou négatif). */
 function cents(v) {
+  if (typeof v === 'string' && !v.trim()) return null; // champ vide : illisible, pas 0 €
   const n = typeof v === 'string' ? Number(v.replace(',', '.')) : v;
   if (typeof n !== 'number' || !Number.isFinite(n) || n < 0) return null;
   return Math.round(n * 100);
@@ -72,11 +73,13 @@ export const ticketsRef = (siren, period) => `nexus-rh:tickets:${siren}:${period
 export const payrollRef = (siren, period) => `nexus-rh:paie:${siren}:${period}`;
 
 /**
- * @param {import('./workspace.js?v=eb01de0').Workspace} ws
+ * @param {import('./workspace.js?v=e7aed24').Workspace} ws
  * @param {string} text contenu du fichier choisi par l'utilisateur
+ * @param {{ serverRefs?: string[] }} opts références déjà enregistrées sur le serveur (import fait depuis un
+ *   autre appareil, pas encore rechargé ici)
  * @returns {{ errors: string[], period?, notes: object[], tickets: object|null, toCreate: number }}
  */
-export function previewNexusRhImport(ws, text) {
+export function previewNexusRhImport(ws, text, { serverRefs = [] } = {}) {
   const errors = [];
   const out = { errors, notes: [], tickets: null, payroll: null, toCreate: 0 };
   let d;
@@ -109,12 +112,25 @@ export function previewNexusRhImport(ws, text) {
     const { errors: payErrors, payroll } = parsePayroll(d.paie, /^\d{4}-\d{2}$/.test(d.periode || '') ? d.periode : '1970-01');
     errors.push(...payErrors);
     if (payroll) {
-      const already = (ws.payrolls || []).some((x) => x.ref === payrollRef(d.siren, d.periode));
+      const already = (ws.payrolls || []).some((x) => x.ref === payrollRef(d.siren, d.periode)) || serverRefs.includes(payrollRef(d.siren, d.periode));
       out.payroll = { ...payroll, status: already ? 'already' : 'new', message: already ? 'Salaires de ce mois déjà importés.' : '' };
     }
   }
 
   const known = new Map(ws.purchases.filter((p) => p.externalRef).map((p) => [p.externalRef, p]));
+  for (const ref of serverRefs) if (!known.has(ref)) known.set(ref, { totalTtc: null, elsewhere: true });
+  // Date enregistrable : dans l'exercice ouvert et après la dernière période verrouillée. Sinon la ligne
+  // est laissée de côté (signalée), sans bloquer le reste du fichier.
+  const fy = ws.ledger.fiscalYear;
+  const locked = ws.ledger.lockedThrough;
+  const outOfYear = (date) =>
+    date < fy.start || date > fy.end
+      ? `date hors de l’exercice ouvert (${fy.start.split('-').reverse().join('/')} au ${fy.end.split('-').reverse().join('/')}) : à saisir dans l’exercice concerné`
+      : locked && date <= locked
+        ? 'date dans une période déjà validée : à saisir par votre expert-comptable'
+        : '';
+  const seen = new Set();
+  const threshold = ws.company.fixedAssetThreshold ?? 50000;
   for (const [i, n] of (Array.isArray(d.notes_de_frais) ? d.notes_de_frais : []).entries()) {
     const id = String(n?.id ?? '').trim();
     const where = `Note ${id || `n° ${i + 1}`}`;
@@ -144,21 +160,34 @@ export function previewNexusRhImport(ws, text) {
     };
     const problems = [];
     if (!id) problems.push('identifiant manquant');
+    else if (id.length > 190) problems.push('identifiant trop long');
+    else if (seen.has(id)) problems.push('identifiant présent deux fois dans le fichier');
+    seen.add(id);
+    if (line.receiptUrl && line.receiptUrl.length > 1000) line.receiptUrl = null;
     if (!isDate(line.date)) problems.push('date illisible');
     if (!line.employee) problems.push('salarié non indiqué');
     if (ht === null || vat === null || ttc === null) problems.push('montant illisible');
     else if (Math.abs(ht + vat - ttc) > 1) problems.push(`${eur(ht)} + ${eur(vat)} ≠ ${eur(ttc)} (HT + TVA doit égaler le TTC)`);
+    else if (!ttc) problems.push('montant nul');
+    // Écart d'arrondi d'un centime : le TTC déclaré (remboursé au salarié) fait foi, la TVA s'ajuste.
+    else line.vat = ttc - ht;
+    // Matériel au-dessus du seuil d'immobilisation : un équipement, amorti, et non une charge.
+    if (categoryId === 'petit-materiel' && ht !== null && ht >= threshold) line.categoryId = 'materiel-info';
     if (!categoryId) problems.push(`catégorie « ${n?.categorie ?? ''} » inconnue de Nexus Gestion : choisissez une autre catégorie dans Nexus RH`);
     if (line.vatRateBp === null) problems.push(`taux de TVA « ${n?.taux_tva} » non reconnu (attendu : 20, 10, 5,5, 2,1 ou 0)`);
     if (problems.length) {
       line.status = 'error';
       line.message = problems.join(' ; ');
       errors.push(`${where} : ${line.message}.`);
+    } else if (outOfYear(line.date)) {
+      line.status = 'skip';
+      line.message = `Non importée : ${outOfYear(line.date)}.`;
     } else if (known.has(noteRef(id))) {
       line.status = 'already';
       const prev = known.get(noteRef(id));
-      line.message =
-        prev.totalTtc !== ttc
+      line.message = prev.elsewhere
+        ? 'Déjà importée depuis un autre appareil.'
+        : prev.totalTtc !== ttc
           ? `Déjà importée, avec un montant différent de l’import précédent (${eur(prev.totalTtc)}) : corrigez-la à la main si besoin.`
           : 'Déjà importée.';
     }
@@ -178,11 +207,21 @@ export function previewNexusRhImport(ws, text) {
       tickets.status = 'error';
       tickets.message = problems.join(' ; ');
       errors.push(`Tickets restaurant : ${tickets.message}.`);
+    } else if (outOfYear(t.date_commande)) {
+      tickets.status = 'skip';
+      tickets.message = `Non importés : ${outOfYear(t.date_commande)}.`;
     } else if (known.has(ticketsRef(d.siren, d.periode))) {
       tickets.status = 'already';
       tickets.message = 'Déjà importés pour cette période.';
     }
     if (total) out.tickets = tickets;
+  }
+  // Salaires enregistrés en comptabilité (réglage « Nexus ») : l'écriture du dernier jour du mois doit
+  // pouvoir entrer dans l'exercice ouvert.
+  if (out.payroll?.status === 'new' && ws.company.payrollBy === 'nexus') {
+    const [y, m] = out.payroll.period.split('-').map(Number);
+    const why = outOfYear(new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10));
+    if (why) Object.assign(out.payroll, { status: 'skip', message: `Non importés : ${why}.` });
   }
   out.siren = String(d.siren);
   out.toCreate = out.notes.filter((n) => n.status === 'new').length + (out.tickets?.status === 'new' ? 1 : 0) + (out.payroll?.status === 'new' ? 1 : 0);
