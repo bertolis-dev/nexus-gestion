@@ -3,11 +3,11 @@
  * factures et devis, habitudes de paiement), création, et import depuis un tableur.
  */
 
-import { clientDocuments, clientSummary } from '../../core/clients.js?v=e7aed24';
-import { DOC_TITLES } from './sales.js?v=e7aed24';
-import { field, html, opt } from '../html.js?v=e7aed24';
-import { eur, frDate, today, ui, ws } from '../state.js?v=e7aed24';
-import { badge, viewHeader } from '../ui/common.js?v=e7aed24';
+import { clientDocuments, clientSummary } from '../../core/clients.js?v=436e800';
+import { DOC_TITLES } from './sales.js?v=436e800';
+import { field, html, opt } from '../html.js?v=436e800';
+import { eur, frDate, today, ui, ws } from '../state.js?v=436e800';
+import { badge, viewHeader } from '../ui/common.js?v=436e800';
 
 const days = (n) => (n === null ? '—' : `${n} jour${n > 1 ? 's' : ''}`);
 

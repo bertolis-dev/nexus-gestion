@@ -2,13 +2,13 @@
  * Actions de l'écran « Clients ».
  */
 
-import { importClientsCsv } from '../../core/clients.js?v=e7aed24';
-import { decodeStatement } from '../../core/bank-import.js?v=e7aed24';
-import { isValidSiren } from '../../core/invoices.js?v=e7aed24';
-import { lookupSiren } from '../company-lookup.js?v=e7aed24';
-import { render } from '../render.js?v=e7aed24';
-import { ui, ws } from '../state.js?v=e7aed24';
-import { save, toast } from '../store.js?v=e7aed24';
+import { importClientsCsv } from '../../core/clients.js?v=436e800';
+import { decodeStatement } from '../../core/bank-import.js?v=436e800';
+import { isValidSiren } from '../../core/invoices.js?v=436e800';
+import { lookupSiren } from '../company-lookup.js?v=436e800';
+import { render } from '../render.js?v=436e800';
+import { ui, ws } from '../state.js?v=436e800';
+import { save, toast } from '../store.js?v=436e800';
 
 /** Enregistrement de la fiche (création ou modification). */
 export function clientSubmit(f) {

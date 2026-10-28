@@ -2,19 +2,19 @@
  * Écran « settings ».
  */
 
-import { field, html, opt, raw } from '../html.js?v=e7aed24';
-import { isMicro } from '../render.js?v=e7aed24';
-import { cloudState, eur, pct, ui, ws } from '../state.js?v=e7aed24';
-import { VAT_RATES_BP } from '../../core/invoices.js?v=e7aed24';
-import { ICONS } from '../icons.js?v=e7aed24';
-import { badge, viewHeader } from '../ui/common.js?v=e7aed24';
-import * as cloud from '../cloud.js?v=e7aed24';
-import { render } from '../render.js?v=e7aed24';
-import { membersCard, microSettingsCard, openingPreview, securityCard } from './onboarding.js?v=e7aed24';
-import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=e7aed24';
-import { normalizeIban } from '../../core/epc.js?v=e7aed24';
-import { INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=e7aed24';
-import { DEFAULT_TEMPLATES, REMINDER_STEPS } from '../../core/reminders.js?v=e7aed24';
+import { field, html, opt, raw } from '../html.js?v=436e800';
+import { isMicro } from '../render.js?v=436e800';
+import { cloudState, eur, pct, ui, ws } from '../state.js?v=436e800';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=436e800';
+import { ICONS } from '../icons.js?v=436e800';
+import { badge, viewHeader } from '../ui/common.js?v=436e800';
+import * as cloud from '../cloud.js?v=436e800';
+import { render } from '../render.js?v=436e800';
+import { membersCard, microSettingsCard, openingPreview, securityCard } from './onboarding.js?v=436e800';
+import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=436e800';
+import { normalizeIban } from '../../core/epc.js?v=436e800';
+import { INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=436e800';
+import { DEFAULT_TEMPLATES, REMINDER_STEPS } from '../../core/reminders.js?v=436e800';
 
 // ------------------------------------------------------------------ paramètres
 
@@ -125,7 +125,7 @@ function emailCard() {
 function catalogTab() {
   const items = ws.company.catalog || [];
   const franchise = ws.company.vatRegime === 'franchise';
-  return html`<form class="card" data-form="catalog-item" style="display:flex;flex-direction:column;gap:12px">
+  return html`<form class="card" data-form="catalog-item" style="display:flex;flex-direction:column;gap:12px;min-width:0">
       <h2>Ajouter une prestation ou un article</h2>
       <p class="text-muted" style="margin:0">Dans une facture ou un devis, commencez à taper la désignation : Nexus la propose et remplit le prix et la TVA.</p>
       <div class="form-grid">
@@ -152,31 +152,33 @@ function catalogTab() {
     </form>
     ${
       items.length
-        ? html`<div class="card table-card">
+        ? html`<div class="card table-card" style="min-width:0">
             <h2 style="padding:16px 16px 0">Mon catalogue (${items.length})</h2>
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Désignation</th>
-                  <th class="num">Prix HT</th>
-                  ${franchise ? '' : html`<th class="num">TVA</th>`}
-                  <th>Nature</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                ${items.map(
-                  (it) =>
-                    html`<tr>
-                      <td>${it.label}</td>
-                      <td class="num">${eur(it.unitPrice)}</td>
-                      ${franchise ? '' : html`<td class="num">${pct(it.vatRateBp)}</td>`}
-                      <td>${it.nature === 'biens' ? 'Bien' : 'Service'}</td>
-                      <td class="num"><button class="btn btn-secondary btn-sm" data-action="catalog-remove" data-id="${it.id}">Retirer</button></td>
-                    </tr>`,
-                )}
-              </tbody>
-            </table>
+            <div class="table-scroll" tabindex="0" role="region" aria-label="Mon catalogue">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Désignation</th>
+                    <th class="num">Prix HT</th>
+                    ${franchise ? '' : html`<th class="num">TVA</th>`}
+                    <th>Nature</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${items.map(
+                    (it) =>
+                      html`<tr>
+                        <td>${it.label}</td>
+                        <td class="num">${eur(it.unitPrice)}</td>
+                        ${franchise ? '' : html`<td class="num">${pct(it.vatRateBp)}</td>`}
+                        <td>${it.nature === 'biens' ? 'Bien' : 'Service'}</td>
+                        <td class="num"><button class="btn btn-secondary btn-sm" data-action="catalog-remove" data-id="${it.id}">Retirer</button></td>
+                      </tr>`,
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>`
         : html`<div class="card"><p class="text-muted" style="margin:0">Catalogue vide pour l’instant.</p></div>`
     }`;
@@ -216,7 +218,7 @@ function categoryRulesCard() {
           (r) =>
             html`<tr>
               <td>« ${r.key} » (${r.direction === 'out' ? 'dépense' : 'recette'})</td>
-              <td>${label(r.categoryId)}${r.direction === 'out' ? ` · TVA ${r.vatRateBp / 100} %` : ''}</td>
+              <td>${label(r.categoryId)}${r.direction === 'out' ? ` · TVA ${pct(r.vatRateBp)}` : ''}</td>
               <td class="num">
                 <button class="btn btn-secondary btn-sm" data-action="category-rule-forget" data-id="${r.key}" data-index="${r.direction}">Oublier</button>
               </td>

@@ -4,18 +4,18 @@
  * Sans DOM ni stockage : l'interface (app/) le sérialise, les tests l'utilisent tel quel.
  */
 
-import { buildChart, categoryById } from './pcg.js?v=e7aed24';
-import { Ledger } from './ledger.js?v=e7aed24';
-import { InvoiceBook, clientAux } from './invoices.js?v=e7aed24';
-import { purchaseEntry, findDuplicates, knownVatOnDebits, ttcLine } from './purchases.js?v=e7aed24';
-import { mergeTransactions, suggestMatches, settlementEntry, directEntry, DEFAULT_BANK_ACCOUNT } from './bank.js?v=e7aed24';
+import { buildChart, categoryById } from './pcg.js?v=436e800';
+import { Ledger } from './ledger.js?v=436e800';
+import { InvoiceBook, clientAux } from './invoices.js?v=436e800';
+import { purchaseEntry, findDuplicates, knownVatOnDebits, ttcLine } from './purchases.js?v=436e800';
+import { mergeTransactions, suggestMatches, settlementEntry, directEntry, DEFAULT_BANK_ACCOUNT } from './bank.js?v=436e800';
 export { DEFAULT_BANK_ACCOUNT };
-import { creditsOf, originalOf, groupBalance } from './receipts.js?v=e7aed24';
-import { divRound, splitTtc, sum } from './money.js?v=e7aed24';
-import { openingEntry } from './fecimport.js?v=e7aed24';
-import { creditTargetsAsset } from './assets.js?v=e7aed24';
-import { LIFECYCLE, currentStatus } from './lifecycle.js?v=e7aed24';
-import { SCHEMA_VERSION, migrateState } from './schema.js?v=e7aed24';
+import { creditsOf, originalOf, groupBalance } from './receipts.js?v=436e800';
+import { divRound, splitTtc, sum } from './money.js?v=436e800';
+import { openingEntry } from './fecimport.js?v=436e800';
+import { creditTargetsAsset } from './assets.js?v=436e800';
+import { LIFECYCLE, currentStatus } from './lifecycle.js?v=436e800';
+import { SCHEMA_VERSION, migrateState } from './schema.js?v=436e800';
 
 /** Entrées d'argent sans facture de vente, proposées en langage courant. */
 export const INCOME_CATEGORIES = [
@@ -61,16 +61,17 @@ export function combineEstimates(list) {
 
 export const MAX_BANK_ACCOUNTS = 10;
 
-import { recurringMethods } from './workspace/recurring.js?v=e7aed24';
-import { vatMethods } from './workspace/vat.js?v=e7aed24';
-import { receiptVatMethods } from './workspace/receipt-vat.js?v=e7aed24';
-import { paymentVatMethods } from './workspace/payment-vat.js?v=e7aed24';
-import { nexusRhMethods } from './workspace/nexusrh.js?v=e7aed24';
-import { closingMethods } from './workspace/closing.js?v=e7aed24';
-import { microMethods } from './workspace/micro.js?v=e7aed24';
-import { depositMethods } from './deposit.js?v=e7aed24';
-import { categorizationMethods, learnRule } from './categorization.js?v=e7aed24';
-import { reminderMethods } from './reminders.js?v=e7aed24';
+import { recurringMethods } from './workspace/recurring.js?v=436e800';
+import { vatMethods } from './workspace/vat.js?v=436e800';
+import { receiptVatMethods } from './workspace/receipt-vat.js?v=436e800';
+import { paymentVatMethods } from './workspace/payment-vat.js?v=436e800';
+import { nexusRhMethods } from './workspace/nexusrh.js?v=436e800';
+import { letteringMethods } from './workspace/lettering.js?v=436e800';
+import { closingMethods } from './workspace/closing.js?v=436e800';
+import { microMethods } from './workspace/micro.js?v=436e800';
+import { depositMethods } from './deposit.js?v=436e800';
+import { categorizationMethods, learnRule } from './categorization.js?v=436e800';
+import { reminderMethods } from './reminders.js?v=436e800';
 
 export class Workspace {
   constructor({ company, state: saved = {}, now, newId } = {}) {
@@ -177,6 +178,7 @@ export class Workspace {
   // ---------------------------------------------------------------- ventes
 
   issueInvoice(id) {
+    this._assertNotDeclared(this.book.get(id));
     const issued = this.book.issue(id, { ledger: this.ledger });
     // Un avoir modifie la TVA exigible et le restant dû de la facture qu'il corrige.
     const original = issued.type === 'credit' ? originalOf(this.book.invoices, issued) : null;
@@ -289,6 +291,7 @@ export class Workspace {
     // Doublon probable : rien n'est enregistré tant que l'utilisateur n'a pas confirmé (force).
     if (duplicates.length && !force) return { purchase: null, duplicates };
     const entry = purchaseEntry(p, this.company);
+    entry.date = this._undeclaredDate(entry.date); // facture reçue après la déclaration de son mois
     const created = this.ledger.addDraft(entry);
     p.entryId = created.id;
     p.totalTtc = entry.meta.totalTtc;
@@ -331,6 +334,10 @@ export class Workspace {
   }
 
   openDocs() {
+    // Sous-comptes clients dont la créance est en 416 (client douteux), solde positif.
+    const owed416 = new Map();
+    for (const l of this.ledger.lines()) if (l.account === '416000') owed416.set(l.aux, (owed416.get(l.aux) || 0) + l.debit - l.credit);
+    const doubtful = new Set([...owed416].filter(([, v]) => v > 0).map(([aux]) => aux));
     const sales = this.book.invoices
       .filter((i) => i.status === 'issued' && i.type !== 'credit' && i.type !== 'quote' && this.book.outstanding(i) > 0)
       .map((i) => ({
@@ -341,7 +348,8 @@ export class Workspace {
         date: i.issueDate,
         dueDate: i.dueDate,
         outstanding: this.book.outstanding(i),
-        thirdPartyAccount: '411000',
+        // Client passé en douteux à la clôture : sa créance est en 416, le règlement la solde.
+        thirdPartyAccount: doubtful.has(this.invoiceAux(i)) ? '416000' : '411000',
         aux: this.invoiceAux(i),
       }));
     const buys = this.purchases
@@ -392,12 +400,16 @@ export class Workspace {
     const tx = this.transactions.find((t) => t.id === txId);
     if (!tx || tx.status !== 'open') throw new Error('Transaction déjà traitée');
     const entry = this.ledger.addDraft(settlementEntry(tx, allocations, { bankAccount: this.bankGlOf(tx) }));
+    // Rapproché après la déclaration de TVA de son mois : la TVA sur encaissement passe dans la première
+    // période non déclarée (elle ne serait sinon déclarée nulle part).
+    const undeclared = this._firstUndeclaredDay();
+    const vatDate = undeclared && tx.date < undeclared ? { vatDate: undeclared } : {};
     allocations.forEach(({ doc, amount }, i) => {
       const lineIndex = i + 1; // ligne 0 = banque, puis une ligne par pièce dans l'ordre des allocations
       if (doc.kind === 'credit') {
         // Remboursement d'un avoir au client : règlement négatif sur l'avoir.
         const cn = this.book.get(doc.id);
-        this.book.recordPayment(cn.id, { amount: -amount, date: tx.date, ref: tx.id, entryId: entry.id, lineIndex });
+        this.book.recordPayment(cn.id, { amount: -amount, date: tx.date, ref: tx.id, entryId: entry.id, lineIndex, ...vatDate });
         const original = originalOf(this.book.invoices, cn);
         if (original) {
           this._syncReceiptVat(original, tx.date);
@@ -405,18 +417,15 @@ export class Workspace {
         }
       } else if (doc.kind === 'invoice') {
         const inv = this.book.get(doc.id);
-        const left = this.book.recordPayment(inv.id, { amount, date: tx.date, ref: tx.id, entryId: entry.id, lineIndex });
+        const left = this.book.recordPayment(inv.id, { amount, date: tx.date, ref: tx.id, entryId: entry.id, lineIndex, ...vatDate });
         this._syncReceiptVat(inv, tx.date);
         if (left === 0) {
           if (creditsOf(this.book.invoices, inv).length) this.#letterGroupIfSettled(inv, tx.date);
           else if (this.ledger.entries.some((e) => e.id === inv.entryId))
             this.#letterSettled({ entryId: inv.entryId, lineIndex: 0 }, this.book.payments[inv.id], tx.date);
-          else {
-            // Facture d'un exercice précédent : on lettre sa ligne d'à-nouveau avec les règlements de l'exercice.
-            const ref = this.#openingRef(inv);
-            const inLedger = (this.book.payments[inv.id] || []).filter((p) => this.ledger.entries.some((e) => e.id === p.entryId));
-            if (ref) this.#letterSettled(ref, inLedger, tx.date);
-          }
+          // Facture d'un exercice précédent : sa ligne d'à-nouveau avec ses règlements, sinon (réglée en partie
+          // l'an passé) tout le compte du client dès qu'il revient à zéro.
+          else this._letterPriorYear(inv, doc, this.book.payments[inv.id] || [], tx.date);
           const events = this.book.lifecycle[inv.id] || [];
           const last = currentStatus(events);
           // Pas de statut automatique après un statut final (facture refusée puis payée : à traiter à la main).
@@ -437,16 +446,6 @@ export class Workspace {
     tx.status = 'matched';
     tx.entryId = entry.id;
     return entry;
-  }
-
-  /** Ligne d'à-nouveau d'une facture d'un exercice précédent (même tiers, référence dans le libellé). */
-  #openingRef(inv) {
-    const aux = this.invoiceAux(inv);
-    for (const e of this.ledger.entries.filter((x) => x.source?.kind === 'opening')) {
-      const lineIndex = e.lines.findIndex((l) => l.account === '411000' && l.aux === aux && !l.letter && l.label.includes(inv.number));
-      if (lineIndex >= 0) return { entryId: e.id, lineIndex };
-    }
-    return null;
   }
 
   #letterSettled(docRef, payments, date) {
@@ -542,6 +541,7 @@ for (const methods of [
   receiptVatMethods,
   paymentVatMethods,
   nexusRhMethods,
+  letteringMethods,
   closingMethods,
   microMethods,
   depositMethods,

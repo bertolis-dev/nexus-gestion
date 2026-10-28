@@ -4,13 +4,13 @@
  * Qonto, ou empreinte date|montant|libellé|rang pour le CSV), et un ré-import ne crée aucun doublon.
  */
 
-import { divRound, sum } from './money.js?v=e7aed24';
+import { divRound, sum } from './money.js?v=436e800';
 
 /** Compte bancaire principal (512000), créé avec l'entreprise ; « default » le relie à sa ligne en base. */
 export const DEFAULT_BANK_ACCOUNT = { id: 'default', label: 'Compte principal', glAccount: '512000', provider: 'manual', ibanLast4: null };
 
 // Lecture des relevés (CSV, OFX…) : voir bank-import.js ; réexportée pour les appels existants.
-export { parseBankCsv, parseOfx } from './bank-import.js?v=e7aed24';
+export { parseBankCsv, parseOfx } from './bank-import.js?v=436e800';
 
 const norm = (s) =>
   s
@@ -79,6 +79,10 @@ export function suggestMatches(tx, openDocs, { maxGroup = 3 } = {}) {
     if (d.outstanding === wanted) {
       score += 50;
       reasons.push('montant identique');
+    } else if (d.outstanding > wanted && d.outstanding - wanted <= WRITE_OFF_THRESHOLD) {
+      // Quelques centimes d'écart (frais, arrondi) : la pièce est soldée, l'écart passe en 658 / 758.
+      score += 45;
+      reasons.push('montant identique à quelques centimes près (écart de règlement)');
     } else if (d.outstanding > wanted) {
       score += 15;
       reasons.push('paiement partiel possible');
@@ -90,7 +94,13 @@ export function suggestMatches(tx, openDocs, { maxGroup = 3 } = {}) {
     const ns = nameScore(d);
     if (ns) reasons.push('nom du tiers dans le libellé');
     score += ns + dateScore(d);
-    if (score >= 30) out.push({ docs: [d], amounts: [Math.min(wanted, d.outstanding)], score: Math.min(100, score), reasons });
+    if (score >= 30)
+      out.push({
+        docs: [d],
+        amounts: [d.outstanding > wanted && d.outstanding - wanted <= WRITE_OFF_THRESHOLD ? d.outstanding : Math.min(wanted, d.outstanding)],
+        score: Math.min(100, score),
+        reasons,
+      });
   }
 
   // Paiement groupé : combinaisons de 2 à maxGroup factures d'un même tiers dont la somme est exacte.
@@ -112,6 +122,9 @@ export function suggestMatches(tx, openDocs, { maxGroup = 3 } = {}) {
   return out.sort((a, b) => b.score - a.score).slice(0, 5);
 }
 
+/** Écart de règlement absorbé en 658 / 758 : 1 € au plus (docs/regles-a-valider.md). */
+export const WRITE_OFF_THRESHOLD = 100;
+
 // ------------------------------------------------------------------ écritures de règlement
 
 /**
@@ -120,7 +133,7 @@ export function suggestMatches(tx, openDocs, { maxGroup = 3 } = {}) {
  * @param {{doc: object, amount: number}[]} allocations montants imputés par pièce
  * @param {{ writeOffThreshold?: number, bankAccount?: string }} opts écart de centimes absorbé en 658/758 (défaut 1 €), sous-compte 512 du compte bancaire
  */
-export function settlementEntry(tx, allocations, { writeOffThreshold = 100, bankAccount = '512000' } = {}) {
+export function settlementEntry(tx, allocations, { writeOffThreshold = WRITE_OFF_THRESHOLD, bankAccount = '512000' } = {}) {
   const incoming = tx.amount > 0;
   const bank = Math.abs(tx.amount);
   const allocated = sum(allocations.map((a) => a.amount));

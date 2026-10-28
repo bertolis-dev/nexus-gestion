@@ -3,13 +3,29 @@
  * Méthodes installées sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { ca12Advances, liquidationEntry, prepareCa12, prepareCa3 } from '../vatreturn.js?v=e7aed24';
-import { sum } from '../money.js?v=e7aed24';
+import { ca12Advances, liquidationEntry, prepareCa12, prepareCa3 } from '../vatreturn.js?v=436e800';
+import { sum } from '../money.js?v=436e800';
 
 export const vatMethods = {
   /** Déclarations déjà validées (conservées dans les paramètres de la structure). */
   get vatReturns() {
     return this.company.vatReturns || [];
+  },
+
+  /** Une facture se date du jour de son émission : jamais dans une période de TVA déjà déclarée. */
+  _assertNotDeclared(draft) {
+    const undeclared = this._firstUndeclaredDay();
+    if (undeclared && draft?.status === 'draft' && draft.type !== 'quote' && draft.issueDate < undeclared)
+      throw new Error(`La TVA est déjà déclarée jusqu’au ${undeclared.split('-').reverse().join('/')} exclu : datez la facture d’aujourd’hui.`);
+  },
+
+  /**
+   * Date comptable d'une pièce reçue après la déclaration de TVA de son mois : la première période non
+   * déclarée (sa TVA y est déduite) ; la date de la pièce reste la sienne.
+   */
+  _undeclaredDate(date) {
+    const undeclared = this._firstUndeclaredDay();
+    return undeclared && date < undeclared && undeclared <= this.ledger.fiscalYear.end ? undeclared : date;
   },
 
   /** Lendemain de la dernière période de TVA déclarée (null si aucune) : une régularisation n'y retourne pas. */

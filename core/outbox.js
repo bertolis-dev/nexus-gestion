@@ -11,7 +11,7 @@
  *   friendly(error) → message ; onStatus(status) ; onResult(op, result).
  */
 
-import { planSync, isDivergence } from './sync.js?v=e7aed24';
+import { planSync, isDivergence } from './sync.js?v=436e800';
 
 const DIVERGENCE_MESSAGE = 'Des modifications ont été enregistrées ailleurs (autre appareil ou autre onglet) : rechargez les données depuis la base.';
 const directLock = (_name, fn) => fn();
@@ -68,7 +68,10 @@ export class Outbox {
 
   /** Ajoute les opérations qui mènent de `before` à `after`, puis lance l'envoi. */
   async push(before, after, meta) {
-    const ops = planSync(before, after, meta);
+    // Une action de l'utilisateur = un lot : si l'une de ses opérations est écartée, les suivantes du
+    // même lot (qui en dépendent : dépense après son écriture…) le sont aussi.
+    const batch = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    const ops = planSync(before, after, meta).map((op) => ({ ...op, batch }));
     if (!ops.length) return;
     await this.lock(`${this.key}:file`, () => {
       // Relire la file partagée avant d'ajouter : un autre onglet a pu la modifier.
@@ -153,6 +156,7 @@ export class Outbox {
     await this.lock(`${this.key}:file`, () => {
       this.queue = this.#load();
       if (JSON.stringify(this.queue[0]) === JSON.stringify(op)) this.queue.shift();
+      if (op.batch) this.queue = this.queue.filter((x) => x.batch !== op.batch);
       this.#persist();
     });
     this.refusedOp = null;

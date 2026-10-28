@@ -10,8 +10,8 @@
  * antérieures, ce qui garantit que la numérotation reste chronologique.
  */
 
-import { assertCents, sum } from './money.js?v=e7aed24';
-import { isCalendarDate } from './dates.js?v=e7aed24';
+import { assertCents, sum } from './money.js?v=436e800';
+import { isCalendarDate } from './dates.js?v=436e800';
 
 export const JOURNALS = {
   VE: 'Ventes',
@@ -207,14 +207,15 @@ export class Ledger {
 
   // ---------------------------------------------------------------- lettrage
 
+  /** Code de lettrage n° n : AAA, AAB… (3 lettres au moins, sans jamais réutiliser un code). */
   static #letterCode(n) {
     let s = '';
-    let x = n;
+    let x = n + 702; // 703 = « AAA » : on part des codes à 3 lettres au lieu de compléter par des « A »
     do {
       s = String.fromCharCode(65 + ((x - 1) % 26)) + s;
       x = Math.floor((x - 1) / 26);
     } while (x > 0);
-    return s.padStart(3, 'A');
+    return s;
   }
 
   /**

@@ -3,10 +3,11 @@
  * Méthodes installées sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { sum } from '../money.js?v=e7aed24';
+import { sum } from '../money.js?v=436e800';
 import {
   allocationEntry,
   balanceSheet,
+  closingChecklist,
   corporateTax,
   corporateTaxEntry,
   depreciationEntry,
@@ -15,9 +16,9 @@ import {
   inventoryEntry,
   nextYearOpening,
   resultEntry,
-} from '../closing.js?v=e7aed24';
-import { nextFiscalYear } from '../dates.js?v=e7aed24';
-import { Workspace } from '../workspace.js?v=e7aed24';
+} from '../closing.js?v=436e800';
+import { nextFiscalYear } from '../dates.js?v=436e800';
+import { Workspace } from '../workspace.js?v=436e800';
 
 export const closingMethods = {
   addInventory(item) {
@@ -73,6 +74,11 @@ export const closingMethods = {
     const fy = this.company.fiscalYear;
     if (today <= fy.end) throw new Error('L’exercice n’est pas terminé.');
     // Contrôle bloquant : on ne clôture jamais un exercice dont le bilan ne s'équilibre pas.
+    // TVA de l'exercice non déclarée : après clôture, ces périodes ne seraient plus déclarables et leurs
+    // soldes fausseraient les déclarations de l'exercice suivant.
+    const vat = closingChecklist(this, { today }).find((i) => i.id === 'vat');
+    if (vat && !vat.ok)
+      throw new Error(`TVA : ${vat.detail}. Validez chaque déclaration dans l’écran TVA avant de clôturer, y compris celles déjà déposées sur impots.gouv.fr.`);
     const bs = balanceSheet(this.ledger);
     if (!bs.balanced)
       throw new Error(

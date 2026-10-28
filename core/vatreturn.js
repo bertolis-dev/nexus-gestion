@@ -20,10 +20,10 @@
  *   28 TVA nette due · 32 total à payer.
  */
 
-import { divRound, sum, vatFromHt } from './money.js?v=e7aed24';
-import { isOnReceipt, originalOf, receiptEvents } from './receipts.js?v=e7aed24';
-import { vatSplit } from './invoices.js?v=e7aed24';
-import { tradeZone } from './countries.js?v=e7aed24';
+import { divRound, sum, vatFromHt } from './money.js?v=436e800';
+import { isOnReceipt, originalOf, receiptEvents } from './receipts.js?v=436e800';
+import { vatSplit } from './invoices.js?v=436e800';
+import { tradeZone } from './countries.js?v=436e800';
 
 /**
  * Lignes de la CA3 par taux de TVA, par millésime du formulaire 3310-CA3 — À VALIDER PAR L'EXPERT-
@@ -44,7 +44,8 @@ const inPeriod = (d, { from, to }) => d >= from && d <= to;
 
 /** Part d'une facture exigible dans la période : { share (0..1 en fraction), date, reason }. */
 function exigibleParts(inv, payments, period) {
-  const onReceipt = inv.operationNature === 'services' && !inv.issuer.vatOnDebits;
+  // Sans TVA (prestation à une entreprise de l'UE, hors champ) : déclarée à la facturation, pas au paiement.
+  const onReceipt = inv.operationNature === 'services' && !inv.issuer.vatOnDebits && inv.totals.totalVat !== 0;
   if (!onReceipt) return inPeriod(inv.issueDate, period) ? [{ num: 1, den: 1, date: inv.issueDate, reason: 'facturation' }] : [];
   // Les règlements portent sur le net à payer (acomptes déduits), base de la répartition.
   const due = inv.totals.netToPay;
@@ -55,7 +56,7 @@ function exigibleParts(inv, payments, period) {
 
 /**
  * Prépare la CA3 d'une période à partir du Workspace (factures, paiements, dépenses, grand livre).
- * @param {import('./workspace.js?v=e7aed24').Workspace} ws
+ * @param {import('./workspace.js?v=436e800').Workspace} ws
  * @param {{ from: string, to: string }} period
  * @param {{ previousCredit?: number }} opts crédit de TVA reporté de la déclaration précédente
  */

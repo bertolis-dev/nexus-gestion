@@ -2,11 +2,11 @@
  * Écran « bank ».
  */
 
-import { INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=e7aed24';
-import { $, render } from '../render.js?v=e7aed24';
-import { ui, ws } from '../state.js?v=e7aed24';
-import { dataVersion, save, toast } from '../store.js?v=e7aed24';
-import { suggestionsCache } from '../views/bank.js?v=e7aed24';
+import { INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=436e800';
+import { $, render } from '../render.js?v=436e800';
+import { ui, ws } from '../state.js?v=436e800';
+import { dataVersion, save, toast } from '../store.js?v=436e800';
+import { suggestionsCache } from '../views/bank.js?v=436e800';
 
 /** Actions « bank » : data-action → fonction. */
 export const actionsTable = {
@@ -38,7 +38,8 @@ export const actionsTable = {
   'tx-ignore': async ({ id }) => {
     ws.ignoreTransaction(id);
     save();
-    return render();
+    render();
+    return toast('Mouvement ignoré : il reste visible dans « Déjà justifiées ».');
   },
   'bank-page': async ({ index }) => {
     ui.bankPage = (ui.bankPage || 0) + Number(index);

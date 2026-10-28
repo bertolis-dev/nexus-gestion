@@ -4,9 +4,9 @@
  * balance et FEC ».
  */
 
-import { formatDecimalComma, sum } from './money.js?v=e7aed24';
-import { JOURNALS } from './ledger.js?v=e7aed24';
-import { isCalendarDate, parisDateOf } from './dates.js?v=e7aed24';
+import { formatDecimalComma, sum } from './money.js?v=436e800';
+import { JOURNALS } from './ledger.js?v=436e800';
+import { isCalendarDate, parisDateOf } from './dates.js?v=436e800';
 
 /** Balance générale : totaux débit/crédit et solde par compte, triés par numéro. */
 export function trialBalance(ledger, opts = {}) {
@@ -205,9 +205,23 @@ export function checkFEC(content) {
  */
 const LATIN9 = { '€': 0xa4, Š: 0xa6, š: 0xa8, Ž: 0xb4, ž: 0xb8, Œ: 0xbc, œ: 0xbd, Ÿ: 0xbe };
 const LATIN1_REPLACED = new Set([0xa4, 0xa6, 0xa8, 0xb4, 0xb8, 0xbc, 0xbd, 0xbe]);
+/** Ponctuation typographique hors Latin-9, remplacée par son équivalent simple (au lieu de « ? »). */
+const TYPO = {
+  '\u2018': "'",
+  '\u2019': "'",
+  '\u201c': '"',
+  '\u201d': '"',
+  '\u2013': '-',
+  '\u2014': '-',
+  '\u2026': '...',
+  '\u202f': ' ',
+  '\u2009': ' ',
+  '\u00a0': ' ',
+};
 export function encodeLatin9(text) {
   const out = [];
-  for (const ch of text) {
+  for (const raw of text) {
+    const ch = TYPO[raw] ?? raw;
     const code = ch.codePointAt(0);
     if (LATIN9[ch] !== undefined) out.push(LATIN9[ch]);
     else if (code < 0x100 && !LATIN1_REPLACED.has(code)) out.push(code);

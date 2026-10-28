@@ -9,11 +9,11 @@
  * nombre d'écritures validées), l'état est rechargé depuis la base, qui fait foi.
  */
 
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js?v=e7aed24';
-import { stateFromRows, refusedUpdate } from '../core/sync.js?v=e7aed24';
-import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, pendingOutboxOps, OUTBOX_PREFIX } from '../core/outbox.js?v=e7aed24';
-import { ACCOUNTS } from '../core/pcg.js?v=e7aed24';
-import { mfaState, canRemoveFactor } from '../core/mfa.js?v=e7aed24';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js?v=436e800';
+import { stateFromRows, refusedUpdate } from '../core/sync.js?v=436e800';
+import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, pendingOutboxOps, OUTBOX_PREFIX } from '../core/outbox.js?v=436e800';
+import { ACCOUNTS } from '../core/pcg.js?v=436e800';
+import { mfaState, canRemoveFactor } from '../core/mfa.js?v=436e800';
 
 // supabase-js (copie locale, app/vendor/) n'est chargé qu'en mode connecté : la démonstration et
 // le site public ne téléchargent pas ces 220 Ko.
@@ -21,7 +21,7 @@ let client = null;
 const authListeners = [];
 async function connect() {
   if (!client) {
-    const { createClient } = await import('./vendor/supabase.js?v=e7aed24');
+    const { createClient } = await import('./vendor/supabase.js?v=436e800');
     // Session gardée dans le navigateur et renouvelée automatiquement : on reste connecté d'une visite
     // à l'autre, jusqu'à « Se déconnecter » (comme Nexus RH).
     client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -462,6 +462,12 @@ async function run(op) {
   const result = check(await supabase.rpc(op.fn, op.args));
   if (op.expect?.type === 'invoiceNumber' && result !== op.expect.value) {
     throw Object.assign(new Error(`Numéro attribué par le serveur (${result}) différent de ${op.expect.value}`), { divergence: true });
+  }
+  // Validation rejouée (la réponse précédente s'est perdue) : 0 écriture cette fois, mais la période est
+  // bien verrouillée jusqu'à la date demandée — l'opération était déjà faite.
+  if (op.expect?.type === 'count' && result !== op.expect.value && op.fn === 'validate_through' && result === 0) {
+    const fy = check(await supabase.from('fiscal_years').select('locked_through').eq('id', op.args.p_fiscal_year).single());
+    if (fy?.locked_through && fy.locked_through >= op.args.p_date) return result;
   }
   if (op.expect?.type === 'count' && result !== op.expect.value) {
     throw Object.assign(new Error(`Le serveur a validé ${result} écriture(s) au lieu de ${op.expect.value}`), { divergence: true });

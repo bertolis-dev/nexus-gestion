@@ -4,12 +4,12 @@
  * la seule correction possible est l'avoir lié.
  */
 
-import { assertCents, divRound, sum, vatFromHt } from './money.js?v=e7aed24';
-import { REVENUE_ACCOUNT_BY_NATURE } from './pcg.js?v=e7aed24';
-import { LIFECYCLE, currentStatus } from './lifecycle.js?v=e7aed24';
-import { tradeZone } from './countries.js?v=e7aed24';
-import { creditsOf, originalOf, groupBalance } from './receipts.js?v=e7aed24';
-import { addDays } from './dates.js?v=e7aed24';
+import { assertCents, divRound, formatEuros, sum, vatFromHt } from './money.js?v=436e800';
+import { REVENUE_ACCOUNT_BY_NATURE } from './pcg.js?v=436e800';
+import { LIFECYCLE, currentStatus } from './lifecycle.js?v=436e800';
+import { tradeZone } from './countries.js?v=436e800';
+import { creditsOf, originalOf, groupBalance } from './receipts.js?v=436e800';
+import { addDays } from './dates.js?v=436e800';
 
 export const VAT_RATES_BP = [2000, 1000, 550, 210, 0];
 
@@ -164,6 +164,8 @@ export function checkInvoice(invoice, company) {
   if (invoice.type === 'credit') {
     need(invoice.creditOf, "Un avoir doit mentionner la facture qu'il corrige.", 'creditOf');
   }
+  for (const l of invoice.lines || [])
+    if ((l.discountBp || 0) < 0 || (l.discountBp || 0) > 10000) need(false, 'Une remise doit être comprise entre 0 et 100 %.', 'lines');
   return issues;
 }
 
@@ -281,6 +283,22 @@ export class InvoiceBook {
     const key = `${draft.series}${year}`;
     const n = (this.counters[key] || 0) + 1;
     const totals = computeTotals(draft, { franchise: isVatExempt(draft, this.company) });
+    if (draft.type === 'credit') {
+      const original = this.invoices.find((i) => i.status === 'issued' && i.number === draft.creditOf);
+      if (original) {
+        // Un acompte déjà déduit d'une facture finale se corrige par un avoir sur cette facture finale.
+        const final = this.invoices.find((i) => i.status === 'issued' && (i.deposits || []).some((d) => d.id === original.id));
+        if (final)
+          throw new InvoiceError(`L'acompte ${original.number} est déjà déduit de la facture ${final.number} : faites l'avoir sur la facture ${final.number}.`);
+        const already = sum(
+          this.invoices.filter((c) => c.type === 'credit' && c.status === 'issued' && c.creditOf === original.number).map((c) => c.totals.totalTtc),
+        );
+        if (already + totals.totalTtc > original.totals.totalTtc)
+          throw new InvoiceError(
+            `Cet avoir dépasse ce qui reste à créditer sur la facture ${original.number} (${formatEuros(original.totals.totalTtc - already)}).`,
+          );
+      }
+    }
     const issued = {
       ...draft,
       status: 'issued',

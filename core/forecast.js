@@ -6,11 +6,11 @@
  * solde de l'exercice clos, solde estimé de l'exercice terminé non clôturé : core/istax.js).
  */
 
-import { addDays } from './dates.js?v=e7aed24';
-import { dueOccurrences } from './recurring.js?v=e7aed24';
-import { computeTotals, isVatExempt } from './invoices.js?v=e7aed24';
-import { corporateTaxSchedule } from './istax.js?v=e7aed24';
-import { payrollOutflows } from './payroll.js?v=e7aed24';
+import { addDays } from './dates.js?v=436e800';
+import { dueOccurrences } from './recurring.js?v=436e800';
+import { computeTotals, isVatExempt } from './invoices.js?v=436e800';
+import { corporateTaxSchedule } from './istax.js?v=436e800';
+import { payrollOutflows } from './payroll.js?v=436e800';
 
 /** Délai de paiement d'une dépense sans échéance connue (usage, à valider par l'expert-comptable). */
 export const DEFAULT_SUPPLIER_TERMS_DAYS = 30;
@@ -54,6 +54,15 @@ export function cashForecast(ws, today, { horizons = [30, 60, 90] } = {}) {
 
   if (ws.company.vatRegime === 'reel-normal') {
     const declared = new Set(ws.vatReturns.map((r) => r.from));
+    // Déclarée mais pas encore payée : le reste dû au compte 44551 « TVA à décaisser », à l'échéance de
+    // chaque déclaration non échue ; les paiements soldent d'abord les plus anciennes, le reste dû revient aux plus récentes.
+    let unpaid = -ws.ledger.balanceOf('445510');
+    for (const r of [...ws.vatReturns].filter((x) => x.balance > 0).sort((a, b) => b.to.localeCompare(a.to))) {
+      const deadline = ws.vatDeadline(r);
+      const amount = Math.min(r.balance, Math.max(0, unpaid));
+      unpaid -= amount;
+      if (deadline >= today && amount > 0) add(deadline, 'tva', `TVA déclarée ${r.from.slice(5, 7)}/${r.from.slice(0, 4)}`, -amount);
+    }
     for (const period of ws.vatPeriods()) {
       if (declared.has(period.from) || period.from > today) continue;
       const deadline = ws.vatDeadline(period);

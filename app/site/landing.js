@@ -2,16 +2,16 @@
  * Site public : page d’accueil, pages Fonctionnalités, agrandissement des captures.
  */
 
-import { html, raw } from '../html.js?v=e7aed24';
-import { ICONS } from '../icons.js?v=e7aed24';
-import { $ } from '../render.js?v=e7aed24';
-import { CONTACT_EMAIL, ui } from '../state.js?v=e7aed24';
-import { brand, icon } from '../ui/common.js?v=e7aed24';
+import { html, raw } from '../html.js?v=436e800';
+import { ICONS } from '../icons.js?v=436e800';
+import { $ } from '../render.js?v=436e800';
+import { CONTACT_EMAIL, ui } from '../state.js?v=436e800';
+import { brand, icon } from '../ui/common.js?v=436e800';
 
 // Pages « Fonctionnalités » du site public (50 Ko) : chargées seulement quand le site public s'affiche.
 export let features = null;
 
-export const loadFeatures = async () => (features ??= await import('../features.js?v=e7aed24'));
+export const loadFeatures = async () => (features ??= await import('../features.js?v=436e800'));
 
 export const featureBySlug = (slug) => features?.featureBySlug(slug);
 
@@ -293,10 +293,17 @@ export function viewLanding() {
         ${LANDING_FAQ.map(
           (item, i) =>
             html` <div class="landing-faq-item ${ui.faqOpen === String(i) ? 'landing-faq-item-open' : ''}">
-              <button type="button" class="landing-faq-question" data-action="faq" data-index="${i}">
-                <span>${item.q}</span><span class="landing-faq-chevron">⌄</span>
+              <button
+                type="button"
+                class="landing-faq-question"
+                data-action="faq"
+                data-index="${i}"
+                aria-expanded="${ui.faqOpen === String(i) ? 'true' : 'false'}"
+                aria-controls="faq-${i}"
+              >
+                <span>${item.q}</span><span class="landing-faq-chevron" aria-hidden="true">⌄</span>
               </button>
-              <div class="landing-faq-answer"><p>${item.a}</p></div>
+              <div class="landing-faq-answer" id="faq-${i}" ${ui.faqOpen === String(i) ? '' : raw('hidden')}><p>${item.a}</p></div>
             </div>`,
         )}
       </div>
@@ -474,10 +481,17 @@ export function viewFeature(slug) {
         ${f.faq.map(
           (item, i) =>
             html` <div class="landing-faq-item ${ui.faqOpen === `${slug}-${i}` ? 'landing-faq-item-open' : ''}">
-              <button type="button" class="landing-faq-question" data-action="faq" data-index="${slug}-${i}">
-                <span>${item.q}</span><span class="landing-faq-chevron">⌄</span>
+              <button
+                type="button"
+                class="landing-faq-question"
+                data-action="faq"
+                data-index="${slug}-${i}"
+                aria-expanded="${ui.faqOpen === `${slug}-${i}` ? 'true' : 'false'}"
+                aria-controls="faq-${slug}-${i}"
+              >
+                <span>${item.q}</span><span class="landing-faq-chevron" aria-hidden="true">⌄</span>
               </button>
-              <div class="landing-faq-answer"><p>${item.a}</p></div>
+              <div class="landing-faq-answer" id="faq-${slug}-${i}" ${ui.faqOpen === `${slug}-${i}` ? '' : raw('hidden')}><p>${item.a}</p></div>
             </div>`,
         )}
       </div>

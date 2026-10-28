@@ -13,8 +13,8 @@
  * compte|date|montant|libellé|rang pour le CSV), et un ré-import ne crée aucun doublon.
  */
 
-import { parisDateOf } from './dates.js?v=e7aed24';
-import { parseEuros } from './money.js?v=e7aed24';
+import { parisDateOf } from './dates.js?v=436e800';
+import { parseEuros } from './money.js?v=436e800';
 
 // ------------------------------------------------------------------ outils
 
@@ -361,7 +361,7 @@ function readOfx(text, accountId) {
     try {
       const date = toIsoDate(tag(b, 'DTPOSTED'));
       const amount = parseEuros(tag(b, 'TRNAMT'));
-      const label = [tag(b, 'NAME'), tag(b, 'MEMO')].filter(Boolean).join(' ');
+      const label = [tag(b, 'NAME'), tag(b, 'MEMO')].filter(Boolean).map(xmlDecode).join(' ');
       const fitid = tag(b, 'FITID');
       let ids;
       if (fitid) ids = { id: `ofx-${accountId}-${fitid}`, legacyId: `ofx-${fitid}` };

@@ -2,21 +2,21 @@
  * Écran « onboarding ».
  */
 
-import { firstFiscalYear } from '../../core/dates.js?v=e7aed24';
-import { openingBalanceFromFec, parseFec } from '../../core/fecimport.js?v=e7aed24';
-import { isValidSiren } from '../../core/invoices.js?v=e7aed24';
-import { ACTIVITY_TYPES, CIPAV_PROFESSIONS } from '../../core/micro.js?v=e7aed24';
-import { buildChart } from '../../core/pcg.js?v=e7aed24';
-import { Workspace } from '../../core/workspace.js?v=e7aed24';
-import * as cloud from '../cloud.js?v=e7aed24';
-import { lookupSiren } from '../company-lookup.js?v=e7aed24';
-import { companyFromOnboarding } from '../../core/company.js?v=e7aed24';
-import { choiceGroup, field, html, opt, raw } from '../html.js?v=e7aed24';
-import { render } from '../render.js?v=e7aed24';
-import { cloudState, eur, newId, setWs, ui, ws } from '../state.js?v=e7aed24';
-import { save, toast } from '../store.js?v=e7aed24';
-import { onSyncResult, onSyncStatus } from '../sync-ui.js?v=e7aed24';
-import { badge, brand } from '../ui/common.js?v=e7aed24';
+import { firstFiscalYear } from '../../core/dates.js?v=436e800';
+import { openingBalanceFromFec, parseFec } from '../../core/fecimport.js?v=436e800';
+import { isValidSiren } from '../../core/invoices.js?v=436e800';
+import { ACTIVITY_TYPES, CIPAV_PROFESSIONS } from '../../core/micro.js?v=436e800';
+import { buildChart } from '../../core/pcg.js?v=436e800';
+import { Workspace } from '../../core/workspace.js?v=436e800';
+import * as cloud from '../cloud.js?v=436e800';
+import { lookupSiren } from '../company-lookup.js?v=436e800';
+import { companyFromOnboarding } from '../../core/company.js?v=436e800';
+import { choiceGroup, field, html, opt, raw } from '../html.js?v=436e800';
+import { render } from '../render.js?v=436e800';
+import { cloudState, eur, newId, setWs, ui, ws } from '../state.js?v=436e800';
+import { save, toast } from '../store.js?v=436e800';
+import { onSyncResult, onSyncStatus } from '../sync-ui.js?v=436e800';
+import { badge, brand } from '../ui/common.js?v=436e800';
 
 // ------------------------------------------------------------------ assistant d'installation (§3.1)
 
@@ -76,7 +76,7 @@ export function viewOnboarding() {
       <div class="notice-gold">
         Importez le relevé de votre banque (CSV, OFX, CAMT.053 ou QIF), téléchargé depuis son espace client : toutes les banques françaises le proposent.
       </div>
-      ${field('Relevé bancaire (facultatif)', html`<input class="input" id="ob-bank" type="file" accept=".csv,.ofx,.qfx,.txt" data-action="ob-bank-file" />`, { id: 'ob-bank' })}
+      ${field('Relevé bancaire (facultatif)', html`<input class="input" id="ob-bank" type="file" accept=".csv,.ofx,.qfx,.xml,.qif,.txt" data-action="ob-bank-file" />`, { id: 'ob-bank' })}
       ${data.bankFileName ? html`<p class="text-muted">Relevé prêt : <strong>${data.bankFileName}</strong> (${data.bankTx.length} transactions)</p>` : ''}
       ${errBox}${nav()}`;
   } else if (step === 4) {
@@ -93,7 +93,9 @@ export function viewOnboarding() {
   }
   return html`<div class="login-card onboarding-card">
     <div class="login-logo">${brand}</div>
-    <div class="onboarding-steps" aria-label="Étape ${step} sur 4">${[1, 2, 3, 4].map((i) => html`<span class="${i <= step ? 'done' : ''}"></span>`)}</div>
+    <div class="onboarding-steps" role="img" aria-label="Étape ${step} sur 4">
+      ${[1, 2, 3, 4].map((i) => html`<span class="${i <= step ? 'done' : ''}"></span>`)}
+    </div>
     ${body}<button type="button" class="btn-link" data-action="sign-out">Se déconnecter</button>
   </div>`;
 }

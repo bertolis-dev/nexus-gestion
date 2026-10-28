@@ -10,9 +10,9 @@
  * dérive d'arrondi (le total des dotations égale exactement le coût).
  */
 
-import { divRound, sum } from './money.js?v=e7aed24';
-import { categoryById } from './pcg.js?v=e7aed24';
-import { addDays } from './dates.js?v=e7aed24';
+import { divRound, sum } from './money.js?v=436e800';
+import { categoryById } from './pcg.js?v=436e800';
+import { addDays } from './dates.js?v=436e800';
 
 /** Durées d'usage courantes, à confirmer par l'expert-comptable. */
 export const DEFAULT_YEARS = { 205000: 1, 215400: 5, 218200: 5, 218300: 3, 218400: 10 };
@@ -40,7 +40,8 @@ export function cumulativeDepreciation({ cost, startDate, years }, date) {
  * TVA, rien n'est récupérable : le bien est inscrit TTC.
  */
 function lineCost(l, cat, company) {
-  const vat = divRound(l.ht * (l.vatRateBp || 0), 10000);
+  // TVA de la ligne telle qu'enregistrée (saisie TTC : HT + TVA redonne le montant tapé), comme purchaseEntry.
+  const vat = Number.isSafeInteger(l.vat) ? l.vat : divRound(l.ht * (l.vatRateBp || 0), 10000);
   const deductiblePct = company.vatRegime === 'franchise' ? 0 : cat.vatDeductiblePct;
   return l.ht + divRound(vat * (100 - deductiblePct), 100);
 }

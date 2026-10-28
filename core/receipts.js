@@ -10,8 +10,8 @@
  * facture non encaissée, il réduit la TVA restant en attente.
  */
 
-import { divRound, sum } from './money.js?v=e7aed24';
-import { vatSplit } from './invoices.js?v=e7aed24';
+import { divRound, sum } from './money.js?v=436e800';
+import { vatSplit } from './invoices.js?v=436e800';
 
 /**
  * Une part de la TVA est-elle exigible à l'encaissement ? (prestations sans option pour les débits,
@@ -32,6 +32,9 @@ export function originalOf(invoices, credit) {
 }
 
 const paymentsUpTo = (payments, date) => sum((payments || []).filter((p) => !date || p.date <= date).map((p) => p.amount));
+/** Date de prise en compte en TVA d'un règlement : celle du paiement, ou la première période non déclarée s'il a été rapproché après. */
+const vatDateOf = (p) => p.vatDate || p.date;
+const vatPaidUpTo = (payments, date) => sum((payments || []).filter((p) => !date || vatDateOf(p) <= date).map((p) => p.amount));
 
 /**
  * Restant dû du groupe (facture + ses avoirs + règlements et remboursements) à une date (toutes dates si
@@ -69,7 +72,7 @@ export function receiptTargets(invoices, payments, inv, date) {
     net.set(r.rateBp, row);
   }
   const netTtc = inv.totals.netToPay - sum(credits.map((c) => c.totals.netToPay));
-  const paid = paymentsUpTo(payments[inv.id], date) + sum(credits.map((c) => paymentsUpTo(payments[c.id], date)));
+  const paid = vatPaidUpTo(payments[inv.id], date) + sum(credits.map((c) => vatPaidUpTo(payments[c.id], date)));
   const settled = netTtc <= 0 || paid >= netTtc;
   const received = Math.max(0, Math.min(paid, netTtc));
   const byRate = new Map();
@@ -86,9 +89,9 @@ export function receiptTargets(invoices, payments, inv, date) {
 export function receiptEvents(invoices, payments, inv) {
   const credits = creditsOf(invoices, inv);
   const dated = [
-    ...(payments[inv.id] || []).map((p) => [p.date, 'encaissement']),
+    ...(payments[inv.id] || []).map((p) => [vatDateOf(p), 'encaissement']),
     ...credits.map((c) => [c.issueDate, `avoir ${c.number}`]),
-    ...credits.flatMap((c) => (payments[c.id] || []).map((p) => [p.date, 'remboursement'])),
+    ...credits.flatMap((c) => (payments[c.id] || []).map((p) => [vatDateOf(p), 'remboursement'])),
   ].sort((a, b) => a[0].localeCompare(b[0]));
   const out = [];
   let previous = new Map();

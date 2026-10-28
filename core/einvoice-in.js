@@ -205,5 +205,9 @@ export function readIncomingInvoice(xml, { ownSiren } = {}) {
 /** Lignes d'achat Nexus (une par taux de TVA) à partir du détail des taxes de la facture reçue. */
 export function purchaseLinesFrom(inv, categoryId) {
   const byRate = inv.taxes.length ? inv.taxes : [{ rateBp: 0, base: inv.totalHt, vat: 0 }];
-  return byRate.filter((t) => t.base).map((t) => ({ categoryId, ht: t.base, vatRateBp: t.rateBp }));
+  // Autoliquidation (AE) ou livraison intracommunautaire (K) : la facture porte 0 %, mais la TVA est due
+  // par l'acheteur au taux français ; sans taux, purchaseEntry applique le taux normal (20 %).
+  return byRate
+    .filter((t) => t.base)
+    .map((t) => ({ categoryId, ht: t.base, ...(['AE', 'K'].includes(t.category) && !t.rateBp ? {} : { vatRateBp: t.rateBp }) }));
 }

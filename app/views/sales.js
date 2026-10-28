@@ -2,20 +2,20 @@
  * Écran « sales ».
  */
 
-import { VAT_RATES_BP, checkInvoice, computeTotals, isVatExempt, issuerName, lineHt } from '../../core/invoices.js?v=e7aed24';
-import { FREQUENCIES, nextDate } from '../../core/recurring.js?v=e7aed24';
-import { field, html, opt, raw } from '../html.js?v=e7aed24';
-import { ICONS } from '../icons.js?v=e7aed24';
-import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=e7aed24';
-import { save, toast } from '../store.js?v=e7aed24';
-import { isUnconfirmed } from '../sync-ui.js?v=e7aed24';
-import { badge, viewHeader } from '../ui/common.js?v=e7aed24';
-import { qrSvg } from '../ui/qr.js?v=e7aed24';
-import { invoicePaymentQr } from '../../core/epc.js?v=e7aed24';
-import { lifecycleCard } from './expenses.js?v=e7aed24';
-import { viewInvoiceForm } from './invoice-form.js?v=e7aed24';
-import { depositCard } from './deposit.js?v=e7aed24';
-import { REMINDER_STEPS, dueReminderLevel, invoiceEmail, reminderMessage } from '../../core/reminders.js?v=e7aed24';
+import { VAT_RATES_BP, checkInvoice, computeTotals, isVatExempt, issuerName, lineHt } from '../../core/invoices.js?v=436e800';
+import { FREQUENCIES, nextDate } from '../../core/recurring.js?v=436e800';
+import { field, html, opt, raw } from '../html.js?v=436e800';
+import { ICONS } from '../icons.js?v=436e800';
+import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=436e800';
+import { save, toast } from '../store.js?v=436e800';
+import { isUnconfirmed } from '../sync-ui.js?v=436e800';
+import { badge, viewHeader } from '../ui/common.js?v=436e800';
+import { qrSvg } from '../ui/qr.js?v=436e800';
+import { invoicePaymentQr } from '../../core/epc.js?v=436e800';
+import { lifecycleCard } from './expenses.js?v=436e800';
+import { viewInvoiceForm } from './invoice-form.js?v=436e800';
+import { depositCard } from './deposit.js?v=436e800';
+import { REMINDER_STEPS, dueReminderLevel, invoiceEmail, reminderMessage } from '../../core/reminders.js?v=436e800';
 
 // ------------------------------------------------------------------ factures (§3.2, §3.5)
 
@@ -163,7 +163,7 @@ export function viewRecurring() {
             ? html`<select class="input" name="clientId">
                 ${ws.clients.map((c) => opt(c.id, c.name, f.clientId === c.id))}
               </select>`
-            : html`<p class="form-hint">Créez d'abord une facture pour enregistrer un client.</p>`,
+            : html`<p class="form-hint">Ajoutez d’abord un client (écran Clients).</p>`,
         )}
         ${field('Désignation', html`<input class="input" name="label" value="${f.label || ''}" placeholder="Ex. : Maintenance mensuelle" />`, { hint: 'La période (« octobre 2026 ») est ajoutée automatiquement.' })}
         ${field('Prix HT', html`<input class="input" name="price" inputmode="decimal" placeholder="0,00" value="${f.price || ''}" />`)}

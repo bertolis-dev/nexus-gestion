@@ -3,11 +3,16 @@
  * étape 1. L'interprétation du résultat (forme juridique, nom) est dans core/company.js.
  */
 
-import { companyFromSearch } from '../core/company.js?v=e7aed24';
+import { companyFromSearch } from '../core/company.js?v=436e800';
 
 /** Fiche brute de l'annuaire pour ce SIREN (premier résultat), ou null. */
 export async function searchCompany(siren) {
-  const r = await fetch(`https://recherche-entreprises.api.gouv.fr/search?q=${encodeURIComponent(siren)}&page=1&per_page=1`);
+  let r;
+  try {
+    r = await fetch(`https://recherche-entreprises.api.gouv.fr/search?q=${encodeURIComponent(siren)}&page=1&per_page=1`);
+  } catch {
+    throw new Error('Annuaire des entreprises injoignable (connexion internet ?)');
+  }
   if (!r.ok) throw new Error(`Service indisponible (${r.status})`);
   const first = (await r.json()).results?.[0];
   return first?.siren === siren ? first : null;

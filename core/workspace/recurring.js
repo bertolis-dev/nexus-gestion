@@ -3,8 +3,8 @@
  * Méthodes installées sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { dueOccurrences, periodLabel, validateTemplate } from '../recurring.js?v=e7aed24';
-import { addDays } from '../dates.js?v=e7aed24';
+import { dueOccurrences, periodLabel, validateTemplate } from '../recurring.js?v=436e800';
+import { addDays } from '../dates.js?v=436e800';
 
 export const recurringMethods = {
   saveRecurring(data) {
@@ -30,8 +30,15 @@ export const recurringMethods = {
    */
   generateRecurring(today) {
     const result = { drafts: [], issued: [] };
-    for (const t of this.recurring) {
-      for (const occ of dueOccurrences(t, today)) {
+    // Parcours par identifiant : une émission refusée restaure l'état (Workspace._atomic) et remplace la
+    // liste des modèles ; on relit donc chaque modèle après chaque échéance.
+    for (const id of this.recurring.map((r) => r.id)) {
+      const occurrences = dueOccurrences(
+        this.recurring.find((r) => r.id === id),
+        today,
+      );
+      for (const occ of occurrences) {
+        const t = this.recurring.find((r) => r.id === id);
         const due = addDays(today, t.paymentDays ?? 30);
         const period = periodLabel(occ.date, t.frequency);
         const draft = this.book.createDraft({

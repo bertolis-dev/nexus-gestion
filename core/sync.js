@@ -167,6 +167,7 @@ function settlementRows(state, meta) {
         doc_id: invoiceId,
         amount: p.amount,
         pay_date: p.date,
+        vat_date: p.vatDate || null,
         ref: p.ref,
         entry_id: p.entryId,
         line_index: p.lineIndex,
@@ -180,6 +181,7 @@ function settlementRows(state, meta) {
         doc_id: pu.id,
         amount: p.amount,
         pay_date: p.date,
+        vat_date: p.vatDate || null,
         ref: p.ref,
         entry_id: p.entryId,
         line_index: p.lineIndex,
@@ -228,7 +230,8 @@ export function planSync(before, after, meta) {
     }
     const comparable = (x) => x && { ...x, status: undefined, number: undefined, validatedAt: undefined };
     if (!prev || !same(comparable(prev), comparable(e))) {
-      ops.push({ kind: 'rpc', fn: 'save_draft_entry', args: { p: entryPayload(e, meta) } });
+      // Déjà envoyée : la base refuse de la recréer si un autre appareil l'a supprimée entre-temps.
+      ops.push({ kind: 'rpc', fn: 'save_draft_entry', args: { p: { ...entryPayload(e, meta), ...(prev ? { existing: true } : {}) } } });
     }
   }
 
@@ -241,7 +244,13 @@ export function planSync(before, after, meta) {
   for (const inv of aInv.values()) {
     const prev = bInv.get(inv.id);
     if (prev?.status === 'issued') continue;
-    if (!prev || !same(prev, inv)) ops.push({ kind: 'upsert', table: 'invoices', rows: [invoiceDraftRow(inv, meta)], onConflict: 'id' });
+    // Brouillon déjà envoyé : mise à jour (0 ligne = supprimé sur un autre appareil, signalé) au lieu
+    // d'un « upsert » qui le ferait réapparaître.
+    if (!prev) ops.push({ kind: 'upsert', table: 'invoices', rows: [invoiceDraftRow(inv, meta)], onConflict: 'id' });
+    else if (!same(prev, inv)) {
+      const { id: _id, structure_id: _s, ...values } = invoiceDraftRow(inv, meta);
+      ops.push({ kind: 'update', table: 'invoices', match: { id: inv.id }, values });
+    }
     if (inv.status === 'issued') {
       ops.push({
         kind: 'rpc',
@@ -469,7 +478,14 @@ export function stateFromRows(r) {
   const payments = {};
   const purchasePayments = {};
   for (const st of [...r.settlements].sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)))) {
-    const p = { amount: Number(st.amount), date: st.pay_date, ref: st.ref, entryId: st.entry_id, lineIndex: st.line_index };
+    const p = {
+      amount: Number(st.amount),
+      date: st.pay_date,
+      ref: st.ref,
+      entryId: st.entry_id,
+      lineIndex: st.line_index,
+      ...(st.vat_date ? { vatDate: st.vat_date } : {}),
+    };
     const target = st.doc_kind === 'invoice' ? payments : purchasePayments;
     (target[st.doc_id] ||= []).push(p);
   }
@@ -484,7 +500,8 @@ export function stateFromRows(r) {
       entries,
       lockedThrough: r.fiscalYear.locked_through,
       lastNumber: r.fiscalYear.last_entry_number,
-      lastLetter: letters.length ? Math.max(...letters.map(letterValue)) : 0,
+      // Code n° n = valeur − 702 (codes à 3 lettres, voir Ledger) ; un ancien code plus court compte pour 0.
+      lastLetter: letters.length ? Math.max(0, ...letters.map((c) => letterValue(c) - 702)) : 0,
       auditLog: [],
       seq: entries.length ? Math.max(...entries.map((e) => e.seq)) : 0,
     },
@@ -575,5 +592,5 @@ export function refusedUpdate(op) {
     divergence: true,
   });
 }
-import { DEFAULT_BANK_ACCOUNT } from './bank.js?v=e7aed24';
-import { parisDateOf } from './dates.js?v=e7aed24';
+import { DEFAULT_BANK_ACCOUNT } from './bank.js?v=436e800';
+import { parisDateOf } from './dates.js?v=436e800';
