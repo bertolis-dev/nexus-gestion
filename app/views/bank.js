@@ -2,20 +2,20 @@
  * Écran « bank ».
  */
 
-import { decodeStatement, importStatement } from '../../core/bank-import.js?v=436e800';
-import { reconciliationStatement } from '../../core/bank.js?v=436e800';
-import { VAT_RATES_BP } from '../../core/invoices.js?v=436e800';
-import { parseEuros } from '../../core/money.js?v=436e800';
-import { CHOOSABLE_EXPENSE_CATEGORIES } from '../../core/pcg.js?v=436e800';
-import { INCOME_CATEGORIES, MAX_BANK_ACCOUNTS, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=436e800';
-import { field, html, opt, raw } from '../html.js?v=436e800';
-import { ICONS } from '../icons.js?v=436e800';
-import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=436e800';
-import { dataVersion, save, toast } from '../store.js?v=436e800';
-import * as cloud from '../cloud.js?v=436e800';
-import { render } from '../render.js?v=436e800';
-import { preparePhoto } from '../ui/photo.js?v=436e800';
-import { badge, icon, term, viewHeader } from '../ui/common.js?v=436e800';
+import { decodeStatement, importStatement } from '../../core/bank-import.js?v=84f0235';
+import { reconciliationStatement } from '../../core/bank.js?v=84f0235';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=84f0235';
+import { parseEuros } from '../../core/money.js?v=84f0235';
+import { CHOOSABLE_EXPENSE_CATEGORIES } from '../../core/pcg.js?v=84f0235';
+import { INCOME_CATEGORIES, MAX_BANK_ACCOUNTS, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=84f0235';
+import { field, html, opt, raw } from '../html.js?v=84f0235';
+import { ICONS } from '../icons.js?v=84f0235';
+import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=84f0235';
+import { dataVersion, save, toast } from '../store.js?v=84f0235';
+import * as cloud from '../cloud.js?v=84f0235';
+import { render } from '../render.js?v=84f0235';
+import { preparePhoto } from '../ui/photo.js?v=84f0235';
+import { badge, icon, term, viewHeader } from '../ui/common.js?v=84f0235';
 
 // ------------------------------------------------------------------ banque (§3.4)
 

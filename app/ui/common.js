@@ -2,9 +2,9 @@
  * Éléments d'interface communs : icônes, logo, badges, titres d'écran, vocabulaire courant.
  */
 
-import { html, raw } from '../html.js?v=436e800';
-import { ICONS } from '../icons.js?v=436e800';
-import { ui } from '../state.js?v=436e800';
+import { html, raw } from '../html.js?v=84f0235';
+import { ICONS } from '../icons.js?v=84f0235';
+import { ui } from '../state.js?v=84f0235';
 
 // ------------------------------------------------------------------ gabarits (échappement par défaut)
 

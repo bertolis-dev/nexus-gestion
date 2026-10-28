@@ -7,7 +7,7 @@
  * scripts/validate-einvoice.mjs ; le navigateur lui passe les copies locales de app/vendor/.
  */
 
-import { issuerName } from './invoices.js?v=436e800';
+import { issuerName } from './invoices.js?v=84f0235';
 
 export const FACTURX_FILE_NAME = 'factur-x.xml';
 const FX_NS = 'urn:factur-x:pdfa:CrossIndustryDocument:invoice:1p0#';
@@ -201,6 +201,8 @@ export async function buildFacturXPdf({ lib, fonts, icc, logo = null, invoice, x
   tableHeader();
   for (const l of invoice.lines || []) {
     const labelLines = wrap(l.label, 9.5, cols.qty - cols.label - 50);
+    // Remise de la ligne : mention obligatoire (C. com. art. L.441-9), sous la désignation.
+    if (l.discountBp) labelLines.push(`Remise ${rate(l.discountBp)}`);
     const h = labelLines.length * 12 + 8;
     ensure(h);
     labelLines.forEach((t, i) => text(t, cols.label, y - i * 12, { size: 9.5 }));

@@ -2,15 +2,15 @@
  * Écran « invoice-form ».
  */
 
-import { VAT_RATES_BP, computeTotals, defaultDueDate, isVatExempt } from '../../core/invoices.js?v=436e800';
-import { parseEuros } from '../../core/money.js?v=436e800';
-import { field, html, opt, raw } from '../html.js?v=436e800';
-import { ICONS } from '../icons.js?v=436e800';
-import { issueLink } from '../render.js?v=436e800';
-import { eur, pct, today, ui, ws } from '../state.js?v=436e800';
-import { save } from '../store.js?v=436e800';
-import { viewHeader } from '../ui/common.js?v=436e800';
-import { NEW_DOC_ROUTES } from './sales.js?v=436e800';
+import { VAT_RATES_BP, computeTotals, defaultDueDate, isVatExempt } from '../../core/invoices.js?v=84f0235';
+import { parseEuros } from '../../core/money.js?v=84f0235';
+import { field, html, opt, raw } from '../html.js?v=84f0235';
+import { ICONS } from '../icons.js?v=84f0235';
+import { issueLink } from '../render.js?v=84f0235';
+import { eur, pct, today, ui, ws } from '../state.js?v=84f0235';
+import { save } from '../store.js?v=84f0235';
+import { viewHeader } from '../ui/common.js?v=84f0235';
+import { NEW_DOC_ROUTES } from './sales.js?v=84f0235';
 
 export function emptyLine() {
   return {
@@ -31,7 +31,7 @@ export function startDraft(arg) {
       // Un prix invalide (brouillon d'une version précédente) est repris à 0, à corriger.
       lines: inv.lines.map((l) => {
         const unitPrice = Number.isSafeInteger(l.unitPrice) ? l.unitPrice : 0;
-        return { ...l, unitPrice, priceText: (unitPrice / 100).toFixed(2).replace('.', ',') };
+        return { ...l, unitPrice, priceText: (unitPrice / 100).toFixed(2).replace('.', ','), discountText: discountText(l.discountBp) };
       }),
       clientId: ws.clients.find((c) => c.code === inv.client.code)?.id || '',
       savedId: inv.id,
@@ -81,6 +81,17 @@ export function readPrice(text) {
   }
 }
 
+/** Remise saisie en % (« 10 », « 12,5 ») → points de base ; '' = pas de remise ; null = illisible. */
+export function readDiscount(text) {
+  const t = String(text ?? '')
+    .replace('%', '')
+    .trim();
+  if (!t) return 0;
+  const n = Number(t.replace(',', '.'));
+  return Number.isFinite(n) && n >= 0 && n <= 100 ? Math.round(n * 100) : null;
+}
+const discountText = (bp) => (bp ? String(bp / 100).replace('.', ',') : '');
+
 export function draftInvoiceData() {
   const d = ui.draft;
   const deposits = draftAvailableDeposits().filter((x) => d.depositIds.includes(x.id));
@@ -89,7 +100,7 @@ export function draftInvoiceData() {
     client: draftClient(),
     issueDate: d.issueDate,
     dueDate: d.dueDate,
-    lines: d.lines.map(({ priceText, ...l }) => l),
+    lines: d.lines.map(({ priceText, discountText: _d, ...l }) => l),
     deposits,
     ...(d.creditOf ? { creditOf: d.creditOf } : {}),
     ...(d.quoteRef ? { quoteRef: d.quoteRef } : {}),
@@ -220,6 +231,7 @@ export function viewInvoiceForm(arg) {
                 <th style="width:38%">Désignation</th>
                 <th>Qté</th>
                 <th>Prix unitaire HT</th>
+                <th>Remise</th>
                 ${franchise ? '' : html`<th>TVA</th>`}
                 <th>Nature</th>
                 <th></th>
@@ -257,6 +269,16 @@ export function viewInvoiceForm(arg) {
                         inputmode="decimal"
                         value="${l.priceText}"
                         placeholder="0,00"
+                      />
+                    </td>
+                    <td style="width:90px" data-label="Remise (%)">
+                      <input
+                        class="input"
+                        name="lines.${i}.discountText"
+                        aria-label="Remise en %, ligne ${i + 1}"
+                        inputmode="decimal"
+                        value="${l.discountText ?? ''}"
+                        placeholder="0 %"
                       />
                     </td>
                     ${
@@ -336,6 +358,14 @@ export function persistDraft() {
     if (price === null) unreadable.push({ message: `Ligne ${i + 1} : prix illisible « ${l.priceText} » (exemple : 1 234,56).`, field: `lines.${i}.unitPrice` });
     l.unitPrice = price ?? 0;
     l.qty = Number(String(l.qty).replace(',', '.')) || 0;
+    const discount = readDiscount(l.discountText);
+    if (discount === null)
+      unreadable.push({
+        message: `Ligne ${i + 1} : remise illisible « ${l.discountText} » (entre 0 et 100 %, exemple : 10).`,
+        field: `lines.${i}.discountText`,
+      });
+    if (discount) l.discountBp = discount;
+    else delete l.discountBp;
   });
   // Rien n'est enregistré tant qu'un prix est illisible : la facture garderait un montant faux.
   if (unreadable.length) {

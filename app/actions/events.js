@@ -2,29 +2,29 @@
  * Événements du document : saisie, changement, clavier, formulaires, clics, navigation.
  */
 
-import { isValidSiren } from '../../core/invoices.js?v=436e800';
-import { parseEuros } from '../../core/money.js?v=436e800';
-import { knownVatOnDebits } from '../../core/purchases.js?v=436e800';
-import { usualVatRate } from '../../core/pcg.js?v=436e800';
-import { findCatalogItem } from '../../core/catalog.js?v=436e800';
-import * as cloud from '../cloud.js?v=436e800';
-import { html, raw } from '../html.js?v=436e800';
-import { ICONS } from '../icons.js?v=436e800';
-import { $, render, searchResults } from '../render.js?v=436e800';
-import { closeLightbox, featureSlug } from '../site/landing.js?v=436e800';
-import { cloudState, ui, ws } from '../state.js?v=436e800';
-import { save, savePrefs, toast } from '../store.js?v=436e800';
-import { afterSignIn } from '../sync-ui.js?v=436e800';
-import { attachTxReceipt, currentBankAccount, importBankFile } from '../views/bank.js?v=436e800';
-import { attachReceipt } from '../views/expenses.js?v=436e800';
-import { readNexusRhFile } from '../views/nexusrh-import.js?v=436e800';
-import { readPrice, totalsBlock } from '../views/invoice-form.js?v=436e800';
-import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=436e800';
-import { runAction } from './index.js?v=436e800';
-import { readReceivedInvoices } from '../received-invoices.js?v=436e800';
-import { catalogSubmit } from './settings.js?v=436e800';
-import { clientSubmit, readClientsFile } from './clients.js?v=436e800';
-import { filterClients } from '../views/clients.js?v=436e800';
+import { isValidSiren } from '../../core/invoices.js?v=84f0235';
+import { parseEuros } from '../../core/money.js?v=84f0235';
+import { knownVatOnDebits } from '../../core/purchases.js?v=84f0235';
+import { usualVatRate } from '../../core/pcg.js?v=84f0235';
+import { findCatalogItem } from '../../core/catalog.js?v=84f0235';
+import * as cloud from '../cloud.js?v=84f0235';
+import { html, raw } from '../html.js?v=84f0235';
+import { ICONS } from '../icons.js?v=84f0235';
+import { $, render, searchResults } from '../render.js?v=84f0235';
+import { closeLightbox, featureSlug } from '../site/landing.js?v=84f0235';
+import { cloudState, ui, ws } from '../state.js?v=84f0235';
+import { save, savePrefs, toast } from '../store.js?v=84f0235';
+import { afterSignIn } from '../sync-ui.js?v=84f0235';
+import { attachTxReceipt, currentBankAccount, importBankFile } from '../views/bank.js?v=84f0235';
+import { attachReceipt } from '../views/expenses.js?v=84f0235';
+import { readNexusRhFile } from '../views/nexusrh-import.js?v=84f0235';
+import { readDiscount, readPrice, totalsBlock } from '../views/invoice-form.js?v=84f0235';
+import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=84f0235';
+import { runAction } from './index.js?v=84f0235';
+import { readReceivedInvoices } from '../received-invoices.js?v=84f0235';
+import { catalogSubmit } from './settings.js?v=84f0235';
+import { clientSubmit, readClientsFile } from './clients.js?v=84f0235';
+import { filterClients } from '../views/clients.js?v=84f0235';
 
 // ------------------------------------------------------------------ évènements
 
@@ -107,6 +107,14 @@ document.addEventListener('input', (e) => {
       const line = ui.draft.lines[lab[1]];
       const untouched = !line.unitPrice || (line.catalogPrice !== undefined && line.unitPrice === line.catalogPrice);
       if (e.inputType === 'insertReplacementText' || !e.inputType || untouched) fillFromCatalog(form, Number(lab[1]), el.value);
+    }
+    const disc = /^lines\.(\d+)\.discountText$/.exec(el.name);
+    if (disc) {
+      // Remise illisible (ou hors 0-100 %) : champ signalé, la ligne compte sans remise dans le total affiché.
+      const bp = readDiscount(el.value);
+      ui.draft.lines[disc[1]].discountBp = bp || undefined;
+      if (bp === null) el.setAttribute('aria-invalid', 'true');
+      else el.removeAttribute('aria-invalid');
     }
     if (/^lines\.\d+\.qty$/.test(el.name)) ui.draft.lines[el.name.split('.')[1]].qty = Number(el.value.replace(',', '.')) || 0;
     $('totals').innerHTML = totalsBlock().s;
