@@ -7,7 +7,7 @@
 const MOTS_VIDES = new Set(
   (
     'le la les l un une des du de d et ou a au aux en dans sur pour par avec sans je tu il elle on nous vous ils mon ma mes ton ta tes son sa ses ' +
-    'leur leurs ce cet cette ces que qui quoi comment est sont suis etre ai as avons ont peut peux peuvent puis faire fait c n s qu y ne pas se si ca cela mais donc car ni quel quelle quels quelles'
+    'leur leurs ce cet cette ces que qui quoi comment est sont suis etre ai as avons ont peut peux peuvent puis faire fais fait c n s qu y ne pas se si ca cela mais donc car ni quel quelle quels quelles'
   ).split(' '),
 );
 
@@ -26,7 +26,7 @@ export function normaliser(texte) {
 /** Racine grossière d'un mot : « factures », « facture » et « facturer » se rejoignent. */
 export function racine(mot) {
   let r = mot;
-  if (r.length > 3 && /[sx]$/.test(r)) r = r.slice(0, -1);
+  if (r.length > 4 && /[sx]$/.test(r)) r = r.slice(0, -1); // « mois », « pays » restent entiers
   if (r.length >= 6 && /(er|ir|ez)$/.test(r)) r = r.slice(0, -2);
   else if (r.length >= 5 && /e$/.test(r)) r = r.slice(0, -1);
   return r;
@@ -50,7 +50,7 @@ const SYNONYMES = (() => {
     justificatif: ['photo', 'ticket', 'piece'],
     photo: ['justificatif'],
     ticket: ['justificatif'],
-    releve: ['banque', 'import'],
+    releve: ['banque'],
     banque: ['releve', 'rapproch'],
     rapprocher: ['associer', 'banque'],
     paiement: ['reglement', 'encaiss'],

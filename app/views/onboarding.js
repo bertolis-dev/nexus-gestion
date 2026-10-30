@@ -2,21 +2,21 @@
  * Écran « onboarding ».
  */
 
-import { firstFiscalYear } from '../../core/dates.js?v=c2b4932';
-import { openingBalanceFromFec, parseFec } from '../../core/fecimport.js?v=c2b4932';
-import { isValidSiren } from '../../core/invoices.js?v=c2b4932';
-import { ACTIVITY_TYPES, CIPAV_PROFESSIONS } from '../../core/micro.js?v=c2b4932';
-import { buildChart } from '../../core/pcg.js?v=c2b4932';
-import { Workspace } from '../../core/workspace.js?v=c2b4932';
-import * as cloud from '../cloud.js?v=c2b4932';
-import { lookupSiren } from '../company-lookup.js?v=c2b4932';
-import { companyFromOnboarding } from '../../core/company.js?v=c2b4932';
-import { choiceGroup, field, html, opt, raw } from '../html.js?v=c2b4932';
-import { render } from '../render.js?v=c2b4932';
-import { cloudState, eur, newId, setWs, ui, ws } from '../state.js?v=c2b4932';
-import { save, toast } from '../store.js?v=c2b4932';
-import { onSyncResult, onSyncStatus } from '../sync-ui.js?v=c2b4932';
-import { badge, brand } from '../ui/common.js?v=c2b4932';
+import { firstFiscalYear } from '../../core/dates.js?v=d77c78d';
+import { openingBalanceFromFec, parseFec } from '../../core/fecimport.js?v=d77c78d';
+import { isValidSiren } from '../../core/invoices.js?v=d77c78d';
+import { ACTIVITY_TYPES, CIPAV_PROFESSIONS } from '../../core/micro.js?v=d77c78d';
+import { buildChart } from '../../core/pcg.js?v=d77c78d';
+import { Workspace } from '../../core/workspace.js?v=d77c78d';
+import * as cloud from '../cloud.js?v=d77c78d';
+import { lookupSiren } from '../company-lookup.js?v=d77c78d';
+import { companyFromOnboarding } from '../../core/company.js?v=d77c78d';
+import { choiceGroup, field, html, opt, raw } from '../html.js?v=d77c78d';
+import { render } from '../render.js?v=d77c78d';
+import { cloudState, eur, newId, setWs, ui, ws } from '../state.js?v=d77c78d';
+import { save, toast } from '../store.js?v=d77c78d';
+import { onSyncResult, onSyncStatus } from '../sync-ui.js?v=d77c78d';
+import { badge, brand } from '../ui/common.js?v=d77c78d';
 
 // ------------------------------------------------------------------ assistant d'installation (§3.1)
 

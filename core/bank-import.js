@@ -13,8 +13,8 @@
  * compte|date|montant|libellé|rang pour le CSV), et un ré-import ne crée aucun doublon.
  */
 
-import { parisDateOf } from './dates.js?v=c2b4932';
-import { parseEuros } from './money.js?v=c2b4932';
+import { parisDateOf } from './dates.js?v=d77c78d';
+import { parseEuros } from './money.js?v=d77c78d';
 
 // ------------------------------------------------------------------ outils
 
@@ -388,6 +388,8 @@ export function parseOfx(text, { accountId = 'default' } = {}) {
 
 // ------------------------------------------------------------------ CAMT.053 (ISO 20022)
 
+// Caractère codé en chiffres (&#233; ou &#xE9;) ; hors Unicode : remplacé par « ? ».
+const codePoint = (n) => (n > 0 && n <= 0x10ffff ? String.fromCodePoint(n) : '?');
 const xmlDecode = (s) =>
   s
     .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
@@ -395,6 +397,8 @@ const xmlDecode = (s) =>
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&apos;/g, "'")
+    .replace(/&#x([0-9a-f]{1,6});/gi, (_, h) => codePoint(parseInt(h, 16)))
+    .replace(/&#([0-9]{1,7});/g, (_, d) => codePoint(Number(d)))
     .replace(/&amp;/g, '&');
 
 /** Contenu des éléments `name` (nom local, préfixe d'espace de noms ignoré), dans l'ordre. */

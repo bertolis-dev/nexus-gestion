@@ -4,14 +4,14 @@
  * depuis le menu du compte, ou par le bouton « ? » à la page de l'écran affiché.
  */
 
-import { extrait, rechercher, surligner } from '../../core/guide-search.js?v=c2b4932';
-import { guideSections } from '../guide/sections.js?v=c2b4932';
-import { html, raw } from '../html.js?v=c2b4932';
-import { ICONS } from '../icons.js?v=c2b4932';
-import { isMicro, navItems, route } from '../render.js?v=c2b4932';
-import { ws } from '../state.js?v=c2b4932';
-import { icon } from '../ui/common.js?v=c2b4932';
-import { startTour } from '../ui/tour.js?v=c2b4932';
+import { extrait, rechercher, surligner } from '../../core/guide-search.js?v=d77c78d';
+import { guideSections } from '../guide/sections.js?v=d77c78d';
+import { html, raw } from '../html.js?v=d77c78d';
+import { ICONS } from '../icons.js?v=d77c78d';
+import { isMicro, navItems, route } from '../render.js?v=d77c78d';
+import { ws } from '../state.js?v=d77c78d';
+import { icon } from '../ui/common.js?v=d77c78d';
+import { garderFocus, startTour } from '../ui/tour.js?v=d77c78d';
 
 const SUGGESTIONS = ['Créer une facture', 'Remise', 'Relancer un client', 'Importer un relevé', 'Photo du ticket', 'Déclarer la TVA', 'Clôture', 'Nexus RH'];
 
@@ -187,7 +187,8 @@ export function openGuide(sectionId) {
       const cible = zone.querySelector(`details[data-guide-entry="${CSS.escape(entreeId)}"]`);
       if (cible) {
         cible.open = true;
-        zone.scrollTop = Math.max(0, cible.getBoundingClientRect().top - zone.getBoundingClientRect().top + zone.scrollTop - 8);
+        // Sur téléphone, c'est le corps de la fenêtre qui défile, pas la zone de contenu.
+        cible.scrollIntoView({ block: 'start' });
         cible.classList.add('guide-entry-flash');
         setTimeout(() => cible.classList.remove('guide-entry-flash'), 1800);
       }
@@ -206,9 +207,11 @@ export function openGuide(sectionId) {
     root.onclick = null; // #modal-root sert aussi à l'agrandissement des captures du site
     root.onkeydown = null;
     document.removeEventListener('keydown', surTouche, true);
-    opener?.focus?.();
+    // Ouvert depuis le menu du compte (refermé entre-temps) : retour sur le bouton du compte.
+    (opener?.isConnected ? opener : document.getElementById('btn-user-menu'))?.focus?.();
   };
   const surTouche = (e) => {
+    if (e.key === 'Tab' && !document.getElementById('guide-lightbox')) garderFocus(e, root.querySelector('.guide-modal'));
     if (e.key === 'Escape' && !document.getElementById('guide-lightbox')) {
       e.preventDefault();
       e.stopPropagation();

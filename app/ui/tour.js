@@ -4,7 +4,7 @@
  * Lancée seule à la première ouverture d'un compte sur cet appareil, relancée depuis le guide.
  */
 
-import { html } from '../html.js?v=c2b4932';
+import { html } from '../html.js?v=d77c78d';
 
 const VUE_PREFIX = 'nexus_gestion_visite_vue_';
 
@@ -80,6 +80,26 @@ const cibleDe = (etape) => {
 
 let visite = null;
 
+/** Garde Tab / Maj+Tab dans `conteneur` (fenêtre modale : la page derrière n'est pas atteignable). */
+export function garderFocus(e, conteneur) {
+  if (e.key !== 'Tab' || !conteneur) return;
+  const elems = [...conteneur.querySelectorAll('button, [href], input, select, textarea, summary, [tabindex]:not([tabindex="-1"])')].filter(
+    (el) => !el.disabled && el.getClientRects().length,
+  );
+  if (!elems.length) return;
+  const [premier, dernier] = [elems[0], elems.at(-1)];
+  if (!conteneur.contains(document.activeElement)) {
+    e.preventDefault();
+    premier.focus();
+  } else if (e.shiftKey && document.activeElement === premier) {
+    e.preventDefault();
+    dernier.focus();
+  } else if (!e.shiftKey && document.activeElement === dernier) {
+    e.preventDefault();
+    premier.focus();
+  }
+}
+
 /** Place la carte à côté de l'élément visé, sans jamais sortir de l'écran. */
 function placer(carte, rect, placement) {
   const vw = window.innerWidth;
@@ -102,7 +122,7 @@ function placer(carte, rect, placement) {
   carte.style.left = `${Math.min(Math.max(left, 12), vw - largeur - 12)}px`;
 }
 
-function afficher() {
+function afficher(focus = true) {
   const { etapes, index, root } = visite;
   const etape = etapes[index];
   const carte = root.querySelector('.tour-card');
@@ -135,7 +155,7 @@ function afficher() {
     carte.style.top = '';
     carte.style.left = '';
   }
-  carte.querySelector('[data-tour="next"]').focus();
+  if (focus) carte.querySelector('[data-tour="next"]').focus();
 }
 
 function aller(delta) {
@@ -150,6 +170,7 @@ export function finirVisite() {
   if (!visite) return;
   document.removeEventListener('keydown', visite.surTouche, true);
   window.removeEventListener('resize', visite.surTaille);
+  window.removeEventListener('scroll', visite.surTaille, true);
   visite.root.remove();
   try {
     localStorage.setItem(VUE_PREFIX + visite.cle, '1');
@@ -189,10 +210,16 @@ export function startTour({ force = false, cle = 'demo' } = {}) {
         e.preventDefault();
         e.stopPropagation();
         finirVisite();
+      } else if (e.key === 'Tab') garderFocus(e, root.querySelector('.tour-card'));
+      else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        // Pas de raccourci vers la page sous le voile pendant la visite.
+        e.preventDefault();
+        e.stopPropagation();
       } else if (e.key === 'ArrowRight') aller(1);
       else if (e.key === 'ArrowLeft') aller(-1);
     },
-    surTaille: () => afficher(),
+    // Redessine le halo sur l'élément visé (taille de fenêtre, page qui défile) sans reprendre le focus.
+    surTaille: () => afficher(false),
   };
   root.addEventListener('click', (e) => {
     const action = e.target.closest('[data-tour]')?.dataset.tour;
@@ -202,6 +229,7 @@ export function startTour({ force = false, cle = 'demo' } = {}) {
   });
   document.addEventListener('keydown', visite.surTouche, true);
   window.addEventListener('resize', visite.surTaille);
+  window.addEventListener('scroll', visite.surTaille, true);
   afficher();
   return true;
 }

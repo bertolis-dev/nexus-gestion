@@ -3,7 +3,7 @@
  * étape 1. L'interprétation du résultat (forme juridique, nom) est dans core/company.js.
  */
 
-import { companyFromSearch } from '../core/company.js?v=c2b4932';
+import { companyFromSearch } from '../core/company.js?v=d77c78d';
 
 /** Fiche brute de l'annuaire pour ce SIREN (premier résultat), ou null. */
 export async function searchCompany(siren) {

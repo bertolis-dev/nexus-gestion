@@ -2,25 +2,25 @@
  * Rendu général : choix de l’écran, cadre de l’application, recherche globale, repères d’accessibilité.
  */
 
-import { html, raw } from './html.js?v=c2b4932';
-import { ICONS } from './icons.js?v=c2b4932';
-import { featureBySlug, featureSlug, features, loadFeatures, viewFeature, viewLanding } from './site/landing.js?v=c2b4932';
-import { cloudState, eur, frDate, ui, ws } from './state.js?v=c2b4932';
-import { getTheme } from './store.js?v=c2b4932';
-import { syncStatusHtml } from './sync-ui.js?v=c2b4932';
-import { LOGO, badge, brand } from './ui/common.js?v=c2b4932';
-import { viewAuth, viewMfa, viewStructurePicker } from './views/auth.js?v=c2b4932';
-import { viewBank } from './views/bank.js?v=c2b4932';
-import { viewClosing } from './views/closing.js?v=c2b4932';
-import { viewCompta } from './views/compta.js?v=c2b4932';
-import { viewExpenses } from './views/expenses.js?v=c2b4932';
-import { viewHome } from './views/home.js?v=c2b4932';
-import { viewUrssaf } from './views/micro.js?v=c2b4932';
-import { viewOnboarding } from './views/onboarding.js?v=c2b4932';
-import { runRecurring, viewSales } from './views/sales.js?v=c2b4932';
-import { viewSettings } from './views/settings.js?v=c2b4932';
-import { viewClients } from './views/clients.js?v=c2b4932';
-import { viewVat } from './views/vat.js?v=c2b4932';
+import { html, raw } from './html.js?v=d77c78d';
+import { ICONS } from './icons.js?v=d77c78d';
+import { featureBySlug, featureSlug, features, loadFeatures, viewFeature, viewLanding } from './site/landing.js?v=d77c78d';
+import { cloudState, eur, frDate, ui, ws } from './state.js?v=d77c78d';
+import { getTheme } from './store.js?v=d77c78d';
+import { syncStatusHtml } from './sync-ui.js?v=d77c78d';
+import { LOGO, badge, brand } from './ui/common.js?v=d77c78d';
+import { viewAuth, viewMfa, viewStructurePicker } from './views/auth.js?v=d77c78d';
+import { viewBank } from './views/bank.js?v=d77c78d';
+import { viewClosing } from './views/closing.js?v=d77c78d';
+import { viewCompta } from './views/compta.js?v=d77c78d';
+import { viewExpenses } from './views/expenses.js?v=d77c78d';
+import { viewHome } from './views/home.js?v=d77c78d';
+import { viewUrssaf } from './views/micro.js?v=d77c78d';
+import { viewOnboarding } from './views/onboarding.js?v=d77c78d';
+import { runRecurring, viewSales } from './views/sales.js?v=d77c78d';
+import { viewSettings } from './views/settings.js?v=d77c78d';
+import { viewClients } from './views/clients.js?v=d77c78d';
+import { viewVat } from './views/vat.js?v=d77c78d';
 
 // ------------------------------------------------------------------ rendu général
 
@@ -234,7 +234,7 @@ export function issueTarget(fieldName, d) {
   if (fieldName === 'issueDate' || fieldName === 'dueDate') return `[name="${fieldName}"]`;
   if (fieldName === 'lines') return '[name="lines.0.label"]';
   // Champs d'une ligne : le prix se saisit dans « priceText ».
-  const line = /^lines\.(\d+)\.(label|qty|unitPrice|vatRateBp)$/.exec(fieldName);
+  const line = /^lines\.(\d+)\.(label|qty|unitPrice|vatRateBp|discountText)$/.exec(fieldName);
   if (line) return `[name="lines.${line[1]}.${line[2] === 'unitPrice' ? 'priceText' : line[2]}"]`;
   return null;
 }

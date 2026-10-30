@@ -12,9 +12,9 @@
  * le validateur de la PA retenue.
  */
 
-import { tradeZone } from './countries.js?v=c2b4932';
-import { lineHt, issuerName } from './invoices.js?v=c2b4932';
-import { sum, vatFromHt } from './money.js?v=c2b4932';
+import { tradeZone } from './countries.js?v=d77c78d';
+import { lineHt, issuerName } from './invoices.js?v=d77c78d';
+import { sum, vatFromHt } from './money.js?v=d77c78d';
 
 const NS = {
   rsm: 'urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100',
@@ -143,7 +143,7 @@ export function buildCii(inv) {
       <ram:SpecifiedLineTradeDelivery><ram:BilledQuantity unitCode="C62">${quantity(l.qty)}</ram:BilledQuantity></ram:SpecifiedLineTradeDelivery>
       <ram:SpecifiedLineTradeSettlement>
         <ram:ApplicableTradeTax><ram:TypeCode>VAT</ram:TypeCode><ram:CategoryCode>${categoryFor(cat, lineRate)}</ram:CategoryCode>${cat.code === 'O' ? '' : `<ram:RateApplicablePercent>${rate(lineRate)}</ram:RateApplicablePercent>`}</ram:ApplicableTradeTax>
-        ${l.discountBp ? `<ram:SpecifiedTradeAllowanceCharge><ram:ChargeIndicator><udt:Indicator>false</udt:Indicator></ram:ChargeIndicator><ram:ActualAmount>${amount(Math.round(Number(l.qty) * l.unitPrice) - net)}</ram:ActualAmount><ram:Reason>Remise</ram:Reason></ram:SpecifiedTradeAllowanceCharge>` : ''}
+        ${l.discountBp ? `<ram:SpecifiedTradeAllowanceCharge><ram:ChargeIndicator><udt:Indicator>false</udt:Indicator></ram:ChargeIndicator><ram:ActualAmount>${amount(lineHt({ ...l, discountBp: 0 }) - net)}</ram:ActualAmount><ram:Reason>Remise</ram:Reason></ram:SpecifiedTradeAllowanceCharge>` : ''}
         <ram:SpecifiedTradeSettlementLineMonetarySummation><ram:LineTotalAmount>${amount(net)}</ram:LineTotalAmount></ram:SpecifiedTradeSettlementLineMonetarySummation>
       </ram:SpecifiedLineTradeSettlement>
     </ram:IncludedSupplyChainTradeLineItem>`;

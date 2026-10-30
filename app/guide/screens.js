@@ -214,7 +214,7 @@ export const ECRANS = {
     intro:
       capture('micro', 'Écran URSSAF et seuils : déclarations de l’année, montant à mettre de côté et livre des recettes') +
       p(
-        'Pour chaque période, Nexus calcule le chiffre d’affaires <strong>encaissé</strong> à déclarer. Le bouton <strong>Déclarer</strong> copie le montant et ouvre votre espace URSSAF ; vous reportez ensuite les cotisations calculées par l’URSSAF.',
+        'Pour chaque période, Nexus calcule le chiffre d’affaires <strong>encaissé</strong> à déclarer. Le bouton <strong>Déclarer</strong> ouvre un pas-à-pas : <strong>Copier le montant</strong>, <strong>Ouvrir mon espace URSSAF</strong> pour y déclarer, puis <strong>Enregistrer la déclaration</strong> avec les cotisations calculées par l’URSSAF.',
       ) +
       p(
         'L’encadré <strong>À mettre de côté</strong> estime ce qu’il faut prévoir pour les cotisations. Plus bas, le suivi du seuil de franchise de TVA et le livre des recettes (exportable).',

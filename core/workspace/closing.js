@@ -3,7 +3,7 @@
  * Méthodes installées sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { sum } from '../money.js?v=c2b4932';
+import { sum } from '../money.js?v=d77c78d';
 import {
   allocationEntry,
   balanceSheet,
@@ -16,9 +16,9 @@ import {
   inventoryEntry,
   nextYearOpening,
   resultEntry,
-} from '../closing.js?v=c2b4932';
-import { nextFiscalYear } from '../dates.js?v=c2b4932';
-import { Workspace } from '../workspace.js?v=c2b4932';
+} from '../closing.js?v=d77c78d';
+import { nextFiscalYear } from '../dates.js?v=d77c78d';
+import { Workspace } from '../workspace.js?v=d77c78d';
 
 export const closingMethods = {
   addInventory(item) {
@@ -108,6 +108,9 @@ export const closingMethods = {
     next.archives = [...(this.archives || []), { fiscalYear: structuredClone(fy), ledger: structuredClone(this.ledger.toJSON()) }];
     if (opening.lines.length) next.ledger.addDraft(opening);
     for (const r of reversals) next.ledger.addDraft(r);
+    // Encaissement rapproché après la dernière déclaration de l'exercice : sa TVA devient exigible le
+    // premier jour du nouvel exercice (la 445800 est reprise dans les à-nouveaux).
+    for (const i of next.book.invoices) if (i.status === 'issued' && i.type !== 'credit' && i.type !== 'quote') next._syncReceiptVat(i, nextStart);
     return next;
   },
 };

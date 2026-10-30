@@ -4,8 +4,8 @@
  * Méthode installée sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { divRound, sum } from '../money.js?v=c2b4932';
-import { purchaseEntry } from '../purchases.js?v=c2b4932';
+import { divRound, sum } from '../money.js?v=d77c78d';
+import { purchaseEntry } from '../purchases.js?v=d77c78d';
 
 const dayBefore = (iso) => new Date(Date.parse(`${iso}T00:00:00Z`) - 86400000).toISOString().slice(0, 10);
 const dayAfter = (iso) => new Date(Date.parse(`${iso}T00:00:00Z`) + 86400000).toISOString().slice(0, 10);
@@ -46,7 +46,8 @@ export const paymentVatMethods = {
           .map((l) => l.debit - l.credit),
       );
     for (const d of dates) {
-      const when = d < firstOpen ? firstOpen : d;
+      // Exercice entièrement déclaré : passée au dernier jour, la 445660 restante est reprise et déduite l'an suivant.
+      const when = [d < firstOpen ? firstOpen : d, fy.end].sort()[0];
       const delta = target(d) - base - bookedUpTo(when);
       if (!delta) continue;
       const amount = Math.abs(delta);

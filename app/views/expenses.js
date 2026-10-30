@@ -2,19 +2,19 @@
  * Écran « expenses ».
  */
 
-import { VAT_RATES_BP } from '../../core/invoices.js?v=c2b4932';
-import { LIFECYCLE, nextStatuses } from '../../core/lifecycle.js?v=c2b4932';
-import { CHOOSABLE_EXPENSE_CATEGORIES, EXPENSE_CATEGORIES } from '../../core/pcg.js?v=c2b4932';
-import * as cloud from '../cloud.js?v=c2b4932';
-import { field, html, opt, raw } from '../html.js?v=c2b4932';
-import { ICONS } from '../icons.js?v=c2b4932';
-import { render } from '../render.js?v=c2b4932';
-import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=c2b4932';
-import { toast } from '../store.js?v=c2b4932';
-import { badge, icon, term, viewHeader } from '../ui/common.js?v=c2b4932';
-import { preparePhoto } from '../ui/photo.js?v=c2b4932';
-import { nexusRhButton, nexusRhPanel } from './nexusrh-import.js?v=c2b4932';
-import { viewAssets } from './assets.js?v=c2b4932';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=d77c78d';
+import { LIFECYCLE, nextStatuses } from '../../core/lifecycle.js?v=d77c78d';
+import { CHOOSABLE_EXPENSE_CATEGORIES, EXPENSE_CATEGORIES } from '../../core/pcg.js?v=d77c78d';
+import * as cloud from '../cloud.js?v=d77c78d';
+import { field, html, opt, raw } from '../html.js?v=d77c78d';
+import { ICONS } from '../icons.js?v=d77c78d';
+import { render } from '../render.js?v=d77c78d';
+import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=d77c78d';
+import { toast } from '../store.js?v=d77c78d';
+import { badge, icon, term, viewHeader } from '../ui/common.js?v=d77c78d';
+import { preparePhoto } from '../ui/photo.js?v=d77c78d';
+import { nexusRhButton, nexusRhPanel } from './nexusrh-import.js?v=d77c78d';
+import { viewAssets } from './assets.js?v=d77c78d';
 
 // ------------------------------------------------------------------ dépenses (§3.3)
 

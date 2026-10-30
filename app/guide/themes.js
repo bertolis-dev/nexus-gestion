@@ -4,7 +4,7 @@
  * (« micro » ou « societe ») et `avance` au mode avancé.
  */
 
-import { capture, etapes, p } from './screens.js?v=c2b4932';
+import { capture, etapes, p } from './screens.js?v=d77c78d';
 
 export const THEMES = [
   {
@@ -232,7 +232,7 @@ export const THEMES = [
         vue: 'cloture',
         mots: 'cloture fin exercice bilan check list',
         r: p(
-          'Ouvrez <strong>Préparer ma clôture</strong> et suivez la check-list point par point : chaque point non fait ouvre l’écran qui permet de le régler (transactions à justifier, TVA à valider, créances anciennes…).',
+          'Ouvrez <strong>Préparer ma clôture</strong> (<strong>Clôture</strong> en mode avancé) et suivez la check-list point par point : chaque point non fait ouvre l’écran qui permet de le régler (transactions à justifier, TVA à valider, créances anciennes…).',
         ),
       },
       {

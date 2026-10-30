@@ -4,18 +4,18 @@
  * Sans DOM ni stockage : l'interface (app/) le sérialise, les tests l'utilisent tel quel.
  */
 
-import { buildChart, categoryById } from './pcg.js?v=c2b4932';
-import { Ledger } from './ledger.js?v=c2b4932';
-import { InvoiceBook, clientAux } from './invoices.js?v=c2b4932';
-import { purchaseEntry, findDuplicates, knownVatOnDebits, ttcLine } from './purchases.js?v=c2b4932';
-import { mergeTransactions, suggestMatches, settlementEntry, directEntry, DEFAULT_BANK_ACCOUNT } from './bank.js?v=c2b4932';
+import { buildChart, categoryById } from './pcg.js?v=d77c78d';
+import { Ledger } from './ledger.js?v=d77c78d';
+import { InvoiceBook, clientAux } from './invoices.js?v=d77c78d';
+import { purchaseEntry, findDuplicates, knownVatOnDebits, ttcLine } from './purchases.js?v=d77c78d';
+import { mergeTransactions, suggestMatches, settlementEntry, directEntry, DEFAULT_BANK_ACCOUNT } from './bank.js?v=d77c78d';
 export { DEFAULT_BANK_ACCOUNT };
-import { creditsOf, originalOf, groupBalance } from './receipts.js?v=c2b4932';
-import { divRound, splitTtc, sum } from './money.js?v=c2b4932';
-import { openingEntry } from './fecimport.js?v=c2b4932';
-import { creditTargetsAsset } from './assets.js?v=c2b4932';
-import { LIFECYCLE, currentStatus } from './lifecycle.js?v=c2b4932';
-import { SCHEMA_VERSION, migrateState } from './schema.js?v=c2b4932';
+import { creditsOf, originalOf, groupBalance } from './receipts.js?v=d77c78d';
+import { divRound, splitTtc, sum } from './money.js?v=d77c78d';
+import { openingEntry } from './fecimport.js?v=d77c78d';
+import { creditTargetsAsset } from './assets.js?v=d77c78d';
+import { LIFECYCLE, currentStatus } from './lifecycle.js?v=d77c78d';
+import { SCHEMA_VERSION, migrateState } from './schema.js?v=d77c78d';
 
 /** Entrées d'argent sans facture de vente, proposées en langage courant. */
 export const INCOME_CATEGORIES = [
@@ -61,17 +61,17 @@ export function combineEstimates(list) {
 
 export const MAX_BANK_ACCOUNTS = 10;
 
-import { recurringMethods } from './workspace/recurring.js?v=c2b4932';
-import { vatMethods } from './workspace/vat.js?v=c2b4932';
-import { receiptVatMethods } from './workspace/receipt-vat.js?v=c2b4932';
-import { paymentVatMethods } from './workspace/payment-vat.js?v=c2b4932';
-import { nexusRhMethods } from './workspace/nexusrh.js?v=c2b4932';
-import { letteringMethods } from './workspace/lettering.js?v=c2b4932';
-import { closingMethods } from './workspace/closing.js?v=c2b4932';
-import { microMethods } from './workspace/micro.js?v=c2b4932';
-import { depositMethods } from './deposit.js?v=c2b4932';
-import { categorizationMethods, learnRule } from './categorization.js?v=c2b4932';
-import { reminderMethods } from './reminders.js?v=c2b4932';
+import { recurringMethods } from './workspace/recurring.js?v=d77c78d';
+import { vatMethods } from './workspace/vat.js?v=d77c78d';
+import { receiptVatMethods } from './workspace/receipt-vat.js?v=d77c78d';
+import { paymentVatMethods } from './workspace/payment-vat.js?v=d77c78d';
+import { nexusRhMethods } from './workspace/nexusrh.js?v=d77c78d';
+import { letteringMethods } from './workspace/lettering.js?v=d77c78d';
+import { closingMethods } from './workspace/closing.js?v=d77c78d';
+import { microMethods } from './workspace/micro.js?v=d77c78d';
+import { depositMethods } from './deposit.js?v=d77c78d';
+import { categorizationMethods, learnRule } from './categorization.js?v=d77c78d';
+import { reminderMethods } from './reminders.js?v=d77c78d';
 
 export class Workspace {
   constructor({ company, state: saved = {}, now, newId } = {}) {
@@ -349,7 +349,7 @@ export class Workspace {
         dueDate: i.dueDate,
         outstanding: this.book.outstanding(i),
         // Client passé en douteux à la clôture : sa créance est en 416, le règlement la solde.
-        thirdPartyAccount: doubtful.has(this.invoiceAux(i)) ? '416000' : '411000',
+        thirdPartyAccount: doubtful.has(this.invoiceAux(i)) && !this.ledger.entries.some((e) => e.id === i.entryId) ? '416000' : '411000',
         aux: this.invoiceAux(i),
       }));
     const buys = this.purchases
@@ -492,15 +492,12 @@ export class Workspace {
     const { tva } = splitTtc(Math.abs(tx.amount), vatRateBp);
     // Sans facture, la TVA n'est pas déductible : seule une pièce justificative ouvre droit à déduction.
     const deductible = franchise || !hasReceipt ? 0 : divRound(tva * cat.vatDeductiblePct, 100);
+    const vatAccount = cat.fixedAsset ? '445620' : '445660';
+    const later = this._undeclaredDate(tx.date) !== tx.date;
     const entry = this.ledger.addDraft(
-      directEntry(tx, {
-        account: cat.account,
-        vatAccount: cat.fixedAsset ? '445620' : '445660',
-        vatAmount: deductible,
-        missingReceipt: !hasReceipt,
-        bankAccount: this.bankGlOf(tx),
-      }),
+      directEntry(tx, { account: cat.account, vatAccount, vatAmount: later ? 0 : deductible, missingReceipt: !hasReceipt, bankAccount: this.bankGlOf(tx) }),
     );
+    if (later && deductible) this._deferredVat(tx, cat.account, vatAccount, deductible);
     tx.status = 'matched';
     tx.entryId = entry.id;
     tx.missingReceipt = !hasReceipt;

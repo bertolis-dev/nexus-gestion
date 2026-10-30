@@ -10,9 +10,9 @@
  * dérive d'arrondi (le total des dotations égale exactement le coût).
  */
 
-import { divRound, sum } from './money.js?v=c2b4932';
-import { categoryById } from './pcg.js?v=c2b4932';
-import { addDays } from './dates.js?v=c2b4932';
+import { divRound, sum, vatFromHt } from './money.js?v=d77c78d';
+import { categoryById } from './pcg.js?v=d77c78d';
+import { addDays } from './dates.js?v=d77c78d';
 
 /** Durées d'usage courantes, à confirmer par l'expert-comptable. */
 export const DEFAULT_YEARS = { 205000: 1, 215400: 5, 218200: 5, 218300: 3, 218400: 10 };
@@ -39,9 +39,12 @@ export function cumulativeDepreciation({ cost, startDate, years }, date) {
  * Coût d'acquisition d'une ligne : HT, plus la TVA non récupérable (PCG art. 213-8). En franchise de
  * TVA, rien n'est récupérable : le bien est inscrit TTC.
  */
-function lineCost(l, cat, company) {
-  // TVA de la ligne telle qu'enregistrée (saisie TTC : HT + TVA redonne le montant tapé), comme purchaseEntry.
-  const vat = Number.isSafeInteger(l.vat) ? l.vat : divRound(l.ht * (l.vatRateBp || 0), 10000);
+const isReverse = (p) => (p.supplier.country || 'FR') !== 'FR' || !!p.reverseCharge;
+
+function lineCost(l, cat, company, reverse = false) {
+  // TVA de la ligne telle qu'enregistrée (saisie TTC : HT + TVA redonne le montant tapé), comme purchaseEntry ;
+  // en autoliquidation, la TVA calculée sur le HT (20 % sans taux précisé).
+  const vat = reverse ? vatFromHt(l.ht, l.vatRateBp ?? 2000) : Number.isSafeInteger(l.vat) ? l.vat : divRound(l.ht * (l.vatRateBp || 0), 10000);
   const deductiblePct = company.vatRegime === 'franchise' ? 0 : cat.vatDeductiblePct;
   return l.ht + divRound(vat * (100 - deductiblePct), 100);
 }
@@ -89,7 +92,7 @@ export function fixedAssets(purchases, company, fiscalYear) {
         date: p.date,
         account: cat.account,
         depreciationAccount: DEPRECIATION_ACCOUNT[cat.account],
-        cost: lineCost(l, cat, company),
+        cost: lineCost(l, cat, company, isReverse(p)),
         years: company.assetYears?.[id] || DEFAULT_YEARS[cat.account] || 5,
       });
     });
@@ -102,7 +105,7 @@ export function fixedAssets(purchases, company, fiscalYear) {
       const cat = categoryById(l.categoryId);
       if (!cat.fixedAsset) continue;
       const target = assets.filter((a) => a.supplier === norm(p.supplier.name) && a.categoryId === l.categoryId && a.date <= p.date).at(-1);
-      if (target) target.cost = Math.max(0, target.cost - lineCost(l, cat, company));
+      if (target) target.cost = Math.max(0, target.cost - lineCost(l, cat, company, isReverse(p)));
     }
   }
   const dayBefore = addDays(fiscalYear.start, -1);

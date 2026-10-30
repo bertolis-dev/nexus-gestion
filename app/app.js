@@ -1,10 +1,10 @@
-import * as cloud from './cloud.js?v=c2b4932';
-import { seedDemo } from './demo.js?v=c2b4932';
-import { render } from './render.js?v=c2b4932';
-import { featureSlug } from './site/landing.js?v=c2b4932';
-import { URL_AUTH_ERROR, cloudState, ui } from './state.js?v=c2b4932';
-import { loadDemo, loadPrefs } from './store.js?v=c2b4932';
-import { afterSignIn } from './sync-ui.js?v=c2b4932';
+import * as cloud from './cloud.js?v=d77c78d';
+import { seedDemo } from './demo.js?v=d77c78d';
+import { render } from './render.js?v=d77c78d';
+import { featureSlug } from './site/landing.js?v=d77c78d';
+import { URL_AUTH_ERROR, cloudState, ui } from './state.js?v=d77c78d';
+import { loadDemo, loadPrefs } from './store.js?v=d77c78d';
+import { afterSignIn } from './sync-ui.js?v=d77c78d';
 // Modules à effets de bord : écouteurs d'événements du document, installation (PWA).
 import './actions/events.js';
 import './pwa.js';

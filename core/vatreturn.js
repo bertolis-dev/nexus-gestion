@@ -20,10 +20,10 @@
  *   28 TVA nette due · 32 total à payer.
  */
 
-import { divRound, sum, vatFromHt } from './money.js?v=c2b4932';
-import { isOnReceipt, originalOf, receiptEvents } from './receipts.js?v=c2b4932';
-import { vatSplit } from './invoices.js?v=c2b4932';
-import { tradeZone } from './countries.js?v=c2b4932';
+import { divRound, sum, vatFromHt } from './money.js?v=d77c78d';
+import { isOnReceipt, originalOf, receiptEvents } from './receipts.js?v=d77c78d';
+import { vatSplit } from './invoices.js?v=d77c78d';
+import { tradeZone } from './countries.js?v=d77c78d';
 
 /**
  * Lignes de la CA3 par taux de TVA, par millésime du formulaire 3310-CA3 — À VALIDER PAR L'EXPERT-
@@ -56,7 +56,7 @@ function exigibleParts(inv, payments, period) {
 
 /**
  * Prépare la CA3 d'une période à partir du Workspace (factures, paiements, dépenses, grand livre).
- * @param {import('./workspace.js?v=c2b4932').Workspace} ws
+ * @param {import('./workspace.js?v=d77c78d').Workspace} ws
  * @param {{ from: string, to: string }} period
  * @param {{ previousCredit?: number }} opts crédit de TVA reporté de la déclaration précédente
  */
@@ -191,12 +191,14 @@ export function prepareCa3(ws, period, { previousCredit = 0 } = {}) {
   const deductibleAssets = debitNet('445620');
   const deductibleOther = debitNet('445660');
   // Achats autoliquidés auprès d'un fournisseur étranger : un avoir diminue la base.
-  const foreignPurchases = ws.purchases.filter((p) => (p.supplier.country || 'FR') !== 'FR' && inPeriod(p.date, period));
+  // Date comptable de l'achat (reçu après la déclaration de son mois : reportée à la première période libre).
+  const bookedIn = (p) => inPeriod(ws.ledger.entries.find((e) => e.id === p.entryId)?.date ?? p.date, period);
+  const foreignPurchases = ws.purchases.filter((p) => (p.supplier.country || 'FR') !== 'FR' && bookedIn(p));
   const purchaseSign = (p) => (p.type === 'credit' ? -1 : 1);
   const reverseChargeBase = sum(foreignPurchases.map((p) => purchaseSign(p) * sum(p.lines.map((l) => l.ht))));
   // Autoliquidation reprise dans les lignes par taux (base et taxe) ; la case 17 en donne le détail.
   const reverseByRate = new Map();
-  for (const p of [...foreignPurchases, ...ws.purchases.filter((x) => x.reverseCharge && (x.supplier.country || 'FR') === 'FR' && inPeriod(x.date, period))]) {
+  for (const p of [...foreignPurchases, ...ws.purchases.filter((x) => x.reverseCharge && (x.supplier.country || 'FR') === 'FR' && bookedIn(x))]) {
     for (const l of p.lines) {
       const r = l.vatRateBp ?? 2000;
       if (!r) continue;
@@ -210,7 +212,7 @@ export function prepareCa3(ws, period, { previousCredit = 0 } = {}) {
   // la CA3 reste à confirmer par l'expert-comptable (voir docs/regles-a-valider.md).
   const domesticReverseChargeBase = sum(
     ws.purchases
-      .filter((p) => p.reverseCharge && (p.supplier.country || 'FR') === 'FR' && inPeriod(p.date, period))
+      .filter((p) => p.reverseCharge && (p.supplier.country || 'FR') === 'FR' && bookedIn(p))
       .map((p) => (p.type === 'credit' ? -1 : 1) * sum(p.lines.map((l) => l.ht))),
   );
 

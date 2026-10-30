@@ -2,9 +2,9 @@
  * Écran « auth ».
  */
 
-import { field, html, opt, raw } from '../html.js?v=c2b4932';
-import { ui } from '../state.js?v=c2b4932';
-import { brand, icon } from '../ui/common.js?v=c2b4932';
+import { field, html, opt, raw } from '../html.js?v=d77c78d';
+import { ui } from '../state.js?v=d77c78d';
+import { brand, icon } from '../ui/common.js?v=d77c78d';
 
 // ------------------------------------------------------------------ connexion (même carte que Nexus RH)
 

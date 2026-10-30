@@ -3,8 +3,8 @@
  * Méthodes installées sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { ca12Advances, liquidationEntry, prepareCa12, prepareCa3 } from '../vatreturn.js?v=c2b4932';
-import { sum } from '../money.js?v=c2b4932';
+import { ca12Advances, liquidationEntry, prepareCa12, prepareCa3 } from '../vatreturn.js?v=d77c78d';
+import { sum } from '../money.js?v=d77c78d';
 
 export const vatMethods = {
   /** Déclarations déjà validées (conservées dans les paramètres de la structure). */
@@ -26,6 +26,26 @@ export const vatMethods = {
   _undeclaredDate(date) {
     const undeclared = this._firstUndeclaredDay();
     return undeclared && date < undeclared && undeclared <= this.ledger.fiscalYear.end ? undeclared : date;
+  },
+
+  /**
+   * Dépense de banque datée dans un mois déjà déclaré : l'écriture de banque garde sa date, la TVA
+   * déductible est reprise de la charge le premier jour non déclaré (elle y est déduite).
+   */
+  _deferredVat(tx, account, vatAccount, amount) {
+    const date = this._undeclaredDate(tx.date);
+    this.ledger.addDraft({
+      journal: 'OD',
+      date,
+      label: `TVA déductible ${tx.label}`,
+      pieceRef: tx.id,
+      pieceDate: tx.date,
+      source: { kind: 'bank-vat', id: tx.id },
+      lines: [
+        { account: vatAccount, debit: amount, credit: 0 },
+        { account, debit: 0, credit: amount },
+      ],
+    });
   },
 
   /** Lendemain de la dernière période de TVA déclarée (null si aucune) : une régularisation n'y retourne pas. */
@@ -64,6 +84,14 @@ export const vatMethods = {
   declareVat(period, today) {
     if (period.to >= today) throw new Error('La période n’est pas terminée : la déclaration se prépare après sa dernière journée.');
     if (this.vatReturns.some((r) => r.from === period.from)) throw new Error('Cette période a déjà été déclarée.');
+    // Dans l'ordre : pas de trou après la dernière déclaration (la TVA du mois sauté ne serait déclarée nulle part).
+    const lastBefore = this.vatReturns
+      .filter((r) => r.to < period.from)
+      .sort((a, b) => a.to.localeCompare(b.to))
+      .at(-1);
+    const skipped =
+      lastBefore && this.vatPeriods().find((p) => p.from > lastBefore.to && p.to < period.from && !this.vatReturns.some((r) => r.from === p.from));
+    if (skipped) throw new Error(`Déclarez d’abord la période précédente (${skipped.label}).`);
     const ca3 = this.prepareVatReturn(period);
     const liquidation = liquidationEntry(ca3);
     // Mois sans aucune TVA : la déclaration « néant » est enregistrée, sans écriture (rien à solder).

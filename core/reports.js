@@ -4,9 +4,9 @@
  * balance et FEC ».
  */
 
-import { formatDecimalComma, sum } from './money.js?v=c2b4932';
-import { JOURNALS } from './ledger.js?v=c2b4932';
-import { isCalendarDate, parisDateOf } from './dates.js?v=c2b4932';
+import { formatDecimalComma, sum } from './money.js?v=d77c78d';
+import { JOURNALS } from './ledger.js?v=d77c78d';
+import { isCalendarDate, parisDateOf } from './dates.js?v=d77c78d';
 
 /** Balance générale : totaux débit/crédit et solde par compte, triés par numéro. */
 export function trialBalance(ledger, opts = {}) {
@@ -221,11 +221,12 @@ const TYPO = {
 export function encodeLatin9(text) {
   const out = [];
   for (const raw of text) {
-    const ch = TYPO[raw] ?? raw;
-    const code = ch.codePointAt(0);
-    if (LATIN9[ch] !== undefined) out.push(LATIN9[ch]);
-    else if (code < 0x100 && !LATIN1_REPLACED.has(code)) out.push(code);
-    else out.push(0x3f);
+    for (const ch of TYPO[raw] ?? raw) {
+      const code = ch.codePointAt(0);
+      if (LATIN9[ch] !== undefined) out.push(LATIN9[ch]);
+      else if (code < 0x100 && !LATIN1_REPLACED.has(code)) out.push(code);
+      else out.push(0x3f);
+    }
   }
   return Uint8Array.from(out);
 }

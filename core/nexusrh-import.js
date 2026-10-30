@@ -7,8 +7,8 @@
  * (nombres décimaux), taux de TVA en pourcentage (20 pour 20 %), catégories en clair.
  */
 
-import { formatEuros } from './money.js?v=c2b4932';
-import { parsePayroll } from './payroll.js?v=c2b4932';
+import { formatEuros } from './money.js?v=d77c78d';
+import { parsePayroll } from './payroll.js?v=d77c78d';
 
 export const NEXUS_RH_FORMAT = 'nexus-rh-export';
 export const NEXUS_RH_VERSION = 1;
@@ -73,7 +73,7 @@ export const ticketsRef = (siren, period) => `nexus-rh:tickets:${siren}:${period
 export const payrollRef = (siren, period) => `nexus-rh:paie:${siren}:${period}`;
 
 /**
- * @param {import('./workspace.js?v=c2b4932').Workspace} ws
+ * @param {import('./workspace.js?v=d77c78d').Workspace} ws
  * @param {string} text contenu du fichier choisi par l'utilisateur
  * @param {{ serverRefs?: string[] }} opts références déjà enregistrées sur le serveur (import fait depuis un
  *   autre appareil, pas encore rechargé ici)

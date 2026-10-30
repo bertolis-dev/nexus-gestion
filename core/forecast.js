@@ -6,11 +6,11 @@
  * solde de l'exercice clos, solde estimé de l'exercice terminé non clôturé : core/istax.js).
  */
 
-import { addDays } from './dates.js?v=c2b4932';
-import { dueOccurrences } from './recurring.js?v=c2b4932';
-import { computeTotals, isVatExempt } from './invoices.js?v=c2b4932';
-import { corporateTaxSchedule } from './istax.js?v=c2b4932';
-import { payrollOutflows } from './payroll.js?v=c2b4932';
+import { addDays } from './dates.js?v=d77c78d';
+import { dueOccurrences } from './recurring.js?v=d77c78d';
+import { computeTotals, isVatExempt } from './invoices.js?v=d77c78d';
+import { corporateTaxSchedule } from './istax.js?v=d77c78d';
+import { payrollOutflows } from './payroll.js?v=d77c78d';
 
 /** Délai de paiement d'une dépense sans échéance connue (usage, à valider par l'expert-comptable). */
 export const DEFAULT_SUPPLIER_TERMS_DAYS = 30;
@@ -61,7 +61,8 @@ export function cashForecast(ws, today, { horizons = [30, 60, 90] } = {}) {
       const deadline = ws.vatDeadline(r);
       const amount = Math.min(r.balance, Math.max(0, unpaid));
       unpaid -= amount;
-      if (deadline >= today && amount > 0) add(deadline, 'tva', `TVA déclarée ${r.from.slice(5, 7)}/${r.from.slice(0, 4)}`, -amount);
+      // Échéance dépassée et toujours impayée : la sortie reste attendue, comptée aujourd'hui.
+      if (amount > 0) add(deadline < today ? today : deadline, 'tva', `TVA déclarée ${r.from.slice(5, 7)}/${r.from.slice(0, 4)}`, -amount);
     }
     for (const period of ws.vatPeriods()) {
       if (declared.has(period.from) || period.from > today) continue;
