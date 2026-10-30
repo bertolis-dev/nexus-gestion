@@ -4,13 +4,14 @@
  * depuis le menu du compte, ou par le bouton « ? » à la page de l'écran affiché.
  */
 
-import { extrait, rechercher, surligner } from '../../core/guide-search.js?v=a0ee72f';
-import { guideSections } from '../guide/sections.js?v=a0ee72f';
-import { html, raw } from '../html.js?v=a0ee72f';
-import { ICONS } from '../icons.js?v=a0ee72f';
-import { isMicro, navItems, route } from '../render.js?v=a0ee72f';
-import { ws } from '../state.js?v=a0ee72f';
-import { icon } from '../ui/common.js?v=a0ee72f';
+import { extrait, rechercher, surligner } from '../../core/guide-search.js?v=c2b4932';
+import { guideSections } from '../guide/sections.js?v=c2b4932';
+import { html, raw } from '../html.js?v=c2b4932';
+import { ICONS } from '../icons.js?v=c2b4932';
+import { isMicro, navItems, route } from '../render.js?v=c2b4932';
+import { ws } from '../state.js?v=c2b4932';
+import { icon } from '../ui/common.js?v=c2b4932';
+import { startTour } from '../ui/tour.js?v=c2b4932';
 
 const SUGGESTIONS = ['Créer une facture', 'Remise', 'Relancer un client', 'Importer un relevé', 'Photo du ticket', 'Déclarer la TVA', 'Clôture', 'Nexus RH'];
 
@@ -162,7 +163,10 @@ export function openGuide(sectionId) {
         <article class="guide-content" id="guide-content" tabindex="-1" aria-live="polite"></article>
       </div>
     </div>
-    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-guide-close>Fermer</button></div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-guide-start-tour>Lancer la visite guidée</button>
+      <button type="button" class="btn btn-secondary" data-guide-close>Fermer</button>
+    </div>
   </div>`.s;
   root.classList.add('open');
   const zone = root.querySelector('#guide-content');
@@ -216,6 +220,10 @@ export function openGuide(sectionId) {
   root.onclick = (e) => {
     const t = e.target;
     if (t === root || t.closest('[data-guide-close]')) return fermer();
+    if (t.closest('[data-guide-start-tour]')) {
+      fermer();
+      return startTour({ force: true });
+    }
     const img = t.closest('img.guide-shot-img');
     if (img) return agrandir(img);
     const b = t.closest('button');

@@ -4,7 +4,7 @@
  * telle quelle : aucun justificatif n'est perdu.
  */
 
-import { photoPlan } from '../../core/photo.js?v=a0ee72f';
+import { photoPlan } from '../../core/photo.js?v=c2b4932';
 
 export async function preparePhoto(file) {
   if (!file || !/^image\//.test(file.type)) return file;

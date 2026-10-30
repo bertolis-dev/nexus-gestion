@@ -2,21 +2,21 @@
  * Écran « onboarding ».
  */
 
-import { firstFiscalYear } from '../../core/dates.js?v=a0ee72f';
-import { openingBalanceFromFec, parseFec } from '../../core/fecimport.js?v=a0ee72f';
-import { isValidSiren } from '../../core/invoices.js?v=a0ee72f';
-import { ACTIVITY_TYPES, CIPAV_PROFESSIONS } from '../../core/micro.js?v=a0ee72f';
-import { buildChart } from '../../core/pcg.js?v=a0ee72f';
-import { Workspace } from '../../core/workspace.js?v=a0ee72f';
-import * as cloud from '../cloud.js?v=a0ee72f';
-import { lookupSiren } from '../company-lookup.js?v=a0ee72f';
-import { companyFromOnboarding } from '../../core/company.js?v=a0ee72f';
-import { choiceGroup, field, html, opt, raw } from '../html.js?v=a0ee72f';
-import { render } from '../render.js?v=a0ee72f';
-import { cloudState, eur, newId, setWs, ui, ws } from '../state.js?v=a0ee72f';
-import { save, toast } from '../store.js?v=a0ee72f';
-import { onSyncResult, onSyncStatus } from '../sync-ui.js?v=a0ee72f';
-import { badge, brand } from '../ui/common.js?v=a0ee72f';
+import { firstFiscalYear } from '../../core/dates.js?v=c2b4932';
+import { openingBalanceFromFec, parseFec } from '../../core/fecimport.js?v=c2b4932';
+import { isValidSiren } from '../../core/invoices.js?v=c2b4932';
+import { ACTIVITY_TYPES, CIPAV_PROFESSIONS } from '../../core/micro.js?v=c2b4932';
+import { buildChart } from '../../core/pcg.js?v=c2b4932';
+import { Workspace } from '../../core/workspace.js?v=c2b4932';
+import * as cloud from '../cloud.js?v=c2b4932';
+import { lookupSiren } from '../company-lookup.js?v=c2b4932';
+import { companyFromOnboarding } from '../../core/company.js?v=c2b4932';
+import { choiceGroup, field, html, opt, raw } from '../html.js?v=c2b4932';
+import { render } from '../render.js?v=c2b4932';
+import { cloudState, eur, newId, setWs, ui, ws } from '../state.js?v=c2b4932';
+import { save, toast } from '../store.js?v=c2b4932';
+import { onSyncResult, onSyncStatus } from '../sync-ui.js?v=c2b4932';
+import { badge, brand } from '../ui/common.js?v=c2b4932';
 
 // ------------------------------------------------------------------ assistant d'installation (§3.1)
 

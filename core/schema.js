@@ -4,7 +4,7 @@
  * plus récente de l'application n'est jamais interprété au hasard.
  */
 
-import { DEFAULT_BANK_ACCOUNT } from './bank.js?v=a0ee72f';
+import { DEFAULT_BANK_ACCOUNT } from './bank.js?v=c2b4932';
 
 export const SCHEMA_VERSION = 2;
 

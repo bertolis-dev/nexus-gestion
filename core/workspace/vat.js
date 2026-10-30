@@ -3,8 +3,8 @@
  * Méthodes installées sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { ca12Advances, liquidationEntry, prepareCa12, prepareCa3 } from '../vatreturn.js?v=a0ee72f';
-import { sum } from '../money.js?v=a0ee72f';
+import { ca12Advances, liquidationEntry, prepareCa12, prepareCa3 } from '../vatreturn.js?v=c2b4932';
+import { sum } from '../money.js?v=c2b4932';
 
 export const vatMethods = {
   /** Déclarations déjà validées (conservées dans les paramètres de la structure). */

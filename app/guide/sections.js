@@ -4,8 +4,8 @@
  * (micro-entrepreneur ou société, TVA ou franchise, mode avancé).
  */
 
-import { ECRANS, p, liste } from './screens.js?v=a0ee72f';
-import { THEMES } from './themes.js?v=a0ee72f';
+import { ECRANS, p, liste } from './screens.js?v=c2b4932';
+import { THEMES } from './themes.js?v=c2b4932';
 
 const dl = (paires) => `<dl class="guide-defs">${paires.map(([t, d]) => `<dt>${t}</dt><dd>${d}</dd>`).join('')}</dl>`;
 
@@ -17,7 +17,8 @@ const PREMIERS_PAS = [
     icone: 'home',
     intro:
       `<p class="guide-resume">Nexus Gestion tient votre comptabilité de la facture au bilan, sans que vous ayez à connaître le plan comptable : vous facturez, vous enregistrez vos dépenses, vous importez votre relevé, et les écritures se font toutes seules.</p>` +
-      `<ol class="guide-steps"><li><strong>Repérez-vous</strong> avec le chapitre « Se repérer » : le menu, la recherche, les mises à jour et votre compte.</li><li><strong>Faites vos premières démarches</strong> avec « Comment faire ? » : facturer, enregistrer une dépense, importer un relevé, déclarer.</li><li><strong>Retrouvez de l’aide</strong> à tout moment : le bouton « ? » en haut explique l’écran affiché, et ce guide est dans le menu de votre compte.</li></ol>`,
+      `<ol class="guide-steps"><li><strong>Repérez-vous</strong> avec le chapitre « Se repérer » : le menu, la recherche, les mises à jour et votre compte.</li><li><strong>Faites vos premières démarches</strong> avec « Comment faire ? » : facturer, enregistrer une dépense, importer un relevé, déclarer.</li><li><strong>Retrouvez de l’aide</strong> à tout moment : le bouton « ? » en haut explique l’écran affiché, et ce guide est dans le menu de votre compte.</li></ol>` +
+      `<div class="guide-actions"><button type="button" class="btn btn-primary btn-sm" data-guide-start-tour>Lancer la visite guidée</button></div>`,
   },
   {
     id: 'reperes',

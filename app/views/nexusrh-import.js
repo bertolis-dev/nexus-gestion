@@ -3,14 +3,14 @@
  * n'est enregistré avant le clic sur « Importer ». Contrôles et règles : core/nexusrh-import.js.
  */
 
-import { previewNexusRhImport } from '../../core/nexusrh-import.js?v=a0ee72f';
-import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=a0ee72f';
-import * as cloud from '../cloud.js?v=a0ee72f';
-import { html } from '../html.js?v=a0ee72f';
-import { render } from '../render.js?v=a0ee72f';
-import { cloudState, eur, frDate, ui, ws } from '../state.js?v=a0ee72f';
-import { save, toast, whenSaved } from '../store.js?v=a0ee72f';
-import { badge, icon } from '../ui/common.js?v=a0ee72f';
+import { previewNexusRhImport } from '../../core/nexusrh-import.js?v=c2b4932';
+import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=c2b4932';
+import * as cloud from '../cloud.js?v=c2b4932';
+import { html } from '../html.js?v=c2b4932';
+import { render } from '../render.js?v=c2b4932';
+import { cloudState, eur, frDate, ui, ws } from '../state.js?v=c2b4932';
+import { save, toast, whenSaved } from '../store.js?v=c2b4932';
+import { badge, icon } from '../ui/common.js?v=c2b4932';
 
 const STATUS = { new: ['À importer', 'info'], already: ['Déjà importée', 'muted'], error: ['À corriger', 'warning'], skip: ['Non importée', 'warning'] };
 const TICKETS_STATUS = { ...STATUS, already: ['Déjà importés', 'muted'], skip: ['Non importés', 'warning'] };

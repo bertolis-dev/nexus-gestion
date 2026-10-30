@@ -5,7 +5,7 @@
  * {entreprise}.
  */
 
-import { formatEuros } from './money.js?v=a0ee72f';
+import { formatEuros } from './money.js?v=c2b4932';
 
 export const REMINDER_STEPS = [
   { level: 1, days: 3, label: 'Rappel courtois' },

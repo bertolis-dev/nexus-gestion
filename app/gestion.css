@@ -1363,3 +1363,79 @@ tr[data-href]:focus-visible,
   background: #fff;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
+
+/* Visite guidée (reprise de Nexus RH) : un halo autour de l'élément expliqué, et une carte à côté. */
+#tour-root {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+}
+#tour-root.tour-centered {
+  background: rgba(10, 18, 36, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tour-spot {
+  position: fixed;
+  border-radius: 10px;
+  box-shadow: 0 0 0 9999px rgba(10, 18, 36, 0.6);
+  outline: 2px solid var(--landing-gold-500);
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+.tour-card {
+  position: fixed;
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 10px);
+  box-shadow: var(--shadow-lg);
+  padding: 16px 18px;
+  max-width: calc(100vw - 24px);
+}
+#tour-root.tour-centered .tour-card {
+  position: relative;
+  top: auto !important;
+  left: auto !important;
+  width: min(380px, calc(100vw - 24px)) !important;
+}
+.tour-card h3 {
+  margin: 4px 0 6px;
+  font-size: 17px;
+}
+.tour-card p {
+  margin: 0 0 14px;
+  line-height: 1.5;
+  font-size: 14px;
+}
+.tour-step-count {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--landing-gold-500);
+}
+.tour-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.tour-actions-main {
+  display: inline-flex;
+  gap: 8px;
+  margin-left: auto;
+}
+/* Numéro d'étape : or plus foncé sur la carte claire (contraste AA), or habituel en thème sombre. */
+.tour-step-count {
+  color: #8a6420;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .tour-step-count {
+    color: var(--landing-gold-500);
+  }
+}
+:root[data-theme='dark'] .tour-step-count {
+  color: var(--landing-gold-500);
+}
