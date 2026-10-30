@@ -2,25 +2,25 @@
  * Rendu général : choix de l’écran, cadre de l’application, recherche globale, repères d’accessibilité.
  */
 
-import { html, raw } from './html.js?v=84f0235';
-import { ICONS } from './icons.js?v=84f0235';
-import { featureBySlug, featureSlug, features, loadFeatures, viewFeature, viewLanding } from './site/landing.js?v=84f0235';
-import { cloudState, eur, frDate, ui, ws } from './state.js?v=84f0235';
-import { getTheme } from './store.js?v=84f0235';
-import { syncStatusHtml } from './sync-ui.js?v=84f0235';
-import { LOGO, badge, brand } from './ui/common.js?v=84f0235';
-import { viewAuth, viewMfa, viewStructurePicker } from './views/auth.js?v=84f0235';
-import { viewBank } from './views/bank.js?v=84f0235';
-import { viewClosing } from './views/closing.js?v=84f0235';
-import { viewCompta } from './views/compta.js?v=84f0235';
-import { viewExpenses } from './views/expenses.js?v=84f0235';
-import { viewHome } from './views/home.js?v=84f0235';
-import { viewUrssaf } from './views/micro.js?v=84f0235';
-import { viewOnboarding } from './views/onboarding.js?v=84f0235';
-import { runRecurring, viewSales } from './views/sales.js?v=84f0235';
-import { viewSettings } from './views/settings.js?v=84f0235';
-import { viewClients } from './views/clients.js?v=84f0235';
-import { viewVat } from './views/vat.js?v=84f0235';
+import { html, raw } from './html.js?v=a0ee72f';
+import { ICONS } from './icons.js?v=a0ee72f';
+import { featureBySlug, featureSlug, features, loadFeatures, viewFeature, viewLanding } from './site/landing.js?v=a0ee72f';
+import { cloudState, eur, frDate, ui, ws } from './state.js?v=a0ee72f';
+import { getTheme } from './store.js?v=a0ee72f';
+import { syncStatusHtml } from './sync-ui.js?v=a0ee72f';
+import { LOGO, badge, brand } from './ui/common.js?v=a0ee72f';
+import { viewAuth, viewMfa, viewStructurePicker } from './views/auth.js?v=a0ee72f';
+import { viewBank } from './views/bank.js?v=a0ee72f';
+import { viewClosing } from './views/closing.js?v=a0ee72f';
+import { viewCompta } from './views/compta.js?v=a0ee72f';
+import { viewExpenses } from './views/expenses.js?v=a0ee72f';
+import { viewHome } from './views/home.js?v=a0ee72f';
+import { viewUrssaf } from './views/micro.js?v=a0ee72f';
+import { viewOnboarding } from './views/onboarding.js?v=a0ee72f';
+import { runRecurring, viewSales } from './views/sales.js?v=a0ee72f';
+import { viewSettings } from './views/settings.js?v=a0ee72f';
+import { viewClients } from './views/clients.js?v=a0ee72f';
+import { viewVat } from './views/vat.js?v=a0ee72f';
 
 // ------------------------------------------------------------------ rendu général
 
@@ -157,6 +157,9 @@ export function renderApp() {
             <div id="global-search-results" class="search-results" role="listbox" aria-label="Résultats de recherche"></div>
           </div>
           <div class="topbar-user">
+            <button class="btn-icon" data-action="guide-help" title="Aide sur cet écran" aria-label="Aide sur cet écran (guide)">
+              ${raw(ICONS.helpCircle)}
+            </button>
             <button
               class="btn-icon"
               data-action="reload"
@@ -209,6 +212,7 @@ export function renderApp() {
       )}
     </div>
     <div class="user-menu-divider"></div>
+    <button type="button" class="user-menu-item" data-action="guide-open">Guide de l’application</button>
     <button type="button" class="user-menu-item" data-href="#/parametres">Paramètres</button>
     ${!ui.demo && ui.structures?.length > 1 ? html`<button type="button" class="user-menu-item" data-action="structure-switch">Changer d’entreprise</button>` : ''}
     <button type="button" class="user-menu-item" data-action="${ui.demo ? 'demo-exit' : 'sign-out'}">

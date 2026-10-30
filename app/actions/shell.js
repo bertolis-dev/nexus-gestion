@@ -2,12 +2,13 @@
  * Écran « shell ».
  */
 
-import * as cloud from '../cloud.js?v=84f0235';
-import { removeDemo } from '../demo-store.js?v=84f0235';
-import { $, render, renderApp } from '../render.js?v=84f0235';
-import { cloudState, freshOnboarding, setWs, today, ui, ws } from '../state.js?v=84f0235';
-import { download, setTheme, toast } from '../store.js?v=84f0235';
-import { openStructure, openStructureAndShow, refreshEmailStatus } from '../sync-ui.js?v=84f0235';
+import * as cloud from '../cloud.js?v=a0ee72f';
+import { removeDemo } from '../demo-store.js?v=a0ee72f';
+import { $, render, renderApp } from '../render.js?v=a0ee72f';
+import { cloudState, freshOnboarding, setWs, today, ui, ws } from '../state.js?v=a0ee72f';
+import { download, setTheme, toast } from '../store.js?v=a0ee72f';
+import { openStructure, openStructureAndShow, refreshEmailStatus } from '../sync-ui.js?v=a0ee72f';
+import { openGuide, openGuideForCurrentScreen } from '../views/guide.js?v=a0ee72f';
 
 /** Version publiée plus récente que celle chargée ? (numéro ?v=… ajouté à la mise en ligne) */
 async function newerVersionAvailable() {
@@ -24,6 +25,12 @@ async function newerVersionAvailable() {
 
 /** Actions « shell » : data-action → fonction. */
 export const actionsTable = {
+  'guide-open': async () => {
+    $('user-menu-panel').classList.remove('open');
+    $('btn-user-menu')?.setAttribute('aria-expanded', 'false');
+    openGuide();
+  },
+  'guide-help': async () => openGuideForCurrentScreen(),
   'forecast-toggle': async () => {
     ui.forecastOpen = !ui.forecastOpen;
     return render();

@@ -2,14 +2,14 @@
  * Écran « closing ».
  */
 
-import { allocationProposal } from '../../core/closing.js?v=84f0235';
-import { closingPackage } from '../../core/closing-package.js?v=84f0235';
-import * as cloud from '../cloud.js?v=84f0235';
-import { parseEuros } from '../../core/money.js?v=84f0235';
-import { render } from '../render.js?v=84f0235';
-import { cloudState, today, ui, ws } from '../state.js?v=84f0235';
-import { download, save, toast } from '../store.js?v=84f0235';
-import { closeYearFlow } from '../views/closing.js?v=84f0235';
+import { allocationProposal } from '../../core/closing.js?v=a0ee72f';
+import { closingPackage } from '../../core/closing-package.js?v=a0ee72f';
+import * as cloud from '../cloud.js?v=a0ee72f';
+import { parseEuros } from '../../core/money.js?v=a0ee72f';
+import { render } from '../render.js?v=a0ee72f';
+import { cloudState, today, ui, ws } from '../state.js?v=a0ee72f';
+import { download, save, toast } from '../store.js?v=a0ee72f';
+import { closeYearFlow } from '../views/closing.js?v=a0ee72f';
 
 /** Actions « closing » : data-action → fonction. */
 export const actionsTable = {

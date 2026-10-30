@@ -3,8 +3,8 @@
  * Méthodes installées sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { dueOccurrences, periodLabel, validateTemplate } from '../recurring.js?v=84f0235';
-import { addDays } from '../dates.js?v=84f0235';
+import { dueOccurrences, periodLabel, validateTemplate } from '../recurring.js?v=a0ee72f';
+import { addDays } from '../dates.js?v=a0ee72f';
 
 export const recurringMethods = {
   saveRecurring(data) {
