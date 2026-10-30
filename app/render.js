@@ -2,25 +2,26 @@
  * Rendu général : choix de l’écran, cadre de l’application, recherche globale, repères d’accessibilité.
  */
 
-import { html, raw } from './html.js?v=d77c78d';
-import { ICONS } from './icons.js?v=d77c78d';
-import { featureBySlug, featureSlug, features, loadFeatures, viewFeature, viewLanding } from './site/landing.js?v=d77c78d';
-import { cloudState, eur, frDate, ui, ws } from './state.js?v=d77c78d';
-import { getTheme } from './store.js?v=d77c78d';
-import { syncStatusHtml } from './sync-ui.js?v=d77c78d';
-import { LOGO, badge, brand } from './ui/common.js?v=d77c78d';
-import { viewAuth, viewMfa, viewStructurePicker } from './views/auth.js?v=d77c78d';
-import { viewBank } from './views/bank.js?v=d77c78d';
-import { viewClosing } from './views/closing.js?v=d77c78d';
-import { viewCompta } from './views/compta.js?v=d77c78d';
-import { viewExpenses } from './views/expenses.js?v=d77c78d';
-import { viewHome } from './views/home.js?v=d77c78d';
-import { viewUrssaf } from './views/micro.js?v=d77c78d';
-import { viewOnboarding } from './views/onboarding.js?v=d77c78d';
-import { runRecurring, viewSales } from './views/sales.js?v=d77c78d';
-import { viewSettings } from './views/settings.js?v=d77c78d';
-import { viewClients } from './views/clients.js?v=d77c78d';
-import { viewVat } from './views/vat.js?v=d77c78d';
+import { html, raw } from './html.js?v=b97f3bc';
+import { ICONS } from './icons.js?v=b97f3bc';
+import { featureBySlug, featureSlug, features, loadFeatures, viewFeature, viewLanding } from './site/landing.js?v=b97f3bc';
+import { cloudState, eur, frDate, ui, ws } from './state.js?v=b97f3bc';
+import { getTheme } from './store.js?v=b97f3bc';
+import { syncStatusHtml } from './sync-ui.js?v=b97f3bc';
+import { LOGO, badge, brand } from './ui/common.js?v=b97f3bc';
+import { viewAuth, viewMfa, viewStructurePicker } from './views/auth.js?v=b97f3bc';
+import { viewBank } from './views/bank.js?v=b97f3bc';
+import { viewClosing } from './views/closing.js?v=b97f3bc';
+import { viewCompta } from './views/compta.js?v=b97f3bc';
+import { viewExpenses } from './views/expenses.js?v=b97f3bc';
+import { viewHome } from './views/home.js?v=b97f3bc';
+import { viewUrssaf } from './views/micro.js?v=b97f3bc';
+import { viewOnboarding } from './views/onboarding.js?v=b97f3bc';
+import { runRecurring, viewSales } from './views/sales.js?v=b97f3bc';
+import { viewSettings } from './views/settings.js?v=b97f3bc';
+import { viewClients } from './views/clients.js?v=b97f3bc';
+import { viewPilotage } from './views/pilotage.js?v=b97f3bc';
+import { viewVat } from './views/vat.js?v=b97f3bc';
 
 // ------------------------------------------------------------------ rendu général
 
@@ -87,6 +88,7 @@ export const routes = {
   cloture: viewClosing,
   parametres: viewSettings,
   clients: viewClients,
+  pilotage: viewPilotage,
 };
 
 export function route() {
@@ -106,6 +108,7 @@ export function navItems() {
     ...(isMicro() ? [{ key: 'urssaf', label: 'URSSAF et seuils', icon: 'scale' }] : []),
     // Micro-entrepreneur qui facture la TVA : il la déclare aussi.
     ...(!isMicro() || ws.company.vatRegime !== 'franchise' ? [{ key: 'tva', label: 'TVA', icon: 'percent' }] : []),
+    { key: 'pilotage', label: 'Pilotage', icon: 'trendingUp' },
   ];
   if (ui.mode === 'avance' && !isMicro())
     items.push({ section: 'Expert' }, { key: 'compta', label: 'Comptabilité', icon: 'chart' }, { key: 'cloture', label: 'Clôture', icon: 'lock' });

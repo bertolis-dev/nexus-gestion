@@ -3,8 +3,8 @@
  * TVA non déductible appliquée automatiquement, détection des immobilisations et des doublons.
  */
 
-import { divRound, splitTtc, sum, vatFromHt } from './money.js?v=d77c78d';
-import { categoryById } from './pcg.js?v=d77c78d';
+import { divRound, splitTtc, sum, vatFromHt } from './money.js?v=b97f3bc';
+import { categoryById } from './pcg.js?v=b97f3bc';
 
 /** Ligne d'achat saisie TTC : HT et TVA dont la somme redonne exactement le TTC. */
 export function ttcLine(ttc, vatRateBp) {
@@ -30,7 +30,7 @@ export function purchaseEntry(p, company) {
   // Salarié (note de frais) : nom complet sans accents, pour que deux homonymes de prénom aient deux
   // sous-comptes 421 distincts ; fournisseur : code ou 8 premiers caractères (inchangé).
   const supplierCode =
-    p.supplier.kind === 'salarie' && !p.supplier.code
+    (p.supplier.kind === 'salarie' || p.supplier.kind === 'dirigeant') && !p.supplier.code
       ? p.supplier.name
           .normalize('NFD')
           .replace(/\p{M}/gu, '')
@@ -71,7 +71,8 @@ export function purchaseEntry(p, company) {
     } else {
       const deductible = divRound(vat * pct, 100);
       // Dépense avancée par un salarié (note de frais) : le fournisseur est déjà payé, TVA récupérable aussitôt.
-      const onPayment = !isAsset && (l.nature || cat.nature) === 'services' && !p.supplier.vatOnDebits && p.supplier.kind !== 'salarie';
+      const onPayment =
+        !isAsset && (l.nature || cat.nature) === 'services' && !p.supplier.vatOnDebits && p.supplier.kind !== 'salarie' && p.supplier.kind !== 'dirigeant';
       deductibleByAccount[isAsset ? '445620' : onPayment ? '445680' : '445660'] += deductible;
       lines.push({ account, label, debit: l.ht + (vat - deductible), credit: 0 });
       totalTtc += l.ht + vat;
@@ -81,7 +82,17 @@ export function purchaseEntry(p, company) {
     if (amount) lines.push({ account, label, debit: amount, credit: 0 });
   }
   if (reverseChargeVat) lines.push({ account: '445200', label, debit: 0, credit: reverseChargeVat });
-  const payable = p.supplier.kind === 'salarie' ? '421000' : hasFixedAsset ? '404000' : '401000';
+  // Frais du dirigeant (indemnités kilométriques) : dus sur son compte courant (société) ou de l'exploitant (EI).
+  const payable =
+    p.supplier.kind === 'salarie'
+      ? '421000'
+      : p.supplier.kind === 'dirigeant'
+        ? company.taxRegime === 'ir-reel'
+          ? '108000'
+          : '455000'
+        : hasFixedAsset
+          ? '404000'
+          : '401000';
   // Sous-compte du tiers préfixé par son collectif (401… fournisseurs, 404… fournisseurs d'immobilisations,
   // 421… salarié pour une note de frais).
   lines.push({ account: payable, aux: `${payable.slice(0, 3)}${supplierCode}`, auxLabel: p.supplier.name, label, debit: 0, credit: totalTtc });

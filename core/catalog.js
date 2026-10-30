@@ -11,7 +11,7 @@ const key = (label) =>
 export class CatalogError extends Error {}
 
 /** Ajoute (ou remplace, même désignation) une prestation ; renvoie le nouveau catalogue trié. */
-export function saveCatalogItem(catalog = [], { id, label, unitPrice, vatRateBp, nature = 'services' }) {
+export function saveCatalogItem(catalog = [], { id, label, unitPrice, vatRateBp, nature = 'services', tracked = false, stockInitial = 0, stockAlert = null }) {
   const name = String(label || '').trim();
   if (!name) throw new CatalogError('Indiquez la désignation de la prestation.');
   if (name.length > 200) throw new CatalogError('Désignation trop longue (200 caractères au plus).');
@@ -24,6 +24,14 @@ export function saveCatalogItem(catalog = [], { id, label, unitPrice, vatRateBp,
     vatRateBp,
     nature: nature === 'biens' ? 'biens' : 'services',
   };
+  // Article suivi en stock (core/stock.js) : stock de départ et seuil d'alerte facultatif.
+  if (tracked) {
+    const qty = (v) => Number(String(v ?? '').replace(',', '.'));
+    if (!Number.isFinite(qty(stockInitial)) || qty(stockInitial) < 0) throw new CatalogError('Stock de départ illisible.');
+    if (stockAlert !== null && stockAlert !== '' && (!Number.isFinite(qty(stockAlert)) || qty(stockAlert) < 0))
+      throw new CatalogError('Seuil d’alerte illisible.');
+    Object.assign(item, { tracked: true, stockInitial: qty(stockInitial), stockAlert: stockAlert === null || stockAlert === '' ? null : qty(stockAlert) });
+  }
   const rest = catalog.filter((c) => c.id !== item.id && key(c.label) !== key(name));
   return [...rest, item].sort((a, b) => a.label.localeCompare(b.label, 'fr'));
 }

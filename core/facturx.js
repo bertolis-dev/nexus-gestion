@@ -7,7 +7,7 @@
  * scripts/validate-einvoice.mjs ; le navigateur lui passe les copies locales de app/vendor/.
  */
 
-import { issuerName } from './invoices.js?v=d77c78d';
+import { issuerName } from './invoices.js?v=b97f3bc';
 
 export const FACTURX_FILE_NAME = 'factur-x.xml';
 const FX_NS = 'urn:factur-x:pdfa:CrossIndustryDocument:invoice:1p0#';
@@ -16,17 +16,11 @@ const xmlEsc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': 
 const isoSeconds = (d) => `${d.toISOString().slice(0, 19)}Z`;
 
 /** Métadonnées XMP : identification PDF/A-3B, Dublin Core, extension Factur-X (schéma déclaré). */
-export function facturXXmp({ title, author, date, conformance = 'EN 16931', documentType = 'INVOICE' }) {
+export function facturXXmp({ title, author, date, conformance = 'EN 16931', documentType = 'INVOICE', facturx = true }) {
   const prop = (name, description) =>
     `<rdf:li rdf:parseType="Resource"><pdfaProperty:name>${name}</pdfaProperty:name><pdfaProperty:valueType>Text</pdfaProperty:valueType><pdfaProperty:category>external</pdfaProperty:category><pdfaProperty:description>${description}</pdfaProperty:description></rdf:li>`;
-  return `<?xpacket begin="\uFEFF" id="W5M0MpCehiHzreSzNTczkc9d"?>
-<x:xmpmeta xmlns:x="adobe:ns:meta/">
-<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-<rdf:Description rdf:about="" xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/"><pdfaid:part>3</pdfaid:part><pdfaid:conformance>B</pdfaid:conformance></rdf:Description>
-<rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:format>application/pdf</dc:format><dc:title><rdf:Alt><rdf:li xml:lang="x-default">${xmlEsc(title)}</rdf:li></rdf:Alt></dc:title><dc:creator><rdf:Seq><rdf:li>${xmlEsc(author)}</rdf:li></rdf:Seq></dc:creator></rdf:Description>
-<rdf:Description rdf:about="" xmlns:pdf="http://ns.adobe.com/pdf/1.3/"><pdf:Producer>Nexus Gestion</pdf:Producer></rdf:Description>
-<rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/"><xmp:CreatorTool>Nexus Gestion</xmp:CreatorTool><xmp:CreateDate>${isoSeconds(date)}</xmp:CreateDate><xmp:ModifyDate>${isoSeconds(date)}</xmp:ModifyDate></rdf:Description>
-<rdf:Description rdf:about="" xmlns:fx="${FX_NS}"><fx:DocumentType>${documentType}</fx:DocumentType><fx:DocumentFileName>${FACTURX_FILE_NAME}</fx:DocumentFileName><fx:Version>1.0</fx:Version><fx:ConformanceLevel>${conformance}</fx:ConformanceLevel></rdf:Description>
+  // Devis (sans facture électronique jointe) : PDF/A-3 simple, sans l'extension Factur-X.
+  const fxBlock = `<rdf:Description rdf:about="" xmlns:fx="${FX_NS}"><fx:DocumentType>${documentType}</fx:DocumentType><fx:DocumentFileName>${FACTURX_FILE_NAME}</fx:DocumentFileName><fx:Version>1.0</fx:Version><fx:ConformanceLevel>${conformance}</fx:ConformanceLevel></rdf:Description>
 <rdf:Description rdf:about="" xmlns:pdfaExtension="http://www.aiim.org/pdfa/ns/extension/" xmlns:pdfaSchema="http://www.aiim.org/pdfa/ns/schema#" xmlns:pdfaProperty="http://www.aiim.org/pdfa/ns/property#">
 <pdfaExtension:schemas><rdf:Bag><rdf:li rdf:parseType="Resource">
 <pdfaSchema:schema>Factur-X PDFA Extension Schema</pdfaSchema:schema>
@@ -39,7 +33,15 @@ ${prop('Version', 'The actual version of the Factur-X XML schema')}
 ${prop('ConformanceLevel', 'The conformance level of the embedded Factur-X data')}
 </rdf:Seq></pdfaSchema:property>
 </rdf:li></rdf:Bag></pdfaExtension:schemas>
-</rdf:Description>
+</rdf:Description>`;
+  return `<?xpacket begin="\uFEFF" id="W5M0MpCehiHzreSzNTczkc9d"?>
+<x:xmpmeta xmlns:x="adobe:ns:meta/">
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:Description rdf:about="" xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/"><pdfaid:part>3</pdfaid:part><pdfaid:conformance>B</pdfaid:conformance></rdf:Description>
+<rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:format>application/pdf</dc:format><dc:title><rdf:Alt><rdf:li xml:lang="x-default">${xmlEsc(title)}</rdf:li></rdf:Alt></dc:title><dc:creator><rdf:Seq><rdf:li>${xmlEsc(author)}</rdf:li></rdf:Seq></dc:creator></rdf:Description>
+<rdf:Description rdf:about="" xmlns:pdf="http://ns.adobe.com/pdf/1.3/"><pdf:Producer>Nexus Gestion</pdf:Producer></rdf:Description>
+<rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/"><xmp:CreatorTool>Nexus Gestion</xmp:CreatorTool><xmp:CreateDate>${isoSeconds(date)}</xmp:CreateDate><xmp:ModifyDate>${isoSeconds(date)}</xmp:ModifyDate></rdf:Description>
+${facturx ? fxBlock : ''}
 </rdf:RDF>
 </x:xmpmeta>
 <?xpacket end="w"?>`;
@@ -296,7 +298,7 @@ export async function buildFacturXPdf({ lib, fonts, icc, logo = null, invoice, x
   doc.setProducer('Nexus Gestion');
   doc.setCreationDate(now);
   doc.setModificationDate(now);
-  const xmp = new TextEncoder().encode(facturXXmp({ title, author: issuerName(issuer), date: now }));
+  const xmp = new TextEncoder().encode(facturXXmp({ title, author: issuerName(issuer), date: now, facturx: Boolean(xml) }));
   const meta = ctx.stream(xmp, { Type: 'Metadata', Subtype: 'XML', Length: xmp.length });
   doc.catalog.set(PDFName.of('Metadata'), ctx.register(meta));
 
@@ -310,28 +312,33 @@ export async function buildFacturXPdf({ lib, fonts, icc, logo = null, invoice, x
   });
   doc.catalog.set(PDFName.of('OutputIntents'), ctx.obj([ctx.register(intent)]));
 
-  const xmlBytes = new TextEncoder().encode(xml);
-  const pdfDate = PDFString.fromDate(now);
-  const file = ctx.flateStream(xmlBytes, { Type: 'EmbeddedFile', Subtype: 'text/xml', Params: { Size: xmlBytes.length, ModDate: pdfDate } });
-  const fileRef = ctx.register(file);
-  const spec = ctx.register(
-    ctx.obj({
-      Type: 'Filespec',
-      F: PDFString.of(FACTURX_FILE_NAME),
-      UF: PDFHexString.fromText(FACTURX_FILE_NAME),
-      Desc: PDFString.of('Factur-X'),
-      AFRelationship: 'Alternative',
-      EF: { F: fileRef, UF: fileRef },
-    }),
-  );
-  doc.catalog.set(PDFName.of('AF'), ctx.obj([spec]));
-  doc.catalog.set(PDFName.of('Names'), ctx.obj({ EmbeddedFiles: { Names: [PDFHexString.fromText(FACTURX_FILE_NAME), spec] } }));
+  if (xml) embedFacturX(doc, xml, now);
   doc.catalog.set(PDFName.of('ViewerPreferences'), ctx.obj({ DisplayDocTitle: true }));
   doc.catalog.set(PDFName.of('Lang'), PDFString.of('fr-FR'));
 
   const id = PDFHexString.of(documentId(`${issuer.siren}|${invoice.number}|${now.toISOString()}`));
   ctx.trailerInfo.ID = ctx.obj([id, id]);
   return doc.save({ useObjectStreams: false });
+
+  /** Facture électronique jointe (fichier factur-x.xml, relation « Alternative »). */
+  function embedFacturX(doc, xml, now) {
+    const xmlBytes = new TextEncoder().encode(xml);
+    const pdfDate = PDFString.fromDate(now);
+    const file = ctx.flateStream(xmlBytes, { Type: 'EmbeddedFile', Subtype: 'text/xml', Params: { Size: xmlBytes.length, ModDate: pdfDate } });
+    const fileRef = ctx.register(file);
+    const spec = ctx.register(
+      ctx.obj({
+        Type: 'Filespec',
+        F: PDFString.of(FACTURX_FILE_NAME),
+        UF: PDFHexString.fromText(FACTURX_FILE_NAME),
+        Desc: PDFString.of('Factur-X'),
+        AFRelationship: 'Alternative',
+        EF: { F: fileRef, UF: fileRef },
+      }),
+    );
+    doc.catalog.set(PDFName.of('AF'), ctx.obj([spec]));
+    doc.catalog.set(PDFName.of('Names'), ctx.obj({ EmbeddedFiles: { Names: [PDFHexString.fromText(FACTURX_FILE_NAME), spec] } }));
+  }
 }
 
 /** Noms usuels du XML joint à une facture PDF (Factur-X, ZUGFeRD, XRechnung). */

@@ -1439,3 +1439,103 @@ tr[data-href]:focus-visible,
 :root[data-theme='dark'] .tour-step-count {
   color: var(--landing-gold-500);
 }
+
+/* Pilotage : barre d'avancement du budget (réalisé, repère du prévu à date). */
+.budget-bar {
+  position: relative;
+  height: 8px;
+  margin-top: 6px;
+  min-width: 90px;
+  border-radius: 4px;
+  background: var(--color-border-soft);
+}
+.budget-bar-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 4px;
+  background: var(--color-primary);
+}
+.budget-bar-mark {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 14px;
+  background: var(--color-gold);
+}
+.row-highlight td {
+  background: var(--color-gold-soft);
+}
+.stock-options summary {
+  cursor: pointer;
+  color: var(--color-primary-text);
+  font-weight: 600;
+}
+
+/* Espace client (page publique espace-client.html). */
+.portal-body {
+  background: var(--color-bg, #f6f7fb);
+}
+.portal {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+.portal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.portal-docs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.portal-doc-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.portal-doc-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.portal-pay {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+.portal-accept {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--color-gold);
+  border-radius: var(--radius-md);
+  background: var(--color-gold-soft);
+}
+.portal-accept .form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.portal-footer {
+  margin-top: 28px;
+  font-size: 13px;
+  line-height: 1.6;
+}

@@ -2,12 +2,12 @@
  * Écran « compta ».
  */
 
-import { JOURNALS } from '../../core/ledger.js?v=d77c78d';
-import { generalLedger, journalReport, trialBalance } from '../../core/reports.js?v=d77c78d';
-import { field, html, raw } from '../html.js?v=d77c78d';
-import { eur, frDate, today, ui, ws } from '../state.js?v=d77c78d';
-import { badge, viewHeader } from '../ui/common.js?v=d77c78d';
-import { archivesView } from './archives.js?v=d77c78d';
+import { JOURNALS } from '../../core/ledger.js?v=b97f3bc';
+import { generalLedger, journalReport, trialBalance } from '../../core/reports.js?v=b97f3bc';
+import { field, html, raw } from '../html.js?v=b97f3bc';
+import { eur, frDate, today, ui, ws } from '../state.js?v=b97f3bc';
+import { badge, viewHeader } from '../ui/common.js?v=b97f3bc';
+import { archivesView } from './archives.js?v=b97f3bc';
 
 // ------------------------------------------------------------------ comptabilité (mode avancé)
 

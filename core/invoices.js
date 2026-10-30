@@ -4,12 +4,12 @@
  * la seule correction possible est l'avoir lié.
  */
 
-import { assertCents, divRound, formatEuros, sum, vatFromHt } from './money.js?v=d77c78d';
-import { REVENUE_ACCOUNT_BY_NATURE } from './pcg.js?v=d77c78d';
-import { LIFECYCLE, currentStatus } from './lifecycle.js?v=d77c78d';
-import { tradeZone } from './countries.js?v=d77c78d';
-import { creditsOf, originalOf, groupBalance } from './receipts.js?v=d77c78d';
-import { addDays } from './dates.js?v=d77c78d';
+import { assertCents, divRound, formatEuros, sum, vatFromHt } from './money.js?v=b97f3bc';
+import { REVENUE_ACCOUNT_BY_NATURE } from './pcg.js?v=b97f3bc';
+import { LIFECYCLE, currentStatus } from './lifecycle.js?v=b97f3bc';
+import { tradeZone } from './countries.js?v=b97f3bc';
+import { creditsOf, originalOf, groupBalance } from './receipts.js?v=b97f3bc';
+import { addDays } from './dates.js?v=b97f3bc';
 
 export const VAT_RATES_BP = [2000, 1000, 550, 210, 0];
 
@@ -311,6 +311,7 @@ export class InvoiceBook {
         reminderTemplates: undefined,
         catalog: undefined,
         autoReminders: undefined,
+        ...{ timeEntries: undefined, stockMoves: undefined, budget: undefined, vatReturns: undefined, urssafDeclarations: undefined },
       }),
       operationNature: operationNature(draft.lines),
       mentions: legalMentions(draft, this.company),

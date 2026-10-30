@@ -159,6 +159,7 @@ export const EXPENSE_CATEGORIES = [
   { id: 'publicite', label: 'Publicité et marketing', account: '623000', vatDeductiblePct: 100, nature: 'services' },
   { id: 'cadeaux', label: 'Cadeaux clients', account: '623400', vatDeductiblePct: 100, giftVatThreshold: 7300, nature: 'goods' },
   { id: 'deplacements', label: 'Déplacements (train, avion, taxi)', account: '625100', vatDeductiblePct: 0, nature: 'services' },
+  { id: 'indemnites-km', label: 'Indemnités kilométriques', account: '625100', vatDeductiblePct: 0, nature: 'services', internal: true },
   { id: 'hotel', label: 'Hôtels', account: '625600', vatDeductiblePct: 0, nature: 'services' },
   { id: 'repas', label: "Repas d'affaires", account: '625700', vatDeductiblePct: 100, nature: 'services' },
   { id: 'telecom', label: 'Téléphone, internet, courrier', account: '626000', vatDeductiblePct: 100, nature: 'services' },

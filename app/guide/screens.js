@@ -61,6 +61,20 @@ export const ECRANS = {
       ),
     faq: [
       {
+        q: 'Comment facturer mes heures ?',
+        r: p(
+          'Onglet <strong>Temps passé</strong> : notez la date, le client, ce qui a été fait, la durée (1h30, 45 min…) et votre taux horaire. Dans « À facturer », <strong>Préparer la facture</strong> crée le brouillon avec une ligne par prestation : vérifiez-le, puis émettez-le.',
+        ),
+        mots: 'heures temps passe taux horaire regie',
+      },
+      {
+        q: 'Comment savoir si un client a accepté mon devis en ligne ?',
+        r: p(
+          'Dans l’onglet Devis, le statut devient <strong>Accepté en ligne le …</strong> dès que votre client l’a accepté depuis son espace client (fiche du client). Ouvrez le devis et transformez-le en facture.',
+        ),
+        mots: 'devis accepte signe bon pour accord en ligne',
+      },
+      {
         q: 'Pourquoi Nexus refuse d’émettre ma facture ?',
         r: p(
           'Une mention obligatoire manque : le cadre rouge en haut du formulaire dit laquelle (SIREN du client, adresse, numéro de TVA…) et un clic sur le message place le curseur dans le champ à compléter.',
@@ -94,6 +108,13 @@ export const ECRANS = {
       ),
     faq: [
       {
+        q: 'Comment donner à un client l’accès à ses factures ?',
+        r: p(
+          'Sur la fiche du client, carte <strong>Espace client</strong> : créez le lien, puis copiez-le dans un e-mail. Votre client y voit ses factures et devis, les télécharge en PDF, paie par virement avec le QR code et accepte un devis en ligne. Le lien est valable un an ; <strong>Désactiver</strong> le coupe aussitôt.',
+        ),
+        mots: 'espace client portail lien acces factures devis en ligne',
+      },
+      {
         q: 'Comment importer mes clients depuis un fichier ?',
         r: p(
           'Bouton <strong>Importer une liste</strong> de l’écran Clients : un fichier CSV (export Excel) avec au moins une colonne « Nom ». Nexus reconnaît aussi SIREN, adresse, e-mail, pays et type de client, et vous montre les lignes ignorées.',
@@ -119,6 +140,20 @@ export const ECRANS = {
         'Un équipement de plus de 500 € HT est automatiquement enregistré comme <strong>immobilisation</strong> et amorti : retrouvez-le dans l’onglet Équipements.',
       ),
     faq: [
+      {
+        q: 'Comment enregistrer mes trajets en voiture personnelle ?',
+        r: p(
+          'Onglet <strong>Trajets en voiture</strong> (sociétés et entreprises au réel) : date, départ, arrivée, motif, distance et puissance fiscale. Nexus calcule l’indemnité au barème kilométrique de l’administration, compte tenu des kilomètres déjà parcourus dans l’année, et l’inscrit comme somme due au dirigeant.',
+        ),
+        mots: 'kilometrique indemnite voiture trajet bareme deplacement',
+      },
+      {
+        q: 'Comment exporter mes dépenses dans Excel ?',
+        r: p(
+          'Bouton <strong>Exporter (Excel)</strong> en haut de l’écran : un fichier avec date, fournisseur, catégorie, HT, TVA, TTC et reste à payer. Même bouton dans Factures pour vos ventes.',
+        ),
+        mots: 'export excel csv tableur liste',
+      },
       {
         q: 'Pourquoi la TVA d’une prestation n’est pas récupérée tout de suite ?',
         r: p(
@@ -153,6 +188,13 @@ export const ECRANS = {
         'Un mouvement sans facture (frais bancaires, abonnement prélevé, apport…) se range avec une <strong>catégorie</strong>. Nexus retient votre choix et le proposera pour les mouvements semblables.',
       ),
     faq: [
+      {
+        q: 'Puis-je rapprocher plusieurs paiements d’un coup ?',
+        r: p(
+          'Oui : quand au moins deux paiements correspondent exactement à une facture ou une dépense (même montant, même tiers, sans autre choix possible), un bandeau propose <strong>Tout rapprocher</strong>. Les autres restent à valider un par un.',
+        ),
+        mots: 'tout rapprocher masse plusieurs automatique',
+      },
       {
         q: 'Un relevé déjà importé crée-t-il des doublons ?',
         r: p('Non : chaque mouvement est reconnu, un relevé importé deux fois n’ajoute que les mouvements nouveaux.'),
@@ -288,6 +330,13 @@ export const ECRANS = {
       ),
     faq: [
       {
+        q: 'Comment suivre mon stock ?',
+        r: p(
+          'Paramètres → <strong>Prestations et articles</strong> : en ajoutant un article, dépliez « Suivre le stock » et indiquez le stock de départ et le seuil d’alerte. Les ventes sont déduites à l’émission des factures (les avoirs les remettent) ; notez les livraisons dans « Entrée ou correction de stock ». Un stock bas apparaît dans « À faire ».',
+        ),
+        mots: 'stock inventaire article quantite alerte',
+      },
+      {
         q: 'Comment inviter mon expert-comptable ?',
         r: p(
           'Paramètres → <strong>Utilisateurs</strong> : saisissez son adresse e-mail et choisissez le rôle « Expert-comptable ». Il accède à vos comptes depuis son propre compte, avec la double authentification.',
@@ -300,6 +349,36 @@ export const ECRANS = {
           'Paramètres → Mes données → <strong>Exporter toutes mes données</strong> (réservé au dirigeant) : un fichier complet, conforme au droit à la portabilité.',
         ),
         mots: 'export rgpd sauvegarde',
+      },
+    ],
+  },
+  pilotage: {
+    resume: 'Vos prochaines échéances fiscales, le budget de l’année comparé au réalisé, et en société le simulateur salaire ou dividendes.',
+    intro:
+      capture('pilotage', 'Écran Pilotage : budget de l’année comparé au réalisé') +
+      p(
+        '<strong>Échéances</strong> : les 12 prochains mois d’impôts et de formalités (impôt sur les sociétés, déclaration de résultats, honoraires à déclarer, CFE, approbation et dépôt des comptes, déclaration de revenus). Celles des 15 prochains jours apparaissent aussi dans « À faire ».',
+      ) +
+      p(
+        '<strong>Budget</strong> : fixez vos montants de l’année par rubrique (chiffre d’affaires, achats, charges externes, salaires…). Nexus compare au réalisé et à ce qui était prévu à la date du jour.',
+      ) +
+      p(
+        '<strong>Salaire ou dividendes</strong> (sociétés à l’impôt sur les sociétés) : pour un bénéfice donné, ce qui vous reste selon la part versée en salaire. Estimation simplifiée, à valider avec votre expert-comptable.',
+      ),
+    faq: [
+      {
+        q: 'Les dates des échéances sont-elles exactes ?',
+        r: p(
+          'Ce sont les dates habituelles pour un exercice standard. Le calendrier officiel est publié chaque année sur impots.gouv.fr ; votre expert-comptable confirme en cas de doute.',
+        ),
+        mots: 'calendrier fiscal date limite liasse cfe das2',
+      },
+      {
+        q: 'Que signifie « Prévu à date » dans le budget ?',
+        r: p(
+          'La part du budget annuel correspondant aux jours déjà écoulés de l’exercice : si votre chiffre d’affaires réalisé est en dessous, vous êtes en retard sur votre objectif.',
+        ),
+        mots: 'budget previsionnel objectif realise',
       },
     ],
   },

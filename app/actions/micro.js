@@ -2,13 +2,13 @@
  * Écran « micro ».
  */
 
-import { toCsv } from '../../core/exports.js?v=d77c78d';
-import { receiptsBook } from '../../core/micro.js?v=d77c78d';
-import { formatDecimalComma, parseEuros } from '../../core/money.js?v=d77c78d';
-import { render } from '../render.js?v=d77c78d';
-import { frDate, today, ui, ws } from '../state.js?v=d77c78d';
-import { download, save, toast } from '../store.js?v=d77c78d';
-import { microReceipts } from '../views/micro.js?v=d77c78d';
+import { toCsv } from '../../core/exports.js?v=b97f3bc';
+import { receiptsBook } from '../../core/micro.js?v=b97f3bc';
+import { formatDecimalComma, parseEuros } from '../../core/money.js?v=b97f3bc';
+import { render } from '../render.js?v=b97f3bc';
+import { frDate, today, ui, ws } from '../state.js?v=b97f3bc';
+import { download, save, toast } from '../store.js?v=b97f3bc';
+import { microReceipts } from '../views/micro.js?v=b97f3bc';
 
 /** Actions « micro » : data-action → fonction. */
 export const actionsTable = {

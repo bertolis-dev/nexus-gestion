@@ -4,13 +4,13 @@
  * Qonto, ou empreinte date|montant|libellé|rang pour le CSV), et un ré-import ne crée aucun doublon.
  */
 
-import { divRound, sum } from './money.js?v=d77c78d';
+import { divRound, sum } from './money.js?v=b97f3bc';
 
 /** Compte bancaire principal (512000), créé avec l'entreprise ; « default » le relie à sa ligne en base. */
 export const DEFAULT_BANK_ACCOUNT = { id: 'default', label: 'Compte principal', glAccount: '512000', provider: 'manual', ibanLast4: null };
 
 // Lecture des relevés (CSV, OFX…) : voir bank-import.js ; réexportée pour les appels existants.
-export { parseBankCsv, parseOfx } from './bank-import.js?v=d77c78d';
+export { parseBankCsv, parseOfx } from './bank-import.js?v=b97f3bc';
 
 const norm = (s) =>
   s

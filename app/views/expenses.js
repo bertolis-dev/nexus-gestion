@@ -2,19 +2,20 @@
  * Écran « expenses ».
  */
 
-import { VAT_RATES_BP } from '../../core/invoices.js?v=d77c78d';
-import { LIFECYCLE, nextStatuses } from '../../core/lifecycle.js?v=d77c78d';
-import { CHOOSABLE_EXPENSE_CATEGORIES, EXPENSE_CATEGORIES } from '../../core/pcg.js?v=d77c78d';
-import * as cloud from '../cloud.js?v=d77c78d';
-import { field, html, opt, raw } from '../html.js?v=d77c78d';
-import { ICONS } from '../icons.js?v=d77c78d';
-import { render } from '../render.js?v=d77c78d';
-import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=d77c78d';
-import { toast } from '../store.js?v=d77c78d';
-import { badge, icon, term, viewHeader } from '../ui/common.js?v=d77c78d';
-import { preparePhoto } from '../ui/photo.js?v=d77c78d';
-import { nexusRhButton, nexusRhPanel } from './nexusrh-import.js?v=d77c78d';
-import { viewAssets } from './assets.js?v=d77c78d';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=b97f3bc';
+import { LIFECYCLE, nextStatuses } from '../../core/lifecycle.js?v=b97f3bc';
+import { CHOOSABLE_EXPENSE_CATEGORIES, EXPENSE_CATEGORIES } from '../../core/pcg.js?v=b97f3bc';
+import * as cloud from '../cloud.js?v=b97f3bc';
+import { field, html, opt, raw } from '../html.js?v=b97f3bc';
+import { ICONS } from '../icons.js?v=b97f3bc';
+import { isMicro, render } from '../render.js?v=b97f3bc';
+import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=b97f3bc';
+import { toast } from '../store.js?v=b97f3bc';
+import { badge, icon, term, viewHeader } from '../ui/common.js?v=b97f3bc';
+import { preparePhoto } from '../ui/photo.js?v=b97f3bc';
+import { nexusRhButton, nexusRhPanel } from './nexusrh-import.js?v=b97f3bc';
+import { viewAssets } from './assets.js?v=b97f3bc';
+import { viewMileage } from './pilotage.js?v=b97f3bc';
 
 // ------------------------------------------------------------------ dépenses (§3.3)
 
@@ -24,13 +25,18 @@ export function viewExpenses() {
   const franchise = ws.company.vatRegime === 'franchise';
   const list = [...ws.purchases].reverse();
   const tabs = html`<div class="tabs" style="margin-bottom:14px">
-    <button class="tab ${ui.expensesTab === 'immobilisations' ? '' : 'active'}" data-action="expenses-tab" data-tab="depenses">Dépenses</button>
+    <button class="tab ${ui.expensesTab === 'immobilisations' || ui.expensesTab === 'trajets' ? '' : 'active'}" data-action="expenses-tab" data-tab="depenses">
+      Dépenses
+    </button>
     <button class="tab ${ui.expensesTab === 'immobilisations' ? 'active' : ''}" data-action="expenses-tab" data-tab="immobilisations">
       ${term('Équipements', 'Immobilisations')}
     </button>
+    ${isMicro() ? '' : html`<button class="tab ${ui.expensesTab === 'trajets' ? 'active' : ''}" data-action="expenses-tab" data-tab="trajets">Trajets en voiture</button>`}
   </div>`;
+  if (ui.expensesTab === 'trajets' && !isMicro())
+    return html`${viewHeader('Dépenses', 'Vos trajets professionnels avec votre véhicule personnel, au barème kilométrique.')}${tabs}${viewMileage()}`;
   if (ui.expensesTab === 'immobilisations') return html`${viewHeader('Dépenses', 'Vos équipements durables et leur amortissement.')}${tabs}${viewAssets()}`;
-  return html` ${viewHeader('Dépenses', 'Ajoutez vos factures d’achat : la catégorie suffit, Nexus fait le reste.', html`<label class="btn btn-secondary" style="margin:0" tabindex="0" data-file-picker>${icon('upload', 14)} Importer des factures reçues (XML, PDF Factur-X ou ZIP)<input type="file" accept=".xml,.pdf,.zip,application/xml,text/xml,application/pdf,application/zip" multiple data-action="einvoice-in-file" hidden /></label>${nexusRhButton()}`)}
+  return html` ${viewHeader('Dépenses', 'Ajoutez vos factures d’achat : la catégorie suffit, Nexus fait le reste.', html`<label class="btn btn-secondary" style="margin:0" tabindex="0" data-file-picker>${icon('upload', 14)} Importer des factures reçues (XML, PDF Factur-X ou ZIP)<input type="file" accept=".xml,.pdf,.zip,application/xml,text/xml,application/pdf,application/zip" multiple data-action="einvoice-in-file" hidden /></label>${nexusRhButton()}${ws.purchases.length ? html`<button class="btn btn-secondary" data-action="export-purchases-csv">Exporter (Excel)</button>` : ''}`)}
     ${tabs} ${ui.nexusRh ? nexusRhPanel() : ''} ${ui.pendingEinvoice ? einvoicePreview(ui.pendingEinvoice) : ''}
     <form class="card" data-form="purchase" style="display:flex;flex-direction:column;gap:14px">
       <h2>Ajouter une dépense</h2>

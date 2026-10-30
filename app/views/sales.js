@@ -2,20 +2,21 @@
  * Écran « sales ».
  */
 
-import { VAT_RATES_BP, checkInvoice, computeTotals, isVatExempt, issuerName, lineHt } from '../../core/invoices.js?v=d77c78d';
-import { FREQUENCIES, nextDate } from '../../core/recurring.js?v=d77c78d';
-import { field, html, opt, raw } from '../html.js?v=d77c78d';
-import { ICONS } from '../icons.js?v=d77c78d';
-import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=d77c78d';
-import { save, toast } from '../store.js?v=d77c78d';
-import { isUnconfirmed } from '../sync-ui.js?v=d77c78d';
-import { badge, viewHeader } from '../ui/common.js?v=d77c78d';
-import { qrSvg } from '../ui/qr.js?v=d77c78d';
-import { invoicePaymentQr } from '../../core/epc.js?v=d77c78d';
-import { lifecycleCard } from './expenses.js?v=d77c78d';
-import { viewInvoiceForm } from './invoice-form.js?v=d77c78d';
-import { depositCard } from './deposit.js?v=d77c78d';
-import { REMINDER_STEPS, dueReminderLevel, invoiceEmail, reminderMessage } from '../../core/reminders.js?v=d77c78d';
+import { VAT_RATES_BP, checkInvoice, computeTotals, isVatExempt, issuerName, lineHt } from '../../core/invoices.js?v=b97f3bc';
+import { FREQUENCIES, nextDate } from '../../core/recurring.js?v=b97f3bc';
+import { field, html, opt, raw } from '../html.js?v=b97f3bc';
+import { ICONS } from '../icons.js?v=b97f3bc';
+import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=b97f3bc';
+import { save, toast } from '../store.js?v=b97f3bc';
+import { isUnconfirmed } from '../sync-ui.js?v=b97f3bc';
+import { badge, viewHeader } from '../ui/common.js?v=b97f3bc';
+import { qrSvg } from '../ui/qr.js?v=b97f3bc';
+import { invoicePaymentQr } from '../../core/epc.js?v=b97f3bc';
+import { lifecycleCard } from './expenses.js?v=b97f3bc';
+import { viewInvoiceForm } from './invoice-form.js?v=b97f3bc';
+import { depositCard } from './deposit.js?v=b97f3bc';
+import { viewTime } from './pilotage.js?v=b97f3bc';
+import { REMINDER_STEPS, dueReminderLevel, invoiceEmail, reminderMessage } from '../../core/reminders.js?v=b97f3bc';
 
 // ------------------------------------------------------------------ factures (§3.2, §3.5)
 
@@ -40,6 +41,7 @@ export function viewSales(arg) {
   if (NEW_DOC_ROUTES[arg] || (arg && arg.startsWith('modifier-'))) return viewInvoiceForm(arg);
   if (arg) return viewInvoice(arg);
   if (ui.salesTab === 'recurrentes') return viewRecurring();
+  if (ui.salesTab === 'temps') return viewTime();
   const quotesTab = ui.salesTab === 'devis';
   const rec = new Map(ws.receivables(today()).map((r) => [r.invoice.id, r]));
   const buckets = { 'a-echoir': 0, '0-30': 0, '31-60': 0, '+60': 0 };
@@ -48,11 +50,18 @@ export function viewSales(arg) {
   const invoiced = new Set(ws.book.invoices.map((i) => i.quoteRef).filter(Boolean));
   const actions = html`<a class="btn btn-primary" href="#/ventes/nouvelle">Créer une facture</a
     ><a class="btn btn-secondary" href="#/ventes/nouveau-devis">Créer un devis</a
-    ><a class="btn btn-secondary" href="#/ventes/nouvel-acompte">Facture d'acompte</a>`;
+    ><a class="btn btn-secondary" href="#/ventes/nouvel-acompte">Facture d'acompte</a
+    >${ws.book.invoices.some((i) => i.status === 'issued') ? html`<button class="btn btn-secondary" data-action="export-invoices-csv">Exporter (Excel)</button>` : ''}`;
   const statusOf = (i) => {
     if (i.status === 'draft') return badge('Brouillon');
     if (i.type === 'quote')
-      return invoiced.has(i.number) ? badge('Facturé', 'success') : i.dueDate < today() ? badge('Expiré', 'muted') : badge('Envoyé', 'info');
+      return invoiced.has(i.number)
+        ? badge('Facturé', 'success')
+        : ui.quoteAcceptances?.[i.id]
+          ? badge(`Accepté en ligne le ${frDate(ui.quoteAcceptances[i.id].at.slice(0, 10))}`, 'success')
+          : i.dueDate < today()
+            ? badge('Expiré', 'muted')
+            : badge('Envoyé', 'info');
     if (i.type === 'credit') {
       const due = ws.book.outstanding(i);
       return html`<div class="badge-row">${badge('Avoir', 'primary')}${due < 0 ? badge(`À rembourser : ${eur(-due)}`, 'warning') : ''}</div>`;
@@ -79,6 +88,7 @@ export function viewSales(arg) {
       <button class="tab ${quotesTab ? '' : 'active'}" data-action="sales-tab" data-tab="factures">Factures</button>
       <button class="tab ${quotesTab ? 'active' : ''}" data-action="sales-tab" data-tab="devis">Devis</button>
       <button class="tab" data-action="sales-tab" data-tab="recurrentes">Récurrentes</button>
+      <button class="tab" data-action="sales-tab" data-tab="temps">Temps passé</button>
     </div>
     ${quotesTab ? '' : depositCard()}
     <div class="card table-card">
@@ -132,6 +142,7 @@ export function viewRecurring() {
     <button class="tab" data-action="sales-tab" data-tab="factures">Factures</button>
     <button class="tab" data-action="sales-tab" data-tab="devis">Devis</button>
     <button class="tab active" data-action="sales-tab" data-tab="recurrentes">Récurrentes</button>
+    <button class="tab" data-action="sales-tab" data-tab="temps">Temps passé</button>
   </div>`;
   const rows = ws.recurring.map((t) => {
     const ht = t.lines.reduce((s, l) => s + lineHt(l), 0);

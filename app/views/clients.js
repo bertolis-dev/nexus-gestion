@@ -3,11 +3,12 @@
  * factures et devis, habitudes de paiement), création, et import depuis un tableur.
  */
 
-import { clientDocuments, clientSummary } from '../../core/clients.js?v=d77c78d';
-import { DOC_TITLES } from './sales.js?v=d77c78d';
-import { field, html, opt } from '../html.js?v=d77c78d';
-import { eur, frDate, today, ui, ws } from '../state.js?v=d77c78d';
-import { badge, viewHeader } from '../ui/common.js?v=d77c78d';
+import { clientDocuments, clientSummary } from '../../core/clients.js?v=b97f3bc';
+import { DOC_TITLES } from './sales.js?v=b97f3bc';
+import { field, html, opt } from '../html.js?v=b97f3bc';
+import { eur, frDate, today, ui, ws } from '../state.js?v=b97f3bc';
+import { badge, viewHeader } from '../ui/common.js?v=b97f3bc';
+import { clientPortalCard } from './pilotage.js?v=b97f3bc';
 
 const days = (n) => (n === null ? '—' : `${n} jour${n > 1 ? 's' : ''}`);
 
@@ -224,7 +225,7 @@ function clientDetail(c) {
           </div>`
         : ''
     }
-    ${clientForm(c)}`;
+    ${clientPortalCard(c)} ${clientForm(c)}`;
 }
 
 /** Fiche du client (création ou modification). Le code du client, qui relie ses factures, ne change pas. */

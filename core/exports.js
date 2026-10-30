@@ -5,9 +5,9 @@
  * du navigateur (feuille de style d'impression de l'application).
  */
 
-import { trialBalance, generalLedger, journalReport } from './reports.js?v=d77c78d';
-import { JOURNALS } from './ledger.js?v=d77c78d';
-import { formatDecimalComma } from './money.js?v=d77c78d';
+import { trialBalance, generalLedger, journalReport } from './reports.js?v=b97f3bc';
+import { JOURNALS } from './ledger.js?v=b97f3bc';
+import { formatDecimalComma } from './money.js?v=b97f3bc';
 
 /**
  * Cellule CSV. Un texte commençant par =, +, -, @, une tabulation ou un retour chariot serait
@@ -65,4 +65,47 @@ export function journalsCsv(ledger, opts) {
     }
   }
   return toCsv(['Journal', 'Libellé du journal', 'N° écriture', 'Date', 'Pièce', 'Compte', 'Tiers', 'Libellé', 'Débit', 'Crédit'], rows);
+}
+
+const DOC_KIND = { invoice: 'Facture', credit: 'Avoir', deposit: 'Acompte', quote: 'Devis' };
+
+/** Liste des factures, avoirs et devis émis (écran Factures), avec le reste dû. */
+export function invoicesCsv(book) {
+  const rows = book.invoices
+    .filter((i) => i.status === 'issued')
+    .sort((a, b) => a.issueDate.localeCompare(b.issueDate) || a.number.localeCompare(b.number))
+    .map((i) => [
+      DOC_KIND[i.type] || 'Facture',
+      i.number,
+      frDate(i.issueDate),
+      frDate(i.dueDate),
+      i.client.name,
+      i.client.siren || '',
+      money(i.totals.totalHt),
+      money(i.totals.totalVat),
+      money(i.totals.totalTtc),
+      i.type === 'quote' ? '' : money(book.outstanding(i)),
+    ]);
+  return toCsv(['Type', 'Numéro', 'Date', 'Échéance', 'Client', 'SIREN', 'Total HT', 'TVA', 'Total TTC', 'Reste dû'], rows);
+}
+
+/** Liste des dépenses (écran Dépenses). */
+export function purchasesCsv(purchases, categoryLabel) {
+  const rows = [...purchases]
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .map((p) => {
+      const sign = p.type === 'credit' ? -1 : 1;
+      const ht = p.lines.reduce((s, l) => s + l.ht, 0);
+      return [
+        frDate(p.date),
+        p.supplier.name,
+        p.number || '',
+        [...new Set(p.lines.map((l) => categoryLabel(l.categoryId)))].join(', '),
+        money(sign * ht),
+        money(sign * (p.totalTtc - ht)),
+        money(sign * p.totalTtc),
+        money(sign * (p.totalTtc - p.paid)),
+      ];
+    });
+  return toCsv(['Date', 'Fournisseur', 'N° de facture', 'Catégorie', 'Total HT', 'TVA', 'Total TTC', 'Reste à payer'], rows);
 }

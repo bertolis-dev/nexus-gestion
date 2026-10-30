@@ -9,11 +9,11 @@
  * nombre d'écritures validées), l'état est rechargé depuis la base, qui fait foi.
  */
 
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js?v=d77c78d';
-import { stateFromRows, refusedUpdate } from '../core/sync.js?v=d77c78d';
-import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, pendingOutboxOps, OUTBOX_PREFIX } from '../core/outbox.js?v=d77c78d';
-import { ACCOUNTS } from '../core/pcg.js?v=d77c78d';
-import { mfaState, canRemoveFactor } from '../core/mfa.js?v=d77c78d';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js?v=b97f3bc';
+import { stateFromRows, refusedUpdate } from '../core/sync.js?v=b97f3bc';
+import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, pendingOutboxOps, OUTBOX_PREFIX } from '../core/outbox.js?v=b97f3bc';
+import { ACCOUNTS } from '../core/pcg.js?v=b97f3bc';
+import { mfaState, canRemoveFactor } from '../core/mfa.js?v=b97f3bc';
 
 // supabase-js (copie locale, app/vendor/) n'est chargé qu'en mode connecté : la démonstration et
 // le site public ne téléchargent pas ces 220 Ko.
@@ -21,7 +21,7 @@ let client = null;
 const authListeners = [];
 async function connect() {
   if (!client) {
-    const { createClient } = await import('./vendor/supabase.js?v=d77c78d');
+    const { createClient } = await import('./vendor/supabase.js?v=b97f3bc');
     // Session gardée dans le navigateur et renouvelée automatiquement : on reste connecté d'une visite
     // à l'autre, jusqu'à « Se déconnecter » (comme Nexus RH).
     client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -371,6 +371,43 @@ export async function importedRefs(structureId) {
 export async function logNexusRhImport(structureId, detail) {
   const supabase = await connect();
   return check(await supabase.rpc('log_nexus_rh_import', { p_structure: structureId, p_detail: detail }));
+}
+// ------------------------------------------------------------------ espace client (migration 0034)
+
+const missingTable = (err) => ['42P01', 'PGRST205', 'PGRST202', '42883'].includes(err?.code);
+
+/** Devis acceptés en ligne : { [id du devis]: { by, at } } ; vide si la migration n'est pas appliquée. */
+export async function quoteAcceptances(structureId) {
+  const supabase = await connect();
+  const { data, error } = await supabase.from('quote_acceptances').select('invoice_id, accepted_by, accepted_at').eq('structure_id', structureId);
+  if (error) {
+    if (missingTable(error)) return {};
+    throw error;
+  }
+  return Object.fromEntries(data.map((a) => [a.invoice_id, { by: a.accepted_by, at: a.accepted_at }]));
+}
+/** Liens actifs de l'espace d'un client (sous-compte 411…). */
+export async function listClientLinks(structureId, clientAux) {
+  const supabase = await connect();
+  return check(
+    await supabase
+      .from('client_links')
+      .select('id, created_at, expires_at')
+      .eq('structure_id', structureId)
+      .eq('client_aux', clientAux)
+      .is('revoked_at', null)
+      .gt('expires_at', new Date().toISOString())
+      .order('created_at', { ascending: false }),
+  );
+}
+/** Nouveau lien : le secret n'est rendu qu'une fois (seule son empreinte est gardée en base). */
+export async function createClientLink(structureId, clientAux, clientName) {
+  const supabase = await connect();
+  return check(await supabase.rpc('create_client_link', { p_structure: structureId, p_client_aux: clientAux, p_client_name: clientName }));
+}
+export async function revokeClientLink(linkId) {
+  const supabase = await connect();
+  return check(await supabase.rpc('revoke_client_link', { p_link: linkId }));
 }
 /** Téléchargement du dossier de clôture inscrit au journal d'audit (migration 0027). */
 export async function logClosingPackage(structureId, detail) {

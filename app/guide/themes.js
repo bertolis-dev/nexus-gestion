@@ -4,7 +4,7 @@
  * (« micro » ou « societe ») et `avance` au mode avancé.
  */
 
-import { capture, etapes, p } from './screens.js?v=d77c78d';
+import { capture, etapes, p } from './screens.js?v=b97f3bc';
 
 export const THEMES = [
   {
@@ -91,12 +91,82 @@ export const THEMES = [
           ),
       },
       {
+        id: 'f-reception',
+        q: 'Dois-je recevoir mes factures fournisseurs par une plateforme agréée ?',
+        mots: 'plateforme agreee reception obligation septembre 2026 facture electronique pa',
+        r: p(
+          'Oui : depuis le 1er septembre 2026, toute entreprise doit pouvoir <strong>recevoir</strong> ses factures électroniques par une plateforme agréée (l’émission devient obligatoire pour les TPE en septembre 2027). Choisissez-en une : plusieurs proposent une offre gratuite, souvent votre banque. Téléchargez ensuite les factures reçues (XML ou PDF Factur-X) et importez-les dans <strong>Dépenses</strong> → « Importer des factures reçues » : Nexus les enregistre toutes seules.',
+        ),
+      },
+      {
         id: 'f-electronique',
         q: 'Mes factures sont-elles prêtes pour la facturation électronique ?',
         mots: 'facture electronique factur x plateforme agreee depot 2027',
         r: p(
           'Oui : chaque facture contient les nouvelles mentions obligatoires et se télécharge en PDF Factur-X (la facture électronique est jointe au PDF). Le mode <strong>dépôt</strong> prépare vos factures pour la plateforme agréée que vous utilisez (souvent gratuite avec votre banque ou votre logiciel), et vous importez dans Dépenses celles que vous y recevez.',
         ),
+      },
+    ],
+  },
+  {
+    id: 'faire-pilotage',
+    titre: 'Piloter son activité',
+    icone: 'trendingUp',
+    intro: p('Anticiper vos échéances, suivre votre budget, facturer votre temps et partager vos documents avec vos clients.'),
+    entrees: [
+      {
+        id: 'p-echeances',
+        q: 'Quelles sont mes prochaines échéances fiscales ?',
+        vue: 'pilotage',
+        mots: 'echeance calendrier fiscal impot cfe liasse das2 date limite',
+        r: p(
+          'Écran <strong>Pilotage</strong>, onglet Échéances : les 12 prochains mois, avec le montant estimé quand Nexus peut le calculer (impôt sur les sociétés). Celles des 15 prochains jours sont aussi dans « À faire ».',
+        ),
+      },
+      {
+        id: 'p-budget',
+        q: 'Comment fixer et suivre mon budget ?',
+        vue: 'pilotage',
+        mots: 'budget objectif previsionnel realise',
+        r: etapes(
+          'Ouvrez <strong>Pilotage</strong>, onglet <strong>Budget</strong>.',
+          'Saisissez les montants HT de l’année par rubrique, puis <strong>Enregistrer le budget</strong>.',
+          'Le tableau compare ensuite le réalisé au budget et à ce qui était prévu à la date du jour.',
+        ),
+      },
+      {
+        id: 'p-remuneration',
+        q: 'Vaut-il mieux me verser un salaire ou des dividendes ?',
+        vue: 'pilotage',
+        pour: 'societe',
+        mots: 'salaire dividendes remuneration dirigeant simulateur',
+        r: p(
+          'Onglet <strong>Salaire ou dividendes</strong> de l’écran Pilotage : indiquez le bénéfice avant rémunération, Nexus compare cinq répartitions et indique la plus favorable. C’est une estimation par taux moyens : décidez avec votre expert-comptable (le salaire ouvre aussi des droits à la retraite).',
+        ),
+      },
+      {
+        id: 'p-temps',
+        q: 'Comment noter mon temps et le facturer ?',
+        vue: 'ventes',
+        mots: 'temps passe heures taux horaire facturer regie',
+        r: p(
+          'Factures → onglet <strong>Temps passé</strong> : notez chaque intervention, puis <strong>Préparer la facture</strong> pour le client. Les temps facturés sont rattachés à la facture ; si vous supprimez le brouillon, ils redeviennent à facturer.',
+        ),
+      },
+      {
+        id: 'p-espace-client',
+        q: 'Comment mes clients acceptent-ils un devis en ligne ?',
+        vue: 'clients',
+        mots: 'espace client devis accepter en ligne signature bon pour accord portail',
+        r:
+          etapes(
+            'Émettez le devis (Factures → Devis).',
+            'Sur la fiche du client, carte <strong>Espace client</strong>, créez le lien et envoyez-le-lui.',
+            'Le client ouvre le lien, lit le devis, saisit son nom et clique sur <strong>Accepter le devis</strong> : son nom, la date et l’heure sont enregistrés.',
+          ) +
+          p(
+            'Le devis apparaît alors « Accepté en ligne » : transformez-le en facture en un clic. Ce n’est pas une signature électronique certifiée, mais une acceptation datée et nominative.',
+          ),
       },
     ],
   },
@@ -266,6 +336,14 @@ export const THEMES = [
         mots: 'email mail envoi test brevo',
         r: p(
           'Oui, quand l’envoi est en service : Paramètres → Relances clients indique son état, et le bouton <strong>M’envoyer un e-mail de test</strong> vérifie qu’un message arrive. Les réponses de vos clients arrivent dans votre boîte e-mail.',
+        ),
+      },
+      {
+        id: 's-conformite',
+        q: 'Nexus respecte-t-il les règles des logiciels de comptabilité ?',
+        mots: 'conformite inalterabilite securisation conservation archivage controle fiscal loi anti fraude',
+        r: p(
+          'Oui pour les quatre conditions demandées : <strong>inaltérabilité</strong> (une écriture validée ou une facture émise ne se modifie plus ; on corrige par une nouvelle écriture ou un avoir), <strong>sécurisation</strong> (journal d’audit chaîné, double authentification), <strong>conservation</strong> (données gardées par exercice, exercices clos en lecture seule) et <strong>archivage</strong> (FEC, dossier de clôture, export complet). La page « Conformité » du site les détaille.',
         ),
       },
       {

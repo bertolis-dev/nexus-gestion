@@ -3,8 +3,8 @@
  * Méthodes installées sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { divRound, sum } from '../money.js?v=d77c78d';
-import { lineHt } from '../invoices.js?v=d77c78d';
+import { divRound, sum } from '../money.js?v=b97f3bc';
+import { lineHt } from '../invoices.js?v=b97f3bc';
 import {
   ACTIVITY_TYPES,
   acreReminder,
@@ -17,10 +17,12 @@ import {
   urssafDeadline,
   urssafDeclaration,
   vatFranchiseMessage,
-} from '../micro.js?v=d77c78d';
-import { combineEstimates } from '../workspace.js?v=d77c78d';
-import { dueReminderLevel } from '../reminders.js?v=d77c78d';
-import { cashForecast } from '../forecast.js?v=d77c78d';
+} from '../micro.js?v=b97f3bc';
+import { combineEstimates } from '../workspace.js?v=b97f3bc';
+import { dueReminderLevel } from '../reminders.js?v=b97f3bc';
+import { cashForecast } from '../forecast.js?v=b97f3bc';
+import { fiscalTodo } from '../fiscal-calendar.js?v=b97f3bc';
+import { stockLevels } from '../stock.js?v=b97f3bc';
 
 export const microMethods = {
   /** Liste « À faire » classée par urgence (§5). */
@@ -196,6 +198,10 @@ export const microMethods = {
       items.push({ urgency: 1, kind: 'receipt', view: 'banque', text: `${noReceipt.length} dépense${noReceipt.length > 1 ? 's' : ''} sans justificatif` });
     items.push(...this._vatTodo(today));
     items.push(...this._urssafTodo(today));
+    items.push(...fiscalTodo(this, today));
+    const low = stockLevels(this.company.catalog, this.stockMoves, this.book.invoices).filter((s) => s.low);
+    if (low.length)
+      items.push({ urgency: 1, kind: 'stock', view: 'parametres', arg: 'catalogue', text: `Stock bas : ${low.map((s) => s.item.label).join(', ')}` });
     // Trésorerie prévue sous zéro : en tête (tri stable), avec le montant qui manquera au point le plus bas.
     const cash = this._cashTodo(today);
     return [...(cash ? [cash] : []), ...items.sort((a, b) => b.urgency - a.urgency)];

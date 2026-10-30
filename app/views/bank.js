@@ -2,20 +2,20 @@
  * Écran « bank ».
  */
 
-import { decodeStatement, importStatement } from '../../core/bank-import.js?v=d77c78d';
-import { reconciliationStatement } from '../../core/bank.js?v=d77c78d';
-import { VAT_RATES_BP } from '../../core/invoices.js?v=d77c78d';
-import { parseEuros } from '../../core/money.js?v=d77c78d';
-import { CHOOSABLE_EXPENSE_CATEGORIES } from '../../core/pcg.js?v=d77c78d';
-import { INCOME_CATEGORIES, MAX_BANK_ACCOUNTS, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=d77c78d';
-import { field, html, opt, raw } from '../html.js?v=d77c78d';
-import { ICONS } from '../icons.js?v=d77c78d';
-import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=d77c78d';
-import { dataVersion, save, toast } from '../store.js?v=d77c78d';
-import * as cloud from '../cloud.js?v=d77c78d';
-import { render } from '../render.js?v=d77c78d';
-import { preparePhoto } from '../ui/photo.js?v=d77c78d';
-import { badge, icon, term, viewHeader } from '../ui/common.js?v=d77c78d';
+import { decodeStatement, importStatement } from '../../core/bank-import.js?v=b97f3bc';
+import { reconciliationStatement } from '../../core/bank.js?v=b97f3bc';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=b97f3bc';
+import { parseEuros } from '../../core/money.js?v=b97f3bc';
+import { CHOOSABLE_EXPENSE_CATEGORIES } from '../../core/pcg.js?v=b97f3bc';
+import { INCOME_CATEGORIES, MAX_BANK_ACCOUNTS, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=b97f3bc';
+import { field, html, opt, raw } from '../html.js?v=b97f3bc';
+import { ICONS } from '../icons.js?v=b97f3bc';
+import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=b97f3bc';
+import { dataVersion, save, toast } from '../store.js?v=b97f3bc';
+import * as cloud from '../cloud.js?v=b97f3bc';
+import { render } from '../render.js?v=b97f3bc';
+import { preparePhoto } from '../ui/photo.js?v=b97f3bc';
+import { badge, icon, term, viewHeader } from '../ui/common.js?v=b97f3bc';
 
 // ------------------------------------------------------------------ banque (§3.4)
 
@@ -144,7 +144,7 @@ export function viewBank() {
     } catch {}
   }
   return html` ${viewHeader('Banque', 'Associez chaque mouvement à une facture, ou choisissez une catégorie.', html`<label class="btn btn-primary" style="margin:0" tabindex="0" data-file-picker>${icon('upload', 14)} Importer un relevé (CSV, OFX, CAMT.053, QIF)<input type="file" accept=".csv,.ofx,.qfx,.xml,.qif,.txt" data-action="bank-file" hidden /></label>`)}
-    ${bankAccountsBar()} ${bankImportReport()}
+    ${bankAccountsBar()} ${bankImportReport()} ${sureMatchesNotice()}
     <div class="card table-card" id="bank-open">${bankOpenCard(open)}</div>
     <div class="card">
       <h2>${term('Votre solde bancaire est-il juste ?', 'État de rapprochement')}</h2>
@@ -311,5 +311,15 @@ export function bankImportReport() {
         : ''
     }
     <div><button class="btn btn-secondary btn-sm" data-action="bank-import-dismiss">Fermer</button></div>
+  </div>`;
+}
+
+/** Paiements reconnus sans ambiguïté (montant exact, une seule pièce) : rapprochés en un clic. */
+function sureMatchesNotice() {
+  const sure = ws.sureMatches();
+  if (sure.length < 2) return '';
+  return html`<div class="notice-gold" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+    <span><strong>${sure.length} paiements</strong> correspondent exactement à une facture ou une dépense (même montant, même tiers).</span>
+    <button type="button" class="btn btn-gold btn-sm" data-action="bank-match-sure">Tout rapprocher</button>
   </div>`;
 }

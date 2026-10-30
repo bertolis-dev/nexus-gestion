@@ -2,19 +2,20 @@
  * Écran « settings ».
  */
 
-import { field, html, opt, raw } from '../html.js?v=d77c78d';
-import { isMicro } from '../render.js?v=d77c78d';
-import { cloudState, eur, pct, ui, ws } from '../state.js?v=d77c78d';
-import { VAT_RATES_BP } from '../../core/invoices.js?v=d77c78d';
-import { ICONS } from '../icons.js?v=d77c78d';
-import { badge, viewHeader } from '../ui/common.js?v=d77c78d';
-import * as cloud from '../cloud.js?v=d77c78d';
-import { render } from '../render.js?v=d77c78d';
-import { membersCard, microSettingsCard, openingPreview, securityCard } from './onboarding.js?v=d77c78d';
-import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=d77c78d';
-import { normalizeIban } from '../../core/epc.js?v=d77c78d';
-import { INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=d77c78d';
-import { DEFAULT_TEMPLATES, REMINDER_STEPS } from '../../core/reminders.js?v=d77c78d';
+import { field, html, opt, raw } from '../html.js?v=b97f3bc';
+import { isMicro } from '../render.js?v=b97f3bc';
+import { cloudState, eur, pct, ui, ws } from '../state.js?v=b97f3bc';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=b97f3bc';
+import { ICONS } from '../icons.js?v=b97f3bc';
+import { badge, viewHeader } from '../ui/common.js?v=b97f3bc';
+import * as cloud from '../cloud.js?v=b97f3bc';
+import { render } from '../render.js?v=b97f3bc';
+import { membersCard, microSettingsCard, openingPreview, securityCard } from './onboarding.js?v=b97f3bc';
+import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=b97f3bc';
+import { normalizeIban } from '../../core/epc.js?v=b97f3bc';
+import { stockPanel } from './pilotage.js?v=b97f3bc';
+import { INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=b97f3bc';
+import { DEFAULT_TEMPLATES, REMINDER_STEPS } from '../../core/reminders.js?v=b97f3bc';
 
 // ------------------------------------------------------------------ paramètres
 
@@ -148,8 +149,17 @@ function catalogTab() {
           </select>`,
         )}
       </div>
+      <details class="stock-options">
+        <summary>Suivre le stock de cet article (facultatif)</summary>
+        <div class="form-grid" style="margin-top:10px">
+          <label class="form-field-checkbox" style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="tracked" />Suivre le stock</label>
+          ${field('Stock de départ', html`<input class="input" name="stockInitial" inputmode="decimal" placeholder="0" />`)}
+          ${field('Alerte quand il reste', html`<input class="input" name="stockAlert" inputmode="decimal" placeholder="Ex. : 5" />`, { hint: 'Signalé dans « À faire » sur l’accueil.' })}
+        </div>
+      </details>
       <div><button class="btn btn-primary" type="submit">Ajouter au catalogue</button></div>
     </form>
+    ${stockPanel()}
     ${
       items.length
         ? html`<div class="card table-card" style="min-width:0">
@@ -169,7 +179,7 @@ function catalogTab() {
                   ${items.map(
                     (it) =>
                       html`<tr>
-                        <td>${it.label}</td>
+                        <td>${it.label}${it.tracked ? html` ${badge('Stock suivi', 'info')}` : ''}</td>
                         <td class="num">${eur(it.unitPrice)}</td>
                         ${franchise ? '' : html`<td class="num">${pct(it.vatRateBp)}</td>`}
                         <td>${it.nature === 'biens' ? 'Bien' : 'Service'}</td>

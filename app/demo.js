@@ -2,12 +2,12 @@
  * Entreprise de démonstration.
  */
 
-import { parseBankCsv } from '../core/bank.js?v=d77c78d';
-import { Workspace } from '../core/workspace.js?v=d77c78d';
-import { vatNumberFromSiren } from '../core/company.js?v=d77c78d';
-import { render } from './render.js?v=d77c78d';
-import { frDate, setWs, today, ui, ws } from './state.js?v=d77c78d';
-import { save, toast } from './store.js?v=d77c78d';
+import { parseBankCsv } from '../core/bank.js?v=b97f3bc';
+import { Workspace } from '../core/workspace.js?v=b97f3bc';
+import { vatNumberFromSiren } from '../core/company.js?v=b97f3bc';
+import { render } from './render.js?v=b97f3bc';
+import { frDate, setWs, today, ui, ws } from './state.js?v=b97f3bc';
+import { save, toast } from './store.js?v=b97f3bc';
 
 // ------------------------------------------------------------------ démonstration
 
@@ -105,6 +105,23 @@ export function seedDemo() {
     anchorDate: back(-1, 1),
     paymentDays: 30,
     lines: [{ label: 'Maintenance mensuelle', qty: 1, unitPrice: 35000, vatRateBp: 2000, nature: 'services' }],
+  });
+  // Pilotage : budget de l'année, temps passé à facturer et un trajet en voiture, pour des écrans parlants.
+  ws.saveBudget({ ca: 9000000, externes: 1800000, achats: 400000, impots: 150000 });
+  for (const [day, label, minutes] of [
+    [3, 'Atelier de cadrage', 150],
+    [5, 'Maquettes des écrans', 240],
+    [6, 'Atelier de cadrage', 90],
+  ])
+    ws.saveTimeEntry({ date: back(0, day), clientId: bio.id, label, minutes, rate: 7000 });
+  ws.addMileage({
+    date: back(0, 4),
+    km: 64,
+    horsepower: 5,
+    driver: 'Claire Durand',
+    from: 'Lyon',
+    to: 'Villefranche-sur-Saône',
+    purpose: 'rendez-vous Bio & Co',
   });
   save();
   location.hash = '#/accueil';

@@ -4,14 +4,14 @@
  * depuis le menu du compte, ou par le bouton « ? » à la page de l'écran affiché.
  */
 
-import { extrait, rechercher, surligner } from '../../core/guide-search.js?v=d77c78d';
-import { guideSections } from '../guide/sections.js?v=d77c78d';
-import { html, raw } from '../html.js?v=d77c78d';
-import { ICONS } from '../icons.js?v=d77c78d';
-import { isMicro, navItems, route } from '../render.js?v=d77c78d';
-import { ws } from '../state.js?v=d77c78d';
-import { icon } from '../ui/common.js?v=d77c78d';
-import { garderFocus, startTour } from '../ui/tour.js?v=d77c78d';
+import { extrait, rechercher, surligner } from '../../core/guide-search.js?v=b97f3bc';
+import { guideSections } from '../guide/sections.js?v=b97f3bc';
+import { html, raw } from '../html.js?v=b97f3bc';
+import { ICONS } from '../icons.js?v=b97f3bc';
+import { isMicro, navItems, route } from '../render.js?v=b97f3bc';
+import { ws } from '../state.js?v=b97f3bc';
+import { icon } from '../ui/common.js?v=b97f3bc';
+import { garderFocus, startTour } from '../ui/tour.js?v=b97f3bc';
 
 const SUGGESTIONS = ['Créer une facture', 'Remise', 'Relancer un client', 'Importer un relevé', 'Photo du ticket', 'Déclarer la TVA', 'Clôture', 'Nexus RH'];
 
