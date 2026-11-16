@@ -5,11 +5,11 @@
  * client_portal / accept_quote de la base (migration 0034), jamais dans une adresse ni un journal.
  */
 
-import { SUPABASE_ANON_KEY, SUPABASE_URL } from './config.js?v=b97f3bc';
-import { html } from './html.js?v=b97f3bc';
-import { formatEuros } from '../core/money.js?v=b97f3bc';
-import { invoicePaymentQr } from '../core/epc.js?v=b97f3bc';
-import { qrSvg } from './ui/qr.js?v=b97f3bc';
+import { SUPABASE_ANON_KEY, SUPABASE_URL } from './config.js?v=fe24ff7';
+import { html } from './html.js?v=fe24ff7';
+import { formatEuros } from '../core/money.js?v=fe24ff7';
+import { invoicePaymentQr } from '../core/epc.js?v=fe24ff7';
+import { qrSvg } from './ui/qr.js?v=fe24ff7';
 
 const root = document.getElementById('portal-root');
 const token = location.hash.slice(1);
@@ -142,7 +142,7 @@ function fail(message) {
 async function downloadPdf(id) {
   const d = data.documents.find((x) => x.id === id);
   try {
-    const { invoicePdf } = await import('./facturx-ui.js?v=b97f3bc');
+    const { invoicePdf } = await import('./facturx-ui.js?v=fe24ff7');
     const bytes = await invoicePdf(d, d.issuer, { outstanding: outstanding(d) });
     const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
     const a = Object.assign(document.createElement('a'), {

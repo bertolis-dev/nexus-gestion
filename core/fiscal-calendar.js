@@ -5,9 +5,9 @@
  * exercice standard, à confirmer chaque année (calendrier publié sur impots.gouv.fr).
  */
 
-import { sum } from './money.js?v=b97f3bc';
-import { corporateTaxSchedule } from './istax.js?v=b97f3bc';
-import { categoryById } from './pcg.js?v=b97f3bc';
+import { sum } from './money.js?v=fe24ff7';
+import { corporateTaxSchedule } from './istax.js?v=fe24ff7';
+import { categoryById } from './pcg.js?v=fe24ff7';
 
 /** Seuil de déclaration des honoraires, commissions et droits d'auteur versés (DAS2) : 1 200 € TTC par an et par bénéficiaire. */
 export const DAS2_THRESHOLD = 120000;
@@ -112,9 +112,18 @@ export function fiscalCalendar(ws, today, { days = 365 } = {}) {
         'Vos revenus professionnels sont déclarés sur votre déclaration personnelle. Date limite selon votre département (fin mai à début juin).',
       );
   }
-  // CFE : avis à consulter en ligne, paiement au 15 décembre (pas de CFE l'année de création).
+  // CFE : avis à consulter en ligne, paiement au 15 décembre. L'année de création : pas de CFE à payer,
+  // mais la déclaration initiale 1447-C-SD est à déposer avant le 31 décembre.
   const y = Number(today.slice(0, 4));
-  for (const year of [y, y + 1])
+  const created = Number((c.activityStart || (!(ws.archives || []).length ? fy.start : '')).slice(0, 4)) || null;
+  if (created)
+    add(
+      `${created}-12-31`,
+      'cfe-initiale',
+      `Déclaration initiale de CFE (formulaire 1447-C-SD)`,
+      'À déposer avant le 31 décembre de l’année de création, auprès du service des impôts des entreprises (ou en ligne). Elle sert à calculer la CFE des années suivantes ; aucune CFE n’est due l’année de création.',
+    );
+  for (const year of [y, y + 1].filter((yy) => yy !== created))
     add(
       `${year}-12-15`,
       'cfe',

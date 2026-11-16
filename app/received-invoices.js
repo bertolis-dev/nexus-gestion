@@ -3,9 +3,9 @@
  * extrait) ou archive ZIP contenant ces fichiers. pdf-lib n'est chargé que pour un PDF.
  */
 
-import { readIncomingInvoice } from '../core/einvoice-in.js?v=b97f3bc';
-import { extractFacturXml } from '../core/facturx.js?v=b97f3bc';
-import { readZip } from '../core/zip.js?v=b97f3bc';
+import { readIncomingInvoice } from '../core/einvoice-in.js?v=fe24ff7';
+import { extractFacturXml } from '../core/facturx.js?v=fe24ff7';
+import { readZip } from '../core/zip.js?v=fe24ff7';
 
 /** Décompression « deflate » native du navigateur. */
 async function inflateRaw(bytes) {
@@ -14,7 +14,7 @@ async function inflateRaw(bytes) {
 }
 
 async function xmlOf(name, bytes) {
-  if (/\.pdf$/i.test(name)) return extractFacturXml(bytes, await import('./vendor/pdf-lib.js?v=b97f3bc'));
+  if (/\.pdf$/i.test(name)) return extractFacturXml(bytes, await import('./vendor/pdf-lib.js?v=fe24ff7'));
   return new TextDecoder().decode(bytes);
 }
 

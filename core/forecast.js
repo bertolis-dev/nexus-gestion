@@ -6,11 +6,11 @@
  * solde de l'exercice clos, solde estimé de l'exercice terminé non clôturé : core/istax.js).
  */
 
-import { addDays } from './dates.js?v=b97f3bc';
-import { dueOccurrences } from './recurring.js?v=b97f3bc';
-import { computeTotals, isVatExempt } from './invoices.js?v=b97f3bc';
-import { corporateTaxSchedule } from './istax.js?v=b97f3bc';
-import { payrollOutflows } from './payroll.js?v=b97f3bc';
+import { addDays } from './dates.js?v=fe24ff7';
+import { dueOccurrences } from './recurring.js?v=fe24ff7';
+import { computeTotals, isVatExempt } from './invoices.js?v=fe24ff7';
+import { corporateTaxSchedule } from './istax.js?v=fe24ff7';
+import { payrollOutflows } from './payroll.js?v=fe24ff7';
 
 /** Délai de paiement d'une dépense sans échéance connue (usage, à valider par l'expert-comptable). */
 export const DEFAULT_SUPPLIER_TERMS_DAYS = 30;
