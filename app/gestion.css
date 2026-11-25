@@ -1539,3 +1539,12 @@ tr[data-href]:focus-visible,
   font-size: 13px;
   line-height: 1.6;
 }
+
+/* Espace client : lien du pied de page lisible dans les deux thèmes. */
+.portal-footer a {
+  color: var(--color-primary-text);
+}
+/* QR code de paiement : fond blanc imposé (lecture par les banques), texte foncé dans les deux thèmes. */
+.payment-qr .text-muted {
+  color: #4a4f59;
+}

@@ -2,21 +2,21 @@
  * Écran « sales ».
  */
 
-import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=1f0ed9f';
-import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=1f0ed9f';
-import { LIFECYCLE } from '../../core/lifecycle.js?v=1f0ed9f';
-import { lookupSiren } from '../company-lookup.js?v=1f0ed9f';
-import { render } from '../render.js?v=1f0ed9f';
-import * as cloud from '../cloud.js?v=1f0ed9f';
-import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=1f0ed9f';
-import { invoiceEmail, reminderMessage } from '../../core/reminders.js?v=1f0ed9f';
-import { explainEmailError } from '../email-errors.js?v=1f0ed9f';
-import { download, save, toast, whenSaved } from '../store.js?v=1f0ed9f';
-import { isUnconfirmed } from '../sync-ui.js?v=1f0ed9f';
-import { emptyLine, persistDraft } from '../views/invoice-form.js?v=1f0ed9f';
-import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=1f0ed9f';
-import { depositCandidates } from '../../core/deposit.js?v=1f0ed9f';
-import { createZip } from '../../core/zip.js?v=1f0ed9f';
+import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=ba94fa4';
+import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=ba94fa4';
+import { LIFECYCLE } from '../../core/lifecycle.js?v=ba94fa4';
+import { lookupSiren } from '../company-lookup.js?v=ba94fa4';
+import { render } from '../render.js?v=ba94fa4';
+import * as cloud from '../cloud.js?v=ba94fa4';
+import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=ba94fa4';
+import { invoiceEmail, reminderMessage } from '../../core/reminders.js?v=ba94fa4';
+import { explainEmailError } from '../email-errors.js?v=ba94fa4';
+import { download, save, toast, whenSaved } from '../store.js?v=ba94fa4';
+import { isUnconfirmed } from '../sync-ui.js?v=ba94fa4';
+import { emptyLine, persistDraft } from '../views/invoice-form.js?v=ba94fa4';
+import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=ba94fa4';
+import { depositCandidates } from '../../core/deposit.js?v=ba94fa4';
+import { createZip } from '../../core/zip.js?v=ba94fa4';
 
 /**
  * Justificatif de la dépense refacturée, joint au PDF si demandé sur la facture (mode connecté : la
@@ -32,7 +32,7 @@ async function receiptAttachments(inv) {
   if (!doc) return [];
   try {
     const bytes = new Uint8Array(await (await fetch(await cloud.receiptUrl(doc.storage_path))).arrayBuffer());
-    const ext = (doc.original_name.split('.').pop() || 'pdf').toLowerCase();
+    const ext = (/\.([a-z0-9]{1,5})$/i.exec(doc.original_name || '')?.[1] || (doc.mime_type === 'application/pdf' ? 'pdf' : 'bin')).toLowerCase();
     const base = `justificatif-${inv.rebillOf.supplier}-${inv.rebillOf.number || inv.rebillOf.date}`.replace(/[^\w.-]+/g, '-');
     return [{ name: `${base}.${ext}`, bytes, mime: doc.mime_type, description: `Justificatif de la dépense refacturée (${inv.rebillOf.supplier})` }];
   } catch {

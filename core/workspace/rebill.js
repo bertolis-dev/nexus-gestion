@@ -7,37 +7,55 @@
  * Méthodes installées sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { divRound, sum } from '../money.js?v=1f0ed9f';
-import { categoryById } from '../pcg.js?v=1f0ed9f';
-import { addDays } from '../dates.js?v=1f0ed9f';
+import { divRound, sum, vatFromHt } from '../money.js?v=ba94fa4';
+import { categoryById } from '../pcg.js?v=ba94fa4';
+import { addDays } from '../dates.js?v=ba94fa4';
 
 export class RebillError extends Error {}
 
 const frDate = (iso) => iso.split('-').reverse().join('/');
 
 /**
- * Lignes de la facture : une par ligne de la dépense, au HT de la dépense, plus la marge (en % sur
- * chaque ligne, ou en euros répartis au prorata, le reste sur la dernière ligne).
+ * Lignes de la facture : une par ligne de la dépense, à son coût réel (HT + TVA non récupérable), plus la
+ * marge (en % sur chaque ligne, ou en euros répartis au prorata, au plus fort reste).
  */
 export function rebillLines(purchase, { marginPct = 0, marginAmount = 0, franchise = false } = {}) {
+  const reverse = (purchase.supplier?.country || 'FR') !== 'FR' || purchase.reverseCharge === true;
   if (purchase.type === 'credit') throw new RebillError('Un avoir fournisseur ne se refacture pas.');
   if (!(marginPct >= 0 && marginPct <= 1000)) throw new RebillError('Marge en % invalide (0 à 1 000 %).');
   if (!Number.isSafeInteger(marginAmount) || marginAmount < 0) throw new RebillError('Marge en euros invalide.');
   if (marginPct && marginAmount) throw new RebillError('Choisissez une marge en % ou en euros, pas les deux.');
-  const totalHt = sum(purchase.lines.map((l) => l.ht));
-  if (totalHt <= 0) throw new RebillError('Dépense sans montant hors taxe : rien à refacturer.');
+  // Coût réel de chaque ligne : HT + TVA non récupérable (franchise, catégories à déduction partielle),
+  // comme la charge passée en 6xx par purchaseEntry.
+  const costs = purchase.lines.map((l) => {
+    const vat = reverse ? vatFromHt(l.ht, l.vatRateBp ?? 2000) : Number.isSafeInteger(l.vat) ? l.vat : divRound(l.ht * (l.vatRateBp || 0), 10000);
+    const pct = franchise ? 0 : (categoryById(l.categoryId)?.vatDeductiblePct ?? 100);
+    return l.ht + (vat - divRound(vat * pct, 100));
+  });
+  const totalCost = sum(costs);
+  if (totalCost <= 0) throw new RebillError('Dépense sans montant hors taxe : rien à refacturer.');
   const ref = [purchase.supplier.name, purchase.number && `n° ${purchase.number}`, `du ${frDate(purchase.date)}`].filter(Boolean).join(' ');
-  let left = marginAmount;
+  // Marge en euros répartie au plus fort reste : chaque part ≥ 0, total exact.
+  const exact = costs.map((c) => (marginAmount * c) / totalCost);
+  const shares = exact.map(Math.floor);
+  let rest = marginAmount - sum(shares);
+  exact
+    .map((x, i) => [x - Math.floor(x), i])
+    .sort((a, b) => b[0] - a[0] || a[1] - b[1])
+    .forEach(([, i]) => {
+      if (rest > 0) {
+        shares[i] += 1;
+        rest -= 1;
+      }
+    });
   return purchase.lines.map((l, i) => {
     const cat = categoryById(l.categoryId);
-    const share = i === purchase.lines.length - 1 ? left : divRound(marginAmount * l.ht, totalHt);
-    left -= share;
-    const margin = marginPct ? divRound(l.ht * Math.round(marginPct * 100), 10000) : share;
+    const margin = marginPct ? divRound(costs[i] * Math.round(marginPct * 100), 10000) : shares[i];
     const what = l.label || cat?.label || 'Dépense';
     return {
       label: `Refacturation : ${what} — ${ref}`.slice(0, 200),
       qty: 1,
-      unitPrice: l.ht + margin,
+      unitPrice: costs[i] + margin,
       // TVA de l'entreprise qui refacture : taux de la dépense s'il y en a un, sinon 20 % ; 0 en franchise.
       vatRateBp: franchise ? 0 : l.vatRateBp || 2000,
       nature: l.nature || cat?.nature || 'services',

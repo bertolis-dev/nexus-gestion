@@ -4,7 +4,7 @@
  * (rapprochées par la désignation de l'article), plus les retours sur avoir.
  */
 
-import { sum } from './money.js?v=1f0ed9f';
+import { sum } from './money.js?v=ba94fa4';
 
 const key = (label) =>
   String(label || '')

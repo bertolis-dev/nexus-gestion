@@ -4,7 +4,7 @@
  * (« micro » ou « societe ») et `avance` au mode avancé.
  */
 
-import { capture, etapes, p } from './screens.js?v=1f0ed9f';
+import { capture, etapes, p } from './screens.js?v=ba94fa4';
 
 export const THEMES = [
   {
@@ -188,7 +188,7 @@ export const THEMES = [
             'Cochez « Joindre le justificatif » pour l’ajouter au PDF de la facture, puis <strong>Préparer la facture</strong> : vérifiez le brouillon et émettez-le.',
           ) +
           p(
-            'La facture reprend le libellé, la date et le montant hors taxe de la dépense, avec la TVA de votre entreprise : c’est une vente ordinaire (pas des débours). La dépense affiche ensuite « Refacturée sur F-… ».',
+            'La facture reprend le libellé et le montant hors taxe de la dépense (sa date figure dans le libellé ; la facture est datée du jour), avec la TVA de votre entreprise : c’est une vente ordinaire (pas des débours). La dépense affiche ensuite « Refacturée sur F-… ».',
           ),
       },
       {

@@ -4,8 +4,8 @@
  * code inversé n'est pas lu par toutes les applications bancaires).
  */
 
-import { qrMatrix } from '../vendor/qrcode.js?v=1f0ed9f';
-import { raw } from '../html.js?v=1f0ed9f';
+import { qrMatrix } from '../vendor/qrcode.js?v=ba94fa4';
+import { raw } from '../html.js?v=ba94fa4';
 
 export function qrSvg(text, { size = 120, label = 'QR code' } = {}) {
   const m = qrMatrix(text);

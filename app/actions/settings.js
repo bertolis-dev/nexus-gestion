@@ -2,15 +2,15 @@
  * Écran « settings ».
  */
 
-import * as cloud from '../cloud.js?v=1f0ed9f';
-import { render } from '../render.js?v=1f0ed9f';
-import { cloudState, frDate, today, ui, ws } from '../state.js?v=1f0ed9f';
-import { download, save, toast } from '../store.js?v=1f0ed9f';
-import { forgetRule } from '../../core/categorization.js?v=1f0ed9f';
-import { explainEmailError } from '../email-errors.js?v=1f0ed9f';
-import { refreshEmailStatus } from '../sync-ui.js?v=1f0ed9f';
-import { removeCatalogItem, saveCatalogItem } from '../../core/catalog.js?v=1f0ed9f';
-import { readPrice } from '../views/invoice-form.js?v=1f0ed9f';
+import * as cloud from '../cloud.js?v=ba94fa4';
+import { render } from '../render.js?v=ba94fa4';
+import { cloudState, frDate, today, ui, ws } from '../state.js?v=ba94fa4';
+import { download, save, toast } from '../store.js?v=ba94fa4';
+import { forgetRule } from '../../core/categorization.js?v=ba94fa4';
+import { explainEmailError } from '../email-errors.js?v=ba94fa4';
+import { refreshEmailStatus } from '../sync-ui.js?v=ba94fa4';
+import { removeCatalogItem, saveCatalogItem } from '../../core/catalog.js?v=ba94fa4';
+import { readPrice } from '../views/invoice-form.js?v=ba94fa4';
 
 /** Ajout au catalogue (formulaire de Paramètres > Prestations et articles). */
 export function catalogSubmit(f, form) {

@@ -26,7 +26,12 @@ export function saveCatalogItem(catalog = [], { id, label, unitPrice, vatRateBp,
   };
   // Article suivi en stock (core/stock.js) : stock de départ et seuil d'alerte facultatif.
   if (tracked) {
-    const qty = (v) => Number(String(v ?? '').replace(',', '.'));
+    const qty = (v) =>
+      Number(
+        String(v ?? '')
+          .replace(/[\s\u00a0\u202f]/g, '')
+          .replace(',', '.'),
+      );
     if (!Number.isFinite(qty(stockInitial)) || qty(stockInitial) < 0) throw new CatalogError('Stock de départ illisible.');
     if (stockAlert !== null && stockAlert !== '' && (!Number.isFinite(qty(stockAlert)) || qty(stockAlert) < 0))
       throw new CatalogError('Seuil d’alerte illisible.');

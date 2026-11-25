@@ -3,8 +3,8 @@
  * TVA non déductible appliquée automatiquement, détection des immobilisations et des doublons.
  */
 
-import { divRound, splitTtc, sum, vatFromHt } from './money.js?v=1f0ed9f';
-import { categoryById } from './pcg.js?v=1f0ed9f';
+import { divRound, splitTtc, sum, vatFromHt } from './money.js?v=ba94fa4';
+import { categoryById } from './pcg.js?v=ba94fa4';
 
 /** Ligne d'achat saisie TTC : HT et TVA dont la somme redonne exactement le TTC. */
 export function ttcLine(ttc, vatRateBp) {

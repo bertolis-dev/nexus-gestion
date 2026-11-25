@@ -4,12 +4,12 @@
  * Actions et formulaire dans le même fichier.
  */
 
-import { field, html, opt, raw } from '../html.js?v=1f0ed9f';
-import { cloudState, eur, today, ui, ws } from '../state.js?v=1f0ed9f';
-import { badge } from '../ui/common.js?v=1f0ed9f';
-import { render } from '../render.js?v=1f0ed9f';
-import { save, toast } from '../store.js?v=1f0ed9f';
-import { parseEuros, sum } from '../../core/money.js?v=1f0ed9f';
+import { field, html, opt, raw } from '../html.js?v=ba94fa4';
+import { cloudState, eur, today, ui, ws } from '../state.js?v=ba94fa4';
+import { badge } from '../ui/common.js?v=ba94fa4';
+import { render } from '../render.js?v=ba94fa4';
+import { save, toast } from '../store.js?v=ba94fa4';
+import { parseEuros, sum } from '../../core/money.js?v=ba94fa4';
 
 /** Pièce justificative enregistrée pour la dépense (ou pour son paiement en banque). */
 export function hasReceipt(p) {
@@ -25,16 +25,24 @@ export const canMarkRebill = () => ui.demo || (cloudState.role || 'dirigeant') =
 
 /** Badges et bouton de la colonne « Statut » d'une dépense. */
 export function rebillCell(p) {
-  if (p.type === 'credit') return '';
+  // Avoir, indemnités kilométriques ou note de frais d'un salarié : rien à refacturer à un client.
+  if (p.type === 'credit' || ['dirigeant', 'salarie'].includes(p.supplier.kind)) return '';
   const inv = ws.rebilledBy(p.id);
   if (inv)
     return html`<a class="badge badge-success" href="#/ventes/${inv.status === 'draft' ? `modifier-${inv.id}` : inv.id}"
       >Refacturée sur ${inv.number || 'un brouillon'}</a
     >`;
   const marked = (ws.company.toRebill || []).includes(p.id);
-  return html`${marked ? badge('À refacturer', 'warning') : ''}<button type="button" class="btn-link" data-action="rebill-open" data-id="${p.id}">
-      Refacturer à un client
-    </button>`;
+  const who = `${p.supplier.name}${p.number ? ` ${p.number}` : ''}`;
+  return html`${marked ? badge('À refacturer', 'warning') : ''}<button
+      type="button"
+      class="btn-link"
+      data-action="rebill-open"
+      data-id="${p.id}"
+      aria-label="Refacturer ${who} à un client"
+    >
+      Refacturer à un client</button
+    >${marked && canMarkRebill() ? html`<button type="button" class="btn-link" data-action="rebill-unmark" data-id="${p.id}" aria-label="Retirer ${who} de la liste à refacturer">Retirer de la liste</button>` : ''}`;
 }
 
 /** Onglets de filtre au-dessus de la liste des dépenses. */
@@ -47,7 +55,11 @@ export function rebillFilter() {
   </div>`;
 }
 
-export const filterPurchases = (list) => (ui.rebillOnly ? list.filter((p) => ws.toRebill().includes(p)) : list);
+export function filterPurchases(list) {
+  // Plus rien à refacturer : retour à toutes les dépenses (pas de faux « Aucune dépense enregistrée »).
+  if (ui.rebillOnly && !ws.toRebill().length) ui.rebillOnly = false;
+  return ui.rebillOnly ? list.filter((p) => ws.toRebill().includes(p)) : list;
+}
 
 /** Formulaire de refacturation de la dépense choisie. */
 export function rebillPanel() {
@@ -57,10 +69,10 @@ export function rebillPanel() {
   const ht = sum(p.lines.map((l) => l.ht));
   const receipt = hasReceipt(p);
   return html`<form class="card" data-form="rebill" data-id="${p.id}" style="display:flex;flex-direction:column;gap:12px" aria-labelledby="rebill-title">
-    <h2 id="rebill-title" style="margin:0">Refacturer « ${p.supplier.name}${p.number ? ` n° ${p.number}` : ''} » (${eur(ht)} HT)</h2>
+    <h2 id="rebill-title" tabindex="-1" style="margin:0">Refacturer « ${p.supplier.name}${p.number ? ` n° ${p.number}` : ''} » (${eur(ht)} HT)</h2>
     <p class="text-muted" style="margin:0">
-      Un brouillon de facture reprend le libellé, la date et le montant hors taxe, au prix coûtant. La TVA est celle de votre entreprise : c’est une vente
-      ordinaire, pas des débours.
+      Un brouillon de facture, daté du jour, reprend le libellé, la date et le montant de la dépense, à son coût réel (HT, plus la TVA que vous ne récupérez
+      pas). La TVA est celle de votre entreprise : c’est une vente ordinaire, pas des débours.
     </p>
     ${f.error ? html`<div class="issues-box" role="alert">${f.error}</div>` : ''}
     ${
@@ -107,11 +119,18 @@ export const actionsTable = {
   'rebill-open': async ({ id }) => {
     ui.rebillFor = id;
     ui.rebillForm = null;
+    ui.focusTarget = '#rebill-title';
     render();
     document.querySelector('form[data-form="rebill"]')?.scrollIntoView({ block: 'start' });
   },
   'rebill-close': async () => {
+    ui.focusTarget = `[data-action="rebill-open"][data-id="${ui.rebillFor}"]`;
     ui.rebillFor = null;
+    render();
+  },
+  'rebill-unmark': async ({ id }) => {
+    ws.markToRebill(id, false);
+    save();
     render();
   },
   'rebill-filter': async ({ el }) => {
@@ -132,9 +151,19 @@ if (typeof document !== 'undefined')
       const value = String(f.margin || '').trim();
       let marginPct = 0;
       let marginAmount = 0;
-      if (f.marginType === 'pct') marginPct = Number(value.replace(',', '.'));
-      if (f.marginType === 'eur') marginAmount = parseEuros(value || '0');
-      if (f.marginType !== 'none' && (!value || !(Number(value.replace(',', '.')) >= 0))) throw new Error('Indiquez la valeur de la marge (exemple : 10).');
+      if (f.marginType === 'none' && value)
+        throw new Error('Choisissez le type de marge (en % ou en euros), ou videz la valeur pour facturer au prix coûtant.');
+      if (f.marginType === 'pct') {
+        marginPct = Number(value.replace(/[\s\u00a0\u202f%]/g, '').replace(',', '.'));
+        if (!value || !(marginPct >= 0)) throw new Error('Indiquez la marge en % (exemple : 10).');
+      }
+      if (f.marginType === 'eur') {
+        try {
+          marginAmount = parseEuros(value);
+        } catch {
+          throw new Error('Indiquez la marge en euros HT (exemple : 25 ou 1 000,50).');
+        }
+      }
       const draft = ws.rebillPurchase(form.dataset.id, {
         clientId: f.clientId,
         today: today(),

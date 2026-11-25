@@ -5,9 +5,9 @@
  * exercice standard, à confirmer chaque année (calendrier publié sur impots.gouv.fr).
  */
 
-import { sum } from './money.js?v=1f0ed9f';
-import { corporateTaxSchedule } from './istax.js?v=1f0ed9f';
-import { categoryById } from './pcg.js?v=1f0ed9f';
+import { sum } from './money.js?v=ba94fa4';
+import { corporateTaxSchedule } from './istax.js?v=ba94fa4';
+import { categoryById } from './pcg.js?v=ba94fa4';
 
 /** Seuil de déclaration des honoraires, commissions et droits d'auteur versés (DAS2) : 1 200 € TTC par an et par bénéficiaire. */
 export const DAS2_THRESHOLD = 120000;
@@ -115,7 +115,8 @@ export function fiscalCalendar(ws, today, { days = 365 } = {}) {
   // CFE : avis à consulter en ligne, paiement au 15 décembre. L'année de création : pas de CFE à payer,
   // mais la déclaration initiale 1447-C-SD est à déposer avant le 31 décembre.
   const y = Number(today.slice(0, 4));
-  const created = Number((c.activityStart || (!(ws.archives || []).length ? fy.start : '')).slice(0, 4)) || null;
+  // Date de début d'activité inconnue : aucune hypothèse (une entreprise ancienne qui débute dans Nexus paie sa CFE).
+  const created = Number(String(c.activityStart || '').slice(0, 4)) || null;
   if (created)
     add(
       `${created}-12-31`,

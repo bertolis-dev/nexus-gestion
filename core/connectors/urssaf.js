@@ -19,7 +19,7 @@
  * module reste testable sans réseau.
  */
 
-import { isValidSiren } from '../invoices.js?v=1f0ed9f';
+import { isValidSiren } from '../invoices.js?v=ba94fa4';
 
 export const URSSAF_SPACE_URL = 'https://www.autoentrepreneur.urssaf.fr/portail/accueil.html';
 export const URSSAF_CREATE_SPACE_URL = 'https://www.autoentrepreneur.urssaf.fr/portail/accueil/creer-votre-compte-etape-1.html';

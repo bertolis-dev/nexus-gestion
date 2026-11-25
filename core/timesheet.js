@@ -4,7 +4,7 @@
  * proposée ; elle redevient facturable si le brouillon est supprimé.
  */
 
-import { divRound, sum } from './money.js?v=1f0ed9f';
+import { divRound, sum } from './money.js?v=ba94fa4';
 
 export class TimeError extends Error {}
 
@@ -46,9 +46,11 @@ export function unbilledByClient(entries = [], invoiceIds = new Set()) {
     const g = groups.get(e.clientId) || { clientId: e.clientId, clientName: e.clientName, entries: [], minutes: 0, amount: 0 };
     g.entries.push(e);
     g.minutes += e.minutes;
-    g.amount += entryAmount(e);
     groups.set(e.clientId, g);
   }
+  // Montant affiché = celui de la facture qui sera préparée (arrondi par prestation, pas par saisie).
+  for (const g of groups.values())
+    g.amount = sum(timeInvoiceLines(g.entries, { vatRateBp: 0 }).map((l) => divRound(Math.round(l.qty * 1000) * l.unitPrice, 1000)));
   return [...groups.values()].sort((a, b) => b.amount - a.amount);
 }
 

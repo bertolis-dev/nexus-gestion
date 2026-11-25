@@ -4,10 +4,10 @@
  * Méthodes installées sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { kmBeforeTrip, tripAllowance } from '../mileage.js?v=1f0ed9f';
-import { isBilled, timeEntry, timeInvoiceLines } from '../timesheet.js?v=1f0ed9f';
-import { stockMove } from '../stock.js?v=1f0ed9f';
-import { addDays } from '../dates.js?v=1f0ed9f';
+import { kmBeforeTrip, tripAllowance } from '../mileage.js?v=ba94fa4';
+import { isBilled, timeEntry, timeInvoiceLines } from '../timesheet.js?v=ba94fa4';
+import { stockMove } from '../stock.js?v=ba94fa4';
+import { addDays } from '../dates.js?v=ba94fa4';
 
 /** Score minimal et écart avec la deuxième proposition pour rapprocher sans demander. */
 const SURE_SCORE = 90;
@@ -22,8 +22,15 @@ export const pilotageMethods = {
     const who = String(driver || '').trim();
     if (!who) throw new Error('Indiquez le nom du conducteur.');
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date || '')) throw new Error('Indiquez la date du trajet.');
-    const distance = Math.round(Number(String(km).replace(',', '.')) * 10) / 10;
-    const kmBefore = kmBeforeTrip(this.purchases, { date, vehicle });
+    const distance =
+      Math.round(
+        Number(
+          String(km)
+            .replace(/[\s\u00a0\u202f]/g, '')
+            .replace(',', '.'),
+        ) * 10,
+      ) / 10;
+    const kmBefore = kmBeforeTrip(this.purchases, { date, vehicle, driver: who });
     const { amount, scaleYear } = tripAllowance({ km: distance, horsepower: Number(horsepower), electric, kmBefore, year: Number(date.slice(0, 4)) });
     const trip = [from, to]
       .map((s) => String(s).trim())

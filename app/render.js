@@ -2,26 +2,26 @@
  * Rendu général : choix de l’écran, cadre de l’application, recherche globale, repères d’accessibilité.
  */
 
-import { html, raw } from './html.js?v=1f0ed9f';
-import { ICONS } from './icons.js?v=1f0ed9f';
-import { featureBySlug, featureSlug, features, loadFeatures, viewFeature, viewLanding } from './site/landing.js?v=1f0ed9f';
-import { cloudState, eur, frDate, ui, ws } from './state.js?v=1f0ed9f';
-import { getTheme } from './store.js?v=1f0ed9f';
-import { syncStatusHtml } from './sync-ui.js?v=1f0ed9f';
-import { LOGO, badge, brand } from './ui/common.js?v=1f0ed9f';
-import { viewAuth, viewMfa, viewStructurePicker } from './views/auth.js?v=1f0ed9f';
-import { viewBank } from './views/bank.js?v=1f0ed9f';
-import { viewClosing } from './views/closing.js?v=1f0ed9f';
-import { viewCompta } from './views/compta.js?v=1f0ed9f';
-import { viewExpenses } from './views/expenses.js?v=1f0ed9f';
-import { viewHome } from './views/home.js?v=1f0ed9f';
-import { viewUrssaf } from './views/micro.js?v=1f0ed9f';
-import { viewOnboarding } from './views/onboarding.js?v=1f0ed9f';
-import { runRecurring, viewSales } from './views/sales.js?v=1f0ed9f';
-import { viewSettings } from './views/settings.js?v=1f0ed9f';
-import { viewClients } from './views/clients.js?v=1f0ed9f';
-import { viewPilotage } from './views/pilotage.js?v=1f0ed9f';
-import { viewVat } from './views/vat.js?v=1f0ed9f';
+import { html, raw } from './html.js?v=ba94fa4';
+import { ICONS } from './icons.js?v=ba94fa4';
+import { featureBySlug, featureSlug, features, loadFeatures, viewFeature, viewLanding } from './site/landing.js?v=ba94fa4';
+import { cloudState, eur, frDate, ui, ws } from './state.js?v=ba94fa4';
+import { getTheme } from './store.js?v=ba94fa4';
+import { syncStatusHtml } from './sync-ui.js?v=ba94fa4';
+import { LOGO, badge, brand } from './ui/common.js?v=ba94fa4';
+import { viewAuth, viewMfa, viewStructurePicker } from './views/auth.js?v=ba94fa4';
+import { viewBank } from './views/bank.js?v=ba94fa4';
+import { viewClosing } from './views/closing.js?v=ba94fa4';
+import { viewCompta } from './views/compta.js?v=ba94fa4';
+import { viewExpenses } from './views/expenses.js?v=ba94fa4';
+import { viewHome } from './views/home.js?v=ba94fa4';
+import { viewUrssaf } from './views/micro.js?v=ba94fa4';
+import { viewOnboarding } from './views/onboarding.js?v=ba94fa4';
+import { runRecurring, viewSales } from './views/sales.js?v=ba94fa4';
+import { viewSettings } from './views/settings.js?v=ba94fa4';
+import { viewClients } from './views/clients.js?v=ba94fa4';
+import { viewPilotage } from './views/pilotage.js?v=ba94fa4';
+import { viewVat } from './views/vat.js?v=ba94fa4';
 
 // ------------------------------------------------------------------ rendu général
 
@@ -263,6 +263,26 @@ export function markInvalidFields(root) {
  * Titre de l'onglet du navigateur = titre de l'écran ; à chaque changement d'écran (pas à chaque
  * rafraîchissement), le focus va sur ce titre pour que les lecteurs d'écran l'annoncent.
  */
+/** Focus rendu à la cible demandée (ui.focusTarget) ou au bouton de la dernière action ; vrai si réussi. */
+function refocus() {
+  const target = ui.focusTarget;
+  const r = ui.refocus;
+  ui.focusTarget = null;
+  ui.refocus = null;
+  let el = target ? $('view-root').querySelector(target) : null;
+  if (!el && r?.action) {
+    const attrs = Object.entries({ id: r.id, index: r.index, tab: r.tab, value: r.value })
+      .filter(([, v]) => v !== undefined)
+      .map(([k, v]) => `[data-${k}="${CSS.escape(v)}"]`)
+      .join('');
+    el = $('view-root').querySelector(`[data-action="${CSS.escape(r.action)}"]${attrs}`);
+  }
+  if (!el) return false;
+  if (!el.matches('a, button, input, select, textarea, [tabindex]')) el.tabIndex = -1;
+  el.focus();
+  return true;
+}
+
 export function announceScreen(key) {
   const h1 = $('view-root').querySelector('h1');
   if (!h1) return;
@@ -277,6 +297,7 @@ export function announceScreen(key) {
   // Même écran : on ne déplace le focus que s'il a été perdu (élément remplacé par le rendu).
   const lost = !document.activeElement || document.activeElement === document.body;
   if (ui.lastScreen === key && !lost) return;
+  if (ui.lastScreen === key && refocus()) return;
   ui.lastScreen = key;
   h1.tabIndex = -1;
   h1.focus({ preventScroll: true });

@@ -7,7 +7,7 @@
  *  - « nexus » : Nexus passe aussi l'écriture de paie du mois.
  */
 
-import { formatEuros, sum } from './money.js?v=1f0ed9f';
+import { formatEuros, sum } from './money.js?v=ba94fa4';
 
 /**
  * Paramètres 2026, à valider (docs/regles-a-valider.md) : cotisations de tous les organismes payées le

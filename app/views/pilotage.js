@@ -3,17 +3,20 @@
  * écrans : temps passé (Factures), trajets (Dépenses), stock (Paramètres › Catalogue), espace client (fiche client).
  */
 
-import { fiscalCalendar } from '../../core/fiscal-calendar.js?v=1f0ed9f';
-import { BUDGET_LINES, budgetReport } from '../../core/budget.js?v=1f0ed9f';
-import { compareScenarios, capitalCents, REMUNERATION_DEFAULTS } from '../../core/remuneration.js?v=1f0ed9f';
-import { entryAmount, formatMinutes, isBilled, unbilledByClient } from '../../core/timesheet.js?v=1f0ed9f';
-import { stockLevels } from '../../core/stock.js?v=1f0ed9f';
-import { HORSEPOWER_CHOICES } from '../../core/mileage.js?v=1f0ed9f';
-import { field, html, opt, raw } from '../html.js?v=1f0ed9f';
-import { isMicro } from '../render.js?v=1f0ed9f';
-import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=1f0ed9f';
-import { badge, viewHeader } from '../ui/common.js?v=1f0ed9f';
+import { fiscalCalendar } from '../../core/fiscal-calendar.js?v=ba94fa4';
+import { BUDGET_LINES, budgetReport } from '../../core/budget.js?v=ba94fa4';
+import { compareScenarios, capitalCents, isAssimileSalarie, REMUNERATION_DEFAULTS } from '../../core/remuneration.js?v=ba94fa4';
+import { entryAmount, formatMinutes, isBilled, unbilledByClient } from '../../core/timesheet.js?v=ba94fa4';
+import { stockLevels } from '../../core/stock.js?v=ba94fa4';
+import { HORSEPOWER_CHOICES } from '../../core/mileage.js?v=ba94fa4';
+import { field, html, opt, raw } from '../html.js?v=ba94fa4';
+import { isMicro } from '../render.js?v=ba94fa4';
+import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=ba94fa4';
+import { badge, viewHeader } from '../ui/common.js?v=ba94fa4';
+import { isOwner, prefs } from '../actions/pilotage.js?v=ba94fa4';
 
+/** Préférence de saisie : réglage de l'entreprise, sinon celle gardée sur cet appareil (collaborateur). */
+const pref = (k) => ws.company[k] ?? prefs()[k];
 const euros = (c) => (c ? (c / 100).toFixed(2).replace('.', ',').replace(/,00$/, '') : '');
 const errorBox = (msg) => (msg ? html`<div class="issues-box" role="alert">${msg}</div>` : '');
 
@@ -143,7 +146,7 @@ function budgetTab() {
       <div class="form-grid">
         ${BUDGET_LINES.map((b) => field(b.label, html`<input class="input" name="${b.key}" inputmode="decimal" value="${f[b.key] ?? euros(budget[b.key])}" placeholder="0" />`))}
       </div>
-      <div><button class="btn btn-primary" type="submit">Enregistrer le budget</button></div>
+      ${isOwner() ? html`<div><button class="btn btn-primary" type="submit">Enregistrer le budget</button></div>` : html`<p class="form-hint" style="margin:0">Le budget est fixé par le dirigeant.</p>`}
     </form>`;
 }
 
@@ -152,12 +155,12 @@ function remunerationTab() {
   const profit = f.profit ?? '';
   const result = f.result;
   const p = REMUNERATION_DEFAULTS;
-  const salarie = /^SAS/i.test(ws.company.legalForm || '');
+  const salarie = isAssimileSalarie(ws.company.legalForm);
   return html`<form class="card" data-form="remuneration" style="display:flex;flex-direction:column;gap:12px">
       <h2>Salaire ou dividendes : que vous reste-t-il ?</h2>
       <p class="text-muted" style="margin:0">
         Indiquez le bénéfice de l’année avant votre rémunération. Nexus compare cinq répartitions, de « tout en dividendes » à « tout en salaire »
-        (${salarie ? 'président de SAS : assimilé salarié' : 'gérant majoritaire : travailleur indépendant'}).
+        (${salarie ? 'président de SAS ou SA : assimilé salarié' : 'gérant majoritaire : travailleur indépendant'}).
       </p>
       ${errorBox(f.error)}
       <div class="form-grid">
@@ -257,7 +260,7 @@ export function viewTime() {
             )}
             ${field('Ce qui a été fait', html`<input class="input" name="label" required maxlength="200" value="${f.label || ''}" placeholder="Ex. : Développement du site" />`)}
             ${field('Durée', html`<input class="input" name="duration" required value="${f.duration || ''}" placeholder="1h30, 45 min, 2,5" />`)}
-            ${field('Taux horaire HT (€)', html`<input class="input" name="rate" inputmode="decimal" required value="${f.rate ?? euros(ws.company.hourlyRate) ?? ''}" placeholder="Ex. : 60" />`)}
+            ${field('Taux horaire HT (€)', html`<input class="input" name="rate" inputmode="decimal" required value="${f.rate ?? euros(pref('hourlyRate')) ?? ''}" placeholder="Ex. : 60" />`)}
           </div>
           <div><button class="btn btn-primary" type="submit">Enregistrer</button></div>
         </form>`
@@ -362,7 +365,7 @@ export function viewMileage() {
       ${errorBox(f.error)}
       <div class="form-grid">
         ${field('Date', html`<input class="input" type="date" name="date" required value="${f.date || today()}" />`)}
-        ${field('Conducteur', html`<input class="input" name="driver" required value="${f.driver || ws.company.mileageDriver || trips[0]?.supplier.name || ''}" placeholder="Prénom Nom" />`)}
+        ${field('Conducteur', html`<input class="input" name="driver" required value="${f.driver || pref('mileageDriver') || trips[0]?.supplier.name || ''}" placeholder="Prénom Nom" />`)}
         ${field('Départ', html`<input class="input" name="from" value="${f.from || ''}" placeholder="Ex. : Lyon" />`)}
         ${field('Arrivée', html`<input class="input" name="to" value="${f.to || ''}" placeholder="Ex. : Grenoble" />`)}
         ${field('Motif', html`<input class="input" name="purpose" value="${f.purpose || ''}" placeholder="Ex. : rendez-vous client" />`)}
@@ -370,14 +373,14 @@ export function viewMileage() {
         ${field(
           'Puissance fiscale',
           html`<select class="input" name="horsepower">
-            ${HORSEPOWER_CHOICES.map((cv) => opt(cv, cv === 7 ? '7 CV et plus' : `${cv} CV`, cv === Number(f.horsepower || ws.company.mileageHorsepower || 5)))}
+            ${HORSEPOWER_CHOICES.map((cv) => opt(cv, cv === 7 ? '7 CV et plus' : `${cv} CV`, cv === Number(f.horsepower || pref('mileageHorsepower') || 5)))}
           </select>`,
           { hint: 'Case P.6 de la carte grise.' },
         )}
       </div>
       <label class="form-field-checkbox" style="display:flex;gap:8px;align-items:center"
-        ><input type="checkbox" name="electric" ${f.electric || ws.company.mileageElectric ? raw('checked') : ''} />Véhicule 100 % électrique (barème majoré de
-        20 %)</label
+        ><input type="checkbox" name="electric" ${f.electric || pref('mileageElectric') ? raw('checked') : ''} />Véhicule 100 % électrique (barème majoré de 20
+        %)</label
       >
       <div><button class="btn btn-primary" type="submit">Ajouter le trajet</button></div>
     </form>

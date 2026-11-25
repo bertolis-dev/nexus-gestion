@@ -3,16 +3,16 @@
  * espace client, rapprochement en un clic et exports des listes.
  */
 
-import { parseBudget } from '../../core/budget.js?v=1f0ed9f';
-import { parseDuration } from '../../core/timesheet.js?v=1f0ed9f';
-import { clientAux } from '../../core/invoices.js?v=1f0ed9f';
-import { invoicesCsv, purchasesCsv } from '../../core/exports.js?v=1f0ed9f';
-import { categoryById } from '../../core/pcg.js?v=1f0ed9f';
-import * as cloud from '../cloud.js?v=1f0ed9f';
-import { render } from '../render.js?v=1f0ed9f';
-import { cloudState, today, ui, ws } from '../state.js?v=1f0ed9f';
-import { download, save, toast } from '../store.js?v=1f0ed9f';
-import { runRemuneration } from '../views/pilotage.js?v=1f0ed9f';
+import { parseBudget } from '../../core/budget.js?v=ba94fa4';
+import { parseDuration } from '../../core/timesheet.js?v=ba94fa4';
+import { clientAux } from '../../core/invoices.js?v=ba94fa4';
+import { invoicesCsv, purchasesCsv } from '../../core/exports.js?v=ba94fa4';
+import { categoryById } from '../../core/pcg.js?v=ba94fa4';
+import * as cloud from '../cloud.js?v=ba94fa4';
+import { render } from '../render.js?v=ba94fa4';
+import { cloudState, eur, today, ui, ws } from '../state.js?v=ba94fa4';
+import { download, save, toast } from '../store.js?v=ba94fa4';
+import { runRemuneration } from '../views/pilotage.js?v=ba94fa4';
 
 const cents = (text) => {
   const raw = String(text || '')
@@ -24,11 +24,32 @@ const cents = (text) => {
 /** Adresse de l'espace client : le secret est dans le fragment (#), jamais envoyé à un serveur ni dans les journaux. */
 export const portalUrl = (token) => `${location.origin}${location.pathname.replace(/[^/]*$/, '')}espace-client.html#${token}`;
 
+/** Dirigeant (ou démonstration) : seul rôle autorisé par la base à modifier ces réglages de l'entreprise. */
+export const isOwner = () => ui.demo || (cloudState.role || 'dirigeant') === 'dirigeant';
+
+/** Préférence de saisie : réglage de l'entreprise pour le dirigeant, sinon gardée sur l'appareil. */
+function rememberPref(values) {
+  if (isOwner()) return Object.assign(ws.company, values);
+  try {
+    localStorage.setItem('nexus_gestion_prefs_saisie', JSON.stringify({ ...prefs(), ...values }));
+  } catch {
+    // stockage indisponible : la préférence n'est pas gardée
+  }
+}
+export function prefs() {
+  try {
+    return { ...JSON.parse(localStorage.getItem('nexus_gestion_prefs_saisie') || '{}') };
+  } catch {
+    return {};
+  }
+}
+
 /** Formulaires du pilotage ; renvoie true si le formulaire a été traité. */
 export function pilotageSubmit(kind, f, fd) {
   if (kind === 'budget') {
     ui.budgetForm = { ...f };
     try {
+      if (!isOwner()) throw new Error('Le budget est fixé par le dirigeant.');
       ws.saveBudget(parseBudget(f));
       ui.budgetForm = null;
       save();
@@ -55,7 +76,7 @@ export function pilotageSubmit(kind, f, fd) {
       const rate = cents(f.rate);
       if (Number.isNaN(rate)) throw new Error('Taux horaire illisible (exemple : 60 ou 62,50).');
       ws.saveTimeEntry({ date: f.date, clientId: f.clientId, label: f.label, minutes: parseDuration(f.duration), rate });
-      ws.company.hourlyRate = rate;
+      rememberPref({ hourlyRate: rate });
       ui.lastTimeClient = f.clientId;
       ui.timeForm = null;
       save();
@@ -70,10 +91,10 @@ export function pilotageSubmit(kind, f, fd) {
     ui.mileageForm = { ...f, electric: fd.has('electric') };
     try {
       const p = ws.addMileage({ ...f, electric: fd.has('electric') });
-      Object.assign(ws.company, { mileageDriver: f.driver.trim(), mileageHorsepower: Number(f.horsepower), mileageElectric: fd.has('electric') });
+      rememberPref({ mileageDriver: f.driver.trim(), mileageHorsepower: Number(f.horsepower), mileageElectric: fd.has('electric') });
       ui.mileageForm = null;
       save();
-      toast(`Trajet enregistré : indemnité de ${(p.totalTtc / 100).toFixed(2).replace('.', ',')} €.`);
+      toast(`Trajet enregistré : indemnité de ${eur(p.totalTtc)}.`);
     } catch (err) {
       ui.mileageForm.error = err.message;
     }

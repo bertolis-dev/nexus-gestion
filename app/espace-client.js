@@ -5,11 +5,11 @@
  * client_portal / accept_quote de la base (migration 0034), jamais dans une adresse ni un journal.
  */
 
-import { SUPABASE_ANON_KEY, SUPABASE_URL } from './config.js?v=1f0ed9f';
-import { html } from './html.js?v=1f0ed9f';
-import { formatEuros } from '../core/money.js?v=1f0ed9f';
-import { invoicePaymentQr } from '../core/epc.js?v=1f0ed9f';
-import { qrSvg } from './ui/qr.js?v=1f0ed9f';
+import { SUPABASE_ANON_KEY, SUPABASE_URL } from './config.js?v=ba94fa4';
+import { html } from './html.js?v=ba94fa4';
+import { formatEuros } from '../core/money.js?v=ba94fa4';
+import { invoicePaymentQr } from '../core/epc.js?v=ba94fa4';
+import { qrSvg } from './ui/qr.js?v=ba94fa4';
 
 const root = document.getElementById('portal-root');
 const token = location.hash.slice(1);
@@ -91,7 +91,7 @@ function render() {
       <div>
         <p class="text-muted" style="margin:0">Espace client</p>
         <h1 style="margin:0">${data.company.name}</h1>
-        <p style="margin:4px 0 0">Documents de <strong>${data.client}</strong></p>
+        <p style="margin:4px 0 0">Client : <strong>${data.client}</strong></p>
       </div>
       ${
         totalDue
@@ -107,7 +107,7 @@ function render() {
         ? html`<ul class="portal-docs">
             ${docs.map(
               (d) =>
-                html`<li class="card">
+                html`<li class="card" data-doc="${d.id}">
                   <div class="portal-doc-head">
                     <div>
                       <strong>${KIND[d.type] || 'Facture'} ${d.number}</strong>
@@ -142,7 +142,7 @@ function fail(message) {
 async function downloadPdf(id) {
   const d = data.documents.find((x) => x.id === id);
   try {
-    const { invoicePdf } = await import('./facturx-ui.js?v=1f0ed9f');
+    const { invoicePdf } = await import('./facturx-ui.js?v=ba94fa4');
     const bytes = await invoicePdf(d, d.issuer, { outstanding: outstanding(d) });
     const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
     const a = Object.assign(document.createElement('a'), {
@@ -186,6 +186,11 @@ root.addEventListener('submit', async (e) => {
     data.documents.find((d) => d.id === id).acceptance = acceptance;
     accepting = null;
     render();
+    const badge = root.querySelector(`[data-doc="${id}"] .badge`);
+    if (badge) {
+      badge.tabIndex = -1;
+      badge.focus();
+    }
     toast('Merci : votre acceptation du devis est enregistrée et transmise à votre fournisseur.');
   } catch (err) {
     button.disabled = false;

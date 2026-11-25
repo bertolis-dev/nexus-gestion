@@ -3,9 +3,9 @@
  * app/vendor/, 1,4 Mo) chargés seulement à la première facture téléchargée ou envoyée.
  */
 
-import { buildFacturXPdf } from '../core/facturx.js?v=1f0ed9f';
-import { buildCii } from '../core/einvoice.js?v=1f0ed9f';
-import { invoicePaymentQr } from '../core/epc.js?v=1f0ed9f';
+import { buildFacturXPdf } from '../core/facturx.js?v=ba94fa4';
+import { buildCii } from '../core/einvoice.js?v=ba94fa4';
+import { invoicePaymentQr } from '../core/epc.js?v=ba94fa4';
 
 let assets = null;
 const bytes = async (url) => new Uint8Array(await (await fetch(url)).arrayBuffer());
@@ -13,7 +13,7 @@ const bytes = async (url) => new Uint8Array(await (await fetch(url)).arrayBuffer
 async function loadAssets() {
   if (!assets) {
     const [lib, regular, bold, icc] = await Promise.all([
-      import('./vendor/pdf-lib.js?v=1f0ed9f'),
+      import('./vendor/pdf-lib.js?v=ba94fa4'),
       bytes('vendor/fonts/manrope-400.ttf'),
       bytes('vendor/fonts/manrope-700.ttf'),
       bytes('vendor/srgb.icc'),
@@ -34,7 +34,7 @@ export const pdfFileName = (inv) => `${inv.type === 'credit' ? 'avoir' : 'factur
 /** PDF/A-3 Factur-X de la facture émise, avec le logo actuel de l'entreprise et le QR code de virement. */
 export async function invoicePdf(inv, company, { outstanding, attachments = [] } = {}) {
   const payload = invoicePaymentQr(inv, inv.issuer || company, outstanding);
-  const paymentQr = payload ? (await import('./vendor/qrcode.js?v=1f0ed9f')).qrMatrix(payload) : null;
+  const paymentQr = payload ? (await import('./vendor/qrcode.js?v=ba94fa4')).qrMatrix(payload) : null;
   // Devis : PDF simple, sans facture électronique jointe (un devis ne se transmet pas en Factur-X).
   return buildFacturXPdf({
     ...(await loadAssets()),

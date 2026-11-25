@@ -2,21 +2,21 @@
  * Écran « expenses ».
  */
 
-import { VAT_RATES_BP } from '../../core/invoices.js?v=1f0ed9f';
-import { LIFECYCLE, nextStatuses } from '../../core/lifecycle.js?v=1f0ed9f';
-import { CHOOSABLE_EXPENSE_CATEGORIES, EXPENSE_CATEGORIES } from '../../core/pcg.js?v=1f0ed9f';
-import * as cloud from '../cloud.js?v=1f0ed9f';
-import { field, html, opt, raw } from '../html.js?v=1f0ed9f';
-import { ICONS } from '../icons.js?v=1f0ed9f';
-import { isMicro, render } from '../render.js?v=1f0ed9f';
-import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=1f0ed9f';
-import { toast } from '../store.js?v=1f0ed9f';
-import { badge, icon, term, viewHeader } from '../ui/common.js?v=1f0ed9f';
-import { preparePhoto } from '../ui/photo.js?v=1f0ed9f';
-import { nexusRhButton, nexusRhPanel } from './nexusrh-import.js?v=1f0ed9f';
-import { viewAssets } from './assets.js?v=1f0ed9f';
-import { canMarkRebill, filterPurchases, rebillCell, rebillFilter, rebillPanel } from './rebill.js?v=1f0ed9f';
-import { viewMileage } from './pilotage.js?v=1f0ed9f';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=ba94fa4';
+import { LIFECYCLE, nextStatuses } from '../../core/lifecycle.js?v=ba94fa4';
+import { CHOOSABLE_EXPENSE_CATEGORIES, EXPENSE_CATEGORIES } from '../../core/pcg.js?v=ba94fa4';
+import * as cloud from '../cloud.js?v=ba94fa4';
+import { field, html, opt, raw } from '../html.js?v=ba94fa4';
+import { ICONS } from '../icons.js?v=ba94fa4';
+import { isMicro, render } from '../render.js?v=ba94fa4';
+import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=ba94fa4';
+import { toast } from '../store.js?v=ba94fa4';
+import { badge, icon, term, viewHeader } from '../ui/common.js?v=ba94fa4';
+import { preparePhoto } from '../ui/photo.js?v=ba94fa4';
+import { nexusRhButton, nexusRhPanel } from './nexusrh-import.js?v=ba94fa4';
+import { viewAssets } from './assets.js?v=ba94fa4';
+import { canMarkRebill, filterPurchases, rebillCell, rebillFilter, rebillPanel } from './rebill.js?v=ba94fa4';
+import { viewMileage } from './pilotage.js?v=ba94fa4';
 
 // ------------------------------------------------------------------ dépenses (§3.3)
 

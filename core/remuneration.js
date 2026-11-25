@@ -5,7 +5,7 @@
  * moyens (modifiables), qui ne remplace pas le calcul de l'expert-comptable.
  */
 
-import { divRound } from './money.js?v=1f0ed9f';
+import { divRound } from './money.js?v=ba94fa4';
 
 /**
  * Taux moyens par défaut (2026), à faire valider (docs/regles-a-valider.md) :
@@ -30,7 +30,7 @@ export const REMUNERATION_DEFAULTS = {
 };
 
 /** Statut social du dirigeant d'après la forme juridique : SAS/SASU → assimilé salarié, sinon indépendant. */
-export const isAssimileSalarie = (legalForm) => /^SAS/i.test(String(legalForm || ''));
+export const isAssimileSalarie = (legalForm) => /^(SASU?|SELASU?|SA)\b/i.test(String(legalForm || '').trim());
 
 export function corporateTax(profit, p = REMUNERATION_DEFAULTS) {
   if (profit <= 0) return 0;

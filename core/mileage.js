@@ -5,7 +5,7 @@
  * que la somme des trajets de l'année est toujours égale au barème appliqué au total.
  */
 
-import { divRound } from './money.js?v=1f0ed9f';
+import { divRound } from './money.js?v=ba94fa4';
 
 /**
  * Barème des voitures, en millièmes d'euro par km : [jusqu'à 5 000 km, de 5 001 à 20 000 km (taux, fixe en
@@ -56,10 +56,16 @@ export function tripAllowance({ km, horsepower, electric, kmBefore = 0, year }) 
   return { amount: annualAllowance(kmBefore + d, horsepower, opts) - annualAllowance(kmBefore, horsepower, opts), scaleYear: scaleYear(year) };
 }
 
-/** Trajets de l'année déjà enregistrés (ligne de dépense marquée `mileage`), avant une date, pour un véhicule. */
-export function kmBeforeTrip(purchases, { date, vehicle }) {
+/**
+ * Kilomètres déjà enregistrés dans l'année pour ce conducteur et ce véhicule, quelle que soit la date des
+ * trajets : un trajet saisi en retard prend la suite des autres, la somme reste égale au barème annuel.
+ */
+export function kmBeforeTrip(purchases, { date, vehicle, driver }) {
   const year = date.slice(0, 4);
+  const who = String(driver || '')
+    .trim()
+    .toLowerCase();
   return purchases
-    .filter((p) => p.lines[0]?.mileage?.vehicle === vehicle && p.date.slice(0, 4) === year && p.date <= date)
+    .filter((p) => p.lines[0]?.mileage?.vehicle === vehicle && p.date.slice(0, 4) === year && p.supplier.name.trim().toLowerCase() === who)
     .reduce((s, p) => s + p.lines[0].mileage.km, 0);
 }
