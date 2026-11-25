@@ -2,15 +2,15 @@
  * Mode connecté : ouverture d’une entreprise, file d’envoi, état de la synchronisation.
  */
 
-import { pickStructure } from '../core/company.js?v=fe24ff7';
-import { applySyncResult, ledgerStateFromRows } from '../core/sync.js?v=fe24ff7';
-import { Workspace } from '../core/workspace.js?v=fe24ff7';
-import * as cloud from './cloud.js?v=fe24ff7';
-import { html } from './html.js?v=fe24ff7';
-import { render } from './render.js?v=fe24ff7';
-import { cloudState, newId, setWs, ui, ws } from './state.js?v=fe24ff7';
-import { toast } from './store.js?v=fe24ff7';
-import { startTour } from './ui/tour.js?v=fe24ff7';
+import { pickStructure } from '../core/company.js?v=1f0ed9f';
+import { applySyncResult, ledgerStateFromRows } from '../core/sync.js?v=1f0ed9f';
+import { Workspace } from '../core/workspace.js?v=1f0ed9f';
+import * as cloud from './cloud.js?v=1f0ed9f';
+import { html } from './html.js?v=1f0ed9f';
+import { render } from './render.js?v=1f0ed9f';
+import { cloudState, newId, setWs, ui, ws } from './state.js?v=1f0ed9f';
+import { toast } from './store.js?v=1f0ed9f';
+import { startTour } from './ui/tour.js?v=1f0ed9f';
 
 // ------------------------------------------------------------------ synchronisation
 

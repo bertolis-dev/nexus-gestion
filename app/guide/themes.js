@@ -4,7 +4,7 @@
  * (« micro » ou « societe ») et `avance` au mode avancé.
  */
 
-import { capture, etapes, p } from './screens.js?v=fe24ff7';
+import { capture, etapes, p } from './screens.js?v=1f0ed9f';
 
 export const THEMES = [
   {
@@ -176,6 +176,21 @@ export const THEMES = [
     icone: 'paperclip',
     intro: p('Enregistrer vos achats et garder leurs justificatifs.'),
     entrees: [
+      {
+        id: 'd-refacturer',
+        q: 'Comment refacturer une dépense à un client ?',
+        vue: 'depenses',
+        mots: 'refacturer refacturation debours prix coutant marge client depense frais',
+        r:
+          etapes(
+            'Dans <strong>Dépenses</strong>, cochez « À refacturer à un client » en enregistrant la dépense (le filtre <strong>À refacturer</strong> la retrouve), ou utilisez directement le bouton de la dépense.',
+            'Cliquez sur <strong>Refacturer à un client</strong> : choisissez le client et, si besoin, une marge en % ou en euros.',
+            'Cochez « Joindre le justificatif » pour l’ajouter au PDF de la facture, puis <strong>Préparer la facture</strong> : vérifiez le brouillon et émettez-le.',
+          ) +
+          p(
+            'La facture reprend le libellé, la date et le montant hors taxe de la dépense, avec la TVA de votre entreprise : c’est une vente ordinaire (pas des débours). La dépense affiche ensuite « Refacturée sur F-… ».',
+          ),
+      },
       {
         id: 'd-photo',
         q: 'Comment enregistrer une dépense avec la photo du ticket ?',

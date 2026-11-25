@@ -7,7 +7,7 @@
  * scripts/validate-einvoice.mjs ; le navigateur lui passe les copies locales de app/vendor/.
  */
 
-import { issuerName } from './invoices.js?v=fe24ff7';
+import { issuerName } from './invoices.js?v=1f0ed9f';
 
 export const FACTURX_FILE_NAME = 'factur-x.xml';
 const FX_NS = 'urn:factur-x:pdfa:CrossIndustryDocument:invoice:1p0#';
@@ -82,9 +82,10 @@ function documentId(text) {
  * @param {{bytes: Uint8Array, type: "png"|"jpg"}} [p.logo] logo de l’entreprise
  * @param {object} p.invoice facture émise (numéro, émetteur, client, lignes, totaux, mentions)
  * @param {string} p.xml facture électronique CII (buildCii)
+ * @param {{ name: string, bytes: Uint8Array, mime?: string, description?: string }[]} [p.attachments] pièces jointes
  * @returns {Promise<Uint8Array>}
  */
-export async function buildFacturXPdf({ lib, fonts, icc, logo = null, invoice, xml, now = new Date(), paymentQr = null }) {
+export async function buildFacturXPdf({ lib, fonts, icc, logo = null, invoice, xml, now = new Date(), paymentQr = null, attachments = [] }) {
   const { PDFDocument, PDFName, PDFString, PDFHexString, rgb, fontkit } = lib;
   const doc = await PDFDocument.create({ updateMetadata: false });
   doc.registerFontkit(fontkit);
@@ -312,33 +313,42 @@ export async function buildFacturXPdf({ lib, fonts, icc, logo = null, invoice, x
   });
   doc.catalog.set(PDFName.of('OutputIntents'), ctx.obj([ctx.register(intent)]));
 
-  if (xml) embedFacturX(doc, xml, now);
+  // Fichiers joints : la facture électronique (relation « Alternative »), puis les pièces jointes
+  // facultatives (justificatif d'une dépense refacturée…, relation « Supplement »).
+  const specs = [];
+  const embed = (name, bytes, mime, desc, relationship) => {
+    const file = ctx.flateStream(bytes, {
+      Type: 'EmbeddedFile',
+      Subtype: PDFName.of(mime),
+      Params: { Size: bytes.length, ModDate: PDFString.fromDate(now) },
+    });
+    const fileRef = ctx.register(file);
+    specs.push([
+      name,
+      ctx.register(
+        ctx.obj({
+          Type: 'Filespec',
+          F: PDFString.of(name),
+          UF: PDFHexString.fromText(name),
+          Desc: PDFString.of(desc),
+          AFRelationship: relationship,
+          EF: { F: fileRef, UF: fileRef },
+        }),
+      ),
+    ]);
+  };
+  if (xml) embed(FACTURX_FILE_NAME, new TextEncoder().encode(xml), 'text/xml', 'Factur-X', 'Alternative');
+  for (const a of attachments) embed(a.name, a.bytes, a.mime || 'application/octet-stream', a.description || 'Pièce jointe', 'Supplement');
+  if (specs.length) {
+    doc.catalog.set(PDFName.of('AF'), ctx.obj(specs.map(([, ref]) => ref)));
+    doc.catalog.set(PDFName.of('Names'), ctx.obj({ EmbeddedFiles: { Names: specs.flatMap(([name, ref]) => [PDFHexString.fromText(name), ref]) } }));
+  }
   doc.catalog.set(PDFName.of('ViewerPreferences'), ctx.obj({ DisplayDocTitle: true }));
   doc.catalog.set(PDFName.of('Lang'), PDFString.of('fr-FR'));
 
   const id = PDFHexString.of(documentId(`${issuer.siren}|${invoice.number}|${now.toISOString()}`));
   ctx.trailerInfo.ID = ctx.obj([id, id]);
   return doc.save({ useObjectStreams: false });
-
-  /** Facture électronique jointe (fichier factur-x.xml, relation « Alternative »). */
-  function embedFacturX(doc, xml, now) {
-    const xmlBytes = new TextEncoder().encode(xml);
-    const pdfDate = PDFString.fromDate(now);
-    const file = ctx.flateStream(xmlBytes, { Type: 'EmbeddedFile', Subtype: 'text/xml', Params: { Size: xmlBytes.length, ModDate: pdfDate } });
-    const fileRef = ctx.register(file);
-    const spec = ctx.register(
-      ctx.obj({
-        Type: 'Filespec',
-        F: PDFString.of(FACTURX_FILE_NAME),
-        UF: PDFHexString.fromText(FACTURX_FILE_NAME),
-        Desc: PDFString.of('Factur-X'),
-        AFRelationship: 'Alternative',
-        EF: { F: fileRef, UF: fileRef },
-      }),
-    );
-    doc.catalog.set(PDFName.of('AF'), ctx.obj([spec]));
-    doc.catalog.set(PDFName.of('Names'), ctx.obj({ EmbeddedFiles: { Names: [PDFHexString.fromText(FACTURX_FILE_NAME), spec] } }));
-  }
 }
 
 /** Noms usuels du XML joint à une facture PDF (Factur-X, ZUGFeRD, XRechnung). */

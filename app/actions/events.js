@@ -2,30 +2,30 @@
  * Événements du document : saisie, changement, clavier, formulaires, clics, navigation.
  */
 
-import { isValidSiren } from '../../core/invoices.js?v=fe24ff7';
-import { parseEuros } from '../../core/money.js?v=fe24ff7';
-import { knownVatOnDebits } from '../../core/purchases.js?v=fe24ff7';
-import { usualVatRate } from '../../core/pcg.js?v=fe24ff7';
-import { findCatalogItem } from '../../core/catalog.js?v=fe24ff7';
-import * as cloud from '../cloud.js?v=fe24ff7';
-import { html, raw } from '../html.js?v=fe24ff7';
-import { ICONS } from '../icons.js?v=fe24ff7';
-import { $, render, searchResults } from '../render.js?v=fe24ff7';
-import { closeLightbox, featureSlug } from '../site/landing.js?v=fe24ff7';
-import { cloudState, ui, ws } from '../state.js?v=fe24ff7';
-import { save, savePrefs, toast } from '../store.js?v=fe24ff7';
-import { afterSignIn } from '../sync-ui.js?v=fe24ff7';
-import { attachTxReceipt, currentBankAccount, importBankFile } from '../views/bank.js?v=fe24ff7';
-import { attachReceipt } from '../views/expenses.js?v=fe24ff7';
-import { readNexusRhFile } from '../views/nexusrh-import.js?v=fe24ff7';
-import { readDiscount, readPrice, totalsBlock } from '../views/invoice-form.js?v=fe24ff7';
-import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=fe24ff7';
-import { runAction } from './index.js?v=fe24ff7';
-import { readReceivedInvoices } from '../received-invoices.js?v=fe24ff7';
-import { catalogSubmit } from './settings.js?v=fe24ff7';
-import { clientSubmit, readClientsFile } from './clients.js?v=fe24ff7';
-import { filterClients } from '../views/clients.js?v=fe24ff7';
-import { pilotageSubmit } from './pilotage.js?v=fe24ff7';
+import { isValidSiren } from '../../core/invoices.js?v=1f0ed9f';
+import { parseEuros } from '../../core/money.js?v=1f0ed9f';
+import { knownVatOnDebits } from '../../core/purchases.js?v=1f0ed9f';
+import { usualVatRate } from '../../core/pcg.js?v=1f0ed9f';
+import { findCatalogItem } from '../../core/catalog.js?v=1f0ed9f';
+import * as cloud from '../cloud.js?v=1f0ed9f';
+import { html, raw } from '../html.js?v=1f0ed9f';
+import { ICONS } from '../icons.js?v=1f0ed9f';
+import { $, render, searchResults } from '../render.js?v=1f0ed9f';
+import { closeLightbox, featureSlug } from '../site/landing.js?v=1f0ed9f';
+import { cloudState, ui, ws } from '../state.js?v=1f0ed9f';
+import { save, savePrefs, toast } from '../store.js?v=1f0ed9f';
+import { afterSignIn } from '../sync-ui.js?v=1f0ed9f';
+import { attachTxReceipt, currentBankAccount, importBankFile } from '../views/bank.js?v=1f0ed9f';
+import { attachReceipt } from '../views/expenses.js?v=1f0ed9f';
+import { readNexusRhFile } from '../views/nexusrh-import.js?v=1f0ed9f';
+import { readDiscount, readPrice, totalsBlock } from '../views/invoice-form.js?v=1f0ed9f';
+import { onboardingAction, readOpeningFile } from '../views/onboarding.js?v=1f0ed9f';
+import { runAction } from './index.js?v=1f0ed9f';
+import { readReceivedInvoices } from '../received-invoices.js?v=1f0ed9f';
+import { catalogSubmit } from './settings.js?v=1f0ed9f';
+import { clientSubmit, readClientsFile } from './clients.js?v=1f0ed9f';
+import { filterClients } from '../views/clients.js?v=1f0ed9f';
+import { pilotageSubmit } from './pilotage.js?v=1f0ed9f';
 
 export function setPath(obj, path, value) {
   const keys = path.split('.');
@@ -372,6 +372,7 @@ document.addEventListener('submit', async (e) => {
         ui.pendingPurchase.duplicates = res.duplicates;
         return render();
       }
+      if (fd.has('toRebill')) ws.markToRebill(res.purchase.id);
       const pendingFile = ui.pendingPurchase.file;
       ui.pendingPurchase = null;
       save();

@@ -92,7 +92,9 @@ export function invoiceDraftRow(inv, meta) {
       recurringId: inv.recurringId || null,
       period: inv.period || null,
       // Livraison : seulement si elle diffère de la date d'émission ou de l'adresse du client.
-      ...Object.fromEntries(['deliveryDate', 'deliveryAddress', 'deliveryCountry', 'reason'].filter((k) => inv[k]).map((k) => [k, inv[k]])),
+      ...Object.fromEntries(
+        ['deliveryDate', 'deliveryAddress', 'deliveryCountry', 'reason', 'rebillOf', 'attachReceipt'].filter((k) => inv[k]).map((k) => [k, inv[k]]),
+      ),
     },
   };
 }
@@ -359,7 +361,8 @@ function draftFromRow(i) {
     lines: i.lines,
   };
   if (i.credit_of) draft.creditOf = i.credit_of;
-  for (const k of ['quoteRef', 'recurringId', 'period', 'deliveryDate', 'deliveryAddress', 'deliveryCountry', 'reason']) if (x[k]) draft[k] = x[k];
+  for (const k of ['quoteRef', 'recurringId', 'period', 'deliveryDate', 'deliveryAddress', 'deliveryCountry', 'reason', 'rebillOf', 'attachReceipt'])
+    if (x[k]) draft[k] = x[k];
   return draft;
 }
 
@@ -592,5 +595,5 @@ export function refusedUpdate(op) {
     divergence: true,
   });
 }
-import { DEFAULT_BANK_ACCOUNT } from './bank.js?v=fe24ff7';
-import { parisDateOf } from './dates.js?v=fe24ff7';
+import { DEFAULT_BANK_ACCOUNT } from './bank.js?v=1f0ed9f';
+import { parisDateOf } from './dates.js?v=1f0ed9f';

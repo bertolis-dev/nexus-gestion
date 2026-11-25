@@ -2,21 +2,22 @@
  * Écran « sales ».
  */
 
-import { VAT_RATES_BP, checkInvoice, computeTotals, isVatExempt, issuerName, lineHt } from '../../core/invoices.js?v=fe24ff7';
-import { FREQUENCIES, nextDate } from '../../core/recurring.js?v=fe24ff7';
-import { field, html, opt, raw } from '../html.js?v=fe24ff7';
-import { ICONS } from '../icons.js?v=fe24ff7';
-import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=fe24ff7';
-import { save, toast } from '../store.js?v=fe24ff7';
-import { isUnconfirmed } from '../sync-ui.js?v=fe24ff7';
-import { badge, viewHeader } from '../ui/common.js?v=fe24ff7';
-import { qrSvg } from '../ui/qr.js?v=fe24ff7';
-import { invoicePaymentQr } from '../../core/epc.js?v=fe24ff7';
-import { lifecycleCard } from './expenses.js?v=fe24ff7';
-import { viewInvoiceForm } from './invoice-form.js?v=fe24ff7';
-import { depositCard } from './deposit.js?v=fe24ff7';
-import { viewTime } from './pilotage.js?v=fe24ff7';
-import { REMINDER_STEPS, dueReminderLevel, invoiceEmail, reminderMessage } from '../../core/reminders.js?v=fe24ff7';
+import { VAT_RATES_BP, checkInvoice, computeTotals, isVatExempt, issuerName, lineHt } from '../../core/invoices.js?v=1f0ed9f';
+import { FREQUENCIES, nextDate } from '../../core/recurring.js?v=1f0ed9f';
+import { field, html, opt, raw } from '../html.js?v=1f0ed9f';
+import { ICONS } from '../icons.js?v=1f0ed9f';
+import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=1f0ed9f';
+import { save, toast } from '../store.js?v=1f0ed9f';
+import { isUnconfirmed } from '../sync-ui.js?v=1f0ed9f';
+import { badge, viewHeader } from '../ui/common.js?v=1f0ed9f';
+import { qrSvg } from '../ui/qr.js?v=1f0ed9f';
+import { invoicePaymentQr } from '../../core/epc.js?v=1f0ed9f';
+import { lifecycleCard } from './expenses.js?v=1f0ed9f';
+import { viewInvoiceForm } from './invoice-form.js?v=1f0ed9f';
+import { depositCard } from './deposit.js?v=1f0ed9f';
+import { rebillNotice } from './rebill.js?v=1f0ed9f';
+import { viewTime } from './pilotage.js?v=1f0ed9f';
+import { REMINDER_STEPS, dueReminderLevel, invoiceEmail, reminderMessage } from '../../core/reminders.js?v=1f0ed9f';
 
 // ------------------------------------------------------------------ factures (§3.2, §3.5)
 
@@ -339,7 +340,7 @@ export function viewInvoice(id) {
       <button class="btn-link" data-href="#/ventes">← Retour aux factures</button
       >${viewHeader(unconfirmed ? `${quote ? 'Devis' : 'Facture'} en cours d’émission` : inv.number || (quote ? 'Brouillon de devis' : 'Brouillon de facture'), subtitle, actions)}
     </div>
-    ${historyNote}
+    ${historyNote}${rebillNotice(inv)}
     ${
       issues.length
         ? html`<div class="issues-box no-print" style="margin-bottom:14px">

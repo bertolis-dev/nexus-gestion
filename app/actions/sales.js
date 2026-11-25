@@ -2,21 +2,44 @@
  * Écran « sales ».
  */
 
-import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=fe24ff7';
-import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=fe24ff7';
-import { LIFECYCLE } from '../../core/lifecycle.js?v=fe24ff7';
-import { lookupSiren } from '../company-lookup.js?v=fe24ff7';
-import { render } from '../render.js?v=fe24ff7';
-import * as cloud from '../cloud.js?v=fe24ff7';
-import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=fe24ff7';
-import { invoiceEmail, reminderMessage } from '../../core/reminders.js?v=fe24ff7';
-import { explainEmailError } from '../email-errors.js?v=fe24ff7';
-import { download, save, toast, whenSaved } from '../store.js?v=fe24ff7';
-import { isUnconfirmed } from '../sync-ui.js?v=fe24ff7';
-import { emptyLine, persistDraft } from '../views/invoice-form.js?v=fe24ff7';
-import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=fe24ff7';
-import { depositCandidates } from '../../core/deposit.js?v=fe24ff7';
-import { createZip } from '../../core/zip.js?v=fe24ff7';
+import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=1f0ed9f';
+import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=1f0ed9f';
+import { LIFECYCLE } from '../../core/lifecycle.js?v=1f0ed9f';
+import { lookupSiren } from '../company-lookup.js?v=1f0ed9f';
+import { render } from '../render.js?v=1f0ed9f';
+import * as cloud from '../cloud.js?v=1f0ed9f';
+import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=1f0ed9f';
+import { invoiceEmail, reminderMessage } from '../../core/reminders.js?v=1f0ed9f';
+import { explainEmailError } from '../email-errors.js?v=1f0ed9f';
+import { download, save, toast, whenSaved } from '../store.js?v=1f0ed9f';
+import { isUnconfirmed } from '../sync-ui.js?v=1f0ed9f';
+import { emptyLine, persistDraft } from '../views/invoice-form.js?v=1f0ed9f';
+import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=1f0ed9f';
+import { depositCandidates } from '../../core/deposit.js?v=1f0ed9f';
+import { createZip } from '../../core/zip.js?v=1f0ed9f';
+
+/**
+ * Justificatif de la dépense refacturée, joint au PDF si demandé sur la facture (mode connecté : la
+ * pièce est dans le stockage ; en démonstration, aucune pièce réelle). Absent ou illisible : rien joint.
+ */
+async function receiptAttachments(inv) {
+  if (!inv.attachReceipt || !inv.rebillOf || ui.demo || !cloudState.meta) return [];
+  const p = ws.purchases.find((x) => x.id === inv.rebillOf.purchaseId);
+  const paidBy = new Set((p?.payments || []).map((x) => x.ref));
+  const doc = cloudState.documents.find(
+    (d) => (d.linked_entity === 'purchase' && d.linked_id === inv.rebillOf.purchaseId) || (d.linked_entity === 'transaction' && paidBy.has(d.linked_id)),
+  );
+  if (!doc) return [];
+  try {
+    const bytes = new Uint8Array(await (await fetch(await cloud.receiptUrl(doc.storage_path))).arrayBuffer());
+    const ext = (doc.original_name.split('.').pop() || 'pdf').toLowerCase();
+    const base = `justificatif-${inv.rebillOf.supplier}-${inv.rebillOf.number || inv.rebillOf.date}`.replace(/[^\w.-]+/g, '-');
+    return [{ name: `${base}.${ext}`, bytes, mime: doc.mime_type, description: `Justificatif de la dépense refacturée (${inv.rebillOf.supplier})` }];
+  } catch {
+    toast('Le justificatif n’a pas pu être joint : la facture part sans lui.', true);
+    return [];
+  }
+}
 
 /**
  * Émet le brouillon du formulaire (`fromForm`) ou un brouillon enregistré ; renvoie la pièce émise,
@@ -60,7 +83,7 @@ async function sendInvoice(id) {
   const inv = ws.book.get(id);
   let pdf;
   try {
-    pdf = await invoicePdf(inv, ws.company, { outstanding: ws.book.outstanding(inv) });
+    pdf = await invoicePdf(inv, ws.company, { outstanding: ws.book.outstanding(inv), attachments: await receiptAttachments(inv) });
   } catch (err) {
     return toast(`PDF impossible : ${err.message}`, true);
   }
@@ -191,7 +214,7 @@ export const actionsTable = {
     try {
       toast(`Préparation de ${todo.length} facture(s)…`);
       const files = [];
-      for (const inv of todo) files.push({ name: pdfFileName(inv), data: await invoicePdf(inv, ws.company) });
+      for (const inv of todo) files.push({ name: pdfFileName(inv), data: await invoicePdf(inv, ws.company, { attachments: await receiptAttachments(inv) }) });
       const fileName = `depot-factures-${today()}.zip`;
       download(fileName, createZip(files), 'application/zip');
       ui.pendingDeposit = { ids: todo.map((i) => i.id), platform, fileName };
@@ -240,7 +263,7 @@ export const actionsTable = {
   'invoice-pdf': async ({ id }) => {
     const inv = ws.book.get(id);
     try {
-      const pdf = await invoicePdf(inv, ws.company, { outstanding: ws.book.outstanding(inv) });
+      const pdf = await invoicePdf(inv, ws.company, { outstanding: ws.book.outstanding(inv), attachments: await receiptAttachments(inv) });
       download(pdfFileName(inv), pdf, 'application/pdf');
       toast('Facture PDF téléchargée (Factur-X : la facture électronique est jointe au PDF).');
     } catch (err) {

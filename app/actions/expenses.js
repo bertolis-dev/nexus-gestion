@@ -2,13 +2,13 @@
  * Écran « expenses ».
  */
 
-import { purchaseLinesFrom } from '../../core/einvoice-in.js?v=fe24ff7';
-import * as cloud from '../cloud.js?v=fe24ff7';
-import { render } from '../render.js?v=fe24ff7';
-import { eur, ui, ws } from '../state.js?v=fe24ff7';
-import { save, toast } from '../store.js?v=fe24ff7';
-import { attachReceipt } from '../views/expenses.js?v=fe24ff7';
-import { saveNexusRhImport } from '../views/nexusrh-import.js?v=fe24ff7';
+import { purchaseLinesFrom } from '../../core/einvoice-in.js?v=1f0ed9f';
+import * as cloud from '../cloud.js?v=1f0ed9f';
+import { render } from '../render.js?v=1f0ed9f';
+import { eur, ui, ws } from '../state.js?v=1f0ed9f';
+import { save, toast } from '../store.js?v=1f0ed9f';
+import { attachReceipt } from '../views/expenses.js?v=1f0ed9f';
+import { saveNexusRhImport } from '../views/nexusrh-import.js?v=1f0ed9f';
 
 /** Actions « expenses » : data-action → fonction. */
 export const actionsTable = {
@@ -20,6 +20,7 @@ export const actionsTable = {
   'purchase-force': async () => {
     const res = ws.addPurchase(ui.pendingPurchase.data, { force: true });
     const pendingFile = ui.pendingPurchase.file;
+    if (res.purchase && ui.pendingPurchase.form?.toRebill) ws.markToRebill(res.purchase.id);
     ui.pendingPurchase = null;
     if (res.purchase) attachReceipt(res.purchase, pendingFile);
     save();

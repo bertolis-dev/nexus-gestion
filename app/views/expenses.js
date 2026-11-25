@@ -2,20 +2,21 @@
  * Écran « expenses ».
  */
 
-import { VAT_RATES_BP } from '../../core/invoices.js?v=fe24ff7';
-import { LIFECYCLE, nextStatuses } from '../../core/lifecycle.js?v=fe24ff7';
-import { CHOOSABLE_EXPENSE_CATEGORIES, EXPENSE_CATEGORIES } from '../../core/pcg.js?v=fe24ff7';
-import * as cloud from '../cloud.js?v=fe24ff7';
-import { field, html, opt, raw } from '../html.js?v=fe24ff7';
-import { ICONS } from '../icons.js?v=fe24ff7';
-import { isMicro, render } from '../render.js?v=fe24ff7';
-import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=fe24ff7';
-import { toast } from '../store.js?v=fe24ff7';
-import { badge, icon, term, viewHeader } from '../ui/common.js?v=fe24ff7';
-import { preparePhoto } from '../ui/photo.js?v=fe24ff7';
-import { nexusRhButton, nexusRhPanel } from './nexusrh-import.js?v=fe24ff7';
-import { viewAssets } from './assets.js?v=fe24ff7';
-import { viewMileage } from './pilotage.js?v=fe24ff7';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=1f0ed9f';
+import { LIFECYCLE, nextStatuses } from '../../core/lifecycle.js?v=1f0ed9f';
+import { CHOOSABLE_EXPENSE_CATEGORIES, EXPENSE_CATEGORIES } from '../../core/pcg.js?v=1f0ed9f';
+import * as cloud from '../cloud.js?v=1f0ed9f';
+import { field, html, opt, raw } from '../html.js?v=1f0ed9f';
+import { ICONS } from '../icons.js?v=1f0ed9f';
+import { isMicro, render } from '../render.js?v=1f0ed9f';
+import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=1f0ed9f';
+import { toast } from '../store.js?v=1f0ed9f';
+import { badge, icon, term, viewHeader } from '../ui/common.js?v=1f0ed9f';
+import { preparePhoto } from '../ui/photo.js?v=1f0ed9f';
+import { nexusRhButton, nexusRhPanel } from './nexusrh-import.js?v=1f0ed9f';
+import { viewAssets } from './assets.js?v=1f0ed9f';
+import { canMarkRebill, filterPurchases, rebillCell, rebillFilter, rebillPanel } from './rebill.js?v=1f0ed9f';
+import { viewMileage } from './pilotage.js?v=1f0ed9f';
 
 // ------------------------------------------------------------------ dépenses (§3.3)
 
@@ -23,7 +24,7 @@ export function viewExpenses() {
   const pending = ui.pendingPurchase;
   const f = pending?.form || {};
   const franchise = ws.company.vatRegime === 'franchise';
-  const list = [...ws.purchases].reverse();
+  const list = filterPurchases([...ws.purchases].reverse());
   const tabs = html`<div class="tabs" style="margin-bottom:14px">
     <button class="tab ${ui.expensesTab === 'immobilisations' || ui.expensesTab === 'trajets' ? '' : 'active'}" data-action="expenses-tab" data-tab="depenses">
       Dépenses
@@ -83,9 +84,19 @@ export function viewExpenses() {
                 TVA d’une prestation est récupérable dès la facture, et non à son paiement</label
               >`
       }
+      ${
+        canMarkRebill()
+          ? html`<label class="form-field-checkbox" style="display:flex;gap:8px;align-items:center"
+              ><input type="checkbox" name="toRebill" ${f.toRebill ? raw('checked') : ''} />À refacturer à un client (la dépense restera dans le filtre « À
+              refacturer »)</label
+            >`
+          : ''
+      }
       <div><button class="btn btn-primary" type="submit">Enregistrer la dépense</button></div>
     </form>
+    ${rebillPanel()}
     <div class="card table-card">
+      ${rebillFilter()}
       ${
         list.length
           ? html`<div class="table-scroll">
@@ -119,7 +130,7 @@ export function viewExpenses() {
                         <td class="num">${eur(p.type === 'credit' ? -p.totalTtc : p.totalTtc)}</td>
                         <td>
                           <div class="badge-row">
-                            ${p.type === 'credit' ? badge('Avoir', 'primary') : ''}${p.paid >= p.totalTtc ? badge(p.type === 'credit' ? 'Remboursé' : 'Payée', 'success') : badge(p.type === 'credit' ? 'À recevoir' : 'À payer', 'warning')}${receiptCell(p)}
+                            ${p.type === 'credit' ? badge('Avoir', 'primary') : ''}${p.paid >= p.totalTtc ? badge(p.type === 'credit' ? 'Remboursé' : 'Payée', 'success') : badge(p.type === 'credit' ? 'À recevoir' : 'À payer', 'warning')}${receiptCell(p)}${rebillCell(p)}
                           </div>
                         </td>
                       </tr>`,

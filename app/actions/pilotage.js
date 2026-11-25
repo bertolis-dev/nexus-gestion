@@ -3,16 +3,16 @@
  * espace client, rapprochement en un clic et exports des listes.
  */
 
-import { parseBudget } from '../../core/budget.js?v=fe24ff7';
-import { parseDuration } from '../../core/timesheet.js?v=fe24ff7';
-import { clientAux } from '../../core/invoices.js?v=fe24ff7';
-import { invoicesCsv, purchasesCsv } from '../../core/exports.js?v=fe24ff7';
-import { categoryById } from '../../core/pcg.js?v=fe24ff7';
-import * as cloud from '../cloud.js?v=fe24ff7';
-import { render } from '../render.js?v=fe24ff7';
-import { cloudState, today, ui, ws } from '../state.js?v=fe24ff7';
-import { download, save, toast } from '../store.js?v=fe24ff7';
-import { runRemuneration } from '../views/pilotage.js?v=fe24ff7';
+import { parseBudget } from '../../core/budget.js?v=1f0ed9f';
+import { parseDuration } from '../../core/timesheet.js?v=1f0ed9f';
+import { clientAux } from '../../core/invoices.js?v=1f0ed9f';
+import { invoicesCsv, purchasesCsv } from '../../core/exports.js?v=1f0ed9f';
+import { categoryById } from '../../core/pcg.js?v=1f0ed9f';
+import * as cloud from '../cloud.js?v=1f0ed9f';
+import { render } from '../render.js?v=1f0ed9f';
+import { cloudState, today, ui, ws } from '../state.js?v=1f0ed9f';
+import { download, save, toast } from '../store.js?v=1f0ed9f';
+import { runRemuneration } from '../views/pilotage.js?v=1f0ed9f';
 
 const cents = (text) => {
   const raw = String(text || '')

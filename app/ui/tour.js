@@ -4,7 +4,7 @@
  * Lancée seule à la première ouverture d'un compte sur cet appareil, relancée depuis le guide.
  */
 
-import { html } from '../html.js?v=fe24ff7';
+import { html } from '../html.js?v=1f0ed9f';
 
 const VUE_PREFIX = 'nexus_gestion_visite_vue_';
 
