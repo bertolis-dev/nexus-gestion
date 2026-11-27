@@ -3,17 +3,17 @@
  * écrans : temps passé (Factures), trajets (Dépenses), stock (Paramètres › Catalogue), espace client (fiche client).
  */
 
-import { fiscalCalendar } from '../../core/fiscal-calendar.js?v=e8e3fd1';
-import { BUDGET_LINES, budgetReport } from '../../core/budget.js?v=e8e3fd1';
-import { compareScenarios, capitalCents, isAssimileSalarie, REMUNERATION_DEFAULTS } from '../../core/remuneration.js?v=e8e3fd1';
-import { entryAmount, formatMinutes, isBilled, unbilledByClient } from '../../core/timesheet.js?v=e8e3fd1';
-import { stockLevels } from '../../core/stock.js?v=e8e3fd1';
-import { HORSEPOWER_CHOICES } from '../../core/mileage.js?v=e8e3fd1';
-import { field, html, opt, raw } from '../html.js?v=e8e3fd1';
-import { isMicro } from '../render.js?v=e8e3fd1';
-import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=e8e3fd1';
-import { badge, viewHeader } from '../ui/common.js?v=e8e3fd1';
-import { isOwner, prefs } from '../actions/pilotage.js?v=e8e3fd1';
+import { fiscalCalendar } from '../../core/fiscal-calendar.js?v=754d7f5';
+import { BUDGET_LINES, budgetReport } from '../../core/budget.js?v=754d7f5';
+import { compareScenarios, capitalCents, isAssimileSalarie, REMUNERATION_DEFAULTS } from '../../core/remuneration.js?v=754d7f5';
+import { entryAmount, formatMinutes, isBilled, unbilledByClient } from '../../core/timesheet.js?v=754d7f5';
+import { stockLevels } from '../../core/stock.js?v=754d7f5';
+import { HORSEPOWER_CHOICES } from '../../core/mileage.js?v=754d7f5';
+import { field, html, opt, raw } from '../html.js?v=754d7f5';
+import { isMicro } from '../render.js?v=754d7f5';
+import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=754d7f5';
+import { badge, viewHeader } from '../ui/common.js?v=754d7f5';
+import { isOwner, prefs } from '../actions/pilotage.js?v=754d7f5';
 
 /** Préférence de saisie : réglage de l'entreprise, sinon celle gardée sur cet appareil (collaborateur). */
 const pref = (k) => ws.company[k] ?? prefs()[k];

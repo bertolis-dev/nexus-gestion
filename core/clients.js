@@ -4,9 +4,9 @@
  * logiciel de facturation).
  */
 
-import { parseCsv } from './bank-import.js?v=e8e3fd1';
-import { isValidSiren } from './invoices.js?v=e8e3fd1';
-import { shiftMonth } from './stats.js?v=e8e3fd1';
+import { parseCsv } from './bank-import.js?v=754d7f5';
+import { isValidSiren } from './invoices.js?v=754d7f5';
+import { shiftMonth } from './stats.js?v=754d7f5';
 
 const DAY = 86400000;
 

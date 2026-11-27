@@ -2,21 +2,21 @@
  * Écran « onboarding ».
  */
 
-import { firstFiscalYear } from '../../core/dates.js?v=e8e3fd1';
-import { openingBalanceFromFec, parseFec } from '../../core/fecimport.js?v=e8e3fd1';
-import { isValidSiren } from '../../core/invoices.js?v=e8e3fd1';
-import { ACTIVITY_TYPES, CIPAV_PROFESSIONS } from '../../core/micro.js?v=e8e3fd1';
-import { buildChart } from '../../core/pcg.js?v=e8e3fd1';
-import { Workspace } from '../../core/workspace.js?v=e8e3fd1';
-import * as cloud from '../cloud.js?v=e8e3fd1';
-import { lookupSiren } from '../company-lookup.js?v=e8e3fd1';
-import { companyFromOnboarding } from '../../core/company.js?v=e8e3fd1';
-import { choiceGroup, field, html, opt, raw } from '../html.js?v=e8e3fd1';
-import { render } from '../render.js?v=e8e3fd1';
-import { cloudState, eur, newId, setWs, ui, ws } from '../state.js?v=e8e3fd1';
-import { save, toast } from '../store.js?v=e8e3fd1';
-import { onSyncResult, onSyncStatus } from '../sync-ui.js?v=e8e3fd1';
-import { badge, brand } from '../ui/common.js?v=e8e3fd1';
+import { firstFiscalYear } from '../../core/dates.js?v=754d7f5';
+import { openingBalanceFromFec, parseFec } from '../../core/fecimport.js?v=754d7f5';
+import { isValidSiren } from '../../core/invoices.js?v=754d7f5';
+import { ACTIVITY_TYPES, CIPAV_PROFESSIONS } from '../../core/micro.js?v=754d7f5';
+import { buildChart } from '../../core/pcg.js?v=754d7f5';
+import { Workspace } from '../../core/workspace.js?v=754d7f5';
+import * as cloud from '../cloud.js?v=754d7f5';
+import { lookupSiren } from '../company-lookup.js?v=754d7f5';
+import { companyFromOnboarding } from '../../core/company.js?v=754d7f5';
+import { choiceGroup, field, html, opt, raw } from '../html.js?v=754d7f5';
+import { render } from '../render.js?v=754d7f5';
+import { cloudState, eur, newId, setWs, ui, ws } from '../state.js?v=754d7f5';
+import { save, toast } from '../store.js?v=754d7f5';
+import { onSyncResult, onSyncStatus } from '../sync-ui.js?v=754d7f5';
+import { badge, brand } from '../ui/common.js?v=754d7f5';
 
 // ------------------------------------------------------------------ assistant d'installation (§3.1)
 

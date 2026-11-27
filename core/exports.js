@@ -5,9 +5,9 @@
  * du navigateur (feuille de style d'impression de l'application).
  */
 
-import { trialBalance, generalLedger, journalReport } from './reports.js?v=e8e3fd1';
-import { JOURNALS } from './ledger.js?v=e8e3fd1';
-import { formatDecimalComma } from './money.js?v=e8e3fd1';
+import { trialBalance, generalLedger, journalReport } from './reports.js?v=754d7f5';
+import { JOURNALS } from './ledger.js?v=754d7f5';
+import { formatDecimalComma } from './money.js?v=754d7f5';
 
 /**
  * Cellule CSV. Un texte commençant par =, +, -, @, une tabulation ou un retour chariot serait

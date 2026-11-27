@@ -3,23 +3,23 @@
  */
 
 /** Table de toutes les actions (clics sur un élément data-action), réparties par domaine. */
-import { actionsTable as site } from './site.js?v=e8e3fd1';
-import { actionsTable as shell } from './shell.js?v=e8e3fd1';
-import { actionsTable as sales } from './sales.js?v=e8e3fd1';
-import { actionsTable as expenses } from './expenses.js?v=e8e3fd1';
-import { actionsTable as bank } from './bank.js?v=e8e3fd1';
-import { actionsTable as compta } from './compta.js?v=e8e3fd1';
-import { actionsTable as vat } from './vat.js?v=e8e3fd1';
-import { actionsTable as closing } from './closing.js?v=e8e3fd1';
-import { actionsTable as micro } from './micro.js?v=e8e3fd1';
-import { actionsTable as settings } from './settings.js?v=e8e3fd1';
-import { actionsTable as clients } from './clients.js?v=e8e3fd1';
-import { actionsTable as pilotage } from './pilotage.js?v=e8e3fd1';
-import { actionsTable as rebill } from '../views/rebill.js?v=e8e3fd1';
+import { actionsTable as site } from './site.js?v=754d7f5';
+import { actionsTable as shell } from './shell.js?v=754d7f5';
+import { actionsTable as sales } from './sales.js?v=754d7f5';
+import { actionsTable as expenses } from './expenses.js?v=754d7f5';
+import { actionsTable as bank } from './bank.js?v=754d7f5';
+import { actionsTable as compta } from './compta.js?v=754d7f5';
+import { actionsTable as vat } from './vat.js?v=754d7f5';
+import { actionsTable as closing } from './closing.js?v=754d7f5';
+import { actionsTable as micro } from './micro.js?v=754d7f5';
+import { actionsTable as settings } from './settings.js?v=754d7f5';
+import { actionsTable as clients } from './clients.js?v=754d7f5';
+import { actionsTable as pilotage } from './pilotage.js?v=754d7f5';
+import { actionsTable as rebill } from '../views/rebill.js?v=754d7f5';
 
 const ACTIONS = { ...site, ...shell, ...sales, ...expenses, ...bank, ...compta, ...vat, ...closing, ...micro, ...settings, ...clients, ...pilotage, ...rebill };
 
-import { ui } from '../state.js?v=e8e3fd1';
+import { ui } from '../state.js?v=754d7f5';
 
 /** Exécute l'action demandée par un clic ; sans effet si elle est inconnue. */
 export function runAction(action, ctx) {

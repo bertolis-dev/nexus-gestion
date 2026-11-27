@@ -1,4 +1,4 @@
-import { divRound } from './money.js?v=e8e3fd1';
+import { divRound } from './money.js?v=754d7f5';
 /**
  * Réception des factures électroniques fournisseurs (§2 : obligatoire depuis le 1er septembre 2026 ;
  * §3.3 « récupération automatique des factures électroniques »). En attendant le raccordement à la

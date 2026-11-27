@@ -4,14 +4,14 @@
  * depuis le menu du compte, ou par le bouton « ? » à la page de l'écran affiché.
  */
 
-import { extrait, rechercher, surligner } from '../../core/guide-search.js?v=e8e3fd1';
-import { guideSections } from '../guide/sections.js?v=e8e3fd1';
-import { html, raw } from '../html.js?v=e8e3fd1';
-import { ICONS } from '../icons.js?v=e8e3fd1';
-import { isMicro, navItems, route } from '../render.js?v=e8e3fd1';
-import { ws } from '../state.js?v=e8e3fd1';
-import { icon } from '../ui/common.js?v=e8e3fd1';
-import { garderFocus, startTour } from '../ui/tour.js?v=e8e3fd1';
+import { extrait, rechercher, surligner } from '../../core/guide-search.js?v=754d7f5';
+import { guideSections } from '../guide/sections.js?v=754d7f5';
+import { html, raw } from '../html.js?v=754d7f5';
+import { ICONS } from '../icons.js?v=754d7f5';
+import { isMicro, navItems, route } from '../render.js?v=754d7f5';
+import { ws } from '../state.js?v=754d7f5';
+import { icon } from '../ui/common.js?v=754d7f5';
+import { garderFocus, startTour } from '../ui/tour.js?v=754d7f5';
 
 const SUGGESTIONS = ['Créer une facture', 'Remise', 'Relancer un client', 'Importer un relevé', 'Photo du ticket', 'Déclarer la TVA', 'Clôture', 'Nexus RH'];
 
@@ -238,9 +238,14 @@ export function openGuide(sectionId) {
     } else if (b.dataset.guideSuggestion) {
       champ.value = b.dataset.guideSuggestion;
       resultats(champ.value);
-    } else if (b.dataset.guideGo) afficher(b.dataset.guideGo, b.dataset.guideGoEntry, true);
-    else if (b.hasAttribute('data-guide-back')) resultats(champ.value);
-    else if (b.hasAttribute('data-guide-clear')) {
+    } else if (b.dataset.guideGo) {
+      afficher(b.dataset.guideGo, b.dataset.guideGoEntry, true);
+      // La zone cliquée est remplacée : focus sur la réponse ouverte (ou le chapitre), jamais sur la page.
+      (zone.querySelector('details[open] summary') || zone).focus();
+    } else if (b.hasAttribute('data-guide-back')) {
+      resultats(champ.value);
+      (zone.querySelector('.guide-result') || champ).focus();
+    } else if (b.hasAttribute('data-guide-clear')) {
       champ.value = '';
       afficher(courant.id);
       champ.focus();

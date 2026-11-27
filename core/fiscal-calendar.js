@@ -5,9 +5,9 @@
  * exercice standard, à confirmer chaque année (calendrier publié sur impots.gouv.fr).
  */
 
-import { sum } from './money.js?v=e8e3fd1';
-import { corporateTaxSchedule } from './istax.js?v=e8e3fd1';
-import { categoryById } from './pcg.js?v=e8e3fd1';
+import { sum } from './money.js?v=754d7f5';
+import { corporateTaxSchedule } from './istax.js?v=754d7f5';
+import { categoryById } from './pcg.js?v=754d7f5';
 
 /** Seuil de déclaration des honoraires, commissions et droits d'auteur versés (DAS2) : 1 200 € TTC par an et par bénéficiaire. */
 export const DAS2_THRESHOLD = 120000;

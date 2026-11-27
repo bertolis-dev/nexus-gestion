@@ -346,7 +346,7 @@ export function planSync(before, after, meta) {
   return ops;
 }
 
-export { ledgerStateFromRows, stateFromRows } from './sync-state.js?v=e8e3fd1';
+export { ledgerStateFromRows, stateFromRows } from './sync-state.js?v=754d7f5';
 
 export function applySyncResult(ws, op, result) {
   if (op.kind !== 'rpc' || op.fn !== 'save_draft_entry' || !result || typeof result !== 'object' || result.seq == null) return false;

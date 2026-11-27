@@ -3,8 +3,8 @@
  * clos). Séparé de core/sync.js (état → opérations) ; réexporté par lui.
  */
 
-import { DEFAULT_BANK_ACCOUNT } from './bank.js?v=e8e3fd1';
-import { parisDateOf } from './dates.js?v=e8e3fd1';
+import { DEFAULT_BANK_ACCOUNT } from './bank.js?v=754d7f5';
+import { parisDateOf } from './dates.js?v=754d7f5';
 
 // ------------------------------------------------------------------ lignes → état
 

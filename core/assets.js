@@ -10,9 +10,9 @@
  * dérive d'arrondi (le total des dotations égale exactement le coût).
  */
 
-import { divRound, sum, vatFromHt } from './money.js?v=e8e3fd1';
-import { categoryById } from './pcg.js?v=e8e3fd1';
-import { addDays } from './dates.js?v=e8e3fd1';
+import { divRound, sum, vatFromHt } from './money.js?v=754d7f5';
+import { categoryById } from './pcg.js?v=754d7f5';
+import { addDays } from './dates.js?v=754d7f5';
 
 /** Durées d'usage courantes, à confirmer par l'expert-comptable. */
 export const DEFAULT_YEARS = { 205000: 1, 215400: 5, 218200: 5, 218300: 3, 218400: 10 };

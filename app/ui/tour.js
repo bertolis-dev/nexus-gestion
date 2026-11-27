@@ -4,7 +4,7 @@
  * Lancée seule à la première ouverture d'un compte sur cet appareil, relancée depuis le guide.
  */
 
-import { html } from '../html.js?v=e8e3fd1';
+import { html } from '../html.js?v=754d7f5';
 
 const VUE_PREFIX = 'nexus_gestion_visite_vue_';
 
@@ -172,6 +172,9 @@ export function finirVisite() {
   window.removeEventListener('resize', visite.surTaille);
   window.removeEventListener('scroll', visite.surTaille, true);
   visite.root.remove();
+  // Focus rendu à l'élément d'où la visite a été lancée (sinon au bouton du compte) : jamais perdu.
+  const retour = visite.opener?.isConnected ? visite.opener : document.getElementById('btn-user-menu');
+  retour?.focus?.();
   try {
     localStorage.setItem(VUE_PREFIX + visite.cle, '1');
   } catch {
@@ -201,6 +204,7 @@ export function startTour({ force = false, cle = 'demo' } = {}) {
   root.innerHTML = '<div class="tour-spot"></div><div class="tour-card" role="dialog" aria-modal="true" aria-labelledby="tour-title"></div>';
   document.body.append(root);
   visite = {
+    opener: document.activeElement,
     etapes,
     index: 0,
     root,

@@ -2,12 +2,12 @@
  * Écran « site ».
  */
 
-import { seedDemo } from '../demo.js?v=e8e3fd1';
-import { promptInstall } from '../pwa.js?v=e8e3fd1';
-import { $, render } from '../render.js?v=e8e3fd1';
-import { closeLightbox, openLightbox } from '../site/landing.js?v=e8e3fd1';
-import { ui } from '../state.js?v=e8e3fd1';
-import { toast } from '../store.js?v=e8e3fd1';
+import { seedDemo } from '../demo.js?v=754d7f5';
+import { promptInstall } from '../pwa.js?v=754d7f5';
+import { $, render } from '../render.js?v=754d7f5';
+import { closeLightbox, openLightbox } from '../site/landing.js?v=754d7f5';
+import { ui } from '../state.js?v=754d7f5';
+import { toast } from '../store.js?v=754d7f5';
 
 /** Actions « site » : data-action → fonction. */
 export const actionsTable = {

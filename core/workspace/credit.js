@@ -5,7 +5,7 @@
  * Méthodes installées sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { computeTotals, isVatExempt } from '../invoices.js?v=e8e3fd1';
+import { computeTotals, isVatExempt } from '../invoices.js?v=754d7f5';
 
 const pct = (bp) => `${String(bp / 100).replace('.', ',')} %`;
 const euros = (c) => `${(c / 100).toFixed(2).replace('.', ',')} €`;
@@ -26,8 +26,10 @@ export const creditMethods = {
         const o = left.get(v.rateBp) || { base: 0, vat: 0 };
         left.set(v.rateBp, { base: o.base - v.base, vat: o.vat - v.vat });
       }
+    // Facture émise avec TVA, entreprise passée depuis en franchise : l'avoir reprend la TVA de la facture.
+    if (this.company.vatRegime === 'franchise' && original.totals.totalVat > 0 && !draft.keepVat) this.book.updateDraft(id, { keepVat: true });
     const current = this.book.get(id);
-    const t = computeTotals(current, { franchise: isVatExempt(current, this.company) || this.company.vatRegime === 'franchise' });
+    const t = computeTotals(current, { franchise: isVatExempt(current, this.company) });
     for (const v of t.vatBreakdown) {
       const o = left.get(v.rateBp) || { base: 0, vat: 0 };
       if (v.base > o.base || v.vat > o.vat)

@@ -4,12 +4,12 @@
  * la seule correction possible est l'avoir lié.
  */
 
-import { assertCents, divRound, formatEuros, sum, vatFromHt } from './money.js?v=e8e3fd1';
-import { REVENUE_ACCOUNT_BY_NATURE } from './pcg.js?v=e8e3fd1';
-import { LIFECYCLE, currentStatus } from './lifecycle.js?v=e8e3fd1';
-import { tradeZone } from './countries.js?v=e8e3fd1';
-import { creditsOf, originalOf, groupBalance } from './receipts.js?v=e8e3fd1';
-import { addDays } from './dates.js?v=e8e3fd1';
+import { assertCents, divRound, formatEuros, sum, vatFromHt } from './money.js?v=754d7f5';
+import { REVENUE_ACCOUNT_BY_NATURE } from './pcg.js?v=754d7f5';
+import { LIFECYCLE, currentStatus } from './lifecycle.js?v=754d7f5';
+import { tradeZone } from './countries.js?v=754d7f5';
+import { creditsOf, originalOf, groupBalance } from './receipts.js?v=754d7f5';
+import { addDays } from './dates.js?v=754d7f5';
 
 export const VAT_RATES_BP = [2000, 1000, 550, 210, 0];
 
@@ -89,7 +89,7 @@ export function computeTotals(invoice, { franchise = false } = {}) {
  */
 export function isVatExempt(invoice, company) {
   const c = invoice.client || {};
-  if (company.vatRegime === 'franchise') return true;
+  if (company.vatRegime === 'franchise') return !invoice.keepVat; // avoir d'une facture d'avant la franchise : TVA reprise
   const zone = tradeZone(c.country);
   if (c.type !== 'B2C') return zone !== 'FR';
   // Particulier hors UE : l'exportation de biens est exonérée (art. 262 I) ; ses prestations restent
@@ -172,7 +172,7 @@ export function checkInvoice(invoice, company) {
 /** Mentions légales imprimées automatiquement selon le contexte. */
 export function legalMentions(invoice, company) {
   const m = [];
-  if (company.vatRegime === 'franchise') m.push(FRANCHISE_MENTION);
+  if (company.vatRegime === 'franchise' && !invoice.keepVat) m.push(FRANCHISE_MENTION);
   if (company.vatOnDebits) m.push('Option pour le paiement de la TVA d’après les débits');
   const c = invoice.client || {};
   const zone = tradeZone(c.country);
