@@ -3,6 +3,8 @@
  * centimes, taux de TVA et nature, proposés pendant la saisie d'une ligne de facture ou de devis.
  */
 
+import { checkBarcode } from './pos/barcode.js?v=151777b';
+
 const key = (label) =>
   String(label || '')
     .trim()
@@ -11,7 +13,22 @@ const key = (label) =>
 export class CatalogError extends Error {}
 
 /** Ajoute (ou remplace, même désignation) une prestation ; renvoie le nouveau catalogue trié. */
-export function saveCatalogItem(catalog = [], { id, label, unitPrice, vatRateBp, nature = 'services', tracked = false, stockInitial = 0, stockAlert = null }) {
+export function saveCatalogItem(
+  catalog = [],
+  {
+    id,
+    label,
+    unitPrice,
+    vatRateBp,
+    nature = 'services',
+    tracked = false,
+    stockInitial = 0,
+    stockAlert = null,
+    barcode = '',
+    priceTtc = null,
+    favorite = false,
+  },
+) {
   const name = String(label || '').trim();
   if (!name) throw new CatalogError('Indiquez la désignation de la prestation.');
   if (name.length > 200) throw new CatalogError('Désignation trop longue (200 caractères au plus).');
@@ -24,6 +41,14 @@ export function saveCatalogItem(catalog = [], { id, label, unitPrice, vatRateBp,
     vatRateBp,
     nature: nature === 'biens' ? 'biens' : 'services',
   };
+  // Caisse : code-barres (texte, zéros de tête gardés, unique dans le dossier), prix TTC affiché en magasin, favori.
+  const code = checkBarcode(catalog, barcode, { itemId: item.id });
+  if (code) item.barcode = code;
+  if (priceTtc !== null && priceTtc !== '') {
+    if (!Number.isSafeInteger(priceTtc) || priceTtc < 0) throw new CatalogError('Prix TTC illisible (exemple : 12,90).');
+    item.priceTtc = priceTtc;
+  }
+  if (favorite) item.favorite = true;
   // Article suivi en stock (core/stock.js) : stock de départ et seuil d'alerte facultatif.
   if (tracked) {
     const qty = (v) =>
@@ -38,6 +63,8 @@ export function saveCatalogItem(catalog = [], { id, label, unitPrice, vatRateBp,
     Object.assign(item, { tracked: true, stockInitial: qty(stockInitial), stockAlert: stockAlert === null || stockAlert === '' ? null : qty(stockAlert) });
   }
   const rest = catalog.filter((c) => c.id !== item.id && key(c.label) !== key(name));
+  const same = catalog.find((c) => c.id !== item.id && key(c.label) === key(name));
+  if (same && id) throw new CatalogError(`Un autre article s’appelle déjà « ${same.label} ».`);
   return [...rest, item].sort((a, b) => a.label.localeCompare(b.label, 'fr'));
 }
 

@@ -2,12 +2,12 @@
  * Entreprise de démonstration.
  */
 
-import { parseBankCsv } from '../core/bank.js?v=754d7f5';
-import { Workspace } from '../core/workspace.js?v=754d7f5';
-import { vatNumberFromSiren } from '../core/company.js?v=754d7f5';
-import { render } from './render.js?v=754d7f5';
-import { frDate, setWs, today, ui, ws } from './state.js?v=754d7f5';
-import { save, toast } from './store.js?v=754d7f5';
+import { parseBankCsv } from '../core/bank.js?v=151777b';
+import { Workspace } from '../core/workspace.js?v=151777b';
+import { vatNumberFromSiren } from '../core/company.js?v=151777b';
+import { render } from './render.js?v=151777b';
+import { frDate, setWs, today, ui, ws } from './state.js?v=151777b';
+import { save, toast } from './store.js?v=151777b';
 
 // ------------------------------------------------------------------ démonstration
 
@@ -34,6 +34,48 @@ export function seedDemo() {
         fiscalYear: { start: d(1, 1), end: d(12, 31) },
         paymentTermsDays: 30,
         iban: 'FR76 3000 6000 0112 3456 7890 189',
+        // Caisse : quelques articles avec code-barres (dont un code commençant par des zéros), module affiché.
+        posEnabled: true,
+        catalog: [
+          {
+            id: 'cat-demo-1',
+            label: 'Carnet de notes A5',
+            unitPrice: 750,
+            priceTtc: 900,
+            vatRateBp: 2000,
+            nature: 'biens',
+            barcode: '0012345678905',
+            favorite: true,
+            tracked: true,
+            stockInitial: 40,
+            stockAlert: 5,
+          },
+          {
+            id: 'cat-demo-2',
+            label: 'Stylo plume',
+            unitPrice: 1042,
+            priceTtc: 1250,
+            vatRateBp: 2000,
+            nature: 'biens',
+            barcode: '3760012345670',
+            favorite: true,
+            tracked: true,
+            stockInitial: 25,
+            stockAlert: 3,
+          },
+          {
+            id: 'cat-demo-3',
+            label: 'Guide de la création d’entreprise',
+            unitPrice: 1896,
+            vatRateBp: 550,
+            nature: 'biens',
+            barcode: '9782070612758',
+            favorite: true,
+            tracked: true,
+            stockInitial: 12,
+          },
+          { id: 'cat-demo-4', label: 'Atelier conseil (1 h)', unitPrice: 6000, vatRateBp: 2000, nature: 'services', favorite: true },
+        ],
       },
     }),
   );

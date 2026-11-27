@@ -1548,3 +1548,406 @@ tr[data-href]:focus-visible,
 .payment-qr .text-muted {
   color: #4a4f59;
 }
+/* ---------------------------------------------------------------- Caisse */
+.pos-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 440px);
+  gap: 16px;
+  align-items: start;
+}
+.pos-left,
+.pos-right {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.pos-right {
+  position: sticky;
+  top: 12px;
+}
+.pos-scan-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.pos-scan-row {
+  display: flex;
+  gap: 8px;
+}
+.pos-scan-input {
+  flex: 1;
+  min-width: 0;
+  font-size: 18px;
+  min-height: 48px;
+}
+.pos-results {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pos-result {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  min-height: 48px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.pos-result:hover,
+.pos-result:focus-visible {
+  border-color: var(--color-primary);
+}
+.pos-unknown {
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid var(--color-gold);
+  border-radius: var(--radius-sm);
+  background: var(--color-gold-soft);
+}
+.pos-favs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+.pos-fav {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 84px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.pos-fav:hover,
+.pos-fav:focus-visible {
+  border-color: var(--color-primary);
+}
+.pos-fav-label {
+  font-weight: 600;
+}
+.pos-fav-price {
+  color: var(--color-primary-text);
+  font-weight: 700;
+}
+.pos-cart-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.pos-lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 46vh;
+  overflow: auto;
+}
+.pos-line {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border-soft);
+}
+.pos-line-main {
+  display: flex;
+  flex-direction: column;
+}
+.pos-line-label {
+  font-weight: 600;
+}
+.pos-line-unit {
+  font-size: 13px;
+}
+.pos-line-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.pos-step {
+  min-width: 44px;
+  min-height: 44px;
+  font-size: 20px;
+  padding: 0;
+}
+.pos-qty {
+  width: 70px;
+  min-height: 44px;
+  text-align: center;
+}
+.pos-disc {
+  width: 96px;
+  min-height: 44px;
+}
+.pos-line-total {
+  margin-left: auto;
+}
+@keyframes pos-flash {
+  from {
+    background: var(--color-gold-soft);
+  }
+  to {
+    background: transparent;
+  }
+}
+.pos-flash {
+  animation: pos-flash 1.6s ease-out;
+  box-shadow: inset 4px 0 0 var(--color-gold);
+}
+.pos-vat {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+.pos-vat div {
+  display: flex;
+  justify-content: space-between;
+}
+.pos-vat dd {
+  margin: 0;
+}
+.pos-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 14px 0;
+  padding: 14px 0;
+  border-top: 2px solid var(--color-border);
+  font-size: 18px;
+}
+.pos-total strong {
+  font-size: 34px;
+  font-family: var(--font-serif);
+}
+.pos-pay {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.pos-pay .pos-big {
+  flex: 1;
+}
+.pos-big {
+  min-height: 56px;
+  font-size: 17px;
+}
+.pos-park {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 12px;
+}
+.pos-choices {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.pos-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(16, 24, 40, 0.55);
+}
+.pos-modal-card {
+  width: min(520px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.pos-big-input {
+  font-size: 24px;
+  min-height: 56px;
+}
+.pos-quick {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.pos-quick .btn {
+  min-height: 48px;
+  flex: 1;
+}
+.pos-change {
+  font-size: 20px;
+  margin: 0;
+  min-height: 28px;
+}
+.pos-card-status {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary-soft);
+}
+.pos-card-success {
+  background: var(--color-gold-soft);
+}
+.pos-card-danger,
+.pos-card-warning {
+  background: var(--color-danger-soft);
+}
+.pos-test-tools {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  padding-top: 8px;
+  border-top: 1px dashed var(--color-border);
+}
+.pos-ticket-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.pos-ticket {
+  padding: 18px;
+  background: #fff;
+  color: #111;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: ui-monospace, 'Cascadia Mono', Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.pos-ticket p {
+  margin: 0 0 10px;
+}
+.pos-ticket-head,
+.pos-ticket-foot,
+.pos-ticket-test {
+  text-align: center;
+}
+.pos-ticket-test {
+  font-weight: 700;
+  border: 2px solid #111;
+  padding: 4px;
+}
+.pos-ticket table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 10px;
+}
+.pos-ticket td,
+.pos-ticket th {
+  padding: 2px 0;
+  vertical-align: top;
+  text-align: left;
+  font-weight: normal;
+}
+.pos-ticket .num {
+  text-align: right;
+}
+.pos-ticket-lines span {
+  color: #444;
+}
+.pos-ticket-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+  border-top: 1px dashed #111;
+  border-bottom: 1px dashed #111;
+  padding: 6px 0;
+}
+@media (max-width: 1100px) {
+  .pos-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
+  }
+}
+@media (max-width: 760px) {
+  .pos-layout,
+  .pos-ticket-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pos-right {
+    position: static;
+    order: -1;
+  }
+  .pos-lines {
+    max-height: none;
+  }
+}
+@media print {
+  body:has(.pos-ticket) #sidebar,
+  body:has(.pos-ticket) #topbar,
+  body:has(.pos-ticket) .no-print,
+  body:has(.pos-ticket) .view-header {
+    display: none !important;
+  }
+  body:has(.pos-ticket) .pos-ticket-layout {
+    display: block;
+  }
+  body:has(.pos-ticket) .pos-ticket {
+    width: 72mm;
+    border: none;
+    padding: 0;
+  }
+}
+.text-danger {
+  color: var(--color-danger);
+}
+.text-success {
+  color: var(--color-primary-text);
+}
+
+/* Caisse : ticket imprimé sur rouleau de 80 mm ; écrans étroits et tablettes. */
+@page ticket {
+  size: 80mm auto;
+  margin: 3mm;
+}
+@media print {
+  .pos-ticket {
+    page: ticket;
+  }
+}
+.pos-line-ctrl .btn-icon {
+  min-width: 44px;
+  min-height: 44px;
+}
+@media (max-width: 760px) {
+  .pos-left {
+    display: contents;
+  }
+  .pos-scan {
+    order: 1;
+  }
+  .pos-right {
+    order: 2;
+  }
+  .pos-left > .card:not(.pos-scan) {
+    order: 3;
+  }
+  .pos-layout {
+    display: flex;
+    flex-direction: column;
+  }
+}
+@media (max-height: 820px) and (min-width: 761px) {
+  .pos-lines {
+    max-height: 30vh;
+  }
+}

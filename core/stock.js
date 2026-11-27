@@ -1,10 +1,11 @@
 /**
  * Stock simple des articles du catalogue suivis en stock (item.tracked) : stock de départ, entrées et
  * corrections saisies (company.stockMoves), moins les quantités vendues sur les factures émises
- * (rapprochées par la désignation de l'article), plus les retours sur avoir.
+ * (rapprochées par la désignation de l'article), plus les retours sur avoir, moins les ventes de
+ * caisse (rapprochées par l'identifiant de l'article).
  */
 
-import { sum } from './money.js?v=754d7f5';
+import { sum } from './money.js?v=151777b';
 
 const key = (label) =>
   String(label || '')
@@ -17,21 +18,35 @@ export class StockError extends Error {}
 export function soldQuantities(invoices) {
   const sold = new Map();
   for (const inv of invoices) {
-    if (inv.status !== 'issued' || inv.type === 'quote') continue;
+    // Facture liée à une vente de caisse : la sortie de stock a déjà été comptée par la vente.
+    if (inv.status !== 'issued' || inv.type === 'quote' || inv.saleId) continue;
     const sign = inv.type === 'credit' ? -1 : 1;
     for (const l of inv.lines || []) sold.set(key(l.label), (sold.get(key(l.label)) || 0) + sign * Number(l.qty || 0));
   }
   return sold;
 }
 
+/**
+ * Ventes de caisse réelles par identifiant d'article (le mode test ne touche pas le stock), moins les
+ * retours déclarés revendables.
+ */
+export function posQuantities(sales = [], returns = []) {
+  const out = new Map();
+  const add = (id, q) => id && out.set(id, Math.round(((out.get(id) || 0) + q) * 1000) / 1000);
+  for (const s of sales) if (s.mode === 'live') for (const l of s.lines) add(l.itemId, l.qty);
+  for (const r of returns) if (r.mode === 'live') for (const l of r.lines) if (l.resellable) add(l.itemId, -l.qty);
+  return out;
+}
+
 /** État du stock de chaque article suivi : { item, initial, moves, sold, level, low }. */
-export function stockLevels(catalog = [], moves = [], invoices = []) {
+export function stockLevels(catalog = [], moves = [], invoices = [], pos = { sales: [], returns: [] }) {
   const sold = soldQuantities(invoices);
+  const tills = posQuantities(pos.sales, pos.returns);
   return catalog
     .filter((i) => i.tracked)
     .map((item) => {
       const moved = sum(moves.filter((m) => m.itemId === item.id).map((m) => Math.round(m.qty * 1000))) / 1000;
-      const out = Math.round((sold.get(key(item.label)) || 0) * 1000) / 1000;
+      const out = Math.round(((sold.get(key(item.label)) || 0) + (tills.get(item.id) || 0)) * 1000) / 1000;
       const level = Math.round((Number(item.stockInitial || 0) + moved - out) * 1000) / 1000;
       return { item, initial: Number(item.stockInitial || 0), moves: moved, sold: out, level, low: item.stockAlert != null && level <= item.stockAlert };
     });

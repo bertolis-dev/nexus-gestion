@@ -4,7 +4,7 @@
  * (numéro de facture). Aucune commission, aucun service tiers.
  */
 
-import { issuerName } from './invoices.js?v=754d7f5';
+import { issuerName } from './invoices.js?v=151777b';
 
 /** IBAN sans espaces, en majuscules, avec clé de contrôle valide (modulo 97) ; sinon null. */
 export function normalizeIban(raw) {

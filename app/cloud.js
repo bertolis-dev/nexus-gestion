@@ -9,11 +9,11 @@
  * nombre d'écritures validées), l'état est rechargé depuis la base, qui fait foi.
  */
 
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js?v=754d7f5';
-import { stateFromRows, refusedUpdate } from '../core/sync.js?v=754d7f5';
-import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, pendingOutboxOps, OUTBOX_PREFIX } from '../core/outbox.js?v=754d7f5';
-import { ACCOUNTS } from '../core/pcg.js?v=754d7f5';
-import { mfaState, canRemoveFactor } from '../core/mfa.js?v=754d7f5';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js?v=151777b';
+import { stateFromRows, refusedUpdate } from '../core/sync.js?v=151777b';
+import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, pendingOutboxOps, OUTBOX_PREFIX } from '../core/outbox.js?v=151777b';
+import { ACCOUNTS } from '../core/pcg.js?v=151777b';
+import { mfaState, canRemoveFactor } from '../core/mfa.js?v=151777b';
 
 // supabase-js (copie locale, app/vendor/) n'est chargé qu'en mode connecté : la démonstration et
 // le site public ne téléchargent pas ces 220 Ko.
@@ -21,7 +21,7 @@ let client = null;
 const authListeners = [];
 async function connect() {
   if (!client) {
-    const { createClient } = await import('./vendor/supabase.js?v=754d7f5');
+    const { createClient } = await import('./vendor/supabase.js?v=151777b');
     // Session gardée dans le navigateur et renouvelée automatiquement : on reste connecté d'une visite
     // à l'autre, jusqu'à « Se déconnecter » (comme Nexus RH).
     client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -80,6 +80,17 @@ const check = ({ data, error }) => {
   if (error) throw error;
   return data;
 };
+
+/** Appel d'une fonction de la base (module Caisse : app/caisse-cloud.js). */
+export async function rpc(fn, args) {
+  const supabase = await connect();
+  return check(await supabase.rpc(fn, args));
+}
+/** Lignes d'une table du dossier (lecture seule, filtrées par les droits de la base). */
+export async function rows(table, structureId, build = (q) => q) {
+  const supabase = await connect();
+  return check(await build(supabase.from(table).select('*').eq('structure_id', structureId)));
+}
 
 // ------------------------------------------------------------------ authentification
 

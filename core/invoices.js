@@ -4,12 +4,12 @@
  * la seule correction possible est l'avoir lié.
  */
 
-import { assertCents, divRound, formatEuros, sum, vatFromHt } from './money.js?v=754d7f5';
-import { REVENUE_ACCOUNT_BY_NATURE } from './pcg.js?v=754d7f5';
-import { LIFECYCLE, currentStatus } from './lifecycle.js?v=754d7f5';
-import { tradeZone } from './countries.js?v=754d7f5';
-import { creditsOf, originalOf, groupBalance } from './receipts.js?v=754d7f5';
-import { addDays } from './dates.js?v=754d7f5';
+import { assertCents, divRound, formatEuros, sum, vatFromHt } from './money.js?v=151777b';
+import { REVENUE_ACCOUNT_BY_NATURE } from './pcg.js?v=151777b';
+import { LIFECYCLE, currentStatus } from './lifecycle.js?v=151777b';
+import { tradeZone } from './countries.js?v=151777b';
+import { creditsOf, originalOf, groupBalance } from './receipts.js?v=151777b';
+import { addDays } from './dates.js?v=151777b';
 
 export const VAT_RATES_BP = [2000, 1000, 550, 210, 0];
 
@@ -192,6 +192,7 @@ export function legalMentions(invoice, company) {
     m.push(`Devis valable jusqu'au ${invoice.dueDate.split('-').reverse().join('/')}. Bon pour accord : date et signature du client.`);
   else if (c.type !== 'B2C') m.push(LATE_PAYMENT_MENTION);
   if (invoice.quoteRef) m.push(`Selon devis ${invoice.quoteRef}`);
+  if (invoice.saleRef) m.push(`Facture du ticket de caisse ${invoice.saleRef}, réglé à la vente`);
   return m;
 }
 
@@ -318,7 +319,7 @@ export class InvoiceBook {
       totals,
     };
     if (issued.deposits?.length) this.#checkDeposits(issued);
-    if (ledger && issued.type !== 'quote') {
+    if (ledger && issued.type !== 'quote' && !issued.saleId) {
       const creditOfDeposit =
         issued.type === 'credit' && this.invoices.some((i) => i.type === 'deposit' && i.status === 'issued' && i.number === issued.creditOf);
       issued.entryId = ledger.addDraft(invoiceEntry(issued, this.company, { creditOfDeposit })).id;
@@ -403,7 +404,7 @@ export class InvoiceBook {
    * remboursement dû au client (montant négatif).
    */
   outstanding(inv) {
-    if (inv.status !== 'issued' || inv.type === 'quote') return 0;
+    if (inv.status !== 'issued' || inv.type === 'quote' || inv.saleId) return 0; // vente de caisse : déjà encaissée
     const own = (sign) => sign * inv.totals.netToPay - sum((this.payments[inv.id] || []).map((p) => p.amount));
     if (inv.type === 'credit') {
       const original = originalOf(this.invoices, inv);

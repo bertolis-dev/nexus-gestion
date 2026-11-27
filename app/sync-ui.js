@@ -2,15 +2,18 @@
  * Mode connecté : ouverture d’une entreprise, file d’envoi, état de la synchronisation.
  */
 
-import { pickStructure } from '../core/company.js?v=754d7f5';
-import { applySyncResult, ledgerStateFromRows } from '../core/sync.js?v=754d7f5';
-import { Workspace } from '../core/workspace.js?v=754d7f5';
-import * as cloud from './cloud.js?v=754d7f5';
-import { html } from './html.js?v=754d7f5';
-import { render } from './render.js?v=754d7f5';
-import { cloudState, newId, setWs, ui, ws } from './state.js?v=754d7f5';
-import { toast } from './store.js?v=754d7f5';
-import { startTour } from './ui/tour.js?v=754d7f5';
+import { pickStructure } from '../core/company.js?v=151777b';
+import { applySyncResult, ledgerStateFromRows } from '../core/sync.js?v=151777b';
+import { Workspace } from '../core/workspace.js?v=151777b';
+import * as cloud from './cloud.js?v=151777b';
+import { html } from './html.js?v=151777b';
+import { render } from './render.js?v=151777b';
+import { cloudState, newId, setWs, ui, ws } from './state.js?v=151777b';
+import { save, toast } from './store.js?v=151777b';
+import { loadPos, refundStart } from './caisse-cloud.js?v=151777b';
+import { posState } from './caisse-state.js?v=151777b';
+import { resumeCardAttempt } from './actions/caisse.js?v=151777b';
+import { startTour } from './ui/tour.js?v=151777b';
 
 // ------------------------------------------------------------------ synchronisation
 
@@ -88,6 +91,23 @@ export async function openStructure(structureId) {
     await cloudState.outbox.flush();
     if (!cloudState.outbox.error) return openStructure(structureId);
   }
+  await openPos(structureId);
+}
+
+/** Caisse : ventes, retours, sessions et terminaux lus en base ; écritures manquantes repassées. */
+async function openPos(structureId) {
+  const pos = await loadPos(structureId, ws.company.fiscalYear.start).catch(() => null);
+  if (!pos) return;
+  Object.assign(ws.pos, { registers: pos.registers, sessions: pos.sessions, sales: pos.sales, returns: pos.returns });
+  Object.assign(posState(), { available: pos.available, attempts: pos.attempts, stripe: pos.stripe });
+  resumeCardAttempt();
+  // Remboursements carte restés « en cours » (page fermée avant la réponse de Stripe) : revérifiés.
+  if (['dirigeant', 'expert'].includes(cloudState.role))
+    for (const r of ws.pos.returns.filter((x) => x.refund.method === 'card' && x.refund.status === 'pending')) {
+      const row = await refundStart(r.id).catch(() => null);
+      if (row && row.refund_status !== 'pending') ws.completeRefund(r.id, { status: row.refund_status, refundId: row.refund_id });
+    }
+  if (ws.ensurePosEntries() || ws.pos.returns.some((r) => r.refund.status === 'done' && r.totals.totalTtc && r.mode === 'live' && !r.entryId)) save();
 }
 
 /** Après connexion : double authentification, puis entreprise (ou assistant d'installation). */

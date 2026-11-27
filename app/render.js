@@ -2,26 +2,28 @@
  * Rendu général : choix de l’écran, cadre de l’application, recherche globale, repères d’accessibilité.
  */
 
-import { html, raw } from './html.js?v=754d7f5';
-import { ICONS } from './icons.js?v=754d7f5';
-import { featureBySlug, featureSlug, features, loadFeatures, viewFeature, viewLanding } from './site/landing.js?v=754d7f5';
-import { cloudState, eur, frDate, ui, ws } from './state.js?v=754d7f5';
-import { getTheme } from './store.js?v=754d7f5';
-import { syncStatusHtml } from './sync-ui.js?v=754d7f5';
-import { LOGO, badge, brand } from './ui/common.js?v=754d7f5';
-import { viewAuth, viewMfa, viewStructurePicker } from './views/auth.js?v=754d7f5';
-import { viewBank } from './views/bank.js?v=754d7f5';
-import { viewClosing } from './views/closing.js?v=754d7f5';
-import { viewCompta } from './views/compta.js?v=754d7f5';
-import { viewExpenses } from './views/expenses.js?v=754d7f5';
-import { viewHome } from './views/home.js?v=754d7f5';
-import { viewUrssaf } from './views/micro.js?v=754d7f5';
-import { viewOnboarding } from './views/onboarding.js?v=754d7f5';
-import { runRecurring, viewSales } from './views/sales.js?v=754d7f5';
-import { viewSettings } from './views/settings.js?v=754d7f5';
-import { viewClients } from './views/clients.js?v=754d7f5';
-import { viewPilotage } from './views/pilotage.js?v=754d7f5';
-import { viewVat } from './views/vat.js?v=754d7f5';
+import { html, raw } from './html.js?v=151777b';
+import { ICONS } from './icons.js?v=151777b';
+import { featureBySlug, featureSlug, features, loadFeatures, viewFeature, viewLanding } from './site/landing.js?v=151777b';
+import { cloudState, eur, frDate, ui, ws } from './state.js?v=151777b';
+import { getTheme } from './store.js?v=151777b';
+import { syncStatusHtml } from './sync-ui.js?v=151777b';
+import { LOGO, badge, brand } from './ui/common.js?v=151777b';
+import { viewAuth, viewMfa, viewStructurePicker } from './views/auth.js?v=151777b';
+import { viewBank } from './views/bank.js?v=151777b';
+import { viewClosing } from './views/closing.js?v=151777b';
+import { viewCompta } from './views/compta.js?v=151777b';
+import { viewExpenses } from './views/expenses.js?v=151777b';
+import { viewHome } from './views/home.js?v=151777b';
+import { viewUrssaf } from './views/micro.js?v=151777b';
+import { viewOnboarding } from './views/onboarding.js?v=151777b';
+import { runRecurring, viewSales } from './views/sales.js?v=151777b';
+import { viewSettings } from './views/settings.js?v=151777b';
+import { viewClients } from './views/clients.js?v=151777b';
+import { viewPilotage } from './views/pilotage.js?v=151777b';
+import { viewCaisse } from './views/caisse.js?v=151777b';
+import { focusScan } from './actions/caisse.js?v=151777b';
+import { viewVat } from './views/vat.js?v=151777b';
 
 // ------------------------------------------------------------------ rendu général
 
@@ -89,6 +91,7 @@ export const routes = {
   parametres: viewSettings,
   clients: viewClients,
   pilotage: viewPilotage,
+  caisse: viewCaisse,
 };
 
 export function route() {
@@ -102,6 +105,8 @@ export function navItems() {
   const items = [
     { key: 'accueil', label: 'Accueil', icon: 'home' },
     { key: 'ventes', label: 'Factures', icon: 'receipt' },
+    // Module Caisse (ventes au comptoir), activé dans Paramètres › Caisse.
+    ...(ws.company.posEnabled ? [{ key: 'caisse', label: 'Caisse', icon: 'coin' }] : []),
     { key: 'clients', label: 'Clients', icon: 'people' },
     { key: 'depenses', label: 'Dépenses', icon: 'paperclip' },
     { key: 'banque', label: 'Banque', icon: 'card' },
@@ -226,6 +231,7 @@ export function renderApp() {
   enhanceKeyboard($('view-root'));
   markInvalidFields($('view-root'));
   announceScreen(`${name}/${arg || ''}`);
+  if (name === 'caisse') focusScan();
   // La mise en page (polices, barre latérale) peut encore changer : second passage à l'image suivante.
   requestAnimationFrame(() => focusableScrollRegions($('view-root')));
 }

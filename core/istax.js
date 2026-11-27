@@ -4,7 +4,7 @@
  * mais pas encore clôturé. Les versements déjà faits (compte 444) sont imputés dans l'ordre des échéances.
  */
 
-import { divRound, sum } from './money.js?v=754d7f5';
+import { divRound, sum } from './money.js?v=151777b';
 
 /**
  * Paramètres 2026, à faire valider par l'expert-comptable (docs/regles-a-valider.md) :

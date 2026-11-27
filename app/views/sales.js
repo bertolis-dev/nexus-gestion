@@ -2,22 +2,22 @@
  * Écran « sales ».
  */
 
-import { VAT_RATES_BP, checkInvoice, computeTotals, isVatExempt, issuerName, lineHt } from '../../core/invoices.js?v=754d7f5';
-import { FREQUENCIES, nextDate } from '../../core/recurring.js?v=754d7f5';
-import { field, html, opt, raw } from '../html.js?v=754d7f5';
-import { ICONS } from '../icons.js?v=754d7f5';
-import { canValidate, cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=754d7f5';
-import { save, toast } from '../store.js?v=754d7f5';
-import { isUnconfirmed } from '../sync-ui.js?v=754d7f5';
-import { badge, viewHeader } from '../ui/common.js?v=754d7f5';
-import { qrSvg } from '../ui/qr.js?v=754d7f5';
-import { invoicePaymentQr } from '../../core/epc.js?v=754d7f5';
-import { lifecycleCard } from './expenses.js?v=754d7f5';
-import { viewInvoiceForm } from './invoice-form.js?v=754d7f5';
-import { depositCard } from './deposit.js?v=754d7f5';
-import { rebillNotice } from './rebill.js?v=754d7f5';
-import { viewTime } from './pilotage.js?v=754d7f5';
-import { REMINDER_STEPS, dueReminderLevel, invoiceEmail, reminderMessage } from '../../core/reminders.js?v=754d7f5';
+import { VAT_RATES_BP, checkInvoice, computeTotals, isVatExempt, issuerName, lineHt } from '../../core/invoices.js?v=151777b';
+import { FREQUENCIES, nextDate } from '../../core/recurring.js?v=151777b';
+import { field, html, opt, raw } from '../html.js?v=151777b';
+import { ICONS } from '../icons.js?v=151777b';
+import { canValidate, cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=151777b';
+import { save, toast } from '../store.js?v=151777b';
+import { isUnconfirmed } from '../sync-ui.js?v=151777b';
+import { badge, viewHeader } from '../ui/common.js?v=151777b';
+import { qrSvg } from '../ui/qr.js?v=151777b';
+import { invoicePaymentQr } from '../../core/epc.js?v=151777b';
+import { lifecycleCard } from './expenses.js?v=151777b';
+import { viewInvoiceForm } from './invoice-form.js?v=151777b';
+import { depositCard } from './deposit.js?v=151777b';
+import { rebillNotice } from './rebill.js?v=151777b';
+import { viewTime } from './pilotage.js?v=151777b';
+import { REMINDER_STEPS, dueReminderLevel, invoiceEmail, reminderMessage } from '../../core/reminders.js?v=151777b';
 
 // ------------------------------------------------------------------ factures (§3.2, §3.5)
 

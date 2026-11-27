@@ -382,4 +382,46 @@ export const ECRANS = {
       },
     ],
   },
+  caisse: {
+    resume:
+      'La vente au comptoir : scan des articles, panier, encaissement en espèces ou par carte sur le terminal Stripe, ticket, retours et clôture de caisse.',
+    intro:
+      p(
+        'À gauche, le champ de scan reçoit la douchette (elle tape le code puis Entrée) ou le nom d’un article ; en dessous, vos articles favoris. À droite, le panier, la TVA par taux, le <strong>total TTC</strong> et les boutons <strong>Encaisser par carte</strong> et <strong>Espèces</strong>.',
+      ) +
+      p(
+        'Par carte, Nexus envoie le montant exact au terminal ; le client présente ou insère sa carte, et la vente n’est enregistrée que lorsque Stripe confirme le paiement. Pendant ce temps, le panier est bloqué.',
+      ) +
+      p(
+        'Chaque vente reçoit un numéro de ticket, figé : une correction passe par un <strong>retour</strong> depuis le ticket. En fin de journée, le responsable compte les espèces et <strong>clôture la caisse</strong>.',
+      ),
+    faq: [
+      {
+        q: 'Comment brancher ma douchette ?',
+        r: p(
+          'Une douchette USB ou Bluetooth en mode « clavier » fonctionne sans réglage : branchez-la, scannez. Si un code n’est pas reconnu, Nexus l’affiche et propose de l’associer à l’article (responsable).',
+        ),
+        mots: 'douchette scanner code barres lecteur usb',
+      },
+      {
+        q: 'Que faire si la connexion coupe pendant un paiement par carte ?',
+        r: p(
+          'Rien n’est perdu : au retour de la connexion, Nexus vérifie le résultat auprès de Stripe. Si la carte a été débitée mais la vente pas encore enregistrée, un bandeau propose <strong>Finaliser la vente</strong>, sans débiter le client une seconde fois. Ne relancez jamais un paiement tant que le résultat est « à vérifier ».',
+        ),
+        mots: 'coupure reseau paiement double debit verifier',
+      },
+      {
+        q: 'Comment rembourser un client ?',
+        r: p(
+          'Historique → ouvrez le ticket → <strong>Retour d’articles</strong> (responsable) : quantités rendues, motif, et remboursement sur la carte (via le terminal) ou en espèces. Cochez « revendable » pour remettre l’article en stock.',
+        ),
+        mots: 'retour remboursement avoir echange',
+      },
+      {
+        q: 'Mon client veut une facture',
+        r: p('Ouvrez le ticket et choisissez le client : la facture reprend le ticket déjà réglé, sans nouvelle recette ni nouvelle sortie de stock.'),
+        mots: 'facture ticket client professionnel',
+      },
+    ],
+  },
 };

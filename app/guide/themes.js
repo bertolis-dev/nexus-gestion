@@ -4,7 +4,7 @@
  * (« micro » ou « societe ») et `avance` au mode avancé.
  */
 
-import { capture, etapes, p } from './screens.js?v=754d7f5';
+import { capture, etapes, p } from './screens.js?v=151777b';
 
 export const THEMES = [
   {
@@ -167,6 +167,73 @@ export const THEMES = [
           p(
             'Le devis apparaît alors « Accepté en ligne » : transformez-le en facture en un clic. Ce n’est pas une signature électronique certifiée, mais une acceptation datée et nominative.',
           ),
+      },
+    ],
+  },
+  {
+    id: 'faire-caisse',
+    titre: 'Vendre au comptoir (caisse)',
+    icone: 'coin',
+    intro: p('Mettre en service la caisse et le terminal de paiement, encaisser, rembourser, clôturer.'),
+    entrees: [
+      {
+        id: 'c-activer',
+        q: 'Comment mettre en service la caisse et le terminal Stripe ?',
+        vue: 'parametres',
+        mots: 'caisse terminal stripe activer installer lecteur carte tpe',
+        r: etapes(
+          'Paramètres → <strong>Caisse</strong> : cochez « Afficher Caisse dans le menu ».',
+          'Créez votre compte Stripe, puis dans Stripe : Terminal → Emplacements, ajoutez votre magasin, et Lecteurs → appairez votre terminal (en test : code « simulated-wpe »).',
+          'Dans Stripe → Développeurs → Clés API, créez une clé restreinte (Terminal, PaymentIntents, Refunds) et collez-la dans <strong>Clé Stripe</strong> (dirigeant).',
+          'Ajoutez une caisse avec l’identifiant du lecteur (tmr_…), en mode Test d’abord ; <strong>Tester la connexion</strong>, puis faites une vente de test.',
+          'Quand tout fonctionne, enregistrez la clé de production et passez la caisse en mode Production.',
+        ),
+      },
+      {
+        id: 'c-vendre',
+        q: 'Comment faire une vente ?',
+        vue: 'caisse',
+        mots: 'vendre encaisser panier scanner especes carte ticket',
+        r: etapes(
+          'Ouvrez la caisse avec le fonds de caisse (une fois par jour).',
+          'Scannez les articles (un deuxième scan augmente la quantité) ou touchez un favori.',
+          'Cliquez sur <strong>Encaisser par carte</strong> : le client paie sur le terminal ; ou <strong>Espèces</strong> : saisissez la somme remise, Nexus calcule la monnaie.',
+          'Le ticket s’imprime depuis l’historique, sur demande du client.',
+        ),
+      },
+      {
+        id: 'c-test',
+        q: 'À quoi sert le mode test ?',
+        mots: 'mode test essai simulation sans valeur',
+        r: p(
+          'Une caisse en mode test utilise l’environnement de test de Stripe : aucun vrai débit, et les ventes (numérotées TEST-…) ne touchent ni le stock, ni les recettes, ni la comptabilité. Le ticket porte « TICKET DE TEST — SANS VALEUR ».',
+        ),
+      },
+      {
+        id: 'c-cloture',
+        q: 'Comment clôturer la caisse ?',
+        vue: 'caisse',
+        mots: 'cloture z fin de journee especes ecart fond de caisse',
+        r: p(
+          'Caisse → <strong>Clôture</strong> (responsable) : comptez les espèces du tiroir et saisissez le montant. Nexus affiche les ventes et remboursements par mode de paiement, l’attendu et l’écart, enregistré en comptabilité. La clôture est définitive.',
+        ),
+      },
+      {
+        id: 'c-versement',
+        q: 'Comment rapprocher les versements de Stripe ?',
+        vue: 'banque',
+        mots: 'versement stripe payout commission rapprochement carte banque',
+        r: p(
+          'Quand le virement de Stripe arrive sur votre relevé, l’écran Banque propose <strong>Versements des paiements par carte</strong> : choisissez le virement, indiquez l’identifiant du versement (po_…) pour lire le brut et les commissions chez Stripe, puis rapprochez. Les commissions passent en frais bancaires.',
+        ),
+      },
+      {
+        id: 'c-conformite',
+        q: 'Ma caisse doit-elle être certifiée ?',
+        mots: 'nf525 certification logiciel caisse conformite 286 attestation',
+        r: p(
+          'Si vous êtes redevable de la TVA et vendez à des particuliers, le logiciel qui enregistre vos encaissements doit être justifié sécurisé (CGI art. 286, I, 3° bis) par un certificat d’un organisme accrédité ou une attestation de l’éditeur. Vérifiez ce point avec votre expert-comptable avant les ventes réelles (voir la page Conformité).',
+        ),
       },
     ],
   },

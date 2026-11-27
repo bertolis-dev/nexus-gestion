@@ -70,6 +70,7 @@ export const ACCOUNTS = [
   ['512800', 'Banque - compte 9', 'Compte bancaire n° 9'],
   ['512900', 'Banque - compte 10', 'Compte bancaire n° 10'],
   ['530000', 'Caisse', 'Espèces'],
+  ['511500', 'Cartes bancaires à l’encaissement', 'Paiements par carte en attente de versement'],
   ['580000', 'Virements internes', 'Transferts entre mes comptes'],
   // Classe 6 — charges
   ['601000', 'Achats de matières premières', 'Matières premières'],

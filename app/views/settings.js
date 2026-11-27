@@ -2,20 +2,21 @@
  * Écran « settings ».
  */
 
-import { field, html, opt, raw } from '../html.js?v=754d7f5';
-import { isMicro } from '../render.js?v=754d7f5';
-import { cloudState, eur, pct, ui, ws } from '../state.js?v=754d7f5';
-import { VAT_RATES_BP } from '../../core/invoices.js?v=754d7f5';
-import { ICONS } from '../icons.js?v=754d7f5';
-import { badge, viewHeader } from '../ui/common.js?v=754d7f5';
-import * as cloud from '../cloud.js?v=754d7f5';
-import { render } from '../render.js?v=754d7f5';
-import { membersCard, microSettingsCard, openingPreview, securityCard } from './onboarding.js?v=754d7f5';
-import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=754d7f5';
-import { normalizeIban } from '../../core/epc.js?v=754d7f5';
-import { stockPanel } from './pilotage.js?v=754d7f5';
-import { INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=754d7f5';
-import { DEFAULT_TEMPLATES, REMINDER_STEPS } from '../../core/reminders.js?v=754d7f5';
+import { field, html, opt, raw } from '../html.js?v=151777b';
+import { isMicro } from '../render.js?v=151777b';
+import { cloudState, eur, pct, ui, ws } from '../state.js?v=151777b';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=151777b';
+import { ICONS } from '../icons.js?v=151777b';
+import { badge, viewHeader } from '../ui/common.js?v=151777b';
+import * as cloud from '../cloud.js?v=151777b';
+import { render } from '../render.js?v=151777b';
+import { membersCard, microSettingsCard, openingPreview, securityCard } from './onboarding.js?v=151777b';
+import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=151777b';
+import { normalizeIban } from '../../core/epc.js?v=151777b';
+import { stockPanel } from './pilotage.js?v=151777b';
+import { caisseSettingsTab } from './caisse-settings.js?v=151777b';
+import { INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=151777b';
+import { DEFAULT_TEMPLATES, REMINDER_STEPS } from '../../core/reminders.js?v=151777b';
 
 // ------------------------------------------------------------------ paramètres
 
@@ -126,38 +127,64 @@ function emailCard() {
 function catalogTab() {
   const items = ws.company.catalog || [];
   const franchise = ws.company.vatRegime === 'franchise';
+  // Fiche en cours de modification (bouton « Modifier » du tableau), sinon nouvel article.
+  const it = items.find((x) => x.id === ui.catalogEdit) || {};
+  const money = (c) => (Number.isSafeInteger(c) ? (c / 100).toFixed(2).replace('.', ',') : '');
   return html`<form class="card" data-form="catalog-item" style="display:flex;flex-direction:column;gap:12px;min-width:0">
-      <h2>Ajouter une prestation ou un article</h2>
+      <h2>${it.id ? `Modifier « ${it.label} »` : 'Ajouter une prestation ou un article'}</h2>
+      <input type="hidden" name="id" value="${it.id || ''}" />
       <p class="text-muted" style="margin:0">Dans une facture ou un devis, commencez à taper la désignation : Nexus la propose et remplit le prix et la TVA.</p>
       <div class="form-grid">
-        ${field('Désignation', html`<input class="input" name="label" required maxlength="200" placeholder="Ex. : Création de site vitrine" />`)}
-        ${field('Prix unitaire HT', html`<input class="input" name="price" inputmode="decimal" required placeholder="0,00" />`)}
+        ${field('Désignation', html`<input class="input" name="label" required maxlength="200" value="${it.label || ''}" placeholder="Ex. : Création de site vitrine" />`)}
+        ${field('Prix unitaire HT', html`<input class="input" name="price" inputmode="decimal" required value="${money(it.unitPrice)}" placeholder="0,00" />`)}
         ${
           franchise
             ? ''
             : field(
                 'TVA',
                 html`<select class="input" name="vatRateBp">
-                  ${VAT_RATES_BP.map((r) => opt(r, pct(r), r === 2000))}
+                  ${VAT_RATES_BP.map((r) => opt(r, pct(r), r === (it.vatRateBp ?? 2000)))}
                 </select>`,
               )
         }
         ${field(
           'Nature',
           html`<select class="input" name="nature">
-            ${opt('services', 'Service', true)}${opt('biens', 'Bien', false)}
+            ${opt('services', 'Service', it.nature !== 'biens')}${opt('biens', 'Bien', it.nature === 'biens')}
           </select>`,
         )}
+        ${field(
+          'Code-barres',
+          html`<input
+            class="input mono"
+            name="barcode"
+            value="${it.barcode || ''}"
+            maxlength="48"
+            autocomplete="off"
+            placeholder="Scannez ou tapez le code"
+            data-barcode-field
+          />`,
+          { hint: 'Facultatif. Les zéros du début sont gardés ; un code ne peut désigner qu’un article.' },
+        )}
+        ${field('Prix TTC en caisse', html`<input class="input" name="priceTtc" inputmode="decimal" value="${money(it.priceTtc)}" placeholder="Facultatif" />`, { hint: 'Le prix affiché en magasin, s’il est arrondi (ex. : 12,90).' })}
       </div>
-      <details class="stock-options">
+      <label class="form-field-checkbox" style="display:flex;gap:8px;align-items:center"
+        ><input type="checkbox" name="favorite" ${it.favorite ? raw('checked') : ''} />Favori : bouton direct sur l’écran Caisse</label
+      >
+      <details class="stock-options" ${it.tracked ? raw('open') : ''}>
         <summary>Suivre le stock de cet article (facultatif)</summary>
         <div class="form-grid" style="margin-top:10px">
-          <label class="form-field-checkbox" style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="tracked" />Suivre le stock</label>
-          ${field('Stock de départ', html`<input class="input" name="stockInitial" inputmode="decimal" placeholder="0" />`)}
-          ${field('Alerte quand il reste', html`<input class="input" name="stockAlert" inputmode="decimal" placeholder="Ex. : 5" />`, { hint: 'Signalé dans « À faire » sur l’accueil.' })}
+          <label class="form-field-checkbox" style="display:flex;gap:8px;align-items:center"
+            ><input type="checkbox" name="tracked" ${it.tracked ? raw('checked') : ''} />Suivre le stock</label
+          >
+          ${field('Stock de départ', html`<input class="input" name="stockInitial" inputmode="decimal" value="${it.stockInitial ?? ''}" placeholder="0" />`)}
+          ${field('Alerte quand il reste', html`<input class="input" name="stockAlert" inputmode="decimal" value="${it.stockAlert ?? ''}" placeholder="Ex. : 5" />`, { hint: 'Signalé dans « À faire » sur l’accueil.' })}
         </div>
       </details>
-      <div><button class="btn btn-primary" type="submit">Ajouter au catalogue</button></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" type="submit">${it.id ? 'Enregistrer' : 'Ajouter au catalogue'}</button
+        >${it.id ? html`<button type="button" class="btn btn-secondary" data-action="catalog-edit" data-id="">Annuler</button>` : ''}
+      </div>
     </form>
     ${stockPanel()}
     ${
@@ -179,11 +206,16 @@ function catalogTab() {
                   ${items.map(
                     (it) =>
                       html`<tr>
-                        <td>${it.label}${it.tracked ? html` ${badge('Stock suivi', 'info')}` : ''}</td>
+                        <td>
+                          ${it.label}${it.tracked ? html` ${badge('Stock suivi', 'info')}` : ''}${it.barcode ? html`<br /><span class="text-muted mono">${it.barcode}</span>` : ''}
+                        </td>
                         <td class="num">${eur(it.unitPrice)}</td>
                         ${franchise ? '' : html`<td class="num">${pct(it.vatRateBp)}</td>`}
                         <td>${it.nature === 'biens' ? 'Bien' : 'Service'}</td>
-                        <td class="num"><button class="btn btn-secondary btn-sm" data-action="catalog-remove" data-id="${it.id}">Retirer</button></td>
+                        <td class="num">
+                          <button class="btn btn-secondary btn-sm" data-action="catalog-edit" data-id="${it.id}">Modifier</button>
+                          <button class="btn btn-secondary btn-sm" data-action="catalog-remove" data-id="${it.id}">Retirer</button>
+                        </td>
                       </tr>`,
                   )}
                 </tbody>
@@ -275,6 +307,7 @@ const SETTINGS_TABS = [
     render: () => html`${emailCard()}${reminderTemplatesCard()}`,
   },
   { key: 'catalogue', label: 'Prestations et articles', group: 'facturation', icon: 'package', visible: () => true, render: catalogTab },
+  { key: 'caisse', label: 'Caisse', group: 'facturation', icon: 'coin', visible: () => true, render: caisseSettingsTab },
   { key: 'banque', label: 'Catégories bancaires', group: 'facturation', icon: 'card', visible: () => true, render: bankTab },
   { key: 'reprise', label: 'Reprise d’historique', group: 'facturation', icon: 'upload', visible: () => !hasFecImport(), render: openingTab },
   {

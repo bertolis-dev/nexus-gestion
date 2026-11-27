@@ -2,20 +2,21 @@
  * Écran « bank ».
  */
 
-import { decodeStatement, importStatement } from '../../core/bank-import.js?v=754d7f5';
-import { reconciliationStatement } from '../../core/bank.js?v=754d7f5';
-import { VAT_RATES_BP } from '../../core/invoices.js?v=754d7f5';
-import { parseEuros } from '../../core/money.js?v=754d7f5';
-import { CHOOSABLE_EXPENSE_CATEGORIES } from '../../core/pcg.js?v=754d7f5';
-import { INCOME_CATEGORIES, MAX_BANK_ACCOUNTS, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=754d7f5';
-import { field, html, opt, raw } from '../html.js?v=754d7f5';
-import { ICONS } from '../icons.js?v=754d7f5';
-import { cloudState, eur, frDate, isDirigeant, pct, today, ui, ws } from '../state.js?v=754d7f5';
-import { dataVersion, save, toast } from '../store.js?v=754d7f5';
-import * as cloud from '../cloud.js?v=754d7f5';
-import { render } from '../render.js?v=754d7f5';
-import { preparePhoto } from '../ui/photo.js?v=754d7f5';
-import { badge, icon, term, viewHeader } from '../ui/common.js?v=754d7f5';
+import { decodeStatement, importStatement } from '../../core/bank-import.js?v=151777b';
+import { reconciliationStatement } from '../../core/bank.js?v=151777b';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=151777b';
+import { parseEuros } from '../../core/money.js?v=151777b';
+import { CHOOSABLE_EXPENSE_CATEGORIES } from '../../core/pcg.js?v=151777b';
+import { INCOME_CATEGORIES, MAX_BANK_ACCOUNTS, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=151777b';
+import { field, html, opt, raw } from '../html.js?v=151777b';
+import { ICONS } from '../icons.js?v=151777b';
+import { cloudState, eur, frDate, isDirigeant, pct, today, ui, ws } from '../state.js?v=151777b';
+import { dataVersion, save, toast } from '../store.js?v=151777b';
+import * as cloud from '../cloud.js?v=151777b';
+import { render } from '../render.js?v=151777b';
+import { preparePhoto } from '../ui/photo.js?v=151777b';
+import { badge, icon, term, viewHeader } from '../ui/common.js?v=151777b';
+import { payoutNotice } from './caisse-payout.js?v=151777b';
 
 // ------------------------------------------------------------------ banque (§3.4)
 
@@ -144,7 +145,7 @@ export function viewBank() {
     } catch {}
   }
   return html` ${viewHeader('Banque', 'Associez chaque mouvement à une facture, ou choisissez une catégorie.', html`<label class="btn btn-primary" style="margin:0" tabindex="0" data-file-picker>${icon('upload', 14)} Importer un relevé (CSV, OFX, CAMT.053, QIF)<input type="file" accept=".csv,.ofx,.qfx,.xml,.qif,.txt" data-action="bank-file" hidden /></label>`)}
-    ${bankAccountsBar()} ${bankImportReport()} ${sureMatchesNotice()}
+    ${bankAccountsBar()} ${bankImportReport()} ${sureMatchesNotice()} ${payoutNotice()}
     <div class="card table-card" id="bank-open">${bankOpenCard(open)}</div>
     <div class="card">
       <h2>${term('Votre solde bancaire est-il juste ?', 'État de rapprochement')}</h2>

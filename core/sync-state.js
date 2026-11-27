@@ -3,8 +3,8 @@
  * clos). Séparé de core/sync.js (état → opérations) ; réexporté par lui.
  */
 
-import { DEFAULT_BANK_ACCOUNT } from './bank.js?v=754d7f5';
-import { parisDateOf } from './dates.js?v=754d7f5';
+import { DEFAULT_BANK_ACCOUNT } from './bank.js?v=151777b';
+import { parisDateOf } from './dates.js?v=151777b';
 
 // ------------------------------------------------------------------ lignes → état
 
@@ -33,7 +33,19 @@ function draftFromRow(i) {
     lines: i.lines,
   };
   if (i.credit_of) draft.creditOf = i.credit_of;
-  for (const k of ['quoteRef', 'recurringId', 'period', 'deliveryDate', 'deliveryAddress', 'deliveryCountry', 'reason', 'rebillOf', 'attachReceipt'])
+  for (const k of [
+    'quoteRef',
+    'recurringId',
+    'period',
+    'deliveryDate',
+    'deliveryAddress',
+    'deliveryCountry',
+    'reason',
+    'rebillOf',
+    'attachReceipt',
+    'saleId',
+    'saleRef',
+  ])
     if (x[k]) draft[k] = x[k];
   return draft;
 }

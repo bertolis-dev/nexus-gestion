@@ -2,21 +2,24 @@
  * Écran « settings ».
  */
 
-import * as cloud from '../cloud.js?v=754d7f5';
-import { render } from '../render.js?v=754d7f5';
-import { cloudState, frDate, today, ui, ws } from '../state.js?v=754d7f5';
-import { download, save, toast } from '../store.js?v=754d7f5';
-import { forgetRule } from '../../core/categorization.js?v=754d7f5';
-import { explainEmailError } from '../email-errors.js?v=754d7f5';
-import { refreshEmailStatus } from '../sync-ui.js?v=754d7f5';
-import { removeCatalogItem, saveCatalogItem } from '../../core/catalog.js?v=754d7f5';
-import { readPrice } from '../views/invoice-form.js?v=754d7f5';
+import * as cloud from '../cloud.js?v=151777b';
+import { render } from '../render.js?v=151777b';
+import { cloudState, frDate, today, ui, ws } from '../state.js?v=151777b';
+import { download, save, toast } from '../store.js?v=151777b';
+import { forgetRule } from '../../core/categorization.js?v=151777b';
+import { explainEmailError } from '../email-errors.js?v=151777b';
+import { refreshEmailStatus } from '../sync-ui.js?v=151777b';
+import { removeCatalogItem, saveCatalogItem } from '../../core/catalog.js?v=151777b';
+import { readPrice } from '../views/invoice-form.js?v=151777b';
 
 /** Ajout au catalogue (formulaire de Paramètres > Prestations et articles). */
 export function catalogSubmit(f, form) {
   const unitPrice = readPrice(f.price);
+  const priceTtc = String(f.priceTtc || '').trim() ? readPrice(f.priceTtc) : null;
+  const previous = (ws.company.catalog || []).find((c) => c.id === f.id);
   try {
     ws.company.catalog = saveCatalogItem(ws.company.catalog, {
+      id: f.id || undefined,
       label: f.label,
       unitPrice: unitPrice ?? -1,
       vatRateBp: ws.company.vatRegime === 'franchise' ? 0 : Number(f.vatRateBp),
@@ -24,18 +27,27 @@ export function catalogSubmit(f, form) {
       tracked: f.tracked === 'on',
       stockInitial: f.stockInitial || 0,
       stockAlert: f.stockAlert ?? null,
+      barcode: f.barcode || '',
+      priceTtc: priceTtc ?? (String(f.priceTtc || '').trim() ? -1 : null),
+      favorite: f.favorite === 'on',
     });
   } catch (err) {
     return toast(err.message, true);
   }
+  ui.catalogEdit = null;
   save();
   form.reset();
   render();
-  toast(`« ${f.label.trim()} » ajouté au catalogue.`);
+  toast(previous ? `« ${f.label.trim()} » enregistré.` : `« ${f.label.trim()} » ajouté au catalogue.`);
 }
 
 /** Actions « settings » : data-action → fonction. */
 export const actionsTable = {
+  'catalog-edit': async ({ id }) => {
+    ui.catalogEdit = id || null;
+    render();
+    if (id) document.querySelector('form[data-form="catalog-item"]')?.scrollIntoView({ block: 'start' });
+  },
   'data-export': async () => {
     try {
       const data = ui.demo

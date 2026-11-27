@@ -93,7 +93,9 @@ export function invoiceDraftRow(inv, meta) {
       period: inv.period || null,
       // Livraison : seulement si elle diffère de la date d'émission ou de l'adresse du client.
       ...Object.fromEntries(
-        ['deliveryDate', 'deliveryAddress', 'deliveryCountry', 'reason', 'rebillOf', 'attachReceipt'].filter((k) => inv[k]).map((k) => [k, inv[k]]),
+        ['deliveryDate', 'deliveryAddress', 'deliveryCountry', 'reason', 'rebillOf', 'attachReceipt', 'saleId', 'saleRef']
+          .filter((k) => inv[k])
+          .map((k) => [k, inv[k]]),
       ),
     },
   };
@@ -346,7 +348,7 @@ export function planSync(before, after, meta) {
   return ops;
 }
 
-export { ledgerStateFromRows, stateFromRows } from './sync-state.js?v=754d7f5';
+export { ledgerStateFromRows, stateFromRows } from './sync-state.js?v=151777b';
 
 export function applySyncResult(ws, op, result) {
   if (op.kind !== 'rpc' || op.fn !== 'save_draft_entry' || !result || typeof result !== 'object' || result.seq == null) return false;

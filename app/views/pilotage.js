@@ -3,17 +3,16 @@
  * écrans : temps passé (Factures), trajets (Dépenses), stock (Paramètres › Catalogue), espace client (fiche client).
  */
 
-import { fiscalCalendar } from '../../core/fiscal-calendar.js?v=754d7f5';
-import { BUDGET_LINES, budgetReport } from '../../core/budget.js?v=754d7f5';
-import { compareScenarios, capitalCents, isAssimileSalarie, REMUNERATION_DEFAULTS } from '../../core/remuneration.js?v=754d7f5';
-import { entryAmount, formatMinutes, isBilled, unbilledByClient } from '../../core/timesheet.js?v=754d7f5';
-import { stockLevels } from '../../core/stock.js?v=754d7f5';
-import { HORSEPOWER_CHOICES } from '../../core/mileage.js?v=754d7f5';
-import { field, html, opt, raw } from '../html.js?v=754d7f5';
-import { isMicro } from '../render.js?v=754d7f5';
-import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=754d7f5';
-import { badge, viewHeader } from '../ui/common.js?v=754d7f5';
-import { isOwner, prefs } from '../actions/pilotage.js?v=754d7f5';
+import { fiscalCalendar } from '../../core/fiscal-calendar.js?v=151777b';
+import { BUDGET_LINES, budgetReport } from '../../core/budget.js?v=151777b';
+import { compareScenarios, capitalCents, isAssimileSalarie, REMUNERATION_DEFAULTS } from '../../core/remuneration.js?v=151777b';
+import { entryAmount, formatMinutes, isBilled, unbilledByClient } from '../../core/timesheet.js?v=151777b';
+import { HORSEPOWER_CHOICES } from '../../core/mileage.js?v=151777b';
+import { field, html, opt, raw } from '../html.js?v=151777b';
+import { isMicro } from '../render.js?v=151777b';
+import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=151777b';
+import { badge, viewHeader } from '../ui/common.js?v=151777b';
+import { isOwner, prefs } from '../actions/pilotage.js?v=151777b';
 
 /** Préférence de saisie : réglage de l'entreprise, sinon celle gardée sur cet appareil (collaborateur). */
 const pref = (k) => ws.company[k] ?? prefs()[k];
@@ -427,7 +426,7 @@ export function viewMileage() {
 // ------------------------------------------------------------------ Paramètres › Catalogue : stock
 
 export function stockPanel() {
-  const levels = stockLevels(ws.company.catalog, ws.stockMoves, ws.book.invoices);
+  const levels = ws.stockLevels();
   if (!levels.length) return '';
   const f = ui.stockForm || {};
   return html`<div class="card table-card" style="min-width:0">
@@ -461,8 +460,8 @@ export function stockPanel() {
     <form class="card" data-form="stock-move" style="display:flex;flex-direction:column;gap:12px;min-width:0">
       <h2>Entrée ou correction de stock</h2>
       <p class="text-muted" style="margin:0">
-        Les ventes sont déduites toutes seules à l’émission des factures. Notez ici les livraisons reçues (nombre positif) et la casse ou l’inventaire
-        (négatif).
+        Les ventes sont déduites toutes seules (factures émises et tickets de caisse). Notez ici les livraisons reçues (nombre positif) et la casse ou
+        l’inventaire (négatif).
       </p>
       ${errorBox(f.error)}
       <div class="form-grid">
