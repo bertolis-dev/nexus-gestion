@@ -4,18 +4,18 @@
  * Sans DOM ni stockage : l'interface (app/) le sérialise, les tests l'utilisent tel quel.
  */
 
-import { buildChart, categoryById } from './pcg.js?v=ba94fa4';
-import { Ledger } from './ledger.js?v=ba94fa4';
-import { InvoiceBook, clientAux } from './invoices.js?v=ba94fa4';
-import { purchaseEntry, findDuplicates, knownVatOnDebits, ttcLine } from './purchases.js?v=ba94fa4';
-import { mergeTransactions, suggestMatches, settlementEntry, directEntry, DEFAULT_BANK_ACCOUNT } from './bank.js?v=ba94fa4';
+import { buildChart, categoryById } from './pcg.js?v=e8e3fd1';
+import { Ledger } from './ledger.js?v=e8e3fd1';
+import { InvoiceBook, clientAux } from './invoices.js?v=e8e3fd1';
+import { purchaseEntry, findDuplicates, knownVatOnDebits, ttcLine } from './purchases.js?v=e8e3fd1';
+import { mergeTransactions, suggestMatches, settlementEntry, directEntry, DEFAULT_BANK_ACCOUNT } from './bank.js?v=e8e3fd1';
 export { DEFAULT_BANK_ACCOUNT };
-import { creditsOf, originalOf, groupBalance } from './receipts.js?v=ba94fa4';
-import { divRound, splitTtc, sum } from './money.js?v=ba94fa4';
-import { openingEntry } from './fecimport.js?v=ba94fa4';
-import { creditTargetsAsset } from './assets.js?v=ba94fa4';
-import { LIFECYCLE, currentStatus } from './lifecycle.js?v=ba94fa4';
-import { SCHEMA_VERSION, migrateState } from './schema.js?v=ba94fa4';
+import { creditsOf, originalOf, groupBalance } from './receipts.js?v=e8e3fd1';
+import { divRound, splitTtc, sum } from './money.js?v=e8e3fd1';
+import { openingEntry } from './fecimport.js?v=e8e3fd1';
+import { creditTargetsAsset } from './assets.js?v=e8e3fd1';
+import { LIFECYCLE, currentStatus } from './lifecycle.js?v=e8e3fd1';
+import { SCHEMA_VERSION, migrateState } from './schema.js?v=e8e3fd1';
 
 /** Entrées d'argent sans facture de vente, proposées en langage courant. */
 export const INCOME_CATEGORIES = [
@@ -61,19 +61,20 @@ export function combineEstimates(list) {
 
 export const MAX_BANK_ACCOUNTS = 10;
 
-import { recurringMethods } from './workspace/recurring.js?v=ba94fa4';
-import { vatMethods } from './workspace/vat.js?v=ba94fa4';
-import { receiptVatMethods } from './workspace/receipt-vat.js?v=ba94fa4';
-import { paymentVatMethods } from './workspace/payment-vat.js?v=ba94fa4';
-import { nexusRhMethods } from './workspace/nexusrh.js?v=ba94fa4';
-import { letteringMethods } from './workspace/lettering.js?v=ba94fa4';
-import { closingMethods } from './workspace/closing.js?v=ba94fa4';
-import { pilotageMethods } from './workspace/pilotage.js?v=ba94fa4';
-import { rebillMethods } from './workspace/rebill.js?v=ba94fa4';
-import { microMethods } from './workspace/micro.js?v=ba94fa4';
-import { depositMethods } from './deposit.js?v=ba94fa4';
-import { categorizationMethods, learnRule } from './categorization.js?v=ba94fa4';
-import { reminderMethods } from './reminders.js?v=ba94fa4';
+import { recurringMethods } from './workspace/recurring.js?v=e8e3fd1';
+import { vatMethods } from './workspace/vat.js?v=e8e3fd1';
+import { receiptVatMethods } from './workspace/receipt-vat.js?v=e8e3fd1';
+import { paymentVatMethods } from './workspace/payment-vat.js?v=e8e3fd1';
+import { nexusRhMethods } from './workspace/nexusrh.js?v=e8e3fd1';
+import { letteringMethods } from './workspace/lettering.js?v=e8e3fd1';
+import { closingMethods } from './workspace/closing.js?v=e8e3fd1';
+import { pilotageMethods } from './workspace/pilotage.js?v=e8e3fd1';
+import { rebillMethods } from './workspace/rebill.js?v=e8e3fd1';
+import { creditMethods } from './workspace/credit.js?v=e8e3fd1';
+import { microMethods } from './workspace/micro.js?v=e8e3fd1';
+import { depositMethods } from './deposit.js?v=e8e3fd1';
+import { categorizationMethods, learnRule } from './categorization.js?v=e8e3fd1';
+import { reminderMethods } from './reminders.js?v=e8e3fd1';
 
 export class Workspace {
   constructor({ company, state: saved = {}, now, newId } = {}) {
@@ -181,6 +182,7 @@ export class Workspace {
 
   issueInvoice(id) {
     this._assertNotDeclared(this.book.get(id));
+    this._prepareCreditNote(id);
     const issued = this.book.issue(id, { ledger: this.ledger });
     // Un avoir modifie la TVA exigible et le restant dû de la facture qu'il corrige.
     const original = issued.type === 'credit' ? originalOf(this.book.invoices, issued) : null;
@@ -544,6 +546,7 @@ for (const methods of [
   closingMethods,
   pilotageMethods,
   rebillMethods,
+  creditMethods,
   microMethods,
   depositMethods,
   categorizationMethods,

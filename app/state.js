@@ -2,9 +2,9 @@
  * État partagé de l'interface : entreprise affichée, écran, mode connecté, formats d'affichage.
  */
 
-import { todayParis } from '../core/dates.js?v=ba94fa4';
-import { formatEuros } from '../core/money.js?v=ba94fa4';
-import { getDemo, removeDemo, setDemo } from './demo-store.js?v=ba94fa4';
+import { todayParis } from '../core/dates.js?v=e8e3fd1';
+import { formatEuros } from '../core/money.js?v=e8e3fd1';
+import { getDemo, removeDemo, setDemo } from './demo-store.js?v=e8e3fd1';
 
 /**
  * Nexus Gestion — interface (lot 1).
@@ -77,5 +77,10 @@ export const today = () => todayParis();
 export const eur = (c) => formatEuros(c || 0);
 
 export const frDate = (iso) => (iso ? new Date(`${iso}T00:00:00`).toLocaleDateString('fr-FR') : '');
+
+/** Rôle dans l'entreprise (démonstration : tout est permis). Mêmes règles que la base. */
+export const isDirigeant = () => ui.demo || (cloudState.role || 'dirigeant') === 'dirigeant';
+/** Émettre, valider, clôturer : dirigeant ou expert-comptable (can_validate). */
+export const canValidate = () => ui.demo || ['dirigeant', 'expert'].includes(cloudState.role || 'dirigeant');
 
 export const pct = (bp) => `${(bp / 100).toLocaleString('fr-FR')} %`;

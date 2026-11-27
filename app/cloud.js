@@ -9,11 +9,11 @@
  * nombre d'écritures validées), l'état est rechargé depuis la base, qui fait foi.
  */
 
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js?v=ba94fa4';
-import { stateFromRows, refusedUpdate } from '../core/sync.js?v=ba94fa4';
-import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, pendingOutboxOps, OUTBOX_PREFIX } from '../core/outbox.js?v=ba94fa4';
-import { ACCOUNTS } from '../core/pcg.js?v=ba94fa4';
-import { mfaState, canRemoveFactor } from '../core/mfa.js?v=ba94fa4';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js?v=e8e3fd1';
+import { stateFromRows, refusedUpdate } from '../core/sync.js?v=e8e3fd1';
+import { Outbox as CoreOutbox, memoryLock, purgeOutboxes, pendingOutboxOps, OUTBOX_PREFIX } from '../core/outbox.js?v=e8e3fd1';
+import { ACCOUNTS } from '../core/pcg.js?v=e8e3fd1';
+import { mfaState, canRemoveFactor } from '../core/mfa.js?v=e8e3fd1';
 
 // supabase-js (copie locale, app/vendor/) n'est chargé qu'en mode connecté : la démonstration et
 // le site public ne téléchargent pas ces 220 Ko.
@@ -21,7 +21,7 @@ let client = null;
 const authListeners = [];
 async function connect() {
   if (!client) {
-    const { createClient } = await import('./vendor/supabase.js?v=ba94fa4');
+    const { createClient } = await import('./vendor/supabase.js?v=e8e3fd1');
     // Session gardée dans le navigateur et renouvelée automatiquement : on reste connecté d'une visite
     // à l'autre, jusqu'à « Se déconnecter » (comme Nexus RH).
     client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {

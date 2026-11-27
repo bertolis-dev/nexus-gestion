@@ -5,7 +5,7 @@
  * moyens (modifiables), qui ne remplace pas le calcul de l'expert-comptable.
  */
 
-import { divRound } from './money.js?v=ba94fa4';
+import { divRound } from './money.js?v=e8e3fd1';
 
 /**
  * Taux moyens par défaut (2026), à faire valider (docs/regles-a-valider.md) :

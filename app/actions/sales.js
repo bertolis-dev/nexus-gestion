@@ -2,21 +2,21 @@
  * Écran « sales ».
  */
 
-import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=ba94fa4';
-import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=ba94fa4';
-import { LIFECYCLE } from '../../core/lifecycle.js?v=ba94fa4';
-import { lookupSiren } from '../company-lookup.js?v=ba94fa4';
-import { render } from '../render.js?v=ba94fa4';
-import * as cloud from '../cloud.js?v=ba94fa4';
-import { cloudState, eur, frDate, today, ui, ws } from '../state.js?v=ba94fa4';
-import { invoiceEmail, reminderMessage } from '../../core/reminders.js?v=ba94fa4';
-import { explainEmailError } from '../email-errors.js?v=ba94fa4';
-import { download, save, toast, whenSaved } from '../store.js?v=ba94fa4';
-import { isUnconfirmed } from '../sync-ui.js?v=ba94fa4';
-import { emptyLine, persistDraft } from '../views/invoice-form.js?v=ba94fa4';
-import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=ba94fa4';
-import { depositCandidates } from '../../core/deposit.js?v=ba94fa4';
-import { createZip } from '../../core/zip.js?v=ba94fa4';
+import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=e8e3fd1';
+import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=e8e3fd1';
+import { LIFECYCLE } from '../../core/lifecycle.js?v=e8e3fd1';
+import { lookupSiren } from '../company-lookup.js?v=e8e3fd1';
+import { render } from '../render.js?v=e8e3fd1';
+import * as cloud from '../cloud.js?v=e8e3fd1';
+import { canValidate, cloudState, eur, frDate, today, ui, ws } from '../state.js?v=e8e3fd1';
+import { invoiceEmail, reminderMessage } from '../../core/reminders.js?v=e8e3fd1';
+import { explainEmailError } from '../email-errors.js?v=e8e3fd1';
+import { download, save, toast, whenSaved } from '../store.js?v=e8e3fd1';
+import { isUnconfirmed } from '../sync-ui.js?v=e8e3fd1';
+import { emptyLine, persistDraft } from '../views/invoice-form.js?v=e8e3fd1';
+import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=e8e3fd1';
+import { depositCandidates } from '../../core/deposit.js?v=e8e3fd1';
+import { createZip } from '../../core/zip.js?v=e8e3fd1';
 
 /**
  * Justificatif de la dépense refacturée, joint au PDF si demandé sur la facture (mode connecté : la
@@ -46,6 +46,12 @@ async function receiptAttachments(inv) {
  * ou null si l'émission a échoué (anomalies affichées sur le formulaire) ou attend son numéro.
  */
 async function issueDraft(fromForm, id) {
+  if (!canValidate()) {
+    if (fromForm) persistDraft();
+    toast('L’émission est faite par le dirigeant ou l’expert-comptable : le brouillon est enregistré, il pourra l’émettre.', true);
+    render();
+    return null;
+  }
   const inv = fromForm ? persistDraft() : ws.book.get(id);
   if (!inv) {
     render();

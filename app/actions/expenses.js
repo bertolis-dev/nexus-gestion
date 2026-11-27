@@ -2,15 +2,22 @@
  * Écran « expenses ».
  */
 
-import { purchaseLinesFrom } from '../../core/einvoice-in.js?v=ba94fa4';
-import * as cloud from '../cloud.js?v=ba94fa4';
-import { render } from '../render.js?v=ba94fa4';
-import { eur, ui, ws } from '../state.js?v=ba94fa4';
-import { save, toast } from '../store.js?v=ba94fa4';
-import { attachReceipt } from '../views/expenses.js?v=ba94fa4';
-import { saveNexusRhImport } from '../views/nexusrh-import.js?v=ba94fa4';
+import { purchaseLinesFrom } from '../../core/einvoice-in.js?v=e8e3fd1';
+import * as cloud from '../cloud.js?v=e8e3fd1';
+import { render } from '../render.js?v=e8e3fd1';
+import { eur, ui, ws } from '../state.js?v=e8e3fd1';
+import { save, toast } from '../store.js?v=e8e3fd1';
+import { attachReceipt } from '../views/expenses.js?v=e8e3fd1';
+import { saveNexusRhImport } from '../views/nexusrh-import.js?v=e8e3fd1';
 
 /** Actions « expenses » : data-action → fonction. */
+/** Lignes de la facture d'acompte importée du même fournisseur dont le TTC égale l'acompte déduit (sinon null). */
+function depositLinesFor(inv) {
+  if (!inv.prepaid || inv.type === 'deposit') return null;
+  const dep = ws.purchases.find((p) => p.einvoice?.deposit && p.supplier.name === inv.seller.name && p.totalTtc === inv.prepaid);
+  return dep ? dep.lines : null;
+}
+
 export const actionsTable = {
   'nexusrh-save': () => saveNexusRhImport(),
   'nexusrh-cancel': async () => {
@@ -43,9 +50,9 @@ export const actionsTable = {
       date: inv.issueDate,
       number: inv.number,
       documentName: file.name,
-      lines: purchaseLinesFrom(inv, categoryId),
+      lines: purchaseLinesFrom(inv, categoryId, depositLinesFor(inv)),
       type: inv.type === 'credit' ? 'credit' : 'invoice',
-      einvoice: { format: inv.format, totalTtc: inv.totalTtc },
+      einvoice: { format: inv.format, totalTtc: inv.totalTtc, ...(inv.type === 'deposit' ? { deposit: true } : {}) },
     };
     const res = ws.addPurchaseLines(data, { force: Boolean(duplicates?.length) });
     if (!res.purchase) {
@@ -55,7 +62,9 @@ export const actionsTable = {
     ui.pendingEinvoice = ui.pendingEinvoices.shift() || null;
     save();
     render();
-    if (res.purchase.totalTtc !== inv.totalTtc)
+    if (inv.prepaid && inv.type !== 'deposit')
+      toast(`Facture finale : l’acompte déjà facturé (${eur(inv.prepaid)}) est retiré pour ne pas le compter deux fois.`);
+    else if (res.purchase.totalTtc !== inv.totalTtc)
       toast(
         `Dépense enregistrée, mais le total recalculé (${eur(res.purchase.totalTtc)}) diffère de la facture (${eur(inv.totalTtc)}) : vérifiez la catégorie.`,
         true,

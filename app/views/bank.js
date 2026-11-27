@@ -2,20 +2,20 @@
  * Écran « bank ».
  */
 
-import { decodeStatement, importStatement } from '../../core/bank-import.js?v=ba94fa4';
-import { reconciliationStatement } from '../../core/bank.js?v=ba94fa4';
-import { VAT_RATES_BP } from '../../core/invoices.js?v=ba94fa4';
-import { parseEuros } from '../../core/money.js?v=ba94fa4';
-import { CHOOSABLE_EXPENSE_CATEGORIES } from '../../core/pcg.js?v=ba94fa4';
-import { INCOME_CATEGORIES, MAX_BANK_ACCOUNTS, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=ba94fa4';
-import { field, html, opt, raw } from '../html.js?v=ba94fa4';
-import { ICONS } from '../icons.js?v=ba94fa4';
-import { cloudState, eur, frDate, pct, today, ui, ws } from '../state.js?v=ba94fa4';
-import { dataVersion, save, toast } from '../store.js?v=ba94fa4';
-import * as cloud from '../cloud.js?v=ba94fa4';
-import { render } from '../render.js?v=ba94fa4';
-import { preparePhoto } from '../ui/photo.js?v=ba94fa4';
-import { badge, icon, term, viewHeader } from '../ui/common.js?v=ba94fa4';
+import { decodeStatement, importStatement } from '../../core/bank-import.js?v=e8e3fd1';
+import { reconciliationStatement } from '../../core/bank.js?v=e8e3fd1';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=e8e3fd1';
+import { parseEuros } from '../../core/money.js?v=e8e3fd1';
+import { CHOOSABLE_EXPENSE_CATEGORIES } from '../../core/pcg.js?v=e8e3fd1';
+import { INCOME_CATEGORIES, MAX_BANK_ACCOUNTS, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=e8e3fd1';
+import { field, html, opt, raw } from '../html.js?v=e8e3fd1';
+import { ICONS } from '../icons.js?v=e8e3fd1';
+import { cloudState, eur, frDate, isDirigeant, pct, today, ui, ws } from '../state.js?v=e8e3fd1';
+import { dataVersion, save, toast } from '../store.js?v=e8e3fd1';
+import * as cloud from '../cloud.js?v=e8e3fd1';
+import { render } from '../render.js?v=e8e3fd1';
+import { preparePhoto } from '../ui/photo.js?v=e8e3fd1';
+import { badge, icon, term, viewHeader } from '../ui/common.js?v=e8e3fd1';
 
 // ------------------------------------------------------------------ banque (§3.4)
 
@@ -285,7 +285,7 @@ export function bankAccountsBar() {
             <button class="btn btn-primary" type="submit" style="margin-bottom:2px">Ajouter</button>
             <button class="btn btn-secondary" type="button" data-action="bank-account-cancel" style="margin-bottom:2px">Annuler</button>
           </form>`
-        : accounts.length < MAX_BANK_ACCOUNTS
+        : accounts.length < MAX_BANK_ACCOUNTS && isDirigeant()
           ? html`<button class="btn btn-secondary" data-action="bank-account-new" style="margin-left:auto">Ajouter un compte bancaire</button>`
           : ''
     }

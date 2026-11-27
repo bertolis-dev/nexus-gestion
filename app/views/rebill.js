@@ -4,12 +4,12 @@
  * Actions et formulaire dans le même fichier.
  */
 
-import { field, html, opt, raw } from '../html.js?v=ba94fa4';
-import { cloudState, eur, today, ui, ws } from '../state.js?v=ba94fa4';
-import { badge } from '../ui/common.js?v=ba94fa4';
-import { render } from '../render.js?v=ba94fa4';
-import { save, toast } from '../store.js?v=ba94fa4';
-import { parseEuros, sum } from '../../core/money.js?v=ba94fa4';
+import { field, html, opt, raw } from '../html.js?v=e8e3fd1';
+import { cloudState, eur, today, ui, ws } from '../state.js?v=e8e3fd1';
+import { badge } from '../ui/common.js?v=e8e3fd1';
+import { render } from '../render.js?v=e8e3fd1';
+import { save, toast } from '../store.js?v=e8e3fd1';
+import { parseEuros, sum } from '../../core/money.js?v=e8e3fd1';
 
 /** Pièce justificative enregistrée pour la dépense (ou pour son paiement en banque). */
 export function hasReceipt(p) {

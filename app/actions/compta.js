@@ -2,13 +2,13 @@
  * Écran « compta ».
  */
 
-import { generalLedgerCsv, journalsCsv, trialBalanceCsv } from '../../core/exports.js?v=ba94fa4';
-import { checkFEC, encodeLatin9, exportFEC } from '../../core/reports.js?v=ba94fa4';
-import * as cloud from '../cloud.js?v=ba94fa4';
-import { render } from '../render.js?v=ba94fa4';
-import { frDate, today, ui, ws } from '../state.js?v=ba94fa4';
-import { download, save, toast } from '../store.js?v=ba94fa4';
-import { openArchive } from '../views/archives.js?v=ba94fa4';
+import { generalLedgerCsv, journalsCsv, trialBalanceCsv } from '../../core/exports.js?v=e8e3fd1';
+import { checkFEC, encodeLatin9, exportFEC } from '../../core/reports.js?v=e8e3fd1';
+import * as cloud from '../cloud.js?v=e8e3fd1';
+import { render } from '../render.js?v=e8e3fd1';
+import { canValidate, frDate, today, ui, ws } from '../state.js?v=e8e3fd1';
+import { download, save, toast } from '../store.js?v=e8e3fd1';
+import { openArchive } from '../views/archives.js?v=e8e3fd1';
 
 /** Actions « compta » : data-action → fonction. */
 export const actionsTable = {
@@ -49,6 +49,7 @@ export const actionsTable = {
     return render();
   },
   validate: async () => {
+    if (!canValidate()) return toast('La validation des écritures est faite par le dirigeant ou l’expert-comptable.', true);
     const date = document.querySelector('[data-validate-date]').value;
     if (date >= ws.company.fiscalYear.end)
       return toast('Le dernier jour de l’exercice est validé par la clôture (page Clôture), après les écritures d’inventaire et le résultat.', true);

@@ -1,3 +1,4 @@
+import { divRound } from './money.js?v=e8e3fd1';
 /**
  * Réception des factures électroniques fournisseurs (§2 : obligatoire depuis le 1er septembre 2026 ;
  * §3.3 « récupération automatique des factures électroniques »). En attendant le raccordement à la
@@ -127,6 +128,7 @@ function fromCii(root) {
     totalVat: cents(txt(findAll(sum, 'TaxTotalAmount').find((n) => !n.attrs.currencyID || n.attrs.currencyID === 'EUR'))),
     totalTtc: cents(txt(path(sum, 'GrandTotalAmount'))),
     dueAmount: cents(txt(path(sum, 'DuePayableAmount'))),
+    prepaid: cents(txt(path(sum, 'TotalPrepaidAmount'))),
     lines: kids(tx, 'IncludedSupplyChainTradeLineItem').map((l) => ({
       label: txt(path(l, 'SpecifiedTradeProduct', 'Name')),
       ht: cents(txt(path(l, 'SpecifiedLineTradeSettlement', 'SpecifiedTradeSettlementLineMonetarySummation', 'LineTotalAmount'))),
@@ -202,12 +204,34 @@ export function readIncomingInvoice(xml, { ownSiren } = {}) {
   return { ...inv, warnings };
 }
 
-/** Lignes d'achat Nexus (une par taux de TVA) à partir du détail des taxes de la facture reçue. */
-export function purchaseLinesFrom(inv, categoryId) {
+/**
+ * Lignes d'achat Nexus (une par taux de TVA) à partir du détail des taxes de la facture reçue. Facture
+ * finale dont un acompte a déjà été facturé (TotalPrepaidAmount) : l'acompte, déjà enregistré, est
+ * retiré taux par taux (d'après les lignes de la facture d'acompte si elles sont fournies, sinon au
+ * prorata du TTC) ; sinon charge et TVA seraient comptées deux fois.
+ */
+export function purchaseLinesFrom(inv, categoryId, depositLines = null) {
   const byRate = inv.taxes.length ? inv.taxes : [{ rateBp: 0, base: inv.totalHt, vat: 0 }];
   // Autoliquidation (AE) ou livraison intracommunautaire (K) : la facture porte 0 %, mais la TVA est due
   // par l'acheteur au taux français ; sans taux, purchaseEntry applique le taux normal (20 %).
-  return byRate
+  const lines = byRate
     .filter((t) => t.base)
-    .map((t) => ({ categoryId, ht: t.base, ...(['AE', 'K'].includes(t.category) && !t.rateBp ? {} : { vatRateBp: t.rateBp }) }));
+    .map((t) => ({ categoryId, ht: t.base, vat: t.vat, ...(['AE', 'K'].includes(t.category) && !t.rateBp ? {} : { vatRateBp: t.rateBp }) }));
+  if (!inv.prepaid || inv.type === 'deposit') return lines.map(({ vat: _v, ...l }) => l);
+  if (depositLines?.length) {
+    for (const d of depositLines) {
+      const l = lines.find((x) => (x.vatRateBp ?? 2000) === (d.vatRateBp ?? 2000));
+      if (l) l.ht -= d.ht;
+    }
+  } else {
+    const ttc = lines.map((l) => l.ht + (l.vat || 0));
+    const total = ttc.reduce((a, b) => a + b, 0);
+    let left = inv.prepaid;
+    lines.forEach((l, i) => {
+      const share = i === lines.length - 1 ? left : divRound(inv.prepaid * ttc[i], total);
+      left -= share;
+      l.ht -= divRound(share * 10000, 10000 + (l.vatRateBp || 0));
+    });
+  }
+  return lines.filter((l) => l.ht > 0).map(({ vat: _v, ...l }) => l);
 }

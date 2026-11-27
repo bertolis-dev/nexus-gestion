@@ -3,8 +3,8 @@
  * Méthodes installées sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { dueOccurrences, periodLabel, validateTemplate } from '../recurring.js?v=ba94fa4';
-import { addDays } from '../dates.js?v=ba94fa4';
+import { dueOccurrences, periodLabel, validateTemplate } from '../recurring.js?v=e8e3fd1';
+import { addDays } from '../dates.js?v=e8e3fd1';
 
 export const recurringMethods = {
   saveRecurring(data) {
@@ -28,7 +28,7 @@ export const recurringMethods = {
    * Prépare (ou émet, si le modèle le demande) les factures des échéances arrivées à la date `today`.
    * Idempotent : chaque échéance n'est facturée qu'une fois (nextIndex avance).
    */
-  generateRecurring(today) {
+  generateRecurring(today, { canIssue = true } = {}) {
     const result = { drafts: [], issued: [] };
     // Parcours par identifiant : une émission refusée restaure l'état (Workspace._atomic) et remplace la
     // liste des modèles ; on relit donc chaque modèle après chaque échéance.
@@ -52,7 +52,8 @@ export const recurringMethods = {
         });
         t.nextIndex = occ.index + 1;
         t.lastRun = today;
-        if (t.autoIssue) {
+        // Émission automatique seulement pour qui a le droit d'émettre (sinon brouillon, émis par le dirigeant).
+        if (t.autoIssue && canIssue) {
           try {
             result.issued.push(this.issueInvoice(draft.id));
             continue;

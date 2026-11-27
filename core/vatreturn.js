@@ -20,10 +20,10 @@
  *   28 TVA nette due · 32 total à payer.
  */
 
-import { divRound, sum, vatFromHt } from './money.js?v=ba94fa4';
-import { isOnReceipt, originalOf, receiptEvents } from './receipts.js?v=ba94fa4';
-import { vatSplit } from './invoices.js?v=ba94fa4';
-import { tradeZone } from './countries.js?v=ba94fa4';
+import { divRound, sum, vatFromHt } from './money.js?v=e8e3fd1';
+import { isOnReceipt, originalOf, receiptEvents } from './receipts.js?v=e8e3fd1';
+import { depositsByRate, vatSplit } from './invoices.js?v=e8e3fd1';
+import { tradeZone } from './countries.js?v=e8e3fd1';
 
 /**
  * Lignes de la CA3 par taux de TVA, par millésime du formulaire 3310-CA3 — À VALIDER PAR L'EXPERT-
@@ -56,7 +56,7 @@ function exigibleParts(inv, payments, period) {
 
 /**
  * Prépare la CA3 d'une période à partir du Workspace (factures, paiements, dépenses, grand livre).
- * @param {import('./workspace.js?v=ba94fa4').Workspace} ws
+ * @param {import('./workspace.js?v=e8e3fd1').Workspace} ws
  * @param {{ from: string, to: string }} period
  * @param {{ previousCredit?: number }} opts crédit de TVA reporté de la déclaration précédente
  */
@@ -118,9 +118,13 @@ export function prepareCa3(ws, period, { previousCredit = 0 } = {}) {
     const sign = inv.type === 'credit' ? -1 : 1;
     const parts = exigibleParts(inv, ws.book.payments[inv.id] || [], period);
     for (const part of parts) {
-      if (inv.totals.totalVat === 0) {
+      // Acomptes déduits : la base déclarée est le net (l'acompte a été déclaré à sa facture) ; un acompte
+      // taxé sur une facture finale à 0 % fait de celle-ci une opération taxée (reprise de la TVA de l'acompte).
+      const deposits = depositsByRate(inv);
+      if (inv.totals.totalVat === 0 && ![...deposits.values()].some((d) => d.vat)) {
         // Opération non soumise à la TVA française : livraison intracommunautaire ou autre (autoliquidation, franchise).
-        const ht = sign * divRound(inv.totals.totalHt * part.num, part.den);
+        const netHt = inv.totals.totalHt - sum([...deposits.values()].map((d) => d.base));
+        const ht = sign * divRound(netHt * part.num, part.den);
         // Biens vers l'UE : livraisons intracommunautaires (F2) ; hors UE : exportations (E1) ;
         // prestations et autres opérations non imposables : E2.
         const zone = tradeZone(inv.client.country);

@@ -10,8 +10,8 @@
  * antérieures, ce qui garantit que la numérotation reste chronologique.
  */
 
-import { assertCents, sum } from './money.js?v=ba94fa4';
-import { isCalendarDate } from './dates.js?v=ba94fa4';
+import { assertCents, sum } from './money.js?v=e8e3fd1';
+import { isCalendarDate } from './dates.js?v=e8e3fd1';
 
 export const JOURNALS = {
   VE: 'Ventes',

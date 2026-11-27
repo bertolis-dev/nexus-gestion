@@ -4,9 +4,9 @@
  * Graphique en marine (cette année) et or (année précédente), comme le reste de Nexus.
  */
 
-import { salesStats } from '../../core/stats.js?v=ba94fa4';
-import { html, raw } from '../html.js?v=ba94fa4';
-import { eur, today, ws } from '../state.js?v=ba94fa4';
+import { salesStats } from '../../core/stats.js?v=e8e3fd1';
+import { html, raw } from '../html.js?v=e8e3fd1';
+import { eur, today, ws } from '../state.js?v=e8e3fd1';
 
 const MONTHS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
 const monthLabel = (m) => MONTHS[Number(m.slice(5, 7)) - 1];

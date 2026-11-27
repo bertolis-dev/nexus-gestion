@@ -2,14 +2,14 @@
  * Écran « closing ».
  */
 
-import { allocationProposal } from '../../core/closing.js?v=ba94fa4';
-import { closingPackage } from '../../core/closing-package.js?v=ba94fa4';
-import * as cloud from '../cloud.js?v=ba94fa4';
-import { parseEuros } from '../../core/money.js?v=ba94fa4';
-import { render } from '../render.js?v=ba94fa4';
-import { cloudState, today, ui, ws } from '../state.js?v=ba94fa4';
-import { download, save, toast } from '../store.js?v=ba94fa4';
-import { closeYearFlow } from '../views/closing.js?v=ba94fa4';
+import { allocationProposal } from '../../core/closing.js?v=e8e3fd1';
+import { closingPackage } from '../../core/closing-package.js?v=e8e3fd1';
+import * as cloud from '../cloud.js?v=e8e3fd1';
+import { parseEuros } from '../../core/money.js?v=e8e3fd1';
+import { render } from '../render.js?v=e8e3fd1';
+import { cloudState, today, ui, ws } from '../state.js?v=e8e3fd1';
+import { download, save, toast } from '../store.js?v=e8e3fd1';
+import { closeYearFlow } from '../views/closing.js?v=e8e3fd1';
 
 /** Actions « closing » : data-action → fonction. */
 export const actionsTable = {

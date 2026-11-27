@@ -2,13 +2,13 @@
  * Écran « shell ».
  */
 
-import * as cloud from '../cloud.js?v=ba94fa4';
-import { removeDemo } from '../demo-store.js?v=ba94fa4';
-import { $, render, renderApp } from '../render.js?v=ba94fa4';
-import { cloudState, freshOnboarding, setWs, today, ui, ws } from '../state.js?v=ba94fa4';
-import { download, setTheme, toast } from '../store.js?v=ba94fa4';
-import { openStructure, openStructureAndShow, refreshEmailStatus } from '../sync-ui.js?v=ba94fa4';
-import { openGuide, openGuideForCurrentScreen } from '../views/guide.js?v=ba94fa4';
+import * as cloud from '../cloud.js?v=e8e3fd1';
+import { removeDemo } from '../demo-store.js?v=e8e3fd1';
+import { $, render, renderApp } from '../render.js?v=e8e3fd1';
+import { cloudState, freshOnboarding, setWs, today, ui, ws } from '../state.js?v=e8e3fd1';
+import { download, setTheme, toast } from '../store.js?v=e8e3fd1';
+import { openStructure, openStructureAndShow, refreshEmailStatus } from '../sync-ui.js?v=e8e3fd1';
+import { openGuide, openGuideForCurrentScreen } from '../views/guide.js?v=e8e3fd1';
 
 /** Version publiée plus récente que celle chargée ? (numéro ?v=… ajouté à la mise en ligne) */
 async function newerVersionAvailable() {

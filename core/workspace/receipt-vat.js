@@ -3,8 +3,8 @@
  * Méthode installée sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { sum } from '../money.js?v=ba94fa4';
-import { isOnReceipt, receiptEvents, receiptTargets } from '../receipts.js?v=ba94fa4';
+import { sum } from '../money.js?v=e8e3fd1';
+import { isOnReceipt, receiptEvents, receiptTargets } from '../receipts.js?v=e8e3fd1';
 
 export const receiptVatMethods = {
   /**

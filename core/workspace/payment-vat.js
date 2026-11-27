@@ -4,8 +4,8 @@
  * Méthode installée sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { divRound, sum } from '../money.js?v=ba94fa4';
-import { purchaseEntry } from '../purchases.js?v=ba94fa4';
+import { divRound, sum } from '../money.js?v=e8e3fd1';
+import { purchaseEntry } from '../purchases.js?v=e8e3fd1';
 
 const dayBefore = (iso) => new Date(Date.parse(`${iso}T00:00:00Z`) - 86400000).toISOString().slice(0, 10);
 const dayAfter = (iso) => new Date(Date.parse(`${iso}T00:00:00Z`) + 86400000).toISOString().slice(0, 10);
