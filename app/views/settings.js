@@ -2,21 +2,21 @@
  * Écran « settings ».
  */
 
-import { field, html, opt, raw } from '../html.js?v=151777b';
-import { isMicro } from '../render.js?v=151777b';
-import { cloudState, eur, pct, ui, ws } from '../state.js?v=151777b';
-import { VAT_RATES_BP } from '../../core/invoices.js?v=151777b';
-import { ICONS } from '../icons.js?v=151777b';
-import { badge, viewHeader } from '../ui/common.js?v=151777b';
-import * as cloud from '../cloud.js?v=151777b';
-import { render } from '../render.js?v=151777b';
-import { membersCard, microSettingsCard, openingPreview, securityCard } from './onboarding.js?v=151777b';
-import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=151777b';
-import { normalizeIban } from '../../core/epc.js?v=151777b';
-import { stockPanel } from './pilotage.js?v=151777b';
-import { caisseSettingsTab } from './caisse-settings.js?v=151777b';
-import { INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=151777b';
-import { DEFAULT_TEMPLATES, REMINDER_STEPS } from '../../core/reminders.js?v=151777b';
+import { field, html, opt, raw } from '../html.js?v=d9f2509';
+import { isMicro } from '../render.js?v=d9f2509';
+import { cloudState, eur, pct, ui, ws } from '../state.js?v=d9f2509';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=d9f2509';
+import { ICONS } from '../icons.js?v=d9f2509';
+import { badge, viewHeader } from '../ui/common.js?v=d9f2509';
+import * as cloud from '../cloud.js?v=d9f2509';
+import { render } from '../render.js?v=d9f2509';
+import { membersCard, microSettingsCard, openingPreview, securityCard } from './onboarding.js?v=d9f2509';
+import { EXPENSE_CATEGORIES } from '../../core/pcg.js?v=d9f2509';
+import { normalizeIban } from '../../core/epc.js?v=d9f2509';
+import { stockPanel } from './pilotage.js?v=d9f2509';
+import { caisseSettingsTab } from './caisse-settings.js?v=d9f2509';
+import { INCOME_CATEGORIES, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=d9f2509';
+import { DEFAULT_TEMPLATES, REMINDER_STEPS } from '../../core/reminders.js?v=d9f2509';
 
 // ------------------------------------------------------------------ paramètres
 

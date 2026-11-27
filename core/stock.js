@@ -5,7 +5,7 @@
  * caisse (rapprochées par l'identifiant de l'article).
  */
 
-import { sum } from './money.js?v=151777b';
+import { sum } from './money.js?v=d9f2509';
 
 const key = (label) =>
   String(label || '')

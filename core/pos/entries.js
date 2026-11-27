@@ -5,8 +5,8 @@
  * commissions contre 5115. Écart de clôture : 658 (manque) ou 758 (excédent).
  */
 
-import { sum } from '../money.js?v=151777b';
-import { htByNature, parisDate } from './sale.js?v=151777b';
+import { sum } from '../money.js?v=d9f2509';
+import { htByNature, parisDate } from './sale.js?v=d9f2509';
 
 export const CASH_ACCOUNT = '530000';
 export const CARD_ACCOUNT = '511500';

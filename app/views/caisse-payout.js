@@ -4,13 +4,13 @@
  * le brut et les commissions sont lus chez Stripe ; sans lui, Nexus propose commissions = attendu − reçu.
  */
 
-import { field, html } from '../html.js?v=151777b';
-import { eur, frDate, ui, ws, cloudState } from '../state.js?v=151777b';
-import { isPosManager } from '../caisse-state.js?v=151777b';
-import * as caisse from '../caisse-cloud.js?v=151777b';
-import { render } from '../render.js?v=151777b';
-import { save, toast } from '../store.js?v=151777b';
-import { parseEuros } from '../../core/money.js?v=151777b';
+import { field, html } from '../html.js?v=d9f2509';
+import { eur, frDate, ui, ws, cloudState } from '../state.js?v=d9f2509';
+import { isPosManager } from '../caisse-state.js?v=d9f2509';
+import * as caisse from '../caisse-cloud.js?v=d9f2509';
+import { render } from '../render.js?v=d9f2509';
+import { save, toast } from '../store.js?v=d9f2509';
+import { parseEuros } from '../../core/money.js?v=d9f2509';
 
 export function payoutNotice() {
   const balance = ws.cardBalance();

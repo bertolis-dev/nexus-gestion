@@ -3,7 +3,7 @@
  * Méthodes installées sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { sum } from '../money.js?v=151777b';
+import { sum } from '../money.js?v=d9f2509';
 
 const tryLetter = (ledger, refs, date) => {
   try {

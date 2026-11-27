@@ -4,7 +4,7 @@
  * (« micro » ou « societe ») et `avance` au mode avancé.
  */
 
-import { capture, etapes, p } from './screens.js?v=151777b';
+import { capture, etapes, p } from './screens.js?v=d9f2509';
 
 export const THEMES = [
   {

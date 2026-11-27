@@ -2,21 +2,21 @@
  * Écran « sales ».
  */
 
-import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=151777b';
-import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=151777b';
-import { LIFECYCLE } from '../../core/lifecycle.js?v=151777b';
-import { lookupSiren } from '../company-lookup.js?v=151777b';
-import { render } from '../render.js?v=151777b';
-import * as cloud from '../cloud.js?v=151777b';
-import { canValidate, cloudState, eur, frDate, today, ui, ws } from '../state.js?v=151777b';
-import { invoiceEmail, reminderMessage } from '../../core/reminders.js?v=151777b';
-import { explainEmailError } from '../email-errors.js?v=151777b';
-import { download, save, toast, whenSaved } from '../store.js?v=151777b';
-import { isUnconfirmed } from '../sync-ui.js?v=151777b';
-import { emptyLine, persistDraft } from '../views/invoice-form.js?v=151777b';
-import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=151777b';
-import { depositCandidates } from '../../core/deposit.js?v=151777b';
-import { createZip } from '../../core/zip.js?v=151777b';
+import { buildCii, checkEn16931, ciiFileName } from '../../core/einvoice.js?v=d9f2509';
+import { InvoiceError, defaultDueDate, isValidSiren } from '../../core/invoices.js?v=d9f2509';
+import { LIFECYCLE } from '../../core/lifecycle.js?v=d9f2509';
+import { lookupSiren } from '../company-lookup.js?v=d9f2509';
+import { render } from '../render.js?v=d9f2509';
+import * as cloud from '../cloud.js?v=d9f2509';
+import { canValidate, cloudState, eur, frDate, today, ui, ws } from '../state.js?v=d9f2509';
+import { invoiceEmail, reminderMessage } from '../../core/reminders.js?v=d9f2509';
+import { explainEmailError } from '../email-errors.js?v=d9f2509';
+import { download, save, toast, whenSaved } from '../store.js?v=d9f2509';
+import { isUnconfirmed } from '../sync-ui.js?v=d9f2509';
+import { emptyLine, persistDraft } from '../views/invoice-form.js?v=d9f2509';
+import { invoicePdf, pdfFileName } from '../facturx-ui.js?v=d9f2509';
+import { depositCandidates } from '../../core/deposit.js?v=d9f2509';
+import { createZip } from '../../core/zip.js?v=d9f2509';
 
 /**
  * Justificatif de la dépense refacturée, joint au PDF si demandé sur la facture (mode connecté : la

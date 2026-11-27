@@ -4,12 +4,12 @@
  * la seule correction possible est l'avoir lié.
  */
 
-import { assertCents, divRound, formatEuros, sum, vatFromHt } from './money.js?v=151777b';
-import { REVENUE_ACCOUNT_BY_NATURE } from './pcg.js?v=151777b';
-import { LIFECYCLE, currentStatus } from './lifecycle.js?v=151777b';
-import { tradeZone } from './countries.js?v=151777b';
-import { creditsOf, originalOf, groupBalance } from './receipts.js?v=151777b';
-import { addDays } from './dates.js?v=151777b';
+import { assertCents, divRound, formatEuros, sum, vatFromHt } from './money.js?v=d9f2509';
+import { REVENUE_ACCOUNT_BY_NATURE } from './pcg.js?v=d9f2509';
+import { LIFECYCLE, currentStatus } from './lifecycle.js?v=d9f2509';
+import { tradeZone } from './countries.js?v=d9f2509';
+import { creditsOf, originalOf, groupBalance } from './receipts.js?v=d9f2509';
+import { addDays } from './dates.js?v=d9f2509';
 
 export const VAT_RATES_BP = [2000, 1000, 550, 210, 0];
 

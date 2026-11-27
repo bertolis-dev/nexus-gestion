@@ -2,13 +2,13 @@
  * Écran « expenses ».
  */
 
-import { purchaseLinesFrom } from '../../core/einvoice-in.js?v=151777b';
-import * as cloud from '../cloud.js?v=151777b';
-import { render } from '../render.js?v=151777b';
-import { eur, ui, ws } from '../state.js?v=151777b';
-import { save, toast } from '../store.js?v=151777b';
-import { attachReceipt } from '../views/expenses.js?v=151777b';
-import { saveNexusRhImport } from '../views/nexusrh-import.js?v=151777b';
+import { purchaseLinesFrom } from '../../core/einvoice-in.js?v=d9f2509';
+import * as cloud from '../cloud.js?v=d9f2509';
+import { render } from '../render.js?v=d9f2509';
+import { eur, ui, ws } from '../state.js?v=d9f2509';
+import { save, toast } from '../store.js?v=d9f2509';
+import { attachReceipt } from '../views/expenses.js?v=d9f2509';
+import { saveNexusRhImport } from '../views/nexusrh-import.js?v=d9f2509';
 
 /** Actions « expenses » : data-action → fonction. */
 /** Lignes de la facture d'acompte importée du même fournisseur dont le TTC égale l'acompte déduit (sinon null). */

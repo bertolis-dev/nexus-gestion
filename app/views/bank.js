@@ -2,21 +2,21 @@
  * Écran « bank ».
  */
 
-import { decodeStatement, importStatement } from '../../core/bank-import.js?v=151777b';
-import { reconciliationStatement } from '../../core/bank.js?v=151777b';
-import { VAT_RATES_BP } from '../../core/invoices.js?v=151777b';
-import { parseEuros } from '../../core/money.js?v=151777b';
-import { CHOOSABLE_EXPENSE_CATEGORIES } from '../../core/pcg.js?v=151777b';
-import { INCOME_CATEGORIES, MAX_BANK_ACCOUNTS, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=151777b';
-import { field, html, opt, raw } from '../html.js?v=151777b';
-import { ICONS } from '../icons.js?v=151777b';
-import { cloudState, eur, frDate, isDirigeant, pct, today, ui, ws } from '../state.js?v=151777b';
-import { dataVersion, save, toast } from '../store.js?v=151777b';
-import * as cloud from '../cloud.js?v=151777b';
-import { render } from '../render.js?v=151777b';
-import { preparePhoto } from '../ui/photo.js?v=151777b';
-import { badge, icon, term, viewHeader } from '../ui/common.js?v=151777b';
-import { payoutNotice } from './caisse-payout.js?v=151777b';
+import { decodeStatement, importStatement } from '../../core/bank-import.js?v=d9f2509';
+import { reconciliationStatement } from '../../core/bank.js?v=d9f2509';
+import { VAT_RATES_BP } from '../../core/invoices.js?v=d9f2509';
+import { parseEuros } from '../../core/money.js?v=d9f2509';
+import { CHOOSABLE_EXPENSE_CATEGORIES } from '../../core/pcg.js?v=d9f2509';
+import { INCOME_CATEGORIES, MAX_BANK_ACCOUNTS, OUTFLOW_CATEGORIES } from '../../core/workspace.js?v=d9f2509';
+import { field, html, opt, raw } from '../html.js?v=d9f2509';
+import { ICONS } from '../icons.js?v=d9f2509';
+import { cloudState, eur, frDate, isDirigeant, pct, today, ui, ws } from '../state.js?v=d9f2509';
+import { dataVersion, save, toast } from '../store.js?v=d9f2509';
+import * as cloud from '../cloud.js?v=d9f2509';
+import { render } from '../render.js?v=d9f2509';
+import { preparePhoto } from '../ui/photo.js?v=d9f2509';
+import { badge, icon, term, viewHeader } from '../ui/common.js?v=d9f2509';
+import { payoutNotice } from './caisse-payout.js?v=d9f2509';
 
 // ------------------------------------------------------------------ banque (§3.4)
 

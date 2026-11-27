@@ -4,7 +4,7 @@
  * magasin) : TVA extraite du TTC par taux, sur le total de chaque taux (pas ligne à ligne).
  */
 
-import { divRound, sum, vatFromHt } from '../money.js?v=151777b';
+import { divRound, sum, vatFromHt } from '../money.js?v=d9f2509';
 
 export class CartError extends Error {}
 

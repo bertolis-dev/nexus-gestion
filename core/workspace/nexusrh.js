@@ -4,8 +4,8 @@
  * Méthode installée sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { noteRef, payrollRef, ticketsRef } from '../nexusrh-import.js?v=151777b';
-import { payrollEntry } from '../payroll.js?v=151777b';
+import { noteRef, payrollRef, ticketsRef } from '../nexusrh-import.js?v=d9f2509';
+import { payrollEntry } from '../payroll.js?v=d9f2509';
 
 export const nexusRhMethods = {
   /**

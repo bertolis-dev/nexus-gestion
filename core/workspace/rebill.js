@@ -7,9 +7,9 @@
  * Méthodes installées sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { divRound, sum, vatFromHt } from '../money.js?v=151777b';
-import { categoryById } from '../pcg.js?v=151777b';
-import { addDays } from '../dates.js?v=151777b';
+import { divRound, sum, vatFromHt } from '../money.js?v=d9f2509';
+import { categoryById } from '../pcg.js?v=d9f2509';
+import { addDays } from '../dates.js?v=d9f2509';
 
 export class RebillError extends Error {}
 

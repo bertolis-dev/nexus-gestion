@@ -4,12 +4,12 @@
  * caisse-docs.js ; les actions dans actions/caisse.js.
  */
 
-import { cartTotals, lineTtc, unitTtcOf } from '../../core/pos/cart.js?v=151777b';
-import { field, html, raw } from '../html.js?v=151777b';
-import { eur, ui, ws } from '../state.js?v=151777b';
-import { badge, icon, viewHeader } from '../ui/common.js?v=151777b';
-import { isPosManager, posState, posRegister, parkedCarts } from '../caisse-state.js?v=151777b';
-import { viewTicket, viewHistory, viewClosing } from './caisse-docs.js?v=151777b';
+import { cartTotals, lineTtc, unitTtcOf } from '../../core/pos/cart.js?v=d9f2509';
+import { field, html, raw } from '../html.js?v=d9f2509';
+import { eur, ui, ws } from '../state.js?v=d9f2509';
+import { badge, icon, viewHeader } from '../ui/common.js?v=d9f2509';
+import { isPosManager, posState, posRegister, parkedCarts } from '../caisse-state.js?v=d9f2509';
+import { viewTicket, viewHistory, viewClosing } from './caisse-docs.js?v=d9f2509';
 
 const pctTxt = (bp) => `${String(bp / 100).replace('.', ',')} %`;
 const qtyTxt = (q) => String(q).replace('.', ',');

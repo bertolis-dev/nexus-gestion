@@ -2,13 +2,13 @@
  * Écran « shell ».
  */
 
-import * as cloud from '../cloud.js?v=151777b';
-import { removeDemo } from '../demo-store.js?v=151777b';
-import { $, render, renderApp } from '../render.js?v=151777b';
-import { cloudState, freshOnboarding, setWs, today, ui, ws } from '../state.js?v=151777b';
-import { download, setTheme, toast } from '../store.js?v=151777b';
-import { openStructure, openStructureAndShow, refreshEmailStatus } from '../sync-ui.js?v=151777b';
-import { openGuide, openGuideForCurrentScreen } from '../views/guide.js?v=151777b';
+import * as cloud from '../cloud.js?v=d9f2509';
+import { removeDemo } from '../demo-store.js?v=d9f2509';
+import { $, render, renderApp } from '../render.js?v=d9f2509';
+import { cloudState, freshOnboarding, setWs, today, ui, ws } from '../state.js?v=d9f2509';
+import { download, setTheme, toast } from '../store.js?v=d9f2509';
+import { openStructure, openStructureAndShow, refreshEmailStatus } from '../sync-ui.js?v=d9f2509';
+import { openGuide, openGuideForCurrentScreen } from '../views/guide.js?v=d9f2509';
 
 /** Version publiée plus récente que celle chargée ? (numéro ?v=… ajouté à la mise en ligne) */
 async function newerVersionAvailable() {

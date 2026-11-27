@@ -4,13 +4,13 @@
  * Actions et formulaires dans le même fichier (préfixe posset-).
  */
 
-import { field, html, opt, raw } from '../html.js?v=151777b';
-import { cloudState, ui, ws } from '../state.js?v=151777b';
-import { badge } from '../ui/common.js?v=151777b';
-import { isPosManager, posRegister, posState, registers, useRegister } from '../caisse-state.js?v=151777b';
-import * as caisse from '../caisse-cloud.js?v=151777b';
-import { render } from '../render.js?v=151777b';
-import { save, toast } from '../store.js?v=151777b';
+import { field, html, opt, raw } from '../html.js?v=d9f2509';
+import { cloudState, ui, ws } from '../state.js?v=d9f2509';
+import { badge } from '../ui/common.js?v=d9f2509';
+import { isPosManager, posRegister, posState, registers, useRegister } from '../caisse-state.js?v=d9f2509';
+import * as caisse from '../caisse-cloud.js?v=d9f2509';
+import { render } from '../render.js?v=d9f2509';
+import { save, toast } from '../store.js?v=d9f2509';
 
 const owner = () => ui.demo || (cloudState.role || 'dirigeant') === 'dirigeant';
 

@@ -16,9 +16,9 @@
  * cahier des charges pour limiter la responsabilité de BERTOLIS) : ce contrôle est fait en base.
  */
 
-import { divRound, sum, vatFromHt } from './money.js?v=151777b';
-import { fixedAssets, assetsCrossCheck } from './assets.js?v=151777b';
-import { balancesOf } from './statements.js?v=151777b';
+import { divRound, sum, vatFromHt } from './money.js?v=d9f2509';
+import { fixedAssets, assetsCrossCheck } from './assets.js?v=d9f2509';
+import { balancesOf } from './statements.js?v=d9f2509';
 
 /** Nom d'un exercice : « 2026 », ou « 2025-2026 » s'il est à cheval sur deux années civiles. */
 export function fiscalYearLabel(fy) {
@@ -204,7 +204,7 @@ export function depreciationEntry(ws) {
 }
 
 // États financiers (compte de résultat, bilan) : core/statements.js, réexportés ici.
-export { incomeStatement, balanceSheet, pnlRubric } from './statements.js?v=151777b';
+export { incomeStatement, balanceSheet, pnlRubric } from './statements.js?v=d9f2509';
 
 // ------------------------------------------------------------------ impôt sur les sociétés
 

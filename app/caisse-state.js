@@ -3,8 +3,8 @@
  * en attente, rôle du caissier. La caisse de démonstration a un terminal simulé (aucun prestataire).
  */
 
-import { newCart } from '../core/pos/cart.js?v=151777b';
-import { cloudState, ui, ws } from './state.js?v=151777b';
+import { newCart } from '../core/pos/cart.js?v=d9f2509';
+import { cloudState, ui, ws } from './state.js?v=d9f2509';
 
 const POSTE_KEY = 'nexus_caisse_poste_';
 const PARKED_KEY = 'nexus_caisse_attente_';

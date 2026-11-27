@@ -4,18 +4,18 @@
  * Sans DOM ni stockage : l'interface (app/) le sérialise, les tests l'utilisent tel quel.
  */
 
-import { buildChart, categoryById } from './pcg.js?v=151777b';
-import { Ledger } from './ledger.js?v=151777b';
-import { InvoiceBook, clientAux } from './invoices.js?v=151777b';
-import { purchaseEntry, findDuplicates, knownVatOnDebits, ttcLine } from './purchases.js?v=151777b';
-import { mergeTransactions, suggestMatches, settlementEntry, directEntry, DEFAULT_BANK_ACCOUNT } from './bank.js?v=151777b';
+import { buildChart, categoryById } from './pcg.js?v=d9f2509';
+import { Ledger } from './ledger.js?v=d9f2509';
+import { InvoiceBook, clientAux } from './invoices.js?v=d9f2509';
+import { purchaseEntry, findDuplicates, knownVatOnDebits, ttcLine } from './purchases.js?v=d9f2509';
+import { mergeTransactions, suggestMatches, settlementEntry, directEntry, DEFAULT_BANK_ACCOUNT } from './bank.js?v=d9f2509';
 export { DEFAULT_BANK_ACCOUNT };
-import { creditsOf, originalOf, groupBalance } from './receipts.js?v=151777b';
-import { divRound, splitTtc, sum } from './money.js?v=151777b';
-import { openingEntry } from './fecimport.js?v=151777b';
-import { creditTargetsAsset } from './assets.js?v=151777b';
-import { LIFECYCLE, currentStatus } from './lifecycle.js?v=151777b';
-import { SCHEMA_VERSION, migrateState } from './schema.js?v=151777b';
+import { creditsOf, originalOf, groupBalance } from './receipts.js?v=d9f2509';
+import { divRound, splitTtc, sum } from './money.js?v=d9f2509';
+import { openingEntry } from './fecimport.js?v=d9f2509';
+import { creditTargetsAsset } from './assets.js?v=d9f2509';
+import { LIFECYCLE, currentStatus } from './lifecycle.js?v=d9f2509';
+import { SCHEMA_VERSION, migrateState } from './schema.js?v=d9f2509';
 
 /** Entrées d'argent sans facture de vente, proposées en langage courant. */
 export const INCOME_CATEGORIES = [
@@ -61,21 +61,21 @@ export function combineEstimates(list) {
 
 export const MAX_BANK_ACCOUNTS = 10;
 
-import { recurringMethods } from './workspace/recurring.js?v=151777b';
-import { vatMethods } from './workspace/vat.js?v=151777b';
-import { receiptVatMethods } from './workspace/receipt-vat.js?v=151777b';
-import { paymentVatMethods } from './workspace/payment-vat.js?v=151777b';
-import { nexusRhMethods } from './workspace/nexusrh.js?v=151777b';
-import { letteringMethods } from './workspace/lettering.js?v=151777b';
-import { closingMethods } from './workspace/closing.js?v=151777b';
-import { pilotageMethods } from './workspace/pilotage.js?v=151777b';
-import { rebillMethods } from './workspace/rebill.js?v=151777b';
-import { creditMethods } from './workspace/credit.js?v=151777b';
-import { emptyPos, posMethods } from './workspace/pos.js?v=151777b';
-import { microMethods } from './workspace/micro.js?v=151777b';
-import { depositMethods } from './deposit.js?v=151777b';
-import { categorizationMethods, learnRule } from './categorization.js?v=151777b';
-import { reminderMethods } from './reminders.js?v=151777b';
+import { recurringMethods } from './workspace/recurring.js?v=d9f2509';
+import { vatMethods } from './workspace/vat.js?v=d9f2509';
+import { receiptVatMethods } from './workspace/receipt-vat.js?v=d9f2509';
+import { paymentVatMethods } from './workspace/payment-vat.js?v=d9f2509';
+import { nexusRhMethods } from './workspace/nexusrh.js?v=d9f2509';
+import { letteringMethods } from './workspace/lettering.js?v=d9f2509';
+import { closingMethods } from './workspace/closing.js?v=d9f2509';
+import { pilotageMethods } from './workspace/pilotage.js?v=d9f2509';
+import { rebillMethods } from './workspace/rebill.js?v=d9f2509';
+import { creditMethods } from './workspace/credit.js?v=d9f2509';
+import { emptyPos, posMethods } from './workspace/pos.js?v=d9f2509';
+import { microMethods } from './workspace/micro.js?v=d9f2509';
+import { depositMethods } from './deposit.js?v=d9f2509';
+import { categorizationMethods, learnRule } from './categorization.js?v=d9f2509';
+import { reminderMethods } from './reminders.js?v=d9f2509';
 
 export class Workspace {
   constructor({ company, state: saved = {}, now, newId } = {}) {

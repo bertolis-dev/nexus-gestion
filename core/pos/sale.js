@@ -4,8 +4,8 @@
  * correction est un retour (opération en moins) rattaché à la vente.
  */
 
-import { divRound, sum } from '../money.js?v=151777b';
-import { cartTotals, lineTtc } from './cart.js?v=151777b';
+import { divRound, sum } from '../money.js?v=d9f2509';
+import { cartTotals, lineTtc } from './cart.js?v=d9f2509';
 
 export class SaleError extends Error {}
 

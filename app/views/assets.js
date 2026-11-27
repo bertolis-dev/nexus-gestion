@@ -2,11 +2,11 @@
  * Écran « assets ».
  */
 
-import { fixedAssets } from '../../core/assets.js?v=151777b';
-import { html, opt, raw } from '../html.js?v=151777b';
-import { ICONS } from '../icons.js?v=151777b';
-import { eur, frDate, ws } from '../state.js?v=151777b';
-import { term } from '../ui/common.js?v=151777b';
+import { fixedAssets } from '../../core/assets.js?v=d9f2509';
+import { html, opt, raw } from '../html.js?v=d9f2509';
+import { ICONS } from '../icons.js?v=d9f2509';
+import { eur, frDate, ws } from '../state.js?v=d9f2509';
+import { term } from '../ui/common.js?v=d9f2509';
 
 // ------------------------------------------------------------------ immobilisations
 

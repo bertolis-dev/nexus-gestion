@@ -5,7 +5,7 @@
  * Méthodes installées sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { computeTotals, isVatExempt } from '../invoices.js?v=151777b';
+import { computeTotals, isVatExempt } from '../invoices.js?v=d9f2509';
 
 const pct = (bp) => `${String(bp / 100).replace('.', ',')} %`;
 const euros = (c) => `${(c / 100).toFixed(2).replace('.', ',')} €`;

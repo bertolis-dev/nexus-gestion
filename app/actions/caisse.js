@@ -3,16 +3,16 @@
  * démonstration), reprise après coupure, retours, facture sur ticket, ouverture et clôture.
  */
 
-import { findByBarcode, isValidBarcode, normalizeBarcode } from '../../core/pos/barcode.js?v=151777b';
-import { addToCart, cartTotals, newCart, removeLine, setDiscount, setQty } from '../../core/pos/cart.js?v=151777b';
-import { saveCatalogItem } from '../../core/catalog.js?v=151777b';
-import { parseEuros } from '../../core/money.js?v=151777b';
-import * as caisse from '../caisse-cloud.js?v=151777b';
-import { isPosManager, keepCart, newSaleRef, parkedCarts, posRegister, posState, saveParked, useRegister } from '../caisse-state.js?v=151777b';
-import { render } from '../render.js?v=151777b';
-import { cloudState, ui, ws } from '../state.js?v=151777b';
-import { save, toast } from '../store.js?v=151777b';
-import { searchCatalog } from '../views/caisse.js?v=151777b';
+import { findByBarcode, isValidBarcode, normalizeBarcode } from '../../core/pos/barcode.js?v=d9f2509';
+import { addToCart, cartTotals, newCart, removeLine, setDiscount, setQty } from '../../core/pos/cart.js?v=d9f2509';
+import { saveCatalogItem } from '../../core/catalog.js?v=d9f2509';
+import { parseEuros } from '../../core/money.js?v=d9f2509';
+import * as caisse from '../caisse-cloud.js?v=d9f2509';
+import { isPosManager, keepCart, newSaleRef, parkedCarts, posRegister, posState, saveParked, useRegister } from '../caisse-state.js?v=d9f2509';
+import { render } from '../render.js?v=d9f2509';
+import { cloudState, ui, ws } from '../state.js?v=d9f2509';
+import { save, toast } from '../store.js?v=d9f2509';
+import { searchCatalog } from '../views/caisse.js?v=d9f2509';
 
 const POLL_MS = 1500;
 const nowIso = () => new Date().toISOString();

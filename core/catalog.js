@@ -3,7 +3,7 @@
  * centimes, taux de TVA et nature, proposés pendant la saisie d'une ligne de facture ou de devis.
  */
 
-import { checkBarcode } from './pos/barcode.js?v=151777b';
+import { checkBarcode } from './pos/barcode.js?v=d9f2509';
 
 const key = (label) =>
   String(label || '')

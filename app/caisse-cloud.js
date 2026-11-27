@@ -4,8 +4,8 @@
  * contrôlés), pas par la file d'envoi ; leurs écritures comptables, elles, suivent la file habituelle.
  */
 
-import * as cloud from './cloud.js?v=151777b';
-import { parisDate } from '../core/pos/sale.js?v=151777b';
+import * as cloud from './cloud.js?v=d9f2509';
+import { parisDate } from '../core/pos/sale.js?v=d9f2509';
 
 const missing = (err) => ['42P01', 'PGRST205', 'PGRST202', '42883'].includes(err?.code);
 

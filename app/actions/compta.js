@@ -2,13 +2,13 @@
  * Écran « compta ».
  */
 
-import { generalLedgerCsv, journalsCsv, trialBalanceCsv } from '../../core/exports.js?v=151777b';
-import { checkFEC, encodeLatin9, exportFEC } from '../../core/reports.js?v=151777b';
-import * as cloud from '../cloud.js?v=151777b';
-import { render } from '../render.js?v=151777b';
-import { canValidate, frDate, today, ui, ws } from '../state.js?v=151777b';
-import { download, save, toast } from '../store.js?v=151777b';
-import { openArchive } from '../views/archives.js?v=151777b';
+import { generalLedgerCsv, journalsCsv, trialBalanceCsv } from '../../core/exports.js?v=d9f2509';
+import { checkFEC, encodeLatin9, exportFEC } from '../../core/reports.js?v=d9f2509';
+import * as cloud from '../cloud.js?v=d9f2509';
+import { render } from '../render.js?v=d9f2509';
+import { canValidate, frDate, today, ui, ws } from '../state.js?v=d9f2509';
+import { download, save, toast } from '../store.js?v=d9f2509';
+import { openArchive } from '../views/archives.js?v=d9f2509';
 
 /** Actions « compta » : data-action → fonction. */
 export const actionsTable = {

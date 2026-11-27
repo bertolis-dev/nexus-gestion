@@ -4,8 +4,8 @@
  * (micro-entrepreneur ou société, TVA ou franchise, mode avancé).
  */
 
-import { ECRANS, p, liste } from './screens.js?v=151777b';
-import { THEMES } from './themes.js?v=151777b';
+import { ECRANS, p, liste } from './screens.js?v=d9f2509';
+import { THEMES } from './themes.js?v=d9f2509';
 
 const dl = (paires) => `<dl class="guide-defs">${paires.map(([t, d]) => `<dt>${t}</dt><dd>${d}</dd>`).join('')}</dl>`;
 

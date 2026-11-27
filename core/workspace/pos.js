@@ -5,12 +5,12 @@
  * Méthodes installées sur Workspace.prototype (voir core/workspace.js).
  */
 
-import { divRound, sum, vatFromHt } from '../money.js?v=151777b';
-import { addDays } from '../dates.js?v=151777b';
-import { stockLevels } from '../stock.js?v=151777b';
-import { buildReturn, buildSale, closeSession, returnedByLine, sessionSummary, ticketNumber } from '../pos/sale.js?v=151777b';
-import { computeTotals } from '../invoices.js?v=151777b';
-import { CARD_ACCOUNT, closingGapEntry, payoutEntry, posReturnEntry, posSaleEntry } from '../pos/entries.js?v=151777b';
+import { divRound, sum, vatFromHt } from '../money.js?v=d9f2509';
+import { addDays } from '../dates.js?v=d9f2509';
+import { stockLevels } from '../stock.js?v=d9f2509';
+import { buildReturn, buildSale, closeSession, returnedByLine, sessionSummary, ticketNumber } from '../pos/sale.js?v=d9f2509';
+import { computeTotals } from '../invoices.js?v=d9f2509';
+import { CARD_ACCOUNT, closingGapEntry, payoutEntry, posReturnEntry, posSaleEntry } from '../pos/entries.js?v=d9f2509';
 
 export const emptyPos = () => ({ sessions: [], sales: [], returns: [], payouts: [], counters: {} });
 

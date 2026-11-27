@@ -3,12 +3,12 @@
  * demandée par le client, clôture de caisse avec récapitulatif par mode de paiement.
  */
 
-import { issuerName } from '../../core/invoices.js?v=151777b';
-import { returnedByLine } from '../../core/pos/sale.js?v=151777b';
-import { field, html, opt, raw } from '../html.js?v=151777b';
-import { eur, ui, ws } from '../state.js?v=151777b';
-import { badge, icon, viewHeader } from '../ui/common.js?v=151777b';
-import { isPosManager, posRegister } from '../caisse-state.js?v=151777b';
+import { issuerName } from '../../core/invoices.js?v=d9f2509';
+import { returnedByLine } from '../../core/pos/sale.js?v=d9f2509';
+import { field, html, opt, raw } from '../html.js?v=d9f2509';
+import { eur, ui, ws } from '../state.js?v=d9f2509';
+import { badge, icon, viewHeader } from '../ui/common.js?v=d9f2509';
+import { isPosManager, posRegister } from '../caisse-state.js?v=d9f2509';
 
 const pctTxt = (bp) => `${String(bp / 100).replace('.', ',')} %`;
 const qtyTxt = (q) => String(q).replace('.', ',');
